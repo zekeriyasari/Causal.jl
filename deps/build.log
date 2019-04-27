@@ -1,0 +1,7 @@
+┌ Info: To simulate a model and write downs all the simulation logs to log.txt file, 
+│ call the `simulate` functon with `logtofile=true`. 
+│ However is this funciton is called within Juno, then the global logger set by 
+│ the `simulate` function is wrapped and deactivated by Juno. 
+│ A possible workaround to write all the logger messages to file `log.txt` set by 
+│ the `simulate` function is to write the code in a script and execute that script  
+└ from systems terminal. E.g. `julia --color=yes <path/to/script.jl>`

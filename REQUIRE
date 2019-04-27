@@ -1,0 +1,15 @@
+julia 1.0
+Dates
+DifferentialEquations
+FFTW
+FileIO
+JLD2
+LinearAlgebra
+Logging
+LsqFit
+NearestNeighbors
+Plots
+Reexport
+Statistics
+Sundials
+UUIDs

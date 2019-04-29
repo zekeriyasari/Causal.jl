@@ -1,6 +1,6 @@
 # This file contains the static systems of JuSDL.
 
-module StaticSystems
+@reexport module StaticSystems
 
 using UUIDs
 import ..Systems: infer_number_of_outputs
@@ -102,5 +102,8 @@ Terminator(input=Bus(); callbacks=Callback[], name=string(uuid4())) = Terminator
 
 
 @deprecate Coupler(E, P) Gain(kron(E, P))
+
+
+export StaticSystem, Adder, Multiplier, Gain, Memory, Terminator
 
 end  # module

@@ -15,6 +15,9 @@ abstract type AbstractTaskManager end
 abstract type AbstractModel end 
 abstract type AbstractSimulation end 
 
+export TaskManager, checktasks, istaskfailed, istaskrunning, isalive
+export Model, adjacency_matrix, inspect, initialize, run, terminate, simulate
+
 include("utils.jl")
 include("taskmanager.jl")
 include("simulation.jl")

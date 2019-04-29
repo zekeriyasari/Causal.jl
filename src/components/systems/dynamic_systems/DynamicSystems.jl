@@ -1,6 +1,6 @@
 # This file contains the dynamic systems of JuSDL.
 
-module DynamicSystems
+@reexport module DynamicSystems
 
 using DifferentialEquations
 using Sundials
@@ -17,5 +17,13 @@ include("rode_systems.jl")
 include("sde_systems.jl")
 include("dde_systems.jl")
 include("system_inference.jl")
+
+export DiscreteSystem
+export ODESystem, LinearSystem, LorenzSystem, ChuaSystem, RosslerSystem, VanderpolSystem 
+export DAESystem 
+export RODESystem 
+export SDESystem, NoisyLinearSystem, NoisyLorenzSystem, NoisyChuaSystem, NoisyRosslerSystem, NoisyVanderpolSystem
+export DDESystem 
+export DynamicSystem
 
 end  # module

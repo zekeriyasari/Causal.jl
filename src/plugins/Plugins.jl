@@ -63,4 +63,6 @@ foreach(include, search(joinpath(@__DIR__, "additionals"), ".jl"))
 user_plugins_path = joinpath(pwd(), "plugins")
 ispath(user_plugins_path) && foreach(include, search(joinpath(user_plugins_path), ".jl"))
 
+export process, add, remove, enable, disable, check
+
 end  # module

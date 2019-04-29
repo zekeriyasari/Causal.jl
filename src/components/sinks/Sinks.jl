@@ -2,6 +2,7 @@
 
 @reexport module Sinks
 
+using DataStructures
 using Reexport
 using Plots
 using JLD2

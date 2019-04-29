@@ -30,7 +30,7 @@ fwrite(file, td, xd) = file[string(td)] = xd
 read(writer::Writer) = fread(writer.file.path)
 function fread(path::String)
     content = load(path)
-    Dict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
+    SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
 end
 
 ##### Writer controls

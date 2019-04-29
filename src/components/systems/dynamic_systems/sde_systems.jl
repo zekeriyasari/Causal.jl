@@ -15,8 +15,8 @@ mutable struct SDESystem{SF, OF, IB, OB, N, S} <: AbstractSDESystem
         typeof(solver)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, callbacks, name)
     end
 end
-SDESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=SDENoise; solver=SDESolver, callbacks=Callback[], 
-    name=string(uuid4())) = SDESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)
+SDESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=Noise(WienerProcess(0., zeros(length(state)))); 
+    solver=SDESolver, callbacks=Callback[], name=string(uuid4())) = SDESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)
 
 ##### Noisy Linear System
 

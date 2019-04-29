@@ -14,5 +14,6 @@ mutable struct RODESystem{SF, OF, IB, OB, N, S} <: AbstractRODESystem
         new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(noise), typeof(solver)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, callbacks, name)
     end
 end
-RODESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=RODENoise; solver=RODESolver, callbacks=Callback[],
-    name=string(uuid4())) = RODESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)
+RODESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=Noise(WienerProcess(0., zeros(length(state)))); 
+    solver=RODESolver, callbacks=Callback[], name=string(uuid4())) = 
+    RODESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)

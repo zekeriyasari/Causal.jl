@@ -16,18 +16,18 @@ function h(dx, x, u, t, eta=0.05)
     dx[2] = eta
     dx[3] = 0
 end
-g(x, u, t) = x
+g(x, u, t) = [x[1], x[2], x[3]]
 x0 = [1e-6, 1e-6, 1e-6]
 t = 0.
-ds = SDESystem((f, h), g, x0, t)
+sdeds = SDESystem((f, h), g, x0, t)
 writer = Writer(Bus(3), buflen=5000, plugin=nothing)
 clk = Clock(0., 0.005, 100.)
 
 # Connect the components
-connect(ds.output, writer.input)
+connect(sdeds.output, writer.input)
 
 # Construct the model 
-model = Model(ds, writer, clk=clk)
+model = Model(sdeds, writer, clk=clk)
 
 # Simulate the model 
 sim = simulate(model)
@@ -40,9 +40,7 @@ plt1 = plot()
 for (i, k) in enumerate(keys(content))
     plot!(k, content[k][:, 1], label=string(i))
 end
-plt1
 plt2 = plot()
 for (i, k) in enumerate(keys(content))
     plot!(content[k][:, 1], content[k][:, 2], label=string(i))
 end
-plt2

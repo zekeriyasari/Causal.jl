@@ -4,9 +4,11 @@ authors = ["zekeriya.sari <zekeriya.sari@deu.edu.tr>"]
 version = "0.1.0"
 
 [deps]
+ChaosTools = "608a59af-f2a3-5ad4-90b4-758bdf3122a7"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+DynamicalSystems = "61744808-ddfa-5f27-97ff-6e42cc95d634"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"

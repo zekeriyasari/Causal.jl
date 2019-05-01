@@ -278,9 +278,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Test"]
-git-tree-sha1 = "ef00921b6445d688bd8354090cc6a0ab4322f945"
+git-tree-sha1 = "4c9269860074f5e9cf3f9078c49228bf13e4b33b"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.6.0"
+version = "0.6.1"
 
 [[FixedPointNumbers]]
 deps = ["Test"]
@@ -344,6 +344,12 @@ deps = ["CodeTracking", "Dates", "Distributed", "InteractiveUtils", "Mmap", "Ran
 git-tree-sha1 = "3446fc94431daec86574672a748696485d3c0487"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
 version = "0.5.0"
+
+[[LaTeXStrings]]
+deps = ["Compat"]
+git-tree-sha1 = "7ab9b8788cfab2bdde22adf9004bda7ad9954b6c"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.0.3"
 
 [[LazyArrays]]
 deps = ["FillArrays", "LinearAlgebra", "MacroTools", "StaticArrays", "Test"]

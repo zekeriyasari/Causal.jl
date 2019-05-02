@@ -5,13 +5,34 @@ import Base: getindex, setindex!, size, read, isempty, fill!, setproperty!, simi
 
 const buffer_modes = [:normal, :cyclic, :lifo, :fifo]
 
+"""
+    Buffer{T, N} <: AbstractBuffer{T, N}
+
+`N` dimensional `Buffer` with element type `T`.
+
+    Buffer(::Type{T}, shape::Int...; [mode::Symbol, [callbacks::Vector{Callback}, [name;;String]]])
+
+Constructs a `Buffer` of shape `shape` and element type `T`. `callbacks` is the vector of additional callbacks for event monitoring capability and `name` is the name of `Buffer`. `mode` is the mode of the buffer with the following properties:
+
+* `normal`: Data can be written into buffer until the buffer is full. When the buffer is full, no more writing is possible. When read, the last written element is returned without deleting the returned element.
+
+* `cyclic`: Data can be written into buffer until the buffer is full. When the buffer is full, data is written into the the buffer after shifting the buffer data to right. When read, the last written element is returned without deleting the returned element.
+
+* `lifo`: Data can be written into buffer until the buffer is full. When the buffer is full, no more writing is possible. When read, last element written to the buffer is returned by deleting the returned element.
+
+* `fifo`: Data can be written into buffer until the buffer is full. When the buffer is full, no more writing is possible. When read, fist element written to the buffer is returned by deleting the returned element.
+
+
+    Buffer(shape::Int..., [mode::Symbol, [callbacks::Vector{Callback}, [name::String]]])
+Constructs a `Buffer of shape `shape`
+"""
 mutable struct Buffer{T, N} <: AbstractBuffer{T, N}
-    data::Array{T, N}
-    index::Int
-    mode::Symbol
-    status::Symbol
-    callbacks::Vector{Callback}
-    name::String
+    data::Array{T, N}               # Internal data container
+    index::Int                      # Indicator that indicates up to where the data is written into buffer 
+    mode::Symbol                    # Mode of the buffer. Can be `normal`, `cyclic`, `lifo`, `fifo`
+    status::Symbol                  # Status of the buffer. Can be `empty`, `nonempty`, `full`.
+    callbacks::Vector{Callback}     # Vector of callbacks for event monitoring.
+    name::String                    # Name
     function Buffer(data::Array{T, N}, mode, callbacks, name) where {T, N}
         if mode in buffer_modes
             new{T, N}(data, 1, mode, :empty, callbacks, name)

@@ -1,6 +1,6 @@
-"""
-Julia System Desciption Language
-"""
+# 
+# Julia System Desciption Language
+# 
 module JuSDL
 
 # Required packages

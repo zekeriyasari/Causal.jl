@@ -9,7 +9,7 @@ import ..JuSDL.Utilities: Callback, Buffer, write!
 abstract type AbstractLink end
 abstract type AbstractBus end
 
-export Link, isfull, isconnected, snapshot, connect, disconnect, launch
+export Link, isconnected, connect, disconnect, launch
 export Bus
 
 include("link.jl")

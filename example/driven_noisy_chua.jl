@@ -55,7 +55,7 @@ connect(sdeds.output, writer2.input)
 model = Model(odeds, sdeds, gain, writer1, writer3, writer2, clk=clk)
 
 # Simulate the model 
-sim = simulate(model);
+@time sim = simulate(model);
 
 # Read back the simulation data.
 writer1content = read(writer1)
@@ -63,16 +63,14 @@ writer2content = read(writer2)
 writer3content = read(writer3)
 
 # PLot the simulation data.
-plt1 = plot(xlabel=L"$x$", ylabel=L"$y$", size=(500, 200))
-for (i, t) in enumerate(keys(writer1content))
-    plot!(writer1content[t][:, 1], writer1content[t][:, 2], label=string(i), lw=1.5)
-end
-plt1
-plt2 = plot(xlabel=L"$x$", ylabel=L"$y$", size=(500, 200))
-for (i, t) in enumerate(keys(writer2content))
-    plot!(writer2content[t][:, 1], writer2content[t][:, 2], label=string(i), lw=1.5)
-end
-plt2
-for (i, t) in enumerate(keys(writer3content))
-    println(writer3content[t])
-end
+t = vcat(collect(keys(writer1content))...)
+x1 = vcat(collect(values(writer1content))...)
+x2 = vcat(collect(values(writer2content))...)
+x3 = vcat(collect(values(writer3content))...)
+theme(:default)
+plt1 = plot(x1[:, 1], x1[:, 2], size=(500, 300), lw=1.5, label="",
+    xtickfont=font(15), ytickfont=font(15), grid=false)
+plt2 = plot(x2[:, 1], x2[:, 2], size=(500, 300), lw=1.5, label="",
+    xtickfont=font(15), ytickfont=font(15), grid=false)
+savefig(plt1, "/tmp/driven_chua1.svg")
+savefig(plt2, "/tmp/driven_chua2.svg")

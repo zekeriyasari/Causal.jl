@@ -3,7 +3,6 @@
 using JuSDL
 import JuSDL.Plugins.Fft
 using Plots
-using LaTeXStrings
 
 # Construct the components
 gamma(x, a=-1.143, b=-0.714) = b*x + 1 / 2 * (a - b) * (abs(x + 1) - abs(x - 1)) 
@@ -31,17 +30,18 @@ connect(sdeds.output, writer.input)
 model = Model(sdeds, writer, clk=clk)
 
 # Simulate the model 
-sim = simulate(model)
+@time sim = simulate(model);
 
 # Read back the simulation data.
 content = read(writer)
 
 # PLot the simulation data.
-plt1 = plot(xlabel=L"$t$", ylabel=L"$x$", size=(500, 200), legend=:right)
-for (i, t) in enumerate(keys(content))
-    plot!(t, content[t][:, 1], label=string(i), lw=1.5)
-end
-plt2 = plot(xlabel=L"$x$", ylabel=L"$y$", size=(500, 200))
-for (i, t) in enumerate(keys(content))
-    plot!(content[t][:, 1], content[t][:, 2], label=string(i), lw=1.5)
-end
+t = vcat(collect(keys(content))...)
+x = vcat(collect(values(content))...)
+theme(:default)
+plt1 = plot(t, x[:, 1], size=(500, 300), lw=1.5, label="",
+    xtickfont=font(15), ytickfont=font(15), grid=false)
+plt2 = plot(x[:, 1], x[:, 2], size=(500, 300), lw=1.5, label="",
+    xtickfont=font(15), ytickfont=font(15), grid=false)
+savefig(plt1, "/tmp/noisy_chua1.svg")
+savefig(plt2, "/tmp/noisy_chua2.svg")

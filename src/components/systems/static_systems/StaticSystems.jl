@@ -90,7 +90,7 @@ Memory(delay=2, input=Bus(); scale=0.01, x0=zero(Float64), callbacks=Callback[],
     Memory(delay, input, scale, x0, callbacks, name)
 
 
-struct Terminator{OF, OB}
+struct Terminator{OF, OB} <: AbstractStaticSystem
     @generic_static_system_fields
     function Terminator(input, callbacks, name)
         output = nothing

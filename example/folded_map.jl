@@ -1,16 +1,15 @@
-# This example simulates a Henon map
+# This example simulates a Folded map
 using JuSDL
 using Plots 
 
 # Construct the components 
-function statefunc(dx, x, u, t, alpha=1.07, beta=0.3)
-    dx[1] = -beta * x[2]
-    dx[2] = x[3] + 1 - alpha * x[2]^2 
-    dx[3] = beta * x[2] + x[1]
+function statefunc(dx, x, u, t, a=-0.1, b=-1.7)
+    dx[1] = x[2] + a * x[1]
+    dx[2] = b + x[1]^2
 end
 outputfunc(x, u, t) = x
-ds = DiscreteSystem(statefunc, outputfunc, rand(3), 0)
-writer = Writer(Bus(3))
+ds = DiscreteSystem(statefunc, outputfunc, rand(2), 0)
+writer = Writer(Bus(2))
 clk = Clock(0., 1., 10000.)
 
 # Connect the components
@@ -26,4 +25,6 @@ sim = simulate(model)
 data = vcat(collect(values(read(writer)))...)
 
 # Plot the data
-scatter(data[:, 1], data[:, 2], data[:, 3], ms=0.25)
+scatter(data[:, 1], data[:, 2], ms=0.25)
+
+

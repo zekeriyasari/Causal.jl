@@ -2,7 +2,8 @@
 
 import ....Components.Base: @generic_discrete_system_fields, AbstractDiscreteSystem
 
-const DiscreteSolver = Solver(FunctionMap{true}())
+# const DiscreteSolver = Solver(FunctionMap{true}())
+const DiscreteSolver = Solver(FunctionMap())  # Caution: There seems some update to use FunctionMap parametrized with false.
 
 mutable struct DiscreteSystem{SF, OF, IB, OB, S} <:AbstractDiscreteSystem
     @generic_discrete_system_fields

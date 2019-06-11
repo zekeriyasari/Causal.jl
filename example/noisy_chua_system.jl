@@ -43,5 +43,10 @@ plt1 = plot(t, x[:, 1], size=(500, 300), lw=1.5, label="",
     xtickfont=font(15), ytickfont=font(15), grid=false)
 plt2 = plot(x[:, 1], x[:, 2], size=(500, 300), lw=1.5, label="",
     xtickfont=font(15), ytickfont=font(15), grid=false)
-savefig(plt1, "/tmp/noisy_chua1.svg")
-savefig(plt2, "/tmp/noisy_chua2.svg")
+path = "/tmp"
+if ispath(path)
+    savefig(plt1, joinpath(path, "noisy_chua1.pdf"))
+    savefig(plt2, joinpath(path, "noisy_chua2.pdf"))
+else 
+    @warn "$path does not exist. Plots are not saved"
+end

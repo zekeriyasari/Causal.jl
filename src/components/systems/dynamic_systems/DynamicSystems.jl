@@ -22,8 +22,8 @@ export DiscreteSystem
 export ODESystem, LinearSystem, LorenzSystem, ChuaSystem, RosslerSystem, VanderpolSystem 
 export DAESystem 
 export RODESystem 
-export SDESystem, NoisyLinearSystem, NoisyLorenzSystem, NoisyChuaSystem, NoisyRosslerSystem, NoisyVanderpolSystem
-export DDESystem 
+export SDESystem, NoisyLinearSystem, NoisyLorenzSystem, NoisyChuaSystem, NoisyRosslerSystem, NoisyVanderpolSystem, Noise
+export DDESystem, History 
 export DynamicSystem
 
 end  # module

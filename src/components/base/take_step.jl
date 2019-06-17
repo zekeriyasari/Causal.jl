@@ -47,7 +47,7 @@ solve(comp::AbstractRODESystem, x, u, t) = solve(RODEProblem(comp.statefunc, x, 
     comp.solver.params...)
 solve(comp::AbstractSDESystem, x, u, t) = solve(SDEProblem(comp.statefunc..., x, (comp.t, t), u, 
     noise=comp.noise.process, noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed), comp.solver.alg; comp.solver.params...)
-solve(comp::AbstractDDESystem, x, u, t) = solve(DDEProblem(comp.statefunc[1], x, comp.statefunc[2], (comp.t, t), u, 
+solve(comp::AbstractDDESystem, x, u, t) = solve(DDEProblem(comp.statefunc, x, comp.history, (comp.t, t), u, 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral), 
     comp.solver.alg; comp.solver.params...)
 

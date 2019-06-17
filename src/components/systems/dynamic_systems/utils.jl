@@ -20,13 +20,15 @@ struct Diffusion{M}
 end
 (dif::Diffusion)(dx, x, u, t) = (dx .= dif.matrix)
 
-struct History{F, C, D}
+struct History{F, C, D, O}
     func::F 
+    out::O
     conslags::C 
     depslags::D
     neutral::Bool
 end
-History(func) = History(func, [], [], false)
+History(func, out) = History(func, out, [], [], false)
+(hist::History)(u, t) = hist.func(hist.out, u, t)
 
 struct SignatureError <: Exception
     msg::String

@@ -20,15 +20,24 @@ struct Diffusion{M}
 end
 (dif::Diffusion)(dx, x, u, t) = (dx .= dif.matrix)
 
-struct History{F, C, D, O}
+# struct History{F, C, D, O}
+#     func::F 
+#     out::O
+#     conslags::C 
+#     depslags::D
+#     neutral::Bool
+# end
+# History(func, out) = History(func, out, [], [], false)
+# (hist::History)(u, t) = hist.func(hist.out, u, t)
+
+struct History{F, C, D}
     func::F 
-    out::O
     conslags::C 
     depslags::D
     neutral::Bool
 end
-History(func, out) = History(func, out, [], [], false)
-(hist::History)(u, t) = hist.func(hist.out, u, t)
+History(func) = History(func, [], [], false)
+(hist::History)(u, t) = hist.func(u, t)
 
 struct SignatureError <: Exception
     msg::String
@@ -81,10 +90,16 @@ function check_methods(model, statefunc, outputfunc)
             msg = "Expected diffeq signature for $model is `statefunc(dx,x,h,u,t)`,got $(signatures(statefunc[1]))"
             throw(SignatureError(msg))
         end
-        if !hasargs(statefunc[2], 3)
-            msg = "Expected diffusion signature for $model is `statefunc(out,u,t)`, got $(signatures(statefunc[2]))"
-            throw(SignatureError(msg))
-        end
+        # Some issues appers if the in-place syntax is used. Just use the out-of-place syntax.
+        # That is the history function must be defined as 
+        # function history_function(u, t) 
+        #   ... do some stuff and return and array for the history vector. 
+        # end 
+    
+        # if !hasargs(statefunc[2], 3)
+        #     msg = "Expected diffusion signature for $model is `statefunc(out,u,t)`, got $(signatures(statefunc[2]))"
+        #     throw(SignatureError(msg))
+        # end
     end
     if outputfunc != nothing
         if !hasargs(outputfunc, 3)

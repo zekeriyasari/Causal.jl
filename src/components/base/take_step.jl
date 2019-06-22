@@ -31,6 +31,9 @@ evolve!(comp::AbstractSource, x, u, t) = nothing
 evolve!(comp::AbstractSink, x, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
 evolve!(comp::AbstractStaticSystem, x, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
 function evolve!(comp::AbstractDynamicSystem, x, u, t)
+    # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
+    # Thus, there will be no evolution in such a case.
+    comp.t == t && return comp.state  
     sol = solve(comp, x, u, t)
     update!(comp, sol)
     comp.state
@@ -47,7 +50,7 @@ solve(comp::AbstractRODESystem, x, u, t) = solve(RODEProblem(comp.statefunc, x, 
     comp.solver.params...)
 solve(comp::AbstractSDESystem, x, u, t) = solve(SDEProblem(comp.statefunc..., x, (comp.t, t), u, 
     noise=comp.noise.process, noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed), comp.solver.alg; comp.solver.params...)
-solve(comp::AbstractDDESystem, x, u, t) = solve(DDEProblem(comp.statefunc, x, comp.history, (comp.t, t), u, 
+solve(comp::AbstractDDESystem, x, u, t) = solve(DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), u, 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral), 
     comp.solver.alg; comp.solver.params...)
 

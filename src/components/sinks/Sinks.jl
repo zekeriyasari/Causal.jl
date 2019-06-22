@@ -30,7 +30,7 @@ end
 
 delete_callback(sink::AbstractSink) = deleteat!(sink.callbacks, [clb.name == sink.name for clb in sink.callbacks])
 
-export Writer, Printer, Scope, write!, fwrite, fread
+export Writer, Printer, Scope, write!, fwrite, fread, flatten
 
 include("writer.jl")
 include("printer.jl")

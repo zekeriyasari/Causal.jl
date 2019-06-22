@@ -25,5 +25,6 @@ export RODESystem
 export SDESystem, NoisyLinearSystem, NoisyLorenzSystem, NoisyChuaSystem, NoisyRosslerSystem, NoisyVanderpolSystem, Noise
 export DDESystem, History 
 export DynamicSystem
+export Solver
 
 end  # module

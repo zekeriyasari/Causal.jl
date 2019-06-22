@@ -62,7 +62,7 @@ isset(clk::Clock) = !isempty(clk.generator.putters)
 
 pause!(clk::Clock) = (clk.status = :paused)
 
-set!(clk::Clock, generator::Channel=Generator(zero(clk.t), clk.dt, clk.tf)) = (clk.generator = generator; clk)
+set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) = (clk.generator = generator; clk)
 set!(clk::Clock, t::Real, dt::Real, tf::Real) = (set!(clk, Generator(t, dt, tf)); clk)
 unset!(clk::Clock) = (set!(clk, Channel{typeof(clk.t)}(0)); clk)
 

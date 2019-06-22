@@ -33,6 +33,8 @@ function fread(path::String)
     SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
 end
 
+flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
+
 ##### Writer controls
 function mv(writer::Writer, dst; force::Bool=false)
     name = writer.name

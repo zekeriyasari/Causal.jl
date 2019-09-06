@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, fill!, setproperty!, similar
+import Base: getindex, setindex!, size, read, isempty, setproperty!
 
 ##### Buffer modes
 abstract type BufferMode end 

@@ -31,7 +31,7 @@ function adjacency_matrix(model::AbstractModel)
     mat
 end
 
-is_terminated(output) = isa(output, Nothing) ? true : has_slaves(output)
+is_terminated(output) = isa(output, Nothing) ? true : hasslaves(output)
 
 function has_unterminated_bus(model::AbstractModel)
     any([!is_terminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])

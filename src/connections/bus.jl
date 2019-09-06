@@ -7,9 +7,9 @@ import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex
 struct Bus <: AbstractBus
     links::Vector{Link}
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
-Bus(nlinks::Int=1; callbacks=Callback[], name=string(uuid4())) = Bus([Link() for i = 1 : nlinks], callbacks, name)
+Bus(nlinks::Int=1) = Bus([Link() for i = 1 : nlinks], Callback[], uuid4())
 
 
 ##### Make bus indexable.
@@ -48,8 +48,8 @@ disconnect(bus::Bus, link::Link) = disconnect.(bus.links, [link])
 disconnect(link::Link, bus::Bus) = disconnect.([link], bus.links) 
 
 ##### Interconnection of busses.
-has_slaves(bus::Bus) = all(has_slaves.(bus.links))
-has_master(bus::Bus) = all(has_master.(bus.links))
+hasslaves(bus::Bus) = all(hasslaves.(bus.links))
+hasmaster(bus::Bus) = all(hasmaster.(bus.links))
 
 ##### Reading from and writing into from buses
 function take!(bus::Bus, t)

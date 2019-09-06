@@ -3,40 +3,34 @@
 import Base: put!, take!
 
 struct Pin
-    name::UUID
-    Pin() = new(uuid4())
+    id::UUID
 end
+Pin() = Pin(uuid4())
 
 # Caution: Do not parametrize the Link type since the blocks are connected to each other via `Link`s. Since 
 # the connection is done through the mutation of the `master` and `slaves` fields, the `Link` object should not 
 # be parametrized. Note also that the data flowing through the `Link` is of type Float64.
 
 mutable struct Link <: AbstractLink
-    weight::Float64
-    buffer::Buffer{Float64,1}
+    weight::Float64 
+    buffer::Buffer{Cyclic, Float64,1}
     channel::Channel{Float64}
     leftpin::Pin
     rightpin::Pin 
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
     master::Base.RefValue{Link}
     slaves::Vector{Base.RefValue{Link}}
-    Link(weight, callbacks, name) = new(weight, Buffer(64), Channel{Float64}(0), Pin(), Pin(), callbacks, name, Base.RefValue{Link}(), Vector{Base.RefValue{Link}}())
 end
-
-Link(;weight=1., callbacks=Callback[], name=string(uuid4())) = Link(weight, callbacks, name)
-
+Link(weight=1.) = Link(weight, Buffer(64), Channel{Float64}(0), Pin(), Pin(), Callback[], uuid4(), 
+    Base.RefValue{Link}(), Vector{Base.RefValue{Link}}())
 
 ##### Link reading writing.
 function put!(link::Link, val)
     write!(link.buffer, val)
-    if isempty(link.slaves)
-        put!(link.channel, val)
-    else
-        for junc in link.slaves
-            put!(junc[], val)
-        end
-    end
+    isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
+    link.callbacks(link)
+    val
 end
 
 function take!(link::Link)
@@ -68,8 +62,8 @@ end
 isfull(link::Link) = isfull(link.buffer)
 isconnected(l1::Link, l2::Link) = l1.rightpin == l2.leftpin || l1.leftpin == l2.rightpin
 snapshot(link::Link) = link.buffer.data
-has_slaves(link::Link) = !isempty(link.slaves)
-function has_master(link::Link) 
+hasslaves(link::Link) = !isempty(link.slaves)
+function hasmaster(link::Link) 
     try
         _ = link.master.x
     catch UnderVarError

@@ -4,7 +4,7 @@ using UUIDs
 using Logging
 using JLD2
 import ..JuSDL.Utilities: Callback
-import ..JuSDL.Connections: launch, isconnected, has_slaves
+import ..JuSDL.Connections: launch, isconnected, hasslaves
 import ..JuSDL.Components.Base: terminate, drive, AbstractSink
 import ..JuSDL.Components.Systems.StaticSystems.Memory
 import ..JuSDL.Components.Sinks: Writer, delete_callback

@@ -3,7 +3,7 @@
 @reexport module Connections 
 
 using UUIDs
-import ..JuSDL.Utilities: Callback, Buffer, write!
+import ..JuSDL.Utilities: Callback, Buffer, Cyclic, write!
 
 # Data transfer types
 abstract type AbstractLink end

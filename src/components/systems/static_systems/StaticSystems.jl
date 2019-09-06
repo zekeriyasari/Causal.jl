@@ -5,7 +5,7 @@
 using UUIDs
 import ..Systems: infer_number_of_outputs
 import ....Components.Base: @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
-import ......JuSDL.Utilities: _get_an_element, Callback, Buffer
+import ......JuSDL.Utilities: getelement, Callback, Buffer
 import ......JuSDL.Connections: Link, Bus
 
 
@@ -80,9 +80,9 @@ struct Memory{OF, OB, B} <: AbstractMemory
         numinputs = length(input)
         output = Bus(numinputs)
         input = Bus(numinputs)
-        buffer = numinputs == 1 ? Buffer(delay, mode=:fifo) : Buffer(delay, numinputs, mode=:fifo)
+        buffer = numinputs == 1 ? Buffer{Fifo}(delay) : Buffer{Fifo}(delay, numinputs)
         fill!(buffer, x0)
-        outputfunc(u, t) = scale * buffer() + (1 - scale) * _get_an_element(buffer, buffer.index - 1)
+        outputfunc(u, t) = scale * buffer() + (1 - scale) * getelement(buffer, buffer.index - 1)
         new{typeof(outputfunc), typeof(output), typeof(buffer)}(outputfunc, input, output, Link(),  callbacks, name, buffer, scale)
     end
 end

@@ -6,7 +6,7 @@ using DifferentialEquations
 using Sundials
 using UUIDs
 import ..Systems: infer_number_of_outputs
-import ......JuSDL.Utilities: _get_an_element, Callback, Buffer
+import ......JuSDL.Utilities: getelement, Callback, Buffer
 import ......JuSDL.Connections: Link, Bus
 
 include("utils.jl")

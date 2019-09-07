@@ -7,13 +7,12 @@ const DiscreteSolver = Solver(FunctionMap())  # Caution: There seems some update
 
 mutable struct DiscreteSystem{SF, OF, IB, OB, S} <:AbstractDiscreteSystem
     @generic_discrete_system_fields
-    function DiscreteSystem(statefunc, outputfunc, state, t, input, solver,  callbacks, name)
+    function DiscreteSystem(statefunc, outputfunc, state, t, input, solver)
         check_methods(:DiscreteSystem, statefunc, outputfunc)
         trigger = Link()
-        output = outputfunc == nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
+        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
         new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc,
-        state, t, input, output, solver, trigger, callbacks, name)
+        state, t, input, output, solver, trigger, Callback[], uuid4())
     end
 end
-DiscreteSystem(statefunc, outputfunc, state, t=0, input=nothing; solver=DiscreteSolver, callbacks=Callback[], 
-    name=string(uuid4())) = DiscreteSystem(statefunc, outputfunc, state, t, input, solver, callbacks, name)
+DiscreteSystem(statefunc, outputfunc, state, t=0, input=nothing; solver=DiscreteSolver) = DiscreteSystem(statefunc, outputfunc, state, t, input, solver)

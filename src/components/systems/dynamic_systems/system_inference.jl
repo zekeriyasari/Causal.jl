@@ -1,5 +1,6 @@
 # This file inludes the dynamic system inference.
 
+# TODO: Revise system inference according to the new syntax.
 
 struct SystemTypeCouldNotInferredError <: Exception
     msg::String

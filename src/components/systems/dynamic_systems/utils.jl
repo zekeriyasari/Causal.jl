@@ -2,11 +2,13 @@
 
 import ..Systems: hasargs
 
+
 struct Solver{A, T}
     alg::A 
     params::Dict{Symbol, T}
 end
 Solver(alg) = Solver(alg, Dict{Symbol, Any}())
+
 
 mutable struct Noise{P, R}
     process::P 
@@ -15,20 +17,12 @@ mutable struct Noise{P, R}
 end
 Noise(process) = Noise(process, nothing, UInt(0))
 
+
 struct Diffusion{M} 
     matrix::M
 end
 (dif::Diffusion)(dx, x, u, t) = (dx .= dif.matrix)
 
-# struct History{F, C, D, O}
-#     func::F 
-#     out::O
-#     conslags::C 
-#     depslags::D
-#     neutral::Bool
-# end
-# History(func, out) = History(func, out, [], [], false)
-# (hist::History)(u, t) = hist.func(hist.out, u, t)
 
 struct History{F, C, D}
     func::F 
@@ -39,15 +33,17 @@ end
 History(func) = History(func, [], [], false)
 (hist::History)(u, t) = hist.func(u, t)
 
+
 struct SignatureError <: Exception
     msg::String
 end
 Base.showerror(io::IO, ex::SignatureError) = print(io, "SignatureError: " * ex.msg)
 
+
 signatures(func) = [method.sig for method in methods(func)]
 
-function check_methods(model, statefunc, outputfunc)
-    if statefunc == nothing
+function check_methods(model::Symbol, statefunc, outputfunc)
+    if statefunc === nothing
         if !hasargs(outputfunc, 3)
             msg = "Expected signature for $model is `outputfunc(x, u, t)`, got $(signatures(outputfunc))"
             throw(SignatureError(msg))

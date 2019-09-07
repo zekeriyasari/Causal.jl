@@ -7,16 +7,16 @@ const SDENoise = Noise(WienerProcess(0.,0.))
 
 mutable struct SDESystem{SF, OF, IB, OB, N, S} <: AbstractSDESystem
     @generic_sde_system_fields
-    function SDESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)
+    function SDESystem(statefunc, outputfunc, state, t, input, noise, solver)
         check_methods(:SDESystem, statefunc, outputfunc)
         trigger = Link()
-        output = outputfunc == nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
+        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
         new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(noise), 
-        typeof(solver)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, callbacks, name)
+        typeof(solver)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, Callback[], uuid4())
     end
 end
-SDESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=Noise(WienerProcess(0., zeros(length(state)))); 
-    solver=SDESolver, callbacks=Callback[], name=string(uuid4())) = SDESystem(statefunc, outputfunc, state, t, input, noise, solver, callbacks, name)
+SDESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=Noise(WienerProcess(0., zeros(length(state)))); solver=SDESolver) = 
+    SDESystem(statefunc, outputfunc, state, t, input, noise, solver)
 
 ##### Noisy Linear System
 

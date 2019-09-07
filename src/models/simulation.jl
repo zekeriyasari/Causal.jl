@@ -54,7 +54,7 @@ function report(simulation)
         simreport["retcode"] = simulation.retcode
         
         # Save simulation model blocks.
-        foreach(delete_callback, filter(block->isa(block, AbstractSink), simulation.model.blocks))
+        foreach(deleteplugin, filter(block->isa(block, AbstractSink), simulation.model.blocks))
         # foreach(delete_sink_callback, filter(block->isa(block, AbstractSink), simulation.model.blocks))
         model_group = JLD2.Group(simreport, "model")
         model_group["name"] = simulation.model.name

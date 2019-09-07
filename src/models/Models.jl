@@ -7,7 +7,7 @@ import ..JuSDL.Utilities: Callback
 import ..JuSDL.Connections: launch, isconnected, hasslaves
 import ..JuSDL.Components.Base: terminate, drive, AbstractSink
 import ..JuSDL.Components.Systems.StaticSystems.Memory
-import ..JuSDL.Components.Sinks: Writer, delete_callback
+import ..JuSDL.Components.Sinks: Writer, deleteplugin
 import ..JuSDL.Components.Sources: isset, set!, unset!
 import Base.run
 

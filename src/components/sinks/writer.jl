@@ -4,24 +4,19 @@
 mutable struct Writer{DB, TB, P, F} <: AbstractSink
     @generic_sink_fields
     file::F
-    function Writer(input, buflen, plugin, path, callbacks, name)
-        # Construct the file
-        endswith(path, ".jld2") || (path *= ".jld2")
-        file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
-        close(file)     # Close file so that the file can be sent to remote Julia processes
-
-        # Construct the buffers
-        timebuf = Buffer(buflen)
-        databuf = length(input) == 1 ? Buffer(buflen) : Buffer(buflen, length(input))
-        trigger = Link()
-        writer = new{typeof(databuf), typeof(timebuf), typeof(plugin), typeof(file)}(input, databuf, timebuf, 
-            plugin, trigger, callbacks, name, file)
-        add_callback(writer, write!)
-    end
 end
-Writer(input; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4()), callbacks=Callback[], name=string(uuid4())) =  
-    Writer(input, buflen, plugin, path, callbacks, name)
+function Writer(input; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4()))
+    # Construct the file
+    endswith(path, ".jld2") || (path *= ".jld2")
+    file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
+    close(file)     # Close file so that the file can be sent to remote Julia processes
 
+    # Construct the buffers
+    timebuf = Buffer(buflen)
+    databuf = length(input) == 1 ? Buffer(buflen) : Buffer(buflen, length(input))
+    trigger = Link()
+    addplugin(Writer(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), write!)
+end
 
 ##### Writer reading and writing
 write!(writer::Writer, td, xd) = fwrite(writer.file, td, xd)

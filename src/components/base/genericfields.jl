@@ -1,4 +1,4 @@
-# This file includes the comp of JuSDL
+# This file contains the generic fields of some types in Components module.
 
 import ....JuSDL.Utilities: Callback
 import ....JuSDL.Connections: Bus, Link
@@ -9,7 +9,7 @@ import ....JuSDL.Connections: Bus, Link
     output::Bus
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_static_system_fields begin
@@ -18,7 +18,7 @@ end
     output::OB 
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_discrete_system_fields begin
@@ -31,7 +31,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_ode_system_fields begin
@@ -44,7 +44,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_dae_system_fields begin
@@ -59,7 +59,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_rode_system_fields begin
@@ -73,7 +73,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_sde_system_fields begin
@@ -87,7 +87,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_dde_system_fields begin
@@ -101,7 +101,7 @@ end
     solver::S
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end
 
 @def generic_sink_fields begin
@@ -111,5 +111,5 @@ end
     plugin::P
     trigger::Link
     callbacks::Vector{Callback}
-    name::String
+    id::UUID
 end

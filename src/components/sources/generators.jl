@@ -5,11 +5,9 @@ import ..Components.Base: @generic_source_fields
 
 struct FunctionGenerator{OF} <: AbstractSource
     @generic_source_fields
-    FunctionGenerator(outputfunc, callbacks, name) = 
-        new{typeof(outputfunc)}(outputfunc, Bus(length(outputfunc(0))), Link(), callbacks, name)
 end
-FunctionGenerator(outputfunc; callbacks=Callback[], name=string(uuid4())) = 
-    FunctionGenerator(outputfunc, callbacks, name)
+FunctionGenerator(outputfunc) = FunctionGenerator(outputfunc, Callback[], uuid4())
+
 
 struct SinewaveGenerator{OF} <: AbstractSource
     @generic_source_fields
@@ -18,13 +16,13 @@ struct SinewaveGenerator{OF} <: AbstractSource
     phase::Float64
     delay::Float64
     offset::Float64
-    function SinewaveGenerator(amplitude, frequency, phase, delay, offset, callbacks, name)
+    function SinewaveGenerator(amplitude, frequency, phase, delay, offset)
         outputfunc(t) = amplitude * sin(2 * pi * frequency * (t - delay)) + offset
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, amplitude, frequency, phase, delay, offset)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), amplitude, frequency, phase, delay, offset)
     end
 end
-SinewaveGenerator(;amplitude=1, frequency=1, phase=0, delay=0, offset=0, callbacks=Callback[], name=string(uuid4())) = 
-    SinewaveGenerator(amplitude, frequency, phase, delay, offset, callbacks, name)
+SinewaveGenerator(;amplitude=1, frequency=1, phase=0, delay=0, offset=0) = SinewaveGenerator(amplitude, frequency, phase, delay, offset)
+
 
 struct DampedSinewaveGenerator{OF} <: AbstractSource
     @generic_source_fields
@@ -34,14 +32,14 @@ struct DampedSinewaveGenerator{OF} <: AbstractSource
     phase::Float64
     delay::Float64
     offset::Float64
-    function DampedSinewaveGenerator(amplitude, decay, frequency, phase, delay, offset, callbacks, name)
+    function DampedSinewaveGenerator(amplitude, decay, frequency, phase, delay, offset)
         outputfunc(t) = amplitude * exp(decay) * sin(2 * pi * frequency * (t - delay)) + offset
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, amplitude, decay,frequency, phase, delay, 
-        offset)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), amplitude, decay,frequency, phase, delay, offset)
     end
 end
-DampedSineaveGenerator(;amplitude=1, decay=-0.5, frequency=1, phase=0, delay=0, offset=0, callbacks=Callback[], 
-    name=string(uuid4())) = DampedSinewaveGenerator(amplitude, decay, frequency, phase, delay, offset, callbacks, name)
+DampedSineaveGenerator(;amplitude=1, decay=-0.5, frequency=1, phase=0, delay=0, offset=0) = 
+    DampedSinewaveGenerator(amplitude, decay, frequency, phase, delay, offset)
+
 
 struct SquarewaveGenerator{OF} <: AbstractSource
     @generic_source_fields
@@ -50,7 +48,7 @@ struct SquarewaveGenerator{OF} <: AbstractSource
     period::Float64
     duty::Float64
     delay::Float64
-    function SquarewaveGenerator(high, low, period, duty, delay, callbacks, name)
+    function SquarewaveGenerator(high, low, period, duty, delay)
         function outputfunc(t)
             if t <= delay
                 return low
@@ -58,11 +56,11 @@ struct SquarewaveGenerator{OF} <: AbstractSource
                 ((t - delay) % period <= duty * period) ? high : low
             end
         end
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, high, low, period, duty, delay)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), high, low, period, duty, delay)
     end
 end
-SquarewaveGenerator(;high=1, low=0, period=1, duty=0.5, delay=0, callbacks=Callback[], name=string(uuid4())) = 
-    SquarewaveGenerator(high, low, period, duty, delay, callbacks, name)
+SquarewaveGenerator(;high=1, low=0, period=1, duty=0.5, delay=0,) = SquarewaveGenerator(high, low, period, duty, delay)
+
 
 struct TriangularwaveGenerator{OF} <: AbstractSource
     @generic_source_fields
@@ -71,7 +69,7 @@ struct TriangularwaveGenerator{OF} <: AbstractSource
     duty::Float64
     delay::Float64
     offset::Float64
-    function TriangularwaveGenerator(amplitude, period, duty, delay, offset, callbacks, name)
+    function TriangularwaveGenerator(amplitude, period, duty, delay, offset)
         function outputfunc(t)
             if t <= delay
                 return offset
@@ -84,66 +82,66 @@ struct TriangularwaveGenerator{OF} <: AbstractSource
                 end
             end
         end
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, amplitude, period, duty, delay, offset)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), amplitude, period, duty, delay, offset)
     end
 end
-TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0, callbacks=Callback[], 
-    name=string(uuid4())) = TriangularwaveGenerator(amplitude, period, duty, delay, offset, callbacks, name)
+TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0) = TriangularwaveGenerator(amplitude, period, duty, delay, offset)
+
 
 struct ConstantGenerator{OF} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
-    function ConstantGenerator(amplitude, callbacks, name)
+    function ConstantGenerator(amplitude)
         outputfunc(t) = amplitude
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, amplitude)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), amplitude)
     end
 end
-ConstantGenerator(;amplitude=1, callbacks=Callback[], name=string(uuid4())) = 
-    ConstantGenerator(amplitude, callbacks, name)
+ConstantGenerator(;amplitude=1) = ConstantGenerator(amplitude)
+
 
 struct RampGenerator{OF} <: AbstractSource
     @generic_source_fields
     scale::Float64
-    function RampGenerator(scale, callbacks, name)
+    function RampGenerator(scale)
         outputfunc(t) = scale * t
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, scale)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), scale)
     end
 end
-RampGenerator(;scale=1, callbacks=Callback[], name=string(uuid4())) = RampGenerator(scale, callbacks, name)
+RampGenerator(;scale=1) = RampGenerator(scale)
+
 
 struct StepGenerator{OF} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     delay::Float64
     offset::Float64
-    function StepGenerator(amplitude, delay, offset, callbacks, name)
+    function StepGenerator(amplitude, delay, offset)
         outputfunc(t) =  t - delay >= 0 ? one(t) + offset : zero(t) + offset
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, amplitude, delay, offset)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), amplitude, delay, offset)
     end
 end
-StepGenerator(;amplitude=1, delay=0, offset=0, callbacks=Callback[], name=string(uuid4())) = 
-    StepGenerator(amplitude, delay, offset, callbacks, name)
+StepGenerator(;amplitude=1, delay=0, offset=0) = StepGenerator(amplitude, delay, offset)
+
 
 struct ExponentialGenerator{OF} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
-    function ExponentialGenerator(scale, decay, callbacks, name)
+    function ExponentialGenerator(scale, decay)
         outputfunc(t) = scale * exp(decay * t)
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, scale, decay)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), scale, decay)
     end
 end
-ExponentialGenerator(;scale=1, decay=-1, callbacks=Callback[], name=string(uuid4())) = 
-    ExponentialGenerator(scale, decay, callbacks, name)
+ExponentialGenerator(;scale=1, decay=-1) = ExponentialGenerator(scale, decay)
+
 
 struct DampedExponentialGenerator{OF} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
-    function DampedExponentialGenerator(scale, decay, callbacks, name)
+    function DampedExponentialGenerator(scale, decay)
         outputfunc(t) = scale * t * exp(decay * t)
-        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), callbacks, name, scale, decay)
+        new{typeof(outputfunc)}(outputfunc, Bus(), Link(), Callback[], uuid4(), scale, decay)
     end
 end
-DampedExponentialGenerator(;scale=1, decay=-1, callbacks=Callback[], name=string(uuid4())) = 
-    DampedExponentialGenerator(scale, decay, callbacks, name)
+DampedExponentialGenerator(;scale=1, decay=-1) =  DampedExponentialGenerator(scale, decay)

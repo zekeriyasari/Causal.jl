@@ -10,7 +10,7 @@ using Reexport
 include("utilities/Utilities.jl")
 include("connections/Connections.jl")
 include("plugins/Plugins.jl")
-# include("components/Components.jl")
+include("components/Components.jl")
 # include("models/Models.jl")
 
 

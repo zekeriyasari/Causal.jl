@@ -1,3 +1,5 @@
+# This file contains the Base module of Plugins module.
+
 module Base 
 
 # Type hierarhcy
@@ -17,7 +19,7 @@ abstract type AbstractSDESystem <: AbstractDynamicSystem end
 abstract type AbstractDDESystem <: AbstractDynamicSystem end
 
 include("utils.jl")
-include("generic_fields.jl")
-include("take_step.jl")
+include("genericfields.jl")
+include("takestep.jl")
 
 end # module

@@ -11,34 +11,30 @@ import ......JuSDL.Connections: Link, Bus
 
 struct StaticSystem{OF, OB} <: AbstractStaticSystem
     @generic_static_system_fields
-    function StaticSystem(outputfunc, input, callbacks, name)
-        output = outputfunc == nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, zeros(length(input)), 0))
-        new{typeof(outputfunc), typeof(output)}(outputfunc, input, output, Link(), callbacks, name)
+    function StaticSystem(outputfunc, input)
+        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, zeros(length(input)), 0))
+        new{typeof(outputfunc), typeof(output)}(outputfunc, input, output, Link(), Callback[], uuid4())
     end
 end
-StaticSystem(outputfunc, input; callbacks=Callback[], name=string(uuid4())) = 
-    StaticSystem(outputfunc, input, callbacks, name)
 
 
 struct Adder{OF, OB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     signs::S
-    function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}, callbacks, name)
+    function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}})
         output = Bus()
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-        new{typeof(outputfunc), typeof(output), typeof(signs)}(outputfunc, Bus(length(signs)), output, Link(), 
-        callbacks, name)
+        new{typeof(outputfunc), typeof(output), typeof(signs)}(outputfunc, Bus(length(signs)), output, Link(), Callback[], uuid4(), signs)
     end
 end
-Adder(signs::Vararg{Union{typeof(+), typeof(-)}}; callbacks=Callback[], name=string(uuid4())) = 
-    Adder(signs, callbacks, name)
+Adder(signs::Vararg{Union{typeof(+), typeof(-)}}) = Adder(signs)
 Adder(;kwargs...) = Adder(+, +; kwargs...)
 
 
 struct Multiplier{OF, OB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     ops::S
-    function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}, callbacks, name)
+    function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}})
         output = Bus()
         function outputfunc(u, t)
             val = 1
@@ -47,62 +43,55 @@ struct Multiplier{OF, OB, S} <: AbstractStaticSystem
             end
             val
         end
-        new{typeof(outputfunc), typeof(output), typeof(ops)}(outputfunc, Bus(length(ops)), output, Link(), 
-        callbacks, name)
+        new{typeof(outputfunc), typeof(output), typeof(ops)}(outputfunc, Bus(length(ops)), output, Link(), Callback[], uuid4(), ops)
     end
 end
-Multiplier(ops::Vararg{Union{typeof(*), typeof(/)}}; callbacks=Callback[], name=string(uuid4())) = 
-    Multiplier(ops, callbacks, name)
+Multiplier(ops::Vararg{Union{typeof(*), typeof(/)}}) = Multiplier(ops)
 Multiplier(;kwargs...) = Multiplier(*, *; kwargs...)
 
 
 struct Gain{OF, OB, T} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::T
-    function Gain(gain::Union{<:AbstractVector, <:AbstractMatrix, <:Real} , callbacks, name)
+    function Gain(gain::Union{<:AbstractVector, <:AbstractMatrix, <:Real})
         output = Bus(size(gain, 1))
         if typeof(gain) <: AbstractVector
             outputfunc = (u, t) -> gain .* u
         else
             outputfunc = (u, t) -> gain * u
         end
-        new{typeof(outputfunc), typeof(output), typeof(gain)}(outputfunc, Bus(length(gain)), output, Link(), callbacks, name, gain)
+        new{typeof(outputfunc), typeof(output), typeof(gain)}(outputfunc, Bus(length(gain)), output, Link(), Callback[], uuid4(), gain)
     end
 end
-Gain(gain=[1.]; callbacks=Callback[], name=string(uuid4())) = Gain(gain, callbacks, name)
+Gain(gain=[1.]) = Gain(gain)
 
 
 struct Memory{OF, OB, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
     scale::Float64
-    function Memory(delay, input, scale, x0, callbacks, name)
+    function Memory(delay, input, scale, x0, callbacks, id)
         numinputs = length(input)
         output = Bus(numinputs)
         input = Bus(numinputs)
         buffer = numinputs == 1 ? Buffer{Fifo}(delay) : Buffer{Fifo}(delay, numinputs)
         fill!(buffer, x0)
         outputfunc(u, t) = scale * buffer() + (1 - scale) * getelement(buffer, buffer.index - 1)
-        new{typeof(outputfunc), typeof(output), typeof(buffer)}(outputfunc, input, output, Link(),  callbacks, name, buffer, scale)
+        new{typeof(outputfunc), typeof(output), typeof(buffer)}(outputfunc, input, output, Link(), Callback[], uuid4(), buffer, scale)
     end
 end
-Memory(delay=2, input=Bus(); scale=0.01, x0=zero(Float64), callbacks=Callback[], name=string(uuid4())) = 
-    Memory(delay, input, scale, x0, callbacks, name)
+Memory(delay=2, input=Bus(); scale=0.01, x0=zero(Float64)) = Memory(delay, input, scale, x0)
 
 
 struct Terminator{OF, OB} <: AbstractStaticSystem
     @generic_static_system_fields
-    function Terminator(input, callbacks, name)
+    function Terminator(input)
         output = nothing
         outputfunc = nothing
-        new{typeof(outputfunc), typeof(output)}(outputfunc, input, output, Link(), callbacks, name) 
+        new{typeof(outputfunc), typeof(output)}(outputfunc, input, output, Link(), Callback[], uuid4()) 
     end
 end 
-Terminator(input=Bus(); callbacks=Callback[], name=string(uuid4())) = Terminator(input, callbacks, name)
-
-
-@deprecate Coupler(E, P) Gain(kron(E, P))
-
+Terminator() = Terminator(Bus())
 
 export StaticSystem, Adder, Multiplier, Gain, Memory, Terminator
 

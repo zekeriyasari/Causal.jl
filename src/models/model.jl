@@ -6,24 +6,19 @@ mutable struct Model{BL<:AbstractVector, CLK, TM<:AbstractTaskManager} <: Abstra
     clk::CLK
     taskmanager::TM
     callbacks::Vector{Callback}
-    name::String
-    function Model(blocks, clk, callbacks, name)
-        taskmanager = TaskManager()
-        new{typeof(blocks), typeof(clk),  typeof(taskmanager)}(blocks, clk, taskmanager, callbacks, name)
-    end
+    id::UUID
 end
-Model(blocks...; clk=Clock(0., 0.01, 10.), callbacks=Callback[], name=string(uuid4())) = 
-    Model([blocks...], clk, callbacks, name)
+Model(blocks...; clk=Clock(0., 0.01, 10.)) = Model([blocks...], clk, TaskManager(), Callback[], uuid4())
+
 
 ##### Model inspection.
-
 function adjacency_matrix(model::AbstractModel)
     blocks = model.blocks
     n = length(model.blocks) 
     mat = zeros(Int, n, n)
     for i = 1 : n 
         for j = 1 : n 
-            if isconnected(blocks[i].output, block[j].input)
+            if isconnected(blocks[i].output, blocks[j].input)
                 mat[i, j] = 1
             end
         end
@@ -31,11 +26,8 @@ function adjacency_matrix(model::AbstractModel)
     mat
 end
 
-is_terminated(output) = isa(output, Nothing) ? true : hasslaves(output)
-
-function has_unterminated_bus(model::AbstractModel)
-    any([!is_terminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
-end
+isterminated(output) = isa(output, Nothing) ? true : hasslaves(output)
+has_unterminated_bus(model::AbstractModel) = any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
 
 function terminate_securely!(model::AbstractModel)
     # TODO: Complete the function.
@@ -68,15 +60,14 @@ function inspect(model)
 end
 
 ##### Model initialization
-
 function initialize(model::AbstractModel)
     pairs = model.taskmanager.pairs
     blocks = model.blocks
     for block in blocks
         pairs[block] = launch(block)
     end
-    isset(model.clk) || set!(model.clk)  # Turnon clock internal generator.
-    # isset(model.clk) || turnon(model.clk)  # Turnon clock internal generator.
+    isrunning(model.clk) || set!(model.clk)  # Turnon clock internal generator.
+    # isrunning(model.clk) || turnon(model.clk)  # Turnon clock internal generator.
     for writer in filter(block->isa(block, Writer), model.blocks)  # Open writer files.
         writer.file = jldopen(writer.file.path, "a")
     end
@@ -110,8 +101,8 @@ end
 # terminate(block::AbstractBlock) = drive(block, NaN)
 function terminate(model::AbstractModel)
     isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
-    isset(model.clk) && unset!(model.clk)
-    # isset(model.clk) && turnoff(model.clk)
+    isrunning(model.clk) && unset!(model.clk)
+    # isrunning(model.clk) && turnoff(model.clk)
     return
 end
 
@@ -167,7 +158,7 @@ end
 # function simulate(model::AbstractModel, t0, dt, tf; record_clk_data::Bool=true, kwargs...)
 #     set!(model.clk, t0, dt, tf)
 #     if record_clk_data
-#         @info "Constructing a Writer with name $(`clk_data.jld2`) for the clock"
+#         @info "Constructing a Writer with id $(`clk_data.jld2`) for the clock"
 #         clk_writer = Writer(Bus(), "clk_data.jld2")
 #         push!(model.clk.buffer.callbacks, BufferFullCallback(buf -> clk_writer(buf.data)))
 #         push!(model.blocks, clk_writer)

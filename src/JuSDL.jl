@@ -11,7 +11,7 @@ include("utilities/Utilities.jl")
 include("connections/Connections.jl")
 include("plugins/Plugins.jl")
 include("components/Components.jl")
-# include("models/Models.jl")
+include("models/Models.jl")
 
 
 end # module

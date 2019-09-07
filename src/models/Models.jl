@@ -8,7 +8,7 @@ import ..JuSDL.Connections: launch, isconnected, hasslaves
 import ..JuSDL.Components.Base: terminate, drive, AbstractSink
 import ..JuSDL.Components.Systems.StaticSystems.Memory
 import ..JuSDL.Components.Sinks: Writer, deleteplugin
-import ..JuSDL.Components.Sources: isset, set!, unset!
+import ..JuSDL.Components.Sources: Clock, isrunning, set!, unset!
 import Base.run
 
 abstract type AbstractTaskManager end 

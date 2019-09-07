@@ -8,15 +8,14 @@ mutable struct Simulation{M, L} <: AbstractSimulation
     status::Symbol
     retcode::Symbol
     name::String
-    function Simulation(model, simdir, logger)
-        name = join(["Simulation-", string(uuid4())], "")  # `get_instant()` may be used for time-based paths names.
-        path = joinpath(simdir, name)
-        isdir(path) || mkpath(path)
-        check_writer_files(model, path, force=true)
-        new{typeof(model), typeof(logger)}(model, path, logger, :idle, :unknown, name)
-    end
 end
-Simulation(model; simdir=DEFAULTS[:WRITER_PATHS], logger=SimpleLogger()) = Simulation(model, simdir, logger)
+function Simulation(model; simdir=DEFAULTS[:WRITER_PATHS], logger=SimpleLogger())
+    name = join(["Simulation-", string(uuid4())], "")  # `get_instant()` may be used for time-based paths names.
+    path = joinpath(simdir, name)
+    isdir(path) || mkpath(path)
+    check_writer_files(model, path, force=true)
+    Simulation(model, path, logger, :idle, :unknown, name)
+end
 
 ##### Simulation checks
 
@@ -57,7 +56,7 @@ function report(simulation)
         foreach(deleteplugin, filter(block->isa(block, AbstractSink), simulation.model.blocks))
         # foreach(delete_sink_callback, filter(block->isa(block, AbstractSink), simulation.model.blocks))
         model_group = JLD2.Group(simreport, "model")
-        model_group["name"] = simulation.model.name
+        model_group["name"] = string(simulation.model.id)
         model_group["clk"] = simulation.model.clk
         model_group["callbacks"] = simulation.model.callbacks
         model_blocks_group = JLD2.Group(simreport, "blocks")
@@ -69,7 +68,6 @@ function report(simulation)
 end
 
 ##### SimulationError type
-
 struct SimulationError <: Exception
     msg::String
 end

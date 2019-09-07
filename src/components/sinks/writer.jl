@@ -32,8 +32,8 @@ flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content
 
 ##### Writer controls
 function mv(writer::Writer, dst; force::Bool=false)
-    name = writer.name
-    dstpath = joinpath(dst, name)
+    id = writer.id
+    dstpath = joinpath(dst, string(id))
     srcpath = writer.file.path
     mv(srcpath, dstpath, force=force)
     writer.file.path = dstpath  # Update the file path
@@ -41,8 +41,8 @@ function mv(writer::Writer, dst; force::Bool=false)
 end
 
 function cp(writer::Writer, dst, force=false, follow_symlinks=false)
-    name = writer.name
-    dstpath = joinpath(dst, name)
+    id = writer.id
+    dstpath = joinpath(dst, string(id))
     cp(writer.file.path, dstpath, force=force, follow_symlinks=follow_symlinks)
     writer
 end

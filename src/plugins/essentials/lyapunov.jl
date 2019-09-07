@@ -1,11 +1,7 @@
 # This file includes the plugin for calculation of Lyapunov exponents.
 
-using NearestNeighbors
-using LinearAlgebra
-using Statistics
-using LsqFit
+
 using ChaosTools
-import Base.log
 
 struct Lyapunov <: AbstractPlugin
     m::Int
@@ -22,6 +18,11 @@ function process(plg::Lyapunov, x)
     linear_region(plg.ts .* ks, E)[2] 
 end
 
+# using NearestNeighbors
+# using LinearAlgebra
+# using Statistics
+# using LsqFit
+# import Base.log
 # process(plg::Lyapunov, x) = lyapunov(x, plg.m, plg.J, plg.ni, plg.ts)[2]
 
 # function reconstruct(x, m, J)

@@ -86,8 +86,6 @@ isconnected(bus::Bus, link::Link) = all(isconnected.(bus.links, [link]))
 isconnected(link::Link, bus::Bus) = all(isconnected.([link], bus.links))
 isconnected(links::Vector{Link}, bus::Bus) = all(isconnected.(links, bus.links))
 
-@deprecate isallconnected(srcbus::Bus, dstbus::Bus)  all(isconnected(srcbus, dstbus))
-@deprecate isanyconnected(srcbus::Bus, dstbus::Bus)  any(isconnected(srcbus, dstbus))
 
 ##### Calling busses.
 (bus::Bus)(t::Real) = take!(bus, t)

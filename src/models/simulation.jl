@@ -5,7 +5,7 @@ mutable struct Simulation{M, L} <: AbstractSimulation
     model::M
     path::String
     logger::L
-    status::Symbol
+    state::Symbol
     retcode::Symbol
     name::String
 end
@@ -49,7 +49,7 @@ function report(simulation)
     jldopen(joinpath(simulation.path, "report.jld2"), "w") do simreport
         simreport["name"] = simulation.name
         simreport["path"] = simulation.path
-        simreport["status"] = simulation.status
+        simreport["state"] = simulation.state
         simreport["retcode"] = simulation.retcode
         
         # Save simulation model blocks.

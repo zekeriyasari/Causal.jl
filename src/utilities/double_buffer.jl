@@ -120,7 +120,7 @@ end
 # Calling DoubleBuffer
 (dbuf::DoubleBuffer)() = read(dbuf)
 
-# Buffer status checks
+# Buffer state checks
 """
     isempty(dbuf::DoubleBuffer)
 

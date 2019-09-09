@@ -35,7 +35,7 @@ function take!(clk::Clock)
     clk.t
 end
 
-##### Clock status check 
+##### Clock state check 
 isrunning(clk::Clock) = isready(clk.generator)
 ispaused(clk::Clock) = clk.paused
 isoutoftime(clk::Clock) = clk.t >= clk.tf

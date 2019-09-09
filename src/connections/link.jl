@@ -58,7 +58,7 @@ end
 ##### Calling link
 (link::Link)(t) = take!(link, t)
 
-##### Status check of link.
+##### State check of link.
 isfull(link::Link) = isfull(link.buffer)
 isconnected(l1::Link, l2::Link) = l1.rightpin == l2.leftpin || l1.leftpin == l2.rightpin
 snapshot(link::Link) = link.buffer.data

@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!
+import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!
 
 ##### Buffer modes
 abstract type BufferMode end 
@@ -60,9 +60,16 @@ write!(buf::Buffer{Cyclic, T, N}, val::AbstractArray) where {T, N} = (_write(buf
 write!(buf::Buffer, val::Real) = write!(buf, [val]) 
 write!(buf::Buffer{M, T, 2}, val::Vector) where {M, T} = write!(buf, hcat(val...))
 
+function fill!(buf::Buffer, val::T) where T 
+    _val = fill(val, size(buf, 2))
+    for i in 1 : size(buf, 1)
+        write!(buf, _val)
+    end
+end
+
 ##### Reading from buffers.
 colrange(buf::Buffer) = [(:) for i in 1 : ndims(buf) - 1]
-getelement(buf::Buffer, idx::Int) = buf[idx, colrange(buf)...]
+getelement(buf::Buffer, idx::Int) = ndims(buf) == 1 ? buf[idx] :  buf[colrange(buf)..., idx]
 setelement(buf::Buffer, idx::Int, val) = (buf[idx, colrange(buf)...] .= val; val)
 
 _read(buf::Buffer{Normal, T, N}) where {T, N} = getelement(buf, 1)

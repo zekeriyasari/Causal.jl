@@ -78,7 +78,7 @@ put!(buses::AbstractVector{B}, vals::AbstractVector{V}) where {B<:AbstractBus, V
 wait(bus::Bus) = foreach(link -> wait(link), bus.links)
 wait(buses::AbstractVector{B}) where B<:AbstractBus = foreach(bus -> wait(bus), buses)
 
-##### Bus status checks
+##### Bus state checks
 isfull(bus::Bus) = all(isfull.(bus.links))
 isconnected(srcbus::Bus, dstbus::Bus) = all(isconnected.(srcbus.links, dstbus.links))
 isconnected(bus::Bus, links::Vector{Link}) = all(isconnected.(bus.links, links))

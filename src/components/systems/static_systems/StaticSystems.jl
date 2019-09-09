@@ -5,7 +5,7 @@
 using UUIDs
 import ..Systems: infer_number_of_outputs
 import ....Components.Base: @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
-import ......JuSDL.Utilities: getelement, Callback, Buffer
+import ......JuSDL.Utilities: getelement, Callback, Buffer, Fifo
 import ......JuSDL.Connections: Link, Bus
 
 
@@ -60,7 +60,7 @@ struct Gain{OF, OB, T} <: AbstractStaticSystem
         else
             outputfunc = (u, t) -> gain * u
         end
-        new{typeof(outputfunc), typeof(output), typeof(gain)}(outputfunc, Bus(length(gain)), output, Link(), Callback[], uuid4(), gain)
+        new{typeof(outputfunc), typeof(output), typeof(gain)}(outputfunc, Bus(size(gain, 2)), output, Link(), Callback[], uuid4(), gain)
     end
 end
 Gain(gain=[1.]) = Gain(gain)
@@ -70,7 +70,7 @@ struct Memory{OF, OB, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
     scale::Float64
-    function Memory(delay, input, scale, x0, callbacks, id)
+    function Memory(delay, input, scale, x0)
         numinputs = length(input)
         output = Bus(numinputs)
         input = Bus(numinputs)

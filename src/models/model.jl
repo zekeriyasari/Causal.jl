@@ -111,7 +111,7 @@ function _simulate!(sim::Simulation, reportsim::Bool)
     model = sim.model
     try
         @siminfo "Started simulation..."
-        sim.status = :running
+        sim.state = :running
 
         @siminfo "Inspecting model..."
         inspect(model)
@@ -123,11 +123,11 @@ function _simulate!(sim::Simulation, reportsim::Bool)
 
         @siminfo "Running the simulation..."
         run(model)
-        sim.status = :done
+        sim.state = :done
         sim.retcode = :success
         @siminfo "Done..."
     catch e
-        sim.status = :halted
+        sim.state = :halted
         sim.retcode = :fail
         @info e
     end

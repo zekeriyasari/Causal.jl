@@ -3,28 +3,31 @@
 import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!
 
 ##### Buffer modes
-abstract type BufferMode end 
-struct Normal <: BufferMode end
-struct Cyclic <: BufferMode end 
-struct Lifo <: BufferMode end 
-struct Fifo <: BufferMode end 
+abstract type BufferMode end
+abstract type CyclicMode <: BufferMode end 
+abstract type LinearMode <: BufferMode end  
+struct Cyclic <: CyclicMode end 
+struct Normal <: LinearMode end
+struct Lifo <: LinearMode end 
+struct Fifo <: LinearMode end 
 
 ##### Buffer
-mutable struct Buffer{M<:BufferMode, T, N} <: AbstractBuffer{T, N}
-    data::Array{T,N}
+mutable struct Buffer{M, T} <: AbstractBuffer{T}
+    data::Vector{T}
     index::Int 
-    state::Symbol       # May be `:empty`, `:nonempty`, `:full`
+    state::Symbol 
     callbacks::Vector{Callback}
     id::UUID
 end
-Buffer{M}(data::Array{T, N}) where {M, T, N} = Buffer{M, T, N}(data, 1, :empty, Callback[], uuid4())
-Buffer{M}(::Type{T}, shape::NTuple{N, Int}) where {M, T, N} = Buffer{M}(Array{T,N}(undef, shape...))
-Buffer{M}(shape::Int...) where M = Buffer{M}(Float64, shape)
-Buffer(shape::Int...) = Buffer{Cyclic}(shape...)
+Buffer{M}(data::AbstractVector{T}) where {M, T} = Buffer{M, T}(data, 1, :empty, Callback[], uuid4())
+Buffer{M}(::Type{T}, ln::Int) where {M, T} = Buffer{M}(Vector{T}(undef, ln))
+Buffer{M}(ln::Int) where {M, T} = Buffer{M}(Vector{Float64}(undef, ln))
+Buffer(::Type{T}, ln::Int) where {T} = Buffer{Cyclic}(T, ln)
+Buffer(ln::Int) = Buffer(Float64, ln)
 
 ##### AbstractArray interface.
 size(buf::Buffer) = size(buf.data)
-getindex(buf::Buffer, idx::Vararg{Int, N}) where N = getindex(buf.data[idx...])
+getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.data[idx...]
 setindex!(buf::Buffer, val, inds::Vararg{Int, N}) where N = (buf.data[inds...] = val)
 
 ##### Buffer state control and check.
@@ -47,57 +50,37 @@ end
 ##### Writing into buffers
 resetindex(buf::Buffer) = setfield!(buf, :index, %(buf.index, size(buf.data, 1)))
 checkindex(buf::Buffer) = isfull(buf) && resetindex(buf)
-function _write(buf::Buffer, val::AbstractArray)
-    n = size(val, 1)
-    buf.data .= circshift(buf.data, n)
-    buf.data[1:n, :] = val
-    buf.index += n
+writelinear(buf::Buffer{M, T}, val::T) where {M, T} = isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
+writecylic(buf::Buffer{M, T}, val::T) where {M, T} = (buf[buf.index] = val; buf.index += 1; checkindex(buf))
+writeinto(buf::Buffer{M, T}, val::T) where{M<:LinearMode, T} = writelinear(buf, val)
+writeinto(buf::Buffer{M, T}, val::T) where{M<:CyclicMode, T} = writecylic(buf, val)
+write!(buf::Buffer{M, T}, val::T) where {M, T} = (writeinto(buf, val); buf.callbacks(buf); val) 
+write!(buf::Buffer{M, T}, val::S) where {M, T, S} = write!(buf, convert(T, val))
+
+# fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(v -> write!(buf, v), val)
+
+##### Reading from buffers
+erasefrom(buf::Buffer{M, T}, idx::Int) where {M, T}= copyto!(buf.data, idx, Vector{T}(undef, 1), 1)
+readfrom(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = buf.data[buf.index - 1]
+readfrom(buf::Buffer{M, T}) where {M<:Fifo, T} = (val = buf.data[1]; erasefrom(buf, 1); val)
+readfrom(buf::Buffer{M, T}) where {M<:Lifo, T} = (val = buf.data[end]; erasefrom(buf, 1); val)
+function read(buf::Buffer) 
+    isempty(buf) && error("Buffer is empty")
+    val = readfrom(buf)
     buf.callbacks(buf)
     val
 end
-write!(buf::Buffer, val::AbstractArray) = isfull(buf) ? (@warn "Buffer is full.") : _write(buf, val)
-write!(buf::Buffer{Cyclic, T, N}, val::AbstractArray) where {T, N} = (_write(buf, val); checkindex(buf); val)
-write!(buf::Buffer, val::Real) = write!(buf, [val]) 
-write!(buf::Buffer{M, T, 2}, val::Vector) where {M, T} = write!(buf, hcat(val...))
-
-function fill!(buf::Buffer, val::T) where T 
-    _val = fill(val, size(buf, 2))
-    for i in 1 : size(buf, 1)
-        write!(buf, _val)
-    end
-end
-
-##### Reading from buffers.
-colrange(buf::Buffer) = [(:) for i in 1 : ndims(buf) - 1]
-getelement(buf::Buffer, idx::Int) = ndims(buf) == 1 ? buf[idx] :  buf[colrange(buf)..., idx]
-setelement(buf::Buffer, idx::Int, val) = (buf[idx, colrange(buf)...] .= val; val)
-
-_read(buf::Buffer{Normal, T, N}) where {T, N} = getelement(buf, 1)
-_read(buf::Buffer{Cyclic, T, N}) where {T, N} = getelement(buf, 1)
-function _read(buf::Buffer{Fifo, T, N}) where {T, N}
-    buf.index -= 1
-    val = getelement(buf, buf.index)
-    buf[1, colrange(buf)...] .= zero(T)
-    val
-end
-function _read(buf::Buffer{Lifo, T, N}) where {T, N}
-    val = getelement(buf, 1)
-    buf.data .= circshift(buf, -1)
-    buf[end, colrange(buf)...] = zero(T)
-    buf.index -= 1
-end
-read(buf::Buffer) = isempty(buf) ? (@warn "Buffer is empty.") : (val = _read(buf); buf.callbacks(buf); val)
 
 ##### Accessing buffer data
 function content(buf::Buffer; flip::Bool=true)
-    val = buf[1 : buf.index - 1, colrange(buf)...]
+    val = buf[1 : buf.index - 1]
     flip ? reverse(val, dims=1) : val
 end
 
 snapshot(buf::Buffer) = buf.data
 
 ##### Buffer info.
-mode(buf::Buffer{M, T, N}) where {M, T, N} = M
+mode(buf::Buffer{M, T}) where {M, T} = M
 
 ##### Calling buffers.
 (buf::Buffer)() = read(buf)

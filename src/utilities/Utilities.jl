@@ -4,8 +4,8 @@
 using UUIDs
 
 # Utility types 
-abstract type AbstractBuffer{T, N} <: AbstractArray{T, N} end
-abstract type AbstractDoubleBuffer{T, N} <: AbstractBuffer{T, N} end
+abstract type AbstractBuffer{T} <: AbstractVector{T} end
+# abstract type AbstractDoubleBuffer{T, N} <: AbstractBuffer{T, N} end
 
 export Callback, enable!, disable!, addcallback, deletecallback
 export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, content, mode, snapshot

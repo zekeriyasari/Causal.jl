@@ -6,10 +6,10 @@ using UUIDs
 import ..JuSDL.Utilities: Callback, Buffer, Cyclic, write!
 
 # Data transfer types
-abstract type AbstractLink end
-abstract type AbstractBus end
+abstract type AbstractLink{T} end
+abstract type AbstractBus{T} end
 
-export Link, isconnected, connect, disconnect, launch
+export Link, isconnected, connect, disconnect, launch, Poison, Pin
 export Bus
 
 include("link.jl")

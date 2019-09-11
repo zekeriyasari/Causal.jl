@@ -1,50 +1,53 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!
+import Base: put!, take!, RefValue, close, isready
+
+
+struct Poison end
+
+const PoisonOr{T} = Union{Poison, T}
 
 struct Pin
     id::UUID
 end
 Pin() = Pin(uuid4())
 
-# Caution: Do not parametrize the Link type since the blocks are connected to each other via `Link`s. Since 
-# the connection is done through the mutation of the `master` and `slaves` fields, the `Link` object should not 
-# be parametrized. Note also that the data flowing through the `Link` is of type Float64.
 
-mutable struct Link <: AbstractLink
-    weight::Float64 
-    buffer::Buffer{Cyclic, Float64,1}
-    channel::Channel{Float64}
+mutable struct Link{T} <: AbstractLink{T}
+    buffer::Buffer{Cyclic, T}
+    channel::Channel{PoisonOr{T}}
     leftpin::Pin
-    rightpin::Pin 
+    rightpin::Pin
     callbacks::Vector{Callback}
     id::UUID
-    master::Base.RefValue{Link}
-    slaves::Vector{Base.RefValue{Link}}
+    master::RefValue{Link{T}}
+    slaves::Vector{RefValue{Link{T}}}
 end
-Link(weight=1.) = Link(weight, Buffer(64), Channel{Float64}(0), Pin(), Pin(), Callback[], uuid4(), 
-    Base.RefValue{Link}(), Vector{Base.RefValue{Link}}())
+Link{T}(ln::Int=64) where {T} = Link(Buffer(T, ln), Channel{PoisonOr{T}}(0), Pin(), Pin(), Callback[], uuid4(), RefValue{Link{T}}(), Vector{RefValue{Link{T}}}()) 
+Link(ln=64) = Link{Float64}(ln)
 
 ##### Link reading writing.
-function put!(link::Link, val)
-    write!(link.buffer, val)
+function put!(link::Link{T}, val::PoisonOr{T}) where T 
+    isa(val, Poison) || write!(link.buffer, val)
     isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
     val
 end
+put!(link::Link{T}, val::PoisonOr{S}) where {T, S} = put!(link, convert(T, val))
 
 function take!(link::Link)
     val = take!(link.channel)
     link.callbacks(link)
     val
 end
-take!(link::Link, t) = take!(link.channel) * link.weight
+
+close(link::Link) = (isempty(link.channel.cond_take.waitq) || put!(link, Poison()); close(link.channel))
 
 ##### Auxilary functions to launch links.
 function taker(link)
     while true
         val = take!(link)
-        val === NaN && break
+        val isa Poison && break
         @info "Took " val
     end
 end
@@ -74,16 +77,18 @@ end
 
 ##### Connecting and disconnecting links
 function connect(srclink::Link, dstlink::Link)
-    dstlink.leftpin = srclink.rightpin
+    dstlink.leftpin = srclink.rightpin  # NOTE: The data flows through the links from left to right.
     push!(srclink.slaves, Ref(dstlink))
     dstlink.master = Ref(srclink) 
 end
 
-function disconnect(srclink::Link, dstlink::Link)
+function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
     slaves = srclink.slaves
     for i = 1 : length(slaves)
         slaves[i][] == dstlink && deleteat!(slaves, i)
     end
+    dstlink.master = RefValue{Link{T}}()
+    dstlink.leftpin = Pin()
 end
 
 ##### Launching links.

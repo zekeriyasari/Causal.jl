@@ -1,15 +1,16 @@
 # This file contains the Bus tool for connecting the tools of DsSimulator
 
 import Base: put!, wait, take!
-import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex
+import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close
 
 
-struct Bus <: AbstractBus
-    links::Vector{Link}
+struct Bus{T} <: AbstractBus{T}
+    links::Vector{Link{T}}
     callbacks::Vector{Callback}
     id::UUID
 end
-Bus(nlinks::Int=1) = Bus([Link() for i = 1 : nlinks], Callback[], uuid4())
+Bus{T}(nlinks::Int=1, ln::Int=64) where {T} = Bus([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
+Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
 
 ##### Make bus indexable.
@@ -30,8 +31,6 @@ firstindex(bus::Bus) = 1
 lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
 
 length(bus::Bus) = length(bus.links)
-# nlinks(bus::Bus) = length(bus.links)
-@deprecate nlinks(bus)  length(bus)
 
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)
 
@@ -65,14 +64,15 @@ function take!(bus::Bus)
     out
 end
 
-function put!(bus::Bus, vals::AbstractVector)
+function put!(bus::Bus{T}, vals::AbstractVector{T}) where {T} 
     put!.(bus.links, vals)  # Dot syntax also makes the size checks.
     bus.callbacks(bus)
 end
-put!(bus::Bus, vals::Real) = length(bus) == 1 && put!(bus, [vals])
+put!(bus::Bus{T}, vals::AbstractVector{S}) where {T, S} = put!(bus, convert(Vector{T}, vals))
+put!(buf::Bus{T}, val::T) where {T} = put!(bus, [val])
+put!(buf::Bus{T}, val::S) where {T, S} = put!(bus, convert(T, val))
 
-put!(buses::AbstractVector{B}, vals::AbstractVector{V}) where {B<:AbstractBus, V<:AbstractVector} = put!.(busses, vals)
-    # for (bus, val) in zip(buses, vals) put!(bus, val) end 
+close(bus::Bus) = foreach(close, bus)
 
 ##### Waiting for busses
 wait(bus::Bus) = foreach(link -> wait(link), bus.links)

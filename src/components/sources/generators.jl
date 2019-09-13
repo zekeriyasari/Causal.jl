@@ -17,9 +17,13 @@ struct SinewaveGenerator{OF, OB, S} <: AbstractSource
     delay::S
     offset::S
 end
-function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0., nout::Int=1)
-    outputfunc(t) = fill(amplitude * sin(2 * pi * frequency * (t - delay)) + offset, nout)
-    output = Bus{typeof(outputfunc(0.))}(nout)
+function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0., nout::Int=0)
+    if nout == 0
+        outputfunc = t -> amplitude * sin(2 * pi * frequency * (t - delay)) + offset
+    else
+        outputfunc = t -> fill(amplitude * sin(2 * pi * frequency * (t - delay)) + offset, nout)
+    end
+    output = Bus{typeof(outputfunc(0.))}()
     SinewaveGenerator(outputfunc, output, Link(), Callback[], uuid4(), promote(amplitude, frequency, phase, delay, offset)...)
 end
 

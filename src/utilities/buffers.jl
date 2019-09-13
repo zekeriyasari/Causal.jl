@@ -12,7 +12,7 @@ struct Lifo <: LinearMode end
 struct Fifo <: LinearMode end 
 
 ##### Buffer
-mutable struct Buffer{M, T} <: AbstractBuffer{T}
+mutable struct Buffer{M<:BufferMode, T} <: AbstractBuffer{T}
     data::Vector{T}
     index::Int 
     state::Symbol 

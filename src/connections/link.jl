@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!, RefValue, close, isready
+import Base: put!, take!, RefValue, close, isready, eltype
 
 
 struct Poison end
@@ -52,8 +52,8 @@ function taker(link)
     end
 end
 
-function putter(link, valrange::AbstractRange)
-    for val in valrange
+function putter(link, vals)
+    for val in vals
         put!(link, val)
     end
 end
@@ -92,12 +92,7 @@ function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
 end
 
 ##### Launching links.
-function launch(link::AbstractLink, taskname::Symbol, valrange=nothing)
-    if taskname == :putter
-        return @async putter(link, valrange)
-    elseif taskname == :taker
-        return @async taker(link)
-    else
-        error("Expected :putter or :taker, got $taskname")
-    end
-end
+eltype(link::Link{T}) where T = T
+launch(link::Link) = @async taker(link)
+launch(link::Link, valrange) = @async putter(link, valrange)
+launch(link::AbstractLink, taskname::Symbol, valrange) = @warn "`launch(link, taskname, valrange)` has been deprecated. Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"

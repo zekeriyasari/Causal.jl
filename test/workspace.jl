@@ -1,8 +1,4 @@
 
-struct Object{T}
-    x::T
-    y::T
+function partition(arr::AbstractVector, n::Vector{Int})
+    m = cumsum(n)
 end
-
-obj = Object(4., 5.)
-obj = Object(4., 5)

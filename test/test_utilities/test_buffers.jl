@@ -2,6 +2,7 @@
 # TODO: Complete Buffer testset.
 
 @testset "BufferTestSet" begin
+    @info "BufferTestSet started..."
 
     buf = Buffer(5)
     @test eltype(buf) == Float64
@@ -39,4 +40,5 @@
         @show (buf.data, buf.index, buf.state)
     end
 
+    @info "BufferTestSet done..."
 end  # testset

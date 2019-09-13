@@ -2,6 +2,8 @@
 # TODO: Complete links testset.
 
 @testset "LinkTestSet" begin 
+    @info "LinkTestSet started..."
+
     # Constuction of links.
     l = Link(5)
     @test eltype(l) == Float64
@@ -93,4 +95,6 @@
     put!(l1, 2*val)  # Since l1 and l2 is disconnected, l1 does not drive l2.
     @test l1.buffer.index == 3
     @test l2.buffer.index == 2  # Note that since disconnected, l1 does not write `2*val` is not put into l2.
+
+    @info "LinkTestSet done..."
 end  # testset

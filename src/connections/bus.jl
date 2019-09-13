@@ -13,6 +13,7 @@ Bus{T}(nlinks::Int=1, ln::Int=64) where {T} = Bus([Link{T}(ln) for i = 1 : nlink
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
 ##### Make bus indexable.
+eltype(bus::Bus{T}) where {T} = T
 length(bus::Bus) = length(bus.links)
 getindex(bus::Bus, I::Int) =  bus.links[I]
 getindex(bus::Bus, I::Vector{Int}) =  bus.links[I]
@@ -67,4 +68,4 @@ snapshot(bus::Bus) = length(bus) == 1 ? vcat([snapshot(link) for link in bus.lin
     
 ##### Launching bus
 launch(bus::Bus) = launch.(bus.links)
-launch(bus::Bus, valrange::AbstractVector) = launch.(bus, valrange)
+launch(bus::Bus, valrange::AbstractVector) = launch.(bus.links, valrange)

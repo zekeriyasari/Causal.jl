@@ -68,9 +68,9 @@ function put!(bus::Bus{T}, vals::AbstractVector{T}) where {T}
     put!.(bus.links, vals)  # Dot syntax also makes the size checks.
     bus.callbacks(bus)
 end
-put!(bus::Bus{T}, vals::AbstractVector{S}) where {T, S} = put!(bus, convert(Vector{T}, vals))
-put!(buf::Bus{T}, val::T) where {T} = put!(bus, [val])
-put!(buf::Bus{T}, val::S) where {T, S} = put!(bus, convert(T, val))
+# put!(bus::Bus{T}, vals::AbstractVector{S}) where {T, S} = put!(bus, convert(Vector{T}, vals))
+put!(bus::Bus{T}, val::T) where {T} = put!(bus, [val])
+put!(bus::Bus{T}, val::S) where {T, S} = put!(bus, convert(T, val))
 
 close(bus::Bus) = foreach(close, bus)
 

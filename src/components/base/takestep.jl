@@ -78,10 +78,10 @@ end
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
     t === NaN && return t
-    typeof(comp) <: AbstractMemory ? backward_step(comp, t) : forward_step(comp, t)
+    typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
 
-function forward_step(comp, t)
+function forwardstep(comp, t)
     u = readinput(comp, t)
     x = readstate(comp)
     xn = evolve!(comp, x, u, t)
@@ -91,7 +91,7 @@ function forward_step(comp, t)
     return t
 end
 
-function backward_step(comp, t)
+function backwardstep(comp, t)
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)

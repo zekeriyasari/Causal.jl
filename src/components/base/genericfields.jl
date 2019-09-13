@@ -6,17 +6,17 @@ import ....JuSDL.Connections: Bus, Link
 
 @def generic_source_fields begin
     outputfunc::OF 
-    output::Bus
-    trigger::Link
+    output::OB
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
 
 @def generic_static_system_fields begin
     outputfunc::OF 
-    input::Bus
+    input::IB
     output::OB 
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -29,7 +29,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -42,7 +42,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -57,7 +57,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -71,7 +71,7 @@ end
     output::OB
     noise::N
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -85,7 +85,7 @@ end
     output::OB 
     noise::N
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -99,17 +99,17 @@ end
     input::IB 
     output::OB
     solver::S
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end
 
 @def generic_sink_fields begin
-    input::Bus
+    input::IB
     databuf::DB
     timebuf::TB
     plugin::P
-    trigger::Link
+    trigger::Link{Float64}
     callbacks::Vector{Callback}
     id::UUID
 end

@@ -1,7 +1,7 @@
 # This file illustrates the simulation of Chua system.
 
-using JuSDL
-import JuSDL.Plugins.Fft
+using Jusdl
+import Jusdl.Plugins.Fft
 using Plots
 
 # Construct the components

@@ -1,7 +1,7 @@
 # 
 # Julia System Desciption Language
 # 
-module JuSDL
+module Jusdl
 
 # Required packages
 using Reexport

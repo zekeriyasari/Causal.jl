@@ -1,7 +1,7 @@
 # This file contains the generic fields of some types in Components module.
 
-import ....JuSDL.Utilities: Callback
-import ....JuSDL.Connections: Bus, Link
+import ....Jusdl.Utilities: Callback
+import ....Jusdl.Connections: Bus, Link
 
 
 @def generic_source_fields begin

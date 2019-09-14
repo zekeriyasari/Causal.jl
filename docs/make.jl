@@ -1,3 +1,3 @@
-using Documenter, JuSDL
+using Documenter, Jusdl
 
-makedocs(modules = [JuSDL], sitename = "JuSDL.jl")
+makedocs(modules = [Jusdl], sitename = "Jusdl.jl")

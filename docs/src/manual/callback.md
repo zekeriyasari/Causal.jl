@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup  = quote
-    using JuSDL
+    using Jusdl
 end
 ```
 

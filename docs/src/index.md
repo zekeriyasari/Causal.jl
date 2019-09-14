@@ -1,6 +1,6 @@
-# JuSDL
+# Jusdl
 
-JuSDL documentation.
+Jusdl documentation.
 
 ```@contents
 Pages = [

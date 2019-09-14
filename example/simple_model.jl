@@ -1,6 +1,6 @@
 # This file illustrates a simple simulation.
 
-using JuSDL 
+using Jusdl 
 
 # Construct the components
 clk = Clock(0., 0.01, 5000.)

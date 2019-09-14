@@ -1,5 +1,5 @@
 # This example simulates a Folded map
-using JuSDL
+using Jusdl
 using Plots 
 
 # Construct the components 

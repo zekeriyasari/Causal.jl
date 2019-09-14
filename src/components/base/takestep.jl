@@ -1,7 +1,7 @@
 # This file includes stepping of abstract types.
 
-import ....JuSDL.Connections: launch, AbstractBus
-import ....JuSDL.Utilities: write!
+import ....Jusdl.Connections: launch, AbstractBus
+import ....Jusdl.Utilities: write!
 using DifferentialEquations
 using Sundials
 import DifferentialEquations.solve

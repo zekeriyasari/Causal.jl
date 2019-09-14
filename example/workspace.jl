@@ -1,7 +1,7 @@
 # This file is just a dummy demo.
 
 # The packages 
-using JuSDL 
+using Jusdl 
 using Plots 
 
 # The components 

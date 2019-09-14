@@ -1,12 +1,12 @@
-# This file contains the static systems of JuSDL.
+# This file contains the static systems of Jusdl.
 
 @reexport module StaticSystems
 
 using UUIDs
 import ..Systems: infer_number_of_outputs
 import ....Components.Base: @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
-import ......JuSDL.Utilities: Callback, Buffer, Fifo
-import ......JuSDL.Connections: Link, Bus, AbstractBus
+import ......Jusdl.Utilities: Callback, Buffer, Fifo
+import ......Jusdl.Connections: Link, Bus, AbstractBus
 
 
 struct StaticSystem{OF, IB, OB} <: AbstractStaticSystem

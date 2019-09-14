@@ -1,4 +1,4 @@
-The JuSDL.jl package is licensed under the MIT "Expat" License:
+The Jusdl.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: zekeriya.sari.
 >

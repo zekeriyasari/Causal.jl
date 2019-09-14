@@ -1,5 +1,5 @@
 # This example simulates a Henon map
-using JuSDL
+using Jusdl
 using Plots 
 
 # Construct the components 

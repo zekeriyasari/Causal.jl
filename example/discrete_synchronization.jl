@@ -1,6 +1,6 @@
 # This example illustrates synchronization of discrete time chaotic systems.
 
-using JuSDL
+using Jusdl
 using Plots 
 
 # Construct the components 

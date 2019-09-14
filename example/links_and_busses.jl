@@ -1,5 +1,5 @@
 # This file includes the usage of links and busses.
-using JuSDL 
+using Jusdl 
 
 # Writing in toe 
 l = Link(10)

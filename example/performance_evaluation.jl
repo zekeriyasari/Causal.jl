@@ -1,6 +1,6 @@
 # This file illustrates the simulation of Chua system.
 
-using JuSDL
+using Jusdl
 
 # Construct the components
 gamma(x, a=-1.143, b=-0.714) = b*x + 1 / 2 * (a - b) * (abs(x + 1) - abs(x - 1)) 

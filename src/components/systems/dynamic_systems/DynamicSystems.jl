@@ -1,4 +1,4 @@
-# This file contains the dynamic systems of JuSDL.
+# This file contains the dynamic systems of Jusdl.
 
 @reexport module DynamicSystems
 
@@ -6,8 +6,8 @@ using DifferentialEquations
 using Sundials
 using UUIDs
 import ..Systems: infer_number_of_outputs
-import ......JuSDL.Utilities: getelement, Callback, Buffer
-import ......JuSDL.Connections: Link, Bus
+import ......Jusdl.Utilities: getelement, Callback, Buffer
+import ......Jusdl.Connections: Link, Bus
 
 include("utils.jl")
 include("discrete_systems.jl")

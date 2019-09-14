@@ -27,14 +27,14 @@ function search(rootpath::String, filename)
     paths
 end
 
-const remote_repo_url = "https://imel.eee.deu.edu.tr/git/JuSDLPlugins.jl.git"
+const remote_repo_url = "https://imel.eee.deu.edu.tr/git/JusdlPlugins.jl.git"
 
 function add(name, url=remote_repo_url)
     startswith(name, ".") && error("Name of plugin should not start with `.`")
     startswith(name, "Plugins") && error("Name of plugin cannot be `Plugins`")
     startswith(".jl", name) || (name *= ".jl")
     
-    repopath = joinpath("/tmp", "JuSDLPlugins", randstring())
+    repopath = joinpath("/tmp", "JusdlPlugins", randstring())
     ispath(repopath) || mkpath(repopath)
     @info "Cloning avaliable plugins from $url"
     LibGit2.clone(url, repopath)
@@ -49,14 +49,14 @@ function add(name, url=remote_repo_url)
         dstpath = joinpath(dstdir, name)
         cp(srcpath, dstpath, force=true)
         include(dstpath)
-        @info "$name is added to JuSDL.Plugins"
+        @info "$name is added to Jusdl.Plugins"
     end
 end
 
-# Includes essential plugins from JuSDL
+# Includes essential plugins from Jusdl
 foreach(include, search(joinpath(@__DIR__, "essentials"), ".jl"))
 
-# Includes additional plugins from JuSDL
+# Includes additional plugins from Jusdl
 foreach(include, search(joinpath(@__DIR__, "additionals"), ".jl"))
 
 # Include plugins from user working directory.

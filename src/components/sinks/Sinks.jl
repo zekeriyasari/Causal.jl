@@ -1,4 +1,4 @@
-# This file constains sink tools for the objects of JuSDL.
+# This file constains sink tools for the objects of Jusdl.
 
 @reexport module Sinks
 
@@ -9,10 +9,10 @@ using JLD2
 using UUIDs
 import Base: write, read, close, setproperty!, mv, cp, open
 import FileIO: load
-import ....JuSDL.Components.Base: @generic_sink_fields, AbstractSink, update!
-import ....JuSDL.Utilities: write!, snapshot, Buffer, Callback, isfull
-import ....JuSDL.Connections: Link, Bus
-import ....JuSDL.Plugins: process
+import ....Jusdl.Components.Base: @generic_sink_fields, AbstractSink, update!
+import ....Jusdl.Utilities: write!, snapshot, Buffer, Callback, isfull
+import ....Jusdl.Connections: Link, Bus
+import ....Jusdl.Plugins: process
 
  
 function addplugin(sink::AbstractSink, actionfunc)

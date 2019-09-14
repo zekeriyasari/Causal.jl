@@ -1,7 +1,7 @@
 # This file illustrates the simulation of Chua system.
 
-using JuSDL
-import JuSDL.Plugins.Lyapunov
+using Jusdl
+import Jusdl.Plugins.Lyapunov
 using Plots
 using LaTeXStrings
 

@@ -18,17 +18,15 @@ function StaticSystem(outputfunc, input::AbstractBus)
 end
 
 
-# struct Adder{OF, OB, S} <: AbstractStaticSystem
-#     @generic_static_system_fields
-#     signs::S
-#     function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}})
-#         output = Bus()
-#         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-#         new{typeof(outputfunc), typeof(output), typeof(signs)}(outputfunc, Bus(length(signs)), output, Link(), Callback[], uuid4(), signs)
-#     end
-# end
-# Adder(signs::Vararg{Union{typeof(+), typeof(-)}}) = Adder(signs)
-# Adder(;kwargs...) = Adder(+, +; kwargs...)
+struct Adder{OF, IB, OB, S} <: AbstractStaticSystem
+    @generic_static_system_fields
+    signs::S
+end
+function Adder(input::AbstractBus, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...))
+    outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
+    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    Adder(outputfunc, input, output, Link(), Callback[], uuid4(), signs)
+end
 
 
 # struct Multiplier{OF, OB, S} <: AbstractStaticSystem
@@ -94,7 +92,7 @@ end
 # end 
 # Terminator() = Terminator(Bus())
 
-export StaticSystem
+export StaticSystem, Adder
 # export StaticSystem, Adder, Multiplier, Gain, Memory, Terminator
 
 end  # module

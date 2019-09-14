@@ -1,7 +1,7 @@
 # This file includes the scope
 
 
-mutable struct Scope{DB, TB, P, PLT} <: AbstractSink
+mutable struct Scope{IB, DB, TB, P, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
 end

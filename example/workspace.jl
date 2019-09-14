@@ -1,18 +1,28 @@
-# This file is just a dummy demo.
 
-# The packages 
-using Jusdl 
-using Plots 
+function taker(channel)
+    while true 
+        val = take!(channel)
+        val === nothing && break
+        @info "Took " val
+    end
+end
 
-# The components 
-gen = SinewaveGenerator(frequency=1/64)
-scp = Scope(Bus())
+putter(valrange) = channel -> foreach(val -> put!(channel, val), valrange)
 
-# The connnections 
-connect(gen.output, scp.input)
+function launcher(link)
+    taskref = Ref{Task}()
+    channel = Channel(channel -> begin 
+        while true
+            val = take!(channel)
+            val === nothing && break
+            @info "Took " val
+        end
+    end; taskref=taskref)
+    taskref, channel
+end
+function launcher(link, valrange)
+    taskref = Ref{Task}()
+    channel = Channel(channel -> foreach(val -> put!(channel, val), valrange); taskref=taskref)
+    taskref, channel
+end
 
-# The model 
-model = Model(gen, scp, clk=Clock(0., 0.01, 1000.))
-
-# The simulation 
-sim = simulate(model)

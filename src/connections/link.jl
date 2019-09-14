@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!, RefValue, close, isready, eltype
+import Base: put!, take!, RefValue, close, isready, eltype, isopen
 
 
 struct Poison end
@@ -31,23 +31,31 @@ function put!(link::Link{T}, val::PoisonOr{T}) where T
     isa(val, Poison) || write!(link.buffer, val)
     isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
-    val
+    return val
 end
 put!(link::Link{T}, val::PoisonOr{S}) where {T, S} = put!(link, convert(T, val))
 
 function take!(link::Link)
     val = take!(link.channel)
     link.callbacks(link)
-    val
+    return val
 end
 
-close(link::Link) = (isempty(link.channel.cond_take.waitq) || put!(link, Poison()); close(link.channel))
+function close(link::Link)
+    channel = link.channel
+    isempty(channel.cond_take.waitq) || put!(link, Poison())   # Terminate taker task 
+    isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
+    isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
+    return link
+end
+
+isopen(link::Link) = isopen(link.channel)
 
 ##### Auxilary functions to launch links.
 function taker(link)
     while true
         val = take!(link)
-        val isa Poison && break
+        val isa Poison && break  # Poison-pill the tasks to terminate safely.
         @info "Took " val
     end
 end
@@ -93,6 +101,6 @@ end
 
 ##### Launching links.
 eltype(link::Link{T}) where T = T
-launch(link::Link) = @async taker(link)
-launch(link::Link, valrange) = @async putter(link, valrange)
+launch(link::Link) = (task = @async taker(link); bind(link.channel, task); task)
+launch(link::Link, valrange) = (task = @async putter(link, valrange); bind(link.channel, task); task)
 launch(link::AbstractLink, taskname::Symbol, valrange) = @warn "`launch(link, taskname, valrange)` has been deprecated. Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"

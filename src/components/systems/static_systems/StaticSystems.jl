@@ -29,70 +29,48 @@ function Adder(input::AbstractBus, signs::Tuple{Vararg{Union{typeof(+), typeof(-
 end
 
 
-# struct Multiplier{OF, OB, S} <: AbstractStaticSystem
-#     @generic_static_system_fields
-#     ops::S
-#     function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}})
-#         output = Bus()
-#         function outputfunc(u, t)
-#             val = 1
-#             for i = 1 : length(ops)
-#                 val = op[i](val, u[i])
-#             end
-#             val
-#         end
-#         new{typeof(outputfunc), typeof(output), typeof(ops)}(outputfunc, Bus(length(ops)), output, Link(), Callback[], uuid4(), ops)
-#     end
-# end
-# Multiplier(ops::Vararg{Union{typeof(*), typeof(/)}}) = Multiplier(ops)
-# Multiplier(;kwargs...) = Multiplier(*, *; kwargs...)
+struct Multiplier{OF, IB, OB, S} <: AbstractStaticSystem
+    @generic_static_system_fields
+    ops::S
+end
+function Multiplier(input::AbstractBus, ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=tuple(fill(*, length(input))...))
+    function outputfunc(u, t)
+        val = 1
+        for i = 1 : length(ops)
+            val = op[i](val, u[i])
+        end
+        val
+    end
+    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    Multiplier(outputfunc, input, output, Link(), Callback[], uuid4(), ops)
+end
 
 
-# struct Gain{OF, OB, T} <: AbstractStaticSystem
-#     @generic_static_system_fields
-#     gain::T
-#     function Gain(gain::Union{<:AbstractVector, <:AbstractMatrix, <:Real})
-#         output = Bus(size(gain, 1))
-#         if typeof(gain) <: AbstractVector
-#             outputfunc = (u, t) -> gain .* u
-#         else
-#             outputfunc = (u, t) -> gain * u
-#         end
-#         new{typeof(outputfunc), typeof(output), typeof(gain)}(outputfunc, Bus(size(gain, 2)), output, Link(), Callback[], uuid4(), gain)
-#     end
-# end
-# Gain(gain=[1.]) = Gain(gain)
+struct Gain{OF, IB, OB, T} <: AbstractStaticSystem
+    @generic_static_system_fields
+    gain::T
+end
+function Gain(input::AbstractBus, gain=[1.])
+    outputfunc(u, t) =  gain * u
+    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    Gain(outputfunc, input, output, Link(), Callback[], uuid4(), gain)
+end
 
 
-# struct Memory{OF, OB, B} <: AbstractMemory
-#     @generic_static_system_fields
-#     buffer::B 
-#     scale::Float64
-#     function Memory(delay, input, scale, x0)
-#         numinputs = length(input)
-#         output = Bus(numinputs)
-#         input = Bus(numinputs)
-#         buffer = numinputs == 1 ? Buffer{Fifo}(delay) : Buffer{Fifo}(delay, numinputs)
-#         fill!(buffer, x0)
-##         outputfunc(u, t) = scale * buffer() + (1 - scale) * getelement(buffer, buffer.index - 1)
-#         outputfunc(u, t) = scale * buffer() + (1 - scale) * buffer[buffer.index - 1]
-#         new{typeof(outputfunc), typeof(output), typeof(buffer)}(outputfunc, input, output, Link(), Callback[], uuid4(), buffer, scale)
-#     end
-# end
-# Memory(delay=2, input=Bus(); scale=0.01, x0=zero(Float64)) = Memory(delay, input, scale, x0)
+struct Terminator{OF, IB, OB} <: AbstractStaticSystem
+    @generic_static_system_fields
+end 
+Terminator(input::AbstractBus) = Terminator(nothing, input, nothing, Link(), Callback[], uuid4()) 
 
 
-# struct Terminator{OF, OB} <: AbstractStaticSystem
-#     @generic_static_system_fields
-#     function Terminator(input)
-#         output = nothing
-#         outputfunc = nothing
-#         new{typeof(outputfunc), typeof(output)}(outputfunc, input, output, Link(), Callback[], uuid4()) 
-#     end
-# end 
-# Terminator() = Terminator(Bus())
+struct Memory{OF, IB, OB, B, S} <: AbstractMemory
+    @generic_static_system_fields
+    buffer::B 
+    scale::S
+end
+# Memory(input::AbstractBus, ln::Int, scale=0.01)
 
-export StaticSystem, Adder
+export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory
 # export StaticSystem, Adder, Multiplier, Gain, Memory, Terminator
 
 end  # module

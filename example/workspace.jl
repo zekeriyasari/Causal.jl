@@ -1,28 +1,22 @@
 
-function taker(channel)
-    while true 
-        val = take!(channel)
-        val === nothing && break
-        @info "Took " val
+using BenchmarkTools 
+
+function f()
+    array = Vector{Vector{Float64}}(undef, 1000)
+    for i = 1 : 1000
+        array[i] = rand(2)
     end
 end
 
-putter(valrange) = channel -> foreach(val -> put!(channel, val), valrange)
+function g()
+    array = Vector{Union{Nothing, Vector{Float64}}}(undef, 1000)
+    for i = 1 : 1000
+        array[i] = rand(2)
+    end
+end
 
-function launcher(link)
-    taskref = Ref{Task}()
-    channel = Channel(channel -> begin 
-        while true
-            val = take!(channel)
-            val === nothing && break
-            @info "Took " val
-        end
-    end; taskref=taskref)
-    taskref, channel
-end
-function launcher(link, valrange)
-    taskref = Ref{Task}()
-    channel = Channel(channel -> foreach(val -> put!(channel, val), valrange); taskref=taskref)
-    taskref, channel
-end
+f()
+g()
+@benchmark f()
+@benchmark g()
 

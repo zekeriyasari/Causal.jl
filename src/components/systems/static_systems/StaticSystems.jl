@@ -9,27 +9,24 @@ import ......Jusdl.Utilities: Callback, Buffer, Fifo
 import ......Jusdl.Connections: Link, Bus, AbstractBus
 
 
-struct StaticSystem{OF, IB, OB} <: AbstractStaticSystem
+struct StaticSystem{OF, IB, L, OB} <: AbstractStaticSystem
     @generic_static_system_fields
 end
-function StaticSystem(outputfunc, input::AbstractBus)
-    output = outputfunc === nothing ? nothing : Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
-    StaticSystem(outputfunc, input, output, Link(), Callback[], uuid4())
-end
+StaticSystem(outputfunc, input, output) = StaticSystem(outputfunc, input, output, Link(), Callback[], uuid4())
 
 
-struct Adder{OF, IB, OB, S} <: AbstractStaticSystem
+struct Adder{OF, IB, OB, L, S} <: AbstractStaticSystem
     @generic_static_system_fields
     signs::S
 end
 function Adder(input::AbstractBus, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...))
     outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    output = Bus{eltype(input)}()
     Adder(outputfunc, input, output, Link(), Callback[], uuid4(), signs)
 end
 
 
-struct Multiplier{OF, IB, OB, S} <: AbstractStaticSystem
+struct Multiplier{OF, IB, OB, L, S} <: AbstractStaticSystem
     @generic_static_system_fields
     ops::S
 end
@@ -41,36 +38,39 @@ function Multiplier(input::AbstractBus, ops::Tuple{Vararg{Union{typeof(*), typeo
         end
         val
     end
-    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    output = Bus{eltype(input)}()
     Multiplier(outputfunc, input, output, Link(), Callback[], uuid4(), ops)
 end
 
 
-struct Gain{OF, IB, OB, T} <: AbstractStaticSystem
+struct Gain{OF, IB, OB, L, T} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::T
 end
 function Gain(input::AbstractBus, gain=[1.])
     outputfunc(u, t) =  gain * u
-    output = Bus{typeof(outputfunc(zeros(length(input)), 0.))}()
+    output = Bus{eltype(input)}(length(input))
     Gain(outputfunc, input, output, Link(), Callback[], uuid4(), gain)
 end
 
 
-struct Terminator{OF, IB, OB} <: AbstractStaticSystem
+struct Terminator{OF, IB, OB, L} <: AbstractStaticSystem
     @generic_static_system_fields
 end 
 Terminator(input::AbstractBus) = Terminator(nothing, input, nothing, Link(), Callback[], uuid4()) 
 
 
-struct Memory{OF, IB, OB, B, S} <: AbstractMemory
+struct Memory{OF, IB, OB, B, L} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    scale::S
 end
-# Memory(input::AbstractBus, ln::Int, scale=0.01)
+function Memory(input::AbstractBus, numdelay::Int)
+    buffer = Buffer{Fifo}(eltype(input), numdelay)
+    outputfunc(u, t) = buffer()
+    output = Bus{eltype(input)}(length(input))
+    Memory(outputfunc, input, output, Link(), Callback[], uuid4(), buffer)
+end
 
 export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory
-# export StaticSystem, Adder, Multiplier, Gain, Memory, Terminator
 
 end  # module

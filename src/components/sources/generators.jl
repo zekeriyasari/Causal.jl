@@ -3,13 +3,13 @@
 
 import ..Components.Base: @generic_source_fields
 
-struct FunctionGenerator{OF, OB} <: AbstractSource
+struct FunctionGenerator{OF, L, OB} <: AbstractSource
     @generic_source_fields
 end
 FunctionGenerator(outputfunc) = FunctionGenerator(outputfunc, Bus{typeof(outputfunc(0.))}(), Link(), Callback[], uuid4())
 
 
-struct SinewaveGenerator{OF, OB, S} <: AbstractSource
+struct SinewaveGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     amplitude::S
     frequency::S
@@ -28,7 +28,7 @@ function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offs
 end
 
 
-struct DampedSinewaveGenerator{OF, OB, S} <: AbstractSource
+struct DampedSinewaveGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     amplitude::S
     decay::S
@@ -44,7 +44,7 @@ function DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=
 end
 
 
-struct SquarewaveGenerator{OF, OB, S} <: AbstractSource
+struct SquarewaveGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     high::S
     low::S
@@ -66,7 +66,7 @@ function SquarewaveGenerator(;high=1., low=0., period=1., duty=0.5, delay=0., no
 end
 
 
-struct TriangularwaveGenerator{OF, OB, S} <: AbstractSource
+struct TriangularwaveGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     amplitude::S
     period::S
@@ -93,7 +93,7 @@ function TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offs
 end
 
 
-struct ConstantGenerator{OF, OB, S} <: AbstractSource
+struct ConstantGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     amplitude::S
 end
@@ -104,7 +104,7 @@ function ConstantGenerator(;amplitude=1., nout::Int=1)
 end
 
 
-struct RampGenerator{OF, OB, S} <: AbstractSource
+struct RampGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     scale::S
 end
@@ -115,7 +115,7 @@ function RampGenerator(;scale=1, nout::Int=1)
 end
 
 
-struct StepGenerator{OF, OB, S} <: AbstractSource
+struct StepGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     amplitude::S
     delay::S
@@ -129,7 +129,7 @@ function StepGenerator(;amplitude=1, delay=0, offset=0, nout::Int=1)
 end
 
 
-struct ExponentialGenerator{OF, OB, S} <: AbstractSource
+struct ExponentialGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     scale::S
     decay::S
@@ -141,7 +141,7 @@ function ExponentialGenerator(;scale=1, decay=-1, nout::Int=1)
 end
 
 
-struct DampedExponentialGenerator{OF, OB, S} <: AbstractSource
+struct DampedExponentialGenerator{OF, OB, L, S} <: AbstractSource
     @generic_source_fields
     scale::S
     decay::S

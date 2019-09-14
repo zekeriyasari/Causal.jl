@@ -11,10 +11,9 @@ struct Normal <: LinearMode end
 struct Lifo <: LinearMode end 
 struct Fifo <: LinearMode end 
 
-const NothingOr{T} = Union{Nothing, T}
 
 ##### Buffer
-mutable struct Buffer{M<:BufferMode, T<:NothingOr} <: AbstractBuffer{T}
+mutable struct Buffer{M<:BufferMode, T} <: AbstractBuffer{T}
     data::Vector{T}
     index::Int 
     state::Symbol 
@@ -22,8 +21,8 @@ mutable struct Buffer{M<:BufferMode, T<:NothingOr} <: AbstractBuffer{T}
     id::UUID
 end
 Buffer{M}(data::AbstractVector{T}) where {M, T} = Buffer{M, T}(data, 1, :empty, Callback[], uuid4())
-Buffer{M}(::Type{T}, ln::Int) where {M, T} = Buffer{M}(fill!(Vector{Union{Nothing,T}}(undef, ln), nothing))
-Buffer{M}(ln::Int) where {M} = Buffer{M}(fill!(Vector{Union{Nothing,Float64}}(undef, ln), nothing))
+Buffer{M}(::Type{T}, ln::Int) where {M, T} = Buffer{M}(fill!(Vector{Union{Missing,T}}(undef, ln), missing))
+Buffer{M}(ln::Int) where {M} = Buffer{M}(fill!(Vector{Union{Missing,Float64}}(undef, ln), missing))
 Buffer(::Type{T}, ln::Int) where {T} = Buffer{Cyclic}(T, ln)
 Buffer(ln::Int) = Buffer(Float64, ln)
 
@@ -66,13 +65,13 @@ readfrom(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = buf.data[buf.i
 function readfrom(buf::Buffer{M, T}) where {M<:Fifo, T}
     val = buf.data[1]
     buf.data .= circshift(buf.data, -1)
-    buf.data[end] = nothing
+    buf.data[end] = missing
     buf.index -= 1
     val
 end
 function readfrom(buf::Buffer{M, T}) where {M<:Lifo, T}
     val = buf.data[end]
-    buf.data[end] = nothing
+    buf.data[end] = missing
     buf.index -= 1
     val
 end

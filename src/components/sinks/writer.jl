@@ -1,7 +1,7 @@
 # This file includes the writers
 
 
-mutable struct Writer{IB, DB, TB, P, F} <: AbstractSink
+mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
     @generic_sink_fields
     file::F
 end

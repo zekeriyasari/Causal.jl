@@ -7,7 +7,7 @@ import ....Jusdl.Connections: Bus, Link
 @def generic_source_fields begin
     outputfunc::OF 
     output::OB
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -16,7 +16,7 @@ end
     outputfunc::OF 
     input::IB
     output::OB 
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -29,7 +29,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -42,7 +42,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -57,7 +57,7 @@ end
     input::IB 
     output::OB 
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -71,7 +71,7 @@ end
     output::OB
     noise::N
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -85,7 +85,7 @@ end
     output::OB 
     noise::N
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -99,7 +99,7 @@ end
     input::IB 
     output::OB
     solver::S
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -109,7 +109,7 @@ end
     databuf::DB
     timebuf::TB
     plugin::P
-    trigger::Link{Float64}
+    trigger::L
     callbacks::Vector{Callback}
     id::UUID
 end

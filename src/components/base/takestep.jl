@@ -77,7 +77,7 @@ end
 
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
-    t === NaN && return t
+    t === missing && return t
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
 
@@ -104,11 +104,11 @@ end
 function launch(comp::AbstractComponent)
     @async begin 
         while true
-            takestep(comp) === NaN && break
+            takestep(comp) === missing && break
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
 end
 
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
-terminate(comp::AbstractComponent) = drive(comp, NaN)
+terminate(comp::AbstractComponent) = drive(comp, missing)

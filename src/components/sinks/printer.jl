@@ -3,7 +3,7 @@
 import Base.print
 
 
-mutable struct Printer{IB, DB, TB, P} <: AbstractSink
+mutable struct Printer{IB, DB, TB, P, L} <: AbstractSink
     @generic_sink_fields
 end
 function Printer(input; buflen=64, plugin=nothing)

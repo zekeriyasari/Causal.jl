@@ -3,10 +3,6 @@
 import Base: put!, take!, RefValue, close, isready, eltype, isopen
 
 
-struct Poison end
-
-const PoisonOr{T} = Union{Poison, T}
-
 struct Pin
     id::UUID
 end
@@ -15,7 +11,7 @@ Pin() = Pin(uuid4())
 
 mutable struct Link{T} <: AbstractLink{T}
     buffer::Buffer{Cyclic, T}
-    channel::Channel{PoisonOr{T}}
+    channel::Channel{T}
     leftpin::Pin
     rightpin::Pin
     callbacks::Vector{Callback}
@@ -23,17 +19,18 @@ mutable struct Link{T} <: AbstractLink{T}
     master::RefValue{Link{T}}
     slaves::Vector{RefValue{Link{T}}}
 end
-Link{T}(ln::Int=64) where {T} = Link(Buffer(T, ln), Channel{PoisonOr{T}}(0), Pin(), Pin(), Callback[], uuid4(), RefValue{Link{T}}(), Vector{RefValue{Link{T}}}()) 
+Link{T}(ln::Int=64) where {T} = Link(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(), Callback[], uuid4(), 
+    RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
 Link(ln=64) = Link{Float64}(ln)
 
 ##### Link reading writing.
-function put!(link::Link{T}, val::PoisonOr{T}) where T 
-    isa(val, Poison) || write!(link.buffer, val)
+function put!(link::Link{T}, val::Union{Missing, T}) where T 
+    isa(val, Missing) || write!(link.buffer, val)
     isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
     return val
 end
-put!(link::Link{T}, val::PoisonOr{S}) where {T, S} = put!(link, convert(T, val))
+put!(link::Link{T}, val::Union{Missing, S}) where {T, S} = put!(link, convert(T, val))
 
 function take!(link::Link)
     val = take!(link.channel)
@@ -43,7 +40,7 @@ end
 
 function close(link::Link)
     channel = link.channel
-    isempty(channel.cond_take.waitq) || put!(link, Poison())   # Terminate taker task 
+    isempty(channel.cond_take.waitq) || put!(link, missing)   # Terminate taker task 
     isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
     isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
     return link
@@ -55,7 +52,7 @@ isopen(link::Link) = isopen(link.channel)
 function taker(link)
     while true
         val = take!(link)
-        val isa Poison && break  # Poison-pill the tasks to terminate safely.
+        val isa Missing && break  # Poison-pill the tasks to terminate safely.
         @info "Took " val
     end
 end

@@ -6,13 +6,15 @@ import Base.print
 mutable struct Printer{IB, DB, TB, P, L} <: AbstractSink
     @generic_sink_fields
 end
-function Printer(input; buflen=64, plugin=nothing)
+function Printer(input::Bus{Union{Missing, T}}; buflen=64, plugin=nothing) where T
     # Construct the buffers
     timebuf = Buffer(buflen)
-    databuf = length(input) == 1 ? Buffer(buflen) : Buffer(buflen, length(input))
+    databuf = Buffer(T, buflen)
     trigger = Link()
     addplugin(Printer(input, databuf, timebuf, plugin, trigger, Callback[], uuid4()), print)
 end
+
+show(io::IO, printer::Printer) = print(io, "Printer(nin:$(length(printer.input)))")
 
 ##### Printer reading and writing
 print(printer::Printer, td, xd) = print("For time", "[", td[1], " ... ", td[end], "]", " => ", xd, "\n")

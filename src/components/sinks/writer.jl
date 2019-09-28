@@ -5,7 +5,7 @@ mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
     @generic_sink_fields
     file::F
 end
-function Writer(input; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4()))
+function Writer(input::Bus{Union{Missing, T}}; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4())) where T 
     # Construct the file
     endswith(path, ".jld2") || (path *= ".jld2")
     file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
@@ -13,10 +13,12 @@ function Writer(input; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4()))
 
     # Construct the buffers
     timebuf = Buffer(buflen)
-    databuf = length(input) == 1 ? Buffer(buflen) : Buffer(buflen, length(input))
+    databuf = Buffer(T, buflen)
     trigger = Link()
     addplugin(Writer(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), write!)
 end
+
+show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
 
 ##### Writer reading and writing
 write!(writer::Writer, td, xd) = fwrite(writer.file, td, xd)

@@ -7,7 +7,7 @@ using Reexport
 using Plots
 using JLD2
 using UUIDs
-import Base: write, read, close, setproperty!, mv, cp, open
+import Base: write, read, close, setproperty!, mv, cp, open, show
 import FileIO: load
 import ....Jusdl.Components.Base: @generic_sink_fields, AbstractSink, update!
 import ....Jusdl.Utilities: write!, snapshot, Buffer, Callback, isfull

@@ -5,16 +5,18 @@ mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
 end
-function Scope(input, buflen=64, plugin=nothing, args...; kwargs...)
+function Scope(input::Bus{Union{Missing, T}}, buflen::Int=64, plugin=nothing, args...; kwargs...) where T
     # Construct the plot 
     plt = plot(args...; kwargs...)
     foreach(sp -> plot!(sp, zeros(1)), plt.subplots)  # Plot initialization 
     # Construct the buffers
     timebuf = Buffer(buflen)
-    databuf = length(input) == 1 ? Buffer(buflen) : Buffer(buflen, length(input))
+    databuf = Buffer(T, buflen)
     trigger = Link()
     addplugin(Scope(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), update!)
 end
+
+show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
 
 clear(sp::Plots.Subplot) = popfirst!(sp.series_list)  # Delete the old series 
 function update!(s::Scope, x, y)

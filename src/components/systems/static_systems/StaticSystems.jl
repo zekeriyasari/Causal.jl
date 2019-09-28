@@ -7,6 +7,7 @@ import ..Systems: infer_number_of_outputs
 import ....Components.Base: @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
 import ......Jusdl.Utilities: Callback, Buffer, Fifo
 import ......Jusdl.Connections: Link, Bus, AbstractBus
+import Base.show
 
 
 struct StaticSystem{OF, IB, L, OB} <: AbstractStaticSystem
@@ -47,7 +48,7 @@ struct Gain{OF, IB, OB, L, T} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::T
 end
-function Gain(input::AbstractBus, gain=[1.])
+function Gain(input::AbstractBus, gain=1.)
     outputfunc(u, t) =  gain * u
     output = Bus{eltype(input)}(length(input))
     Gain(outputfunc, input, output, Link(), Callback[], uuid4(), gain)
@@ -70,6 +71,16 @@ function Memory(input::AbstractBus, numdelay::Int)
     output = Bus{eltype(input)}(length(input))
     Memory(outputfunc, input, output, Link(), Callback[], uuid4(), buffer)
 end
+
+##### Pretty-printing
+showio(bus) = bus === nothing ? :nothing : bus
+show(io::IO, ss::StaticSystem) = print(io, "StaticSystem(outputfunc:$(ss.outputfunc), input:$(showio(ss.input)), output:$(showio(ss.output)))")
+show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(showio(ss.input)), output:$(showio(ss.output))")
+show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(showio(ss.input)), output:$(showio(ss.output))")
+show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(showio(ss.input)), output:$(showio(ss.output))")
+show(io::IO, ss::Terminator) = print(io, "Gain(input:$(showio(ss.input)), output:$(showio(ss.output))")
+show(io::IO, ss::Memory) = print(io, "Memory(ndelay:$(length(ss.buffer)), input:$(showio(ss.input)), output:$(showio(ss.output))")
+
 
 export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory
 

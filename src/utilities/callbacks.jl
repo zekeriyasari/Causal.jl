@@ -8,6 +8,8 @@ mutable struct Callback{C, A}
 end
 Callback(condition, action) = Callback(condition, action, true, uuid4())
 
+show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), action:$(clb.action))")
+
 ##### Callback controls
 enable!(clb::Callback) = clb.enabled = true
 disable!(clb::Callback) = clb.enabled = false

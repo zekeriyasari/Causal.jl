@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!
+import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length
 
 ##### Buffer modes
 abstract type BufferMode end
@@ -26,7 +26,11 @@ Buffer{M}(ln::Int) where {M} = Buffer{M}(fill!(Vector{Union{Missing,Float64}}(un
 Buffer(::Type{T}, ln::Int) where {T} = Buffer{Cyclic}(T, ln)
 Buffer(ln::Int) = Buffer(Float64, ln)
 
+show(io::IO, buf::Buffer{M, Union{Missing, T}}) where {M, T} = print(io, 
+    "Buffer(mode:$(M), eltype:$(T), length:$(length(buf)), state:$(buf.state))")
+
 ##### AbstractArray interface.
+length(buf::Buffer) = length(buf.data)
 size(buf::Buffer) = size(buf.data)
 getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.data[idx...]
 setindex!(buf::Buffer, val, inds::Vararg{Int, N}) where N = (buf.data[inds...] = val)
@@ -58,7 +62,7 @@ writeinto(buf::Buffer{M, T}, val::T) where{M<:CyclicMode, T} = writecylic(buf, v
 write!(buf::Buffer{M, T}, val::T) where {M, T} = (writeinto(buf, val); buf.callbacks(buf); val) 
 write!(buf::Buffer{M, T}, val::S) where {M, T, S} = write!(buf, convert(T, val))
 
-# fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(v -> write!(buf, v), val)
+fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(v -> write!(buf, v), val)
 
 ##### Reading from buffers
 readfrom(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = buf.data[buf.index - 1]

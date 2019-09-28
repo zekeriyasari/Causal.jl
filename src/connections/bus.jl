@@ -12,6 +12,8 @@ end
 Bus{T}(nlinks::Int=1, ln::Int=64) where {T} = Bus([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
+show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(numlinks:$(length(bus)), eltype:$(T))")
+
 ##### Make bus indexable.
 eltype(bus::Bus{T}) where {T} = T
 length(bus::Bus) = length(bus.links)
@@ -36,16 +38,16 @@ put!(bus::Bus{T}, val::S) where {T, S} = put!(bus, convert(T, val))
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)
 
 ##### Connecting disconnecting busses.
-connect(srcbus::Bus, dstbus::Bus) = connect.(srcbus.links, dstbus.links)
-connect(bus::Bus, links::Vector{Link}) = connect.(bus.links, links) 
-connect(bus::Bus, link::Link) = connect.(bus.links, [link]) 
-connect(link::Link, bus::Bus) = connect.([link], bus.links) 
-connect(links::Vector{Link}, bus::Bus) = connect.(links, bus.links)
-disconnect(srcbus::Bus, dstbus::Bus) = disconnect.(srcbus.links, dstbus.links)
-disconnect(bus::Bus, links::Vector{Link}) = disconnect.(bus.links, links) 
-disconnect(links::Vector{Link}, bus::Bus) = disconnect.(links, bus.links)
-disconnect(bus::Bus, link::Link) = disconnect.(bus.links, [link]) 
-disconnect(link::Link, bus::Bus) = disconnect.([link], bus.links) 
+connect(srcbus::Bus, dstbus::Bus) = (connect.(srcbus.links, dstbus.links); return)
+connect(bus::Bus, links::Vector{Link}) = (connect.(bus.links, links); return)
+connect(bus::Bus, link::Link) = (connect.(bus.links, [link]); return)
+connect(link::Link, bus::Bus) = (connect.([link], bus.links); return)
+connect(links::Vector{Link}, bus::Bus) = (connect.(links, bus.links); return)
+disconnect(srcbus::Bus, dstbus::Bus) = (disconnect.(srcbus.links, dstbus.links); return)
+disconnect(bus::Bus, links::Vector{Link}) = (disconnect.(bus.links, links); return)
+disconnect(links::Vector{Link}, bus::Bus) = (disconnect.(links, bus.links); return)
+disconnect(bus::Bus, link::Link) = (disconnect.(bus.links, [link]); return)
+disconnect(link::Link, bus::Bus) = (disconnect.([link], bus.links); return)
 
 ##### Interconnection of busses.
 hasslaves(bus::Bus) = all(hasslaves.(bus.links))

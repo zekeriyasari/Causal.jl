@@ -23,6 +23,9 @@ Link{T}(ln::Int=64) where {T} = Link(Buffer(T, ln), Channel{Union{Missing, T}}(0
     RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
 Link(ln=64) = Link{Float64}(ln)
 
+show(io::IO, link::Link{Union{Missing, T}}) where T = print(io, 
+    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), numslaves:$(length(link.slaves)))")
+
 ##### Link reading writing.
 function put!(link::Link{T}, val::Union{Missing, T}) where T 
     isa(val, Missing) || write!(link.buffer, val)
@@ -85,6 +88,7 @@ function connect(srclink::Link, dstlink::Link)
     dstlink.leftpin = srclink.rightpin  # NOTE: The data flows through the links from left to right.
     push!(srclink.slaves, Ref(dstlink))
     dstlink.master = Ref(srclink) 
+    return 
 end
 
 function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
@@ -94,10 +98,15 @@ function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
     end
     dstlink.master = RefValue{Link{T}}()
     dstlink.leftpin = Pin()
+    return
 end
 
 ##### Launching links.
 eltype(link::Link{T}) where T = T
 launch(link::Link) = (task = @async taker(link); bind(link.channel, task); task)
 launch(link::Link, valrange) = (task = @async putter(link, valrange); bind(link.channel, task); task)
-launch(link::AbstractLink, taskname::Symbol, valrange) = @warn "`launch(link, taskname, valrange)` has been deprecated. Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"
+function launch(link::AbstractLink, taskname::Symbol, valrange)
+    msg = "`launch(link, taskname, valrange)` has been deprecated."
+    msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"
+    @warn msg
+end

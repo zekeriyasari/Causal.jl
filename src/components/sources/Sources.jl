@@ -6,6 +6,7 @@ using UUIDs
 import ..Components.Base: AbstractSource
 import ....Jusdl.Utilities: Callback
 import ....Jusdl.Connections: Link, Bus
+import Base.show
 
 export Clock, isrunning, ispaused, isoutoftime, set!, unset!
 export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 

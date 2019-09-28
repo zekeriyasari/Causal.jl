@@ -27,13 +27,13 @@ show(io::IO, link::Link{Union{Missing, T}}) where T = print(io,
     "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), numslaves:$(length(link.slaves)))")
 
 ##### Link reading writing.
-function put!(link::Link{T}, val::Union{Missing, T}) where T 
+function put!(link::Link{Union{Missing, T}}, val::Union{Missing, T}) where T 
     isa(val, Missing) || write!(link.buffer, val)
     isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
     return val
 end
-put!(link::Link{T}, val::Union{Missing, S}) where {T, S} = put!(link, convert(T, val))
+put!(link::Link{Union{Missing, T}}, val::Union{Missing, S}) where {T, S} = put!(link, convert(T, val))
 
 function take!(link::Link)
     val = take!(link.channel)

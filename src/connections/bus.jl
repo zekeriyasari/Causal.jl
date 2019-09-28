@@ -12,7 +12,7 @@ end
 Bus{T}(nlinks::Int=1, ln::Int=64) where {T} = Bus([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
-show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(numlinks:$(length(bus)), eltype:$(T))")
+show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T))")
 
 ##### Make bus indexable.
 eltype(bus::Bus{T}) where {T} = T
@@ -30,9 +30,9 @@ lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
 
 ##### Reading from and writing into from buses
 take!(bus::Bus) = (out = take!.(bus.links); bus.callbacks(bus); out)
-put!(bus::Bus{T}, vals::AbstractVector{T}) where {T} = (put!.(bus.links, vals); bus.callbacks(bus); vals)
-put!(bus::Bus{T}, val::T) where {T} = put!(bus, [val])
-put!(bus::Bus{T}, val::S) where {T, S} = put!(bus, convert(T, val))
+put!(bus::Bus{Union{Missing, T}}, vals::AbstractVector{T}) where {T} = (put!.(bus.links, vals); bus.callbacks(bus); vals)
+put!(bus::Bus{Union{Missing, T}}, val::T) where {T} = put!(bus, [val])
+put!(bus::Bus{Union{Missing, T}}, val::S) where {T, S} = put!(bus, convert(T, val))
 
 ##### Iterating bus
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)

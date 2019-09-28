@@ -4,6 +4,7 @@
 
 using LibGit2
 using Random
+import Base.show
 
 abstract type AbstractPlugin end
 

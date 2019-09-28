@@ -6,5 +6,7 @@ struct Mean <: AbstractPlugin
 end
 Mean(;dims=1) = Mean(dims)
 
+show(io::IO, plg::Mean) = print(io, "Mean(dims:$(plg.dims))")
+
 process(plg::Mean, x) = mean(x, dims=plg.dims)
 

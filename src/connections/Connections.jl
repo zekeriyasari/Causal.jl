@@ -3,7 +3,7 @@
 @reexport module Connections 
 
 using UUIDs
-import ..Jusdl.Utilities: Callback, Buffer, Cyclic, write!, arrow
+import ..Jusdl.Utilities: Callback, Buffer, Cyclic, write!
 import Base.show
 
 # Data transfer types

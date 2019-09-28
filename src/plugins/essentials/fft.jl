@@ -6,4 +6,6 @@ struct Fft <: AbstractPlugin
 end 
 Fft(;dims=1) = Fft(dims)
 
+show(io::IO, plg::Fft) = print(io, "Fft(dims:$(plg.dims))")
+
 process(plg::Fft, x) = fft(x, plg.dims)

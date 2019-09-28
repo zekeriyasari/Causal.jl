@@ -27,7 +27,7 @@ Buffer(::Type{T}, ln::Int) where {T} = Buffer{Cyclic}(T, ln)
 Buffer(ln::Int) = Buffer(Float64, ln)
 
 show(io::IO, buf::Buffer{M, Union{Missing, T}}) where {M, T} = print(io, 
-    "Buffer(mode:$(M), eltype:$(T), length:$(length(buf)), state:$(buf.state))")
+    "Buffer(mode:$(M), eltype:$(T), length:$(length(buf)), index:$(buf.index), state:$(buf.state))")
 
 ##### AbstractArray interface.
 length(buf::Buffer) = length(buf.data)

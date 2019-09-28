@@ -4,7 +4,6 @@
 using UUIDs
 
 import Base.show 
-const arrow = "  \u21B3"
 
 # Utility types 
 abstract type AbstractBuffer{T} end

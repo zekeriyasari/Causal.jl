@@ -11,6 +11,8 @@ struct Lyapunov <: AbstractPlugin
 end
 Lyapunov(;m=15, J=5, ni=300, ts=0.01) = Lyapunov(m, J, ni, ts)
 
+show(io::IO, plg::Lyapunov) = print(io, "Lyapunov(embeddingdim:$(plg.m), numlags:$(plg.J), numiteration:$(plg.ni), samplingtime:$(plg.ts)")
+
 function process(plg::Lyapunov, x)
     ks = 1 : plg.ni
     R = reconstruct(x, plg.m, plg.J)

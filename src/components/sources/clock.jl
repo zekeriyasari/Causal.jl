@@ -16,6 +16,8 @@ mutable struct Clock{T<:Real}
 end
 Clock(t, dt, tf) = Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, Callback[], uuid4())
 
+show(io::IO, clk::Clock) = print(io, "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")
+
 ##### Reading from clock
 function take!(clk::Clock)
     if ispaused(clk)

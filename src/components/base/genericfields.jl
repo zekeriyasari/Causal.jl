@@ -24,7 +24,7 @@ end
 @def generic_discrete_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
+    state::ST
     t::Int
     input::IB 
     output::OB 
@@ -37,7 +37,7 @@ end
 @def generic_ode_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
+    state::ST
     t::Float64
     input::IB 
     output::OB 

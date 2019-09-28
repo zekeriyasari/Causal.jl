@@ -17,12 +17,10 @@ mutable struct Noise{P, R}
 end
 Noise(process) = Noise(process, nothing, UInt(0))
 
-
 struct Diffusion{M} 
     matrix::M
 end
 (dif::Diffusion)(dx, x, u, t) = (dx .= dif.matrix)
-
 
 struct History{F, C, D}
     func::F 
@@ -32,6 +30,12 @@ struct History{F, C, D}
 end
 History(func) = History(func, [], [], false)
 (hist::History)(u, t) = hist.func(u, t)
+
+##### Pretty-printing
+show(io::IO, solver::Solver) = print(io, "Solver(alg:$(solver.alg), params:$(solver.params))")
+show(io::IO, noise::Noise) = print(io, "Noise(process:$(noise.process), prototype:$(noise.prototype), seed:$(noise.seed))")
+show(io::IO, dif::Diffusion) = print(io, "Diffusion(matrix:$(dif.matrix))")
+show(io::IO, hist::History) = print(io, "History(func:$(hist.func), conslags:$(hist.conslags), seed:$(hist.depslags), neutral:$(hist.neutral)")
 
 
 struct SignatureError <: Exception

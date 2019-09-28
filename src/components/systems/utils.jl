@@ -1,6 +1,7 @@
 # This file includes utiliti functions for Systems module
 
 hasargs(func, n) = n + 1 in [method.nargs for method in methods(func)]
+checkandshow(obj) = obj === nothing ? :nothing : obj
 
 function infer_number_of_outputs(func, u, t)
     hasargs(func, 2) || error("Expected method `func(u, t)` got $(methods(func))")

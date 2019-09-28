@@ -5,26 +5,24 @@ import ....Components.Base: @generic_ode_system_fields, AbstractODESystem
 const ODESolver = Solver(Tsit5())
 
 
-mutable struct ODESystem{SF, OF, IB, OB, S} <:AbstractODESystem
+mutable struct ODESystem{SF, OF, ST, IB, OB, S, L} <: AbstractODESystem
     @generic_ode_system_fields
-    function ODESystem(statefunc, outputfunc, state, t, input, solver)
+    function ODESystem(statefunc::SF, outputfunc::OF, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {SF, OF, ST, IB, OB, S, L}
         check_methods(:ODESystem, statefunc, outputfunc)
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc,
-        state, t, input, output, solver, trigger, Callback[], uuid4())
+        new{SF, OF, ST, IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id)
     end
 end
-ODESystem(statefunc, outputfunc, state, t=0., input=nothing; solver=ODESolver) = ODESystem(statefunc, outputfunc, state, t, input, solver)
+ODESystem(statefunc, outputfunc, state, input, output, t=0.; solver=ODESolver) = 
+    ODESystem(statefunc, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
 
 ##### LinearSystem
-mutable struct LinearSystem{SF, OF, IB, OB, S} <: AbstractODESystem
+mutable struct LinearSystem{SF, OF, ST, IB, OB, S, L} <: AbstractODESystem
     @generic_ode_system_fields
     A::Matrix{Float64}
     B::Matrix{Float64}
     C::Matrix{Float64}
     D::Matrix{Float64}
-    function LinearSystem(A, B, C, D, state, t, input,  solver)
+    function LinearSystem(A, B, C, D, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {ST, IB, OB, S, L}
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
             outputfunc = (x, u, t) -> (C * x)
@@ -36,23 +34,20 @@ mutable struct LinearSystem{SF, OF, IB, OB, S} <: AbstractODESystem
                 outputfunc = (x, u, t) -> (C * x .+ D * u)
             end
         end
-        trigger = Link()
-        output = Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc, state, t, input, output, solver, trigger, 
-            Callback[], uuid4(), A, B, C, D)
+        new{typeof(statefunc), typeof(outputfunc), ST, IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id, A, B, C, D)
     end
 end
-LinearSystem(;A=fill(1., 1, 1), B=fill(0., 1, 1), C=fill(1., 1, 1), D=fill(0., 1, 1), state=rand(1), t=0., input=nothing, solver=ODESolver) = 
-    LinearSystem(A, B, C, D, state, t, input, solver)
+LinearSystem(A, B, C, D, state, t, input, output; solver=ODESolver) = 
+    LinearSystem(A, B, C, D, state, t, input, output, solver, Link(), Callback[], uuid4())
 
 ##### LorenzSystem
-mutable struct LorenzSystem{SF, OF, IB, OB, S} <: AbstractODESystem
+mutable struct LorenzSystem{SF, OF, ST, IB, OB, S, L} <: AbstractODESystem
     @generic_ode_system_fields
     sigma::Float64
     beta::Float64
     rho::Float64
     gamma::Float64
-    function LorenzSystem(sigma, beta, rho, gamma, outputfunc, state, t, input, solver)
+    function LorenzSystem(sigma, beta, rho, gamma, outputfunc::OF, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {OF, ST, IB, OB, S, L}
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = sigma * (x[2] - x[1])
@@ -68,14 +63,11 @@ mutable struct LorenzSystem{SF, OF, IB, OB, S} <: AbstractODESystem
                 dx .*= gamma
             end
         end
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc, state, t, input, output, solver, trigger, 
-            Callback[], uuid4(), sigma, beta, rho, gamma)
+        new{typeof(statefunc), OF, ST, IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id, sigma, beta, rho, gamma)
     end
 end
-LorenzSystem(;sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=nothing, state=rand(3), t=0., input=nothing, solver=ODESolver) = 
-    LorenzSystem(sigma, beta, rho, gamma, outputfunc, state, t, input, solver)
+LorenzSystem(sigma, beta, rho, gamma, outputfunc, state, t, input, output; solver=ODESolver) = 
+    LorenzSystem(sigma, beta, rho, gamma, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
 
 ##### Chua System
 struct PiecewiseLinearDiode
@@ -111,13 +103,13 @@ PolynomialDiode(;a=1/16, b=-1/6) = PolynomialDiode(a, b)
 
 (d::PolynomialDiode)(x) = d.a * x^3 + d.b * x
 
-mutable struct ChuaSystem{SF, OF, IB, OB, S, DT} <: AbstractODESystem
+mutable struct ChuaSystem{SF, OF, ST, IB, OB, S, L, DT} <: AbstractODESystem
     @generic_ode_system_fields
     diode::DT
     alpha::Float64
     beta::Float64
     gamma::Float64
-    function ChuaSystem(diode, alpha, beta, gamma, outputfunc, state, t, input, solver)
+    function ChuaSystem(diode::DT, alpha, beta, gamma, outputfunc::OF, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {DT, OF, ST, IB, OB, S, L}
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
@@ -133,23 +125,20 @@ mutable struct ChuaSystem{SF, OF, IB, OB, S, DT} <: AbstractODESystem
             dx .*= gamma
             end
         end
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver), typeof(diode)}(statefunc, outputfunc, state, t, input, output, solver, 
-            trigger, Callback[], uuid4(), diode, alpha, beta, gamma)
+        new{typeof(statefunc), OF, ST, IB, OB, S, L, DT}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id, diode, alpha, beta, gamma)
     end
 end
-ChuaSystem(;diode=PiecewiseLinearDiode(), alpha=15.6, beta=28, gamma=1., outputfunc=nothing, state=rand(3)*1e-6, t=0., input=nothing, solver=ODESolver) = 
-    ChuaSystem(diode, alpha, beta, gamma, outputfunc, state, t, input, solver)
+ChuaSystem(diode, alpha, beta, gamma, outputfunc, state, t, input, output; solver=ODESolver) = 
+    ChuaSystem(diode, alpha, beta, gamma, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
 
 ##### Rossler System
-mutable struct RosslerSystem{SF, OF, IB, OB, S} <: AbstractODESystem
+mutable struct RosslerSystem{SF, OF, ST, IB, OB, S, L} <: AbstractODESystem
     @generic_ode_system_fields
     a::Float64
     b::Float64
     c::Float64
     gamma::Float64
-    function RosslerSystem(a, b, c, gamma, outputfunc, state, t, input, solver)
+    function RosslerSystem(a, b, c, gamma, outputfunc::OF, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {OF, ST, IB, OB, S, L}
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3]
@@ -165,21 +154,18 @@ mutable struct RosslerSystem{SF, OF, IB, OB, S} <: AbstractODESystem
                 dx .*= gamma
             end
         end
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc, state, t, input, output, solver, trigger, 
-            Callback[], uuid4(), a, b, c, gamma)
+        new{typeof(statefunc), OF, ST,  IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id, a, b, c, gamma)
     end
 end
-RosslerSystem(;a=0.2, b=0.2, c=5.7, gamma=1., outputfunc=nothing, state=rand(3),  t=0., input=nothing, solver=ODESolver) = 
-    RosslerSystem(a, b, c, gamma, outputfunc, state, t, input, solver)
+RosslerSystem(a, b, c, gamma, outputfunc, state,  t, input, output; solver=ODESolver) = 
+    RosslerSystem(a, b, c, gamma, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
 
 ##### Vanderpol System
-mutable struct VanderpolSystem{SF, OF, IB, OB, S} <: AbstractODESystem
+mutable struct VanderpolSystem{SF, OF, ST, IB, OB, S, L} <: AbstractODESystem
     @generic_ode_system_fields
     mu::Float64
     gamma::Float64
-    function VanderpolSystem(mu, gamma, outputfunc, state, t, input, solver)
+    function VanderpolSystem(mu, gamma, outputfunc::OF, state::ST, t::Float64, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {OF, ST, IB, OB, S, L}
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = gamma * x[2]
@@ -191,12 +177,24 @@ mutable struct VanderpolSystem{SF, OF, IB, OB, S} <: AbstractODESystem
                 dx[2] = gamma * (-mu * (x[1]^2 - 1) * x[2] - x[1]) + u[2]
             end
         end
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc,state, t, input, output, solver, trigger, 
-            Callback[], uuid4(), mu, gamma)
+        new{typeof(statefunc), OF, ST, IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id, mu, gamma)
     end
 end
-VanderpolSystem(;mu=5., gamma=1., outputfunc=nothing, state=rand(2),  t=0., input=nothing, solver=ODESolver) = 
-    VanderpolSystem(mu, gamma, outputfunc, state, t, input, solver)
+VanderpolSystem(mu, gamma, outputfunc, state, t, input, output; solver=ODESolver) = 
+    VanderpolSystem(mu, gamma, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
     
+
+##### Pretty-printing 
+show(io::IO, ds::ODESystem) = println(io, "ODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::LinearSystem) = println(io, "Linearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::LorenzSystem) = println(io, "Lorenzystem(sigma:$(ds.sigma), beta:$(ds.beta), rho:$(ds.rho), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, d::PiecewiseLinearDiode) = print(io, "PiecewiseLinearDiode(m0:$(d.m0), m1:$(d.m1), m2:$(d.m2), bp1:$(d.bp1), bp2:$(d.bp2))")
+show(io::IO, d::PolynomialDiode) = print(io, "PolynomialDiode(a:$(d.a), b:$(d.b))")
+show(io::IO, ds::ChuaSystem) = println(io, "ChuaSystem(diode:$(ds.diode), alpha:$(ds.alpha), beta:$(ds.beta), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::RosslerSystem) = println(io, "RosslerSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::VanderpolSystem) = println(io, "VanderpolSystem(mu:$(ds.mu), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")

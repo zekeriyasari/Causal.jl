@@ -5,14 +5,14 @@ import ....Components.Base: @generic_discrete_system_fields, AbstractDiscreteSys
 # const DiscreteSolver = Solver(FunctionMap{true}())
 const DiscreteSolver = Solver(FunctionMap())  # Caution: There seems some update to use FunctionMap parametrized with false.
 
-mutable struct DiscreteSystem{SF, OF, IB, OB, S} <:AbstractDiscreteSystem
+mutable struct DiscreteSystem{SF, OF, ST, IB, OB, S, L} <: AbstractDiscreteSystem
     @generic_discrete_system_fields
-    function DiscreteSystem(statefunc, outputfunc, state, t, input, solver)
+    function DiscreteSystem(statefunc::SF, outputfunc::OF, state::ST, t::Int, input::IB, output::OB, solver::S, trigger::L, callbacks::Vector{Callback}, id::UUID) where {SF, OF, ST, IB, OB, S, L}
         check_methods(:DiscreteSystem, statefunc, outputfunc)
-        trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(solver)}(statefunc, outputfunc,
-        state, t, input, output, solver, trigger, Callback[], uuid4())
+        new{SF, OF, ST, IB, OB, S, L}(statefunc, outputfunc, state, t, input, output, solver, trigger, callbacks, id)
     end
 end
-DiscreteSystem(statefunc, outputfunc, state, t=0, input=nothing; solver=DiscreteSolver) = DiscreteSystem(statefunc, outputfunc, state, t, input, solver)
+DiscreteSystem(statefunc, outputfunc, state, t, input, output; solver=DiscreteSolver) = 
+    DiscreteSystem(statefunc, outputfunc, state, t, input, output, solver, Link(), Callback[], uuid4())
+
+show(io::IO, ds::DiscreteSystem) = print(io, "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")

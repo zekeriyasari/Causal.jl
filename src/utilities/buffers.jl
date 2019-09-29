@@ -55,14 +55,14 @@ end
 ##### Writing into buffers
 resetindex(buf::Buffer) = setfield!(buf, :index, %(buf.index, size(buf.data, 1)))
 checkindex(buf::Buffer) = isfull(buf) && resetindex(buf)
-writelinear(buf::Buffer{M, T}, val::T) where {M, T} = isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
-writecylic(buf::Buffer{M, T}, val::T) where {M, T} = (buf[buf.index] = val; buf.index += 1; checkindex(buf))
-writeinto(buf::Buffer{M, T}, val::T) where{M<:LinearMode, T} = writelinear(buf, val)
-writeinto(buf::Buffer{M, T}, val::T) where{M<:CyclicMode, T} = writecylic(buf, val)
-write!(buf::Buffer{M, T}, val::T) where {M, T} = (writeinto(buf, val); buf.callbacks(buf); val) 
-write!(buf::Buffer{M, T}, val::S) where {M, T, S} = write!(buf, convert(T, val))
+writelinear(buf::Buffer{M, T}, val) where {M, T} = isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
+writecylic(buf::Buffer{M, T}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1; checkindex(buf))
+writeinto(buf::Buffer{M, T}, val) where{M<:LinearMode, T} = writelinear(buf, val)
+writeinto(buf::Buffer{M, T}, val) where{M<:CyclicMode, T} = writecylic(buf, val)
+write!(buf::Buffer{M, T}, val) where {M, T} = (writeinto(buf, val); buf.callbacks(buf); val) 
+write!(buf::Buffer{M, T}, val::AbstractArray{Missing}) where {M, T} = write!(buf, missing)
 
-fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(v -> write!(buf, v), val)
+fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(i -> write!(buf, val), 1 : length(buf))
 
 ##### Reading from buffers
 readfrom(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = buf.data[buf.index - 1]

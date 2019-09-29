@@ -75,8 +75,9 @@ end
 struct Memory{OF, IB, OB, B, L} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus, numdelay::Int)
-        buffer = Buffer{Fifo}(eltype(input), numdelay)
+    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int, initial=missing) where T 
+        buffer = Buffer{Fifo}(Vector{T}, numdelay)
+        fill!(buffer, initial)
         outputfunc(u, t) = buffer()
         output = Bus{eltype(input)}(length(input))
         trigger = Link()

@@ -95,7 +95,7 @@ function backwardstep(comp, t)
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)
-    u = readinput(comp, t)
+    u = readinput(comp)
     xn = evolve!(comp, x, u, t)
     comp.callbacks(comp)
     return t

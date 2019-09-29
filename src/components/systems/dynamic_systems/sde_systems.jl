@@ -5,18 +5,17 @@ import ....Components.Base: @generic_sde_system_fields, AbstractSDESystem
 const SDESolver = Solver(LambaEM{true}())
 const SDENoise = Noise(WienerProcess(0.,0.))
 
-mutable struct SDESystem{SF, OF, IB, OB, N, S} <: AbstractSDESystem
+
+mutable struct SDESystem{SF, OF, ST, T, IB, OB, N, S, L} <: AbstractSDESystem
     @generic_sde_system_fields
-    function SDESystem(statefunc, outputfunc, state, t, input, noise, solver)
-        check_methods(:SDESystem, statefunc, outputfunc)
+    function SDESystem(statefunc, outputfunc, state, t, input, output, noise)
+        solver = SDESolver
         trigger = Link()
-        output = outputfunc === nothing ? nothing : Bus(infer_number_of_outputs(outputfunc, state, input, t))  
-        new{typeof(statefunc), typeof(outputfunc), typeof(input), typeof(output), typeof(noise), 
-        typeof(solver)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, Callback[], uuid4())
+        new{typeof(statefunc), typeof(outputfunc),  typeof(state), typeof(t), typeof(input), typeof(output), typeof(noise), typeof(solver), typeof(trigger)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, Callback[], uuid4())
     end
 end
-SDESystem(statefunc, outputfunc, state, t=0., input=nothing, noise=Noise(WienerProcess(0., zeros(length(state)))); solver=SDESolver) = 
-    SDESystem(statefunc, outputfunc, state, t, input, noise, solver)
+
+show(io::IO, ds::SDESystem) = print(io, "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
 
 ##### Noisy Linear System
 

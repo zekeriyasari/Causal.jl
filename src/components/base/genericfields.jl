@@ -25,7 +25,7 @@ end
     statefunc::SF 
     outputfunc::OF 
     state::ST
-    t::Int
+    t::T
     input::IB 
     output::OB 
     solver::S
@@ -38,7 +38,7 @@ end
     statefunc::SF 
     outputfunc::OF 
     state::ST
-    t::Float64
+    t::T
     input::IB 
     output::OB 
     solver::S
@@ -50,9 +50,9 @@ end
 @def generic_dae_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
-    stateder::Vector{Float64}
-    t::Float64
+    state::ST
+    stateder::ST
+    t::T
     diffvars::D
     input::IB 
     output::OB 
@@ -65,8 +65,8 @@ end
 @def generic_rode_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
-    t::Float64
+    state::ST
+    t::T
     input::IB 
     output::OB
     noise::N
@@ -79,8 +79,8 @@ end
 @def generic_sde_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
-    t::Float64
+    state::ST
+    t::T
     input::IB 
     output::OB 
     noise::N
@@ -93,9 +93,9 @@ end
 @def generic_dde_system_fields begin
     statefunc::SF 
     outputfunc::OF 
-    state::Vector{Float64}
+    state::ST
     history::H 
-    t::Float64
+    t::T
     input::IB 
     output::OB
     solver::S

@@ -4,12 +4,12 @@ import Base: put!, wait, take!
 import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close, eltype
 
 
-struct Bus{T} <: AbstractBus{T}
+struct Bus{T}
     links::Vector{Link{T}}
     callbacks::Vector{Callback}
     id::UUID
+    Bus{T}(nlinks::Int=1, ln::Int=64) where T = new{Union{Missing, T}}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 end
-Bus{T}(nlinks::Int=1, ln::Int=64) where {T} = Bus([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
 show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T))")

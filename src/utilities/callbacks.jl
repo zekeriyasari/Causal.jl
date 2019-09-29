@@ -5,8 +5,8 @@ mutable struct Callback{C, A}
     action::A     
     enabled::Bool
     id::UUID
+    Callback(condition::C, action::A) where {C, A} = new{C, A}(condition, action, true, uuid4()) 
 end
-Callback(condition, action) = Callback(condition, action, true, uuid4())
 
 show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), action:$(clb.action))")
 
@@ -20,5 +20,5 @@ isenabled(clb::Callback) = clb.enabled
 @inbounds (clbs::Vector{Callback})(obj) = foreach(clb -> clb(obj), clbs)
 
 ##### Adding callbacks
-addcallback(obj, callback::Callback, priority::Int=1) = insert!(obj.callbacks, priority, callback)
-deletecallback(obj, idx::Int) = delete!(obj.callbacks, idx)
+addcallback(obj, callback::Callback, priority::Int=1) = (insert!(obj.callbacks, priority, callback); obj)
+deletecallback(obj, idx::Int) = (delete!(obj.callbacks, idx); obj)

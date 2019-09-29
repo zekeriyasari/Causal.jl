@@ -5,11 +5,11 @@ import Base: put!, take!, RefValue, close, isready, eltype, isopen
 
 struct Pin
     id::UUID
+    Pin() = new(uuid4())
 end
-Pin() = Pin(uuid4())
 
 
-mutable struct Link{T} <: AbstractLink{T}
+mutable struct Link{T}
     buffer::Buffer{Cyclic, T}
     channel::Channel{T}
     leftpin::Pin
@@ -18,9 +18,9 @@ mutable struct Link{T} <: AbstractLink{T}
     id::UUID
     master::RefValue{Link{T}}
     slaves::Vector{RefValue{Link{T}}}
-end
-Link{T}(ln::Int=64) where {T} = Link(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(), Callback[], uuid4(), 
+    Link{T}(ln::Int=64) where {T} = new{Union{Missing, T}}(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(), Callback[], uuid4(), 
     RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
+end
 Link(ln=64) = Link{Float64}(ln)
 
 show(io::IO, link::Link{Union{Missing, T}}) where T = print(io, 
@@ -105,7 +105,7 @@ end
 eltype(link::Link{T}) where T = T
 launch(link::Link) = (task = @async taker(link); bind(link.channel, task); task)
 launch(link::Link, valrange) = (task = @async putter(link, valrange); bind(link.channel, task); task)
-function launch(link::AbstractLink, taskname::Symbol, valrange)
+function launch(link::Link, taskname::Symbol, valrange)
     msg = "`launch(link, taskname, valrange)` has been deprecated."
     msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"
     @warn msg

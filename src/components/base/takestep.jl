@@ -1,6 +1,6 @@
 # This file includes stepping of abstract types.
 
-import ....Jusdl.Connections: launch, AbstractBus
+import ....Jusdl.Connections: launch, Bus
 import ....Jusdl.Utilities: write!
 using DifferentialEquations
 using Sundials
@@ -12,12 +12,12 @@ readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? com
 
 function readinput(comp::AbstractComponent, t)
     typeof(comp) <: AbstractSource && return nothing
-    typeof(comp.input) <: AbstractBus ? take!(comp.input, t) : nothing
+    typeof(comp.input) <: Bus ? take!(comp.input, t) : nothing
 end
 
 function writeoutput(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    typeof(comp.output) <: AbstractBus ? put!(comp.output, out) : nothing
+    typeof(comp.output) <: Bus ? put!(comp.output, out) : nothing
 end
 
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)

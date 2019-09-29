@@ -4,18 +4,20 @@
 mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
     @generic_sink_fields
     file::F
-end
-function Writer(input::Bus{Union{Missing, T}}; buflen=64, plugin=nothing, path="/tmp/"*string(uuid4())) where T 
-    # Construct the file
-    endswith(path, ".jld2") || (path *= ".jld2")
-    file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
-    close(file)     # Close file so that the file can be sent to remote Julia processes
+    function Writer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing, path="/tmp/"*string(uuid4())) where T 
+        # Construct the file
+        endswith(path, ".jld2") || (path *= ".jld2")
+        file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
+        close(file)     # Close file so that the file can be sent to remote Julia processes
 
-    # Construct the buffers
-    timebuf = Buffer(buflen)
-    databuf = Buffer(T, buflen)
-    trigger = Link()
-    addplugin(Writer(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), write!)
+        # Construct the buffers
+        timebuf = Buffer(buflen)
+        databuf = Buffer(T, buflen)
+        trigger = Link()
+        addplugin(
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(file)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), 
+            write!)
+    end
 end
 
 show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")

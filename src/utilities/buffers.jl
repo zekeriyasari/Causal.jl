@@ -13,17 +13,17 @@ struct Fifo <: LinearMode end
 
 
 ##### Buffer
-mutable struct Buffer{M<:BufferMode, T} <: AbstractBuffer{T}
+mutable struct Buffer{M<:BufferMode, T}
     data::Vector{T}
     index::Int 
     state::Symbol 
     callbacks::Vector{Callback}
     id::UUID
+    Buffer{M}(::Type{T}, ln::Int) where {M, T} = 
+        new{M, Union{Missing, T}}(fill!(Vector{Union{Missing,T}}(undef, ln), missing), 1, :empty, Callback[], uuid4())
 end
-Buffer{M}(data::AbstractVector{T}) where {M, T} = Buffer{M, T}(data, 1, :empty, Callback[], uuid4())
-Buffer{M}(::Type{T}, ln::Int) where {M, T} = Buffer{M}(fill!(Vector{Union{Missing,T}}(undef, ln), missing))
-Buffer{M}(ln::Int) where {M} = Buffer{M}(fill!(Vector{Union{Missing,Float64}}(undef, ln), missing))
-Buffer(::Type{T}, ln::Int) where {T} = Buffer{Cyclic}(T, ln)
+Buffer(::Type{T}, ln::Int) where T = Buffer{Cyclic}(T, ln)
+Buffer{M}(ln::Int) where M = Buffer{M}(Float64, ln)
 Buffer(ln::Int) = Buffer(Float64, ln)
 
 show(io::IO, buf::Buffer{M, Union{Missing, T}}) where {M, T} = print(io, 

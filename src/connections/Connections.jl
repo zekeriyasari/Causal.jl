@@ -7,9 +7,6 @@ import ..Jusdl.Utilities: Callback, Buffer, Cyclic, write!
 import Base.show
 
 # Data transfer types
-abstract type AbstractLink{T} end
-abstract type AbstractBus{T} end
-
 export Link, isconnected, connect, disconnect, launch, Pin
 export Bus
 

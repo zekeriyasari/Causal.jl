@@ -4,16 +4,18 @@
 mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
-end
-function Scope(input::Bus{Union{Missing, T}}, buflen::Int=64, plugin=nothing, args...; kwargs...) where T
-    # Construct the plot 
-    plt = plot(args...; kwargs...)
-    foreach(sp -> plot!(sp, zeros(1)), plt.subplots)  # Plot initialization 
-    # Construct the buffers
-    timebuf = Buffer(buflen)
-    databuf = Buffer(T, buflen)
-    trigger = Link()
-    addplugin(Scope(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), update!)
+    function Scope(input::Bus{Union{Missing, T}}, buflen::Int=64, plugin=nothing, args...; kwargs...) where T
+        # Construct the plot 
+        plt = plot(args...; kwargs...)
+        foreach(sp -> plot!(sp, zeros(1)), plt.subplots)  # Plot initialization 
+        # Construct the buffers
+        timebuf = Buffer(buflen)
+        databuf = Buffer(T, buflen)
+        trigger = Link()
+        addplugin(
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(plt)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), 
+            update!)
+    end
 end
 
 show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")

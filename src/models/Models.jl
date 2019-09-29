@@ -9,11 +9,8 @@ import ..Jusdl.Components.Base: terminate, drive, AbstractSink
 import ..Jusdl.Components.Systems.StaticSystems.Memory
 import ..Jusdl.Components.Sinks: Writer, deleteplugin
 import ..Jusdl.Components.Sources: Clock, isrunning, set!, unset!
-import Base.run
+import Base: run, show
 
-abstract type AbstractTaskManager end 
-abstract type AbstractModel end 
-abstract type AbstractSimulation end 
 
 export TaskManager, checktasks, istaskfailed, istaskrunning, isalive
 export Model, adjacency_matrix, inspect, initialize, run, terminate, simulate

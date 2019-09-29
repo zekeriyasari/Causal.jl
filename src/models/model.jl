@@ -1,18 +1,24 @@
 # This file includes the Model object
 
 
-mutable struct Model{BL<:AbstractVector, CLK, TM<:AbstractTaskManager} <: AbstractModel
+mutable struct Model{BL<:AbstractVector, CLK, TM}
     blocks::BL
     clk::CLK
     taskmanager::TM
     callbacks::Vector{Callback}
     id::UUID
+    function Model(blocks)
+        taskmanager = TaskManager()
+        clk = Clock(NaN, NaN, NaN)
+        new{typeof(blocks), typeof(clk), typeof(taskmanager)}(blocks, clk, taskmanager, Callback[], uuid4())
+    end
 end
-Model(blocks...; clk=Clock(0., 0.01, 10.)) = Model([blocks...], clk, TaskManager(), Callback[], uuid4())
+Model(blocks...) = Model([blocks...])
 
+show(io::IO, model::Model) = print(io, "Model(blocks:$(model.blocks))")
 
 ##### Model inspection.
-function adjacency_matrix(model::AbstractModel)
+function adjacency_matrix(model::Model)
     blocks = model.blocks
     n = length(model.blocks) 
     mat = zeros(Int, n, n)
@@ -27,14 +33,14 @@ function adjacency_matrix(model::AbstractModel)
 end
 
 isterminated(output) = isa(output, Nothing) ? true : hasslaves(output)
-has_unterminated_bus(model::AbstractModel) = any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
+has_unterminated_bus(model::Model) = any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
 
-function terminate_securely!(model::AbstractModel)
+function terminate_securely!(model::Model)
     # TODO: Complete the function.
     nothing
 end
 
-function has_algeraic_loop(model::AbstractModel)
+function has_algeraic_loop(model::Model)
     # TODO: Complete the function
     false
 end
@@ -60,7 +66,7 @@ function inspect(model)
 end
 
 ##### Model initialization
-function initialize(model::AbstractModel)
+function initialize(model::Model)
     pairs = model.taskmanager.pairs
     blocks = model.blocks
     for block in blocks
@@ -78,7 +84,7 @@ end
 # drive(component::AbstractComponent, t) = put!(component.clk_link, t)    
 # update(memory::Memory, t) = write!(memory.buffer, memory.input(t))
 
-function run(model::AbstractModel)
+function run(model::Model)
     taskmanager = model.taskmanager
     components = model.blocks
     clk = model.clk
@@ -99,7 +105,7 @@ end
 ##### Model termination
 
 # terminate(block::AbstractBlock) = drive(block, NaN)
-function terminate(model::AbstractModel)
+function terminate(model::Model)
     isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
     isrunning(model.clk) && unset!(model.clk)
     # isrunning(model.clk) && turnoff(model.clk)
@@ -141,8 +147,8 @@ function _simulate!(sim::Simulation, reportsim::Bool)
     return sim
 end
 
-function simulate(model::AbstractModel;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
-    sim = Simulation(model, simdir=simdir)
+function simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
+    sim = Simulation(model, simdir)
     if logtofile
         sim.logger = setlogger(sim.path, "log.txt", setglobal=false)
         with_logger(sim.logger) do
@@ -155,14 +161,8 @@ function simulate(model::AbstractModel;  simdir::String="/tmp", logtofile::Bool=
     return sim
 end
 
-# function simulate(model::AbstractModel, t0, dt, tf; record_clk_data::Bool=true, kwargs...)
-#     set!(model.clk, t0, dt, tf)
-#     if record_clk_data
-#         @info "Constructing a Writer with id $(`clk_data.jld2`) for the clock"
-#         clk_writer = Writer(Bus(), "clk_data.jld2")
-#         push!(model.clk.buffer.callbacks, BufferFullCallback(buf -> clk_writer(buf.data)))
-#         push!(model.blocks, clk_writer)
-#     end
-#     simulate(model; kwargs...)
-# end
+function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
+    set!(model.clk, t0, dt, tf)
+    simulate(model; kwargs...)
+end
 

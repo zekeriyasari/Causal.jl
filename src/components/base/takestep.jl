@@ -10,9 +10,9 @@ readtime(comp::AbstractComponent) = take!(comp.trigger)
 
 readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? comp.state : nothing
 
-function readinput(comp::AbstractComponent, t)
+function readinput(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
-    typeof(comp.input) <: Bus ? take!(comp.input, t) : nothing
+    typeof(comp.input) <: Bus ? take!(comp.input) : nothing
 end
 
 function writeoutput(comp::AbstractComponent, out)
@@ -82,7 +82,7 @@ function takestep(comp::AbstractComponent)
 end
 
 function forwardstep(comp, t)
-    u = readinput(comp, t)
+    u = readinput(comp)
     x = readstate(comp)
     xn = evolve!(comp, x, u, t)
     y = computeoutput(comp, xn, u, t)

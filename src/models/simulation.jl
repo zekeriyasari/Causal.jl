@@ -1,20 +1,20 @@
 # This file is for Simulation object.
 
 
-mutable struct Simulation{M, L} <: AbstractSimulation
+mutable struct Simulation{M, L}
     model::M
     path::String
     logger::L
     state::Symbol
     retcode::Symbol
     name::String
-end
-function Simulation(model; simdir=DEFAULTS[:WRITER_PATHS], logger=SimpleLogger())
-    name = join(["Simulation-", string(uuid4())], "")  # `get_instant()` may be used for time-based paths names.
-    path = joinpath(simdir, name)
-    isdir(path) || mkpath(path)
-    check_writer_files(model, path, force=true)
-    Simulation(model, path, logger, :idle, :unknown, name)
+    function Simulation(model, simdir=DEFAULTS[:WRITER_PATHS], logger=SimpleLogger())
+        name = join(["Simulation-", string(uuid4())], "")  # `get_instant()` may be used for time-based paths names.
+        path = joinpath(simdir, name)
+        isdir(path) || mkpath(path)
+        check_writer_files(model, path, force=true)
+        new{typeof(model), typeof(logger)}(model, path, logger, :idle, :unknown, name)
+    end
 end
 
 ##### Simulation checks

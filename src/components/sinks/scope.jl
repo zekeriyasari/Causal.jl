@@ -10,7 +10,7 @@ mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
         foreach(sp -> plot!(sp, zeros(1)), plt.subplots)  # Plot initialization 
         # Construct the buffers
         timebuf = Buffer(buflen)
-        databuf = Buffer(T, buflen)
+        databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
         addplugin(
             new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(plt)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), 
@@ -21,7 +21,8 @@ end
 show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
 
 clear(sp::Plots.Subplot) = popfirst!(sp.series_list)  # Delete the old series 
-function update!(s::Scope, x, y)
+function update!(s::Scope, x, yi)
+    y = collect(hcat(yi...)')
     plt = s.plt
     subplots = plt.subplots
     clear.(subplots)

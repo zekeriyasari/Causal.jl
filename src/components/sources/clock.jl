@@ -44,7 +44,13 @@ isoutoftime(clk::Clock) = clk.t >= clk.tf
 
 ##### Controlling clock.
 set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) = (clk.generator = generator; clk.paused=false; clk)
-set!(clk::Clock, t::Real, dt::Real, tf::Real) = (set!(clk, Generator(t, dt, tf)); clk)
+function set!(clk::Clock, t::Real, dt::Real, tf::Real)
+    set!(clk, Generator(t, dt, tf))
+    clk.t = t 
+    clk.dt = dt 
+    clk.tf = tf
+    clk
+end
 unset!(clk::Clock) = (set!(clk, Channel{typeof(clk.t)}(0)); clk)
 
 ##### Iterating clock.

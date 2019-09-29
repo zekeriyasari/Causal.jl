@@ -1,22 +1,10 @@
 
-using BenchmarkTools 
+using Jusdl 
 
-function f()
-    array = Vector{Vector{Float64}}(undef, 1000)
-    for i = 1 : 1000
-        array[i] = rand(2)
-    end
-end
+gen = SinewaveGenerator(1., 1. / 0.64)
+scope = Scope(Bus())
 
-function g()
-    array = Vector{Union{Nothing, Vector{Float64}}}(undef, 1000)
-    for i = 1 : 1000
-        array[i] = rand(2)
-    end
-end
+connect(gen.output, scope.input)
+model = Model(gen, scope)
 
-f()
-g()
-@benchmark f()
-@benchmark g()
-
+sim = simulate(model, 0., 0.01, 100.)

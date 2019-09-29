@@ -18,11 +18,9 @@ import ....Jusdl.Plugins: process
 function addplugin(sink::AbstractSink, actionfunc)
     condition(sink) = isfull(sink.databuf) 
     if sink.plugin === nothing
-        action = sink -> actionfunc(sink, reverse(snapshot(sink.timebuf), dims=1), 
-            reverse(snapshot(sink.databuf), dims=1))
+        action = sink -> actionfunc(sink, snapshot(sink.timebuf), snapshot(sink.databuf))
     else
-        action = sink -> actionfunc(sink, reverse(snapshot(sink.timebuf), dims=1), 
-            process(sink.plugin, reverse(snapshot(sink.databuf), dims=1)))
+        action = sink -> actionfunc(sink, snapshot(sink.timebuf), process(sink.plugin, snapshot(sink.databuf)))
     end
     clb = Callback(condition, action)
     clb.id = sink.id

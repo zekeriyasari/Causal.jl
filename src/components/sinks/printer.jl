@@ -8,7 +8,7 @@ mutable struct Printer{IB, DB, TB, P, L} <: AbstractSink
     function Printer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing) where T
         # Construct the buffers
         timebuf = Buffer(buflen)
-        databuf = Buffer(T, buflen)
+        databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
         addplugin(
             new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4()), 

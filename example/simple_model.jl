@@ -1,4 +1,4 @@
-# This file illustrates a simple simulation.
+# This file illustrates a simple close-loop system simulation.
 
 using Jusdl 
 

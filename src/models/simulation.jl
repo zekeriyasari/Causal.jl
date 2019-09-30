@@ -17,6 +17,8 @@ mutable struct Simulation{M, L}
     end
 end
 
+show(io::IO, sim::Simulation) = print(io, "Simulation(state:$(sim.state), retcode:$(sim.retcode), path:$(sim.path))")
+
 ##### Simulation checks
 
 function check_writer_files(model, path; force=true)

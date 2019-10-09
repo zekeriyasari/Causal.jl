@@ -12,93 +12,9 @@ import ....Jusdl.Connections: Bus, Link
     id::UUID
 end
 
-@def generic_static_system_fields begin
-    outputfunc::OF 
+@def generic_system_fields begin
     input::IB
-    output::OB 
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_discrete_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    t::T
-    input::IB 
-    output::OB 
-    solver::S
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_ode_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    t::T
-    input::IB 
-    output::OB 
-    solver::S
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_dae_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    stateder::ST
-    t::T
-    diffvars::D
-    input::IB 
-    output::OB 
-    solver::S
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_rode_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    t::T
-    input::IB 
     output::OB
-    noise::N
-    solver::S
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_sde_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    t::T
-    input::IB 
-    output::OB 
-    noise::N
-    solver::S
-    trigger::L
-    callbacks::Vector{Callback}
-    id::UUID
-end
-
-@def generic_dde_system_fields begin
-    statefunc::SF 
-    outputfunc::OF 
-    state::ST
-    history::H 
-    t::T
-    input::IB 
-    output::OB
-    solver::S
     trigger::L
     callbacks::Vector{Callback}
     id::UUID
@@ -113,3 +29,47 @@ end
     callbacks::Vector{Callback}
     id::UUID
 end
+
+@def generic_static_system_fields begin
+    @generic_system_fields
+    outputfunc::OF 
+end
+
+@def generic_dynamic_system_fields begin 
+    @generic_system_fields 
+    statefunc::SF 
+    outputfunc::OF 
+    state::ST 
+    t::T 
+    solver::S
+end
+
+# @def generic_discrete_system_fields begin
+#     @generic_dynamic_system_fields
+# end
+
+# @def generic_ode_system_fields begin
+#     @generic_dynamic_system_fields
+# end
+
+# @def generic_dae_system_fields begin
+#     @generic_dynamic_system_fields
+#     stateder::ST
+#     diffvars::D
+# end
+
+# @def generic_rode_system_fields begin
+#     @generic_dynamic_system_fields
+#     noise::N
+# end
+
+# @def generic_sde_system_fields begin
+#     @generic_dynamic_system_fields
+#     noise::N
+# end
+
+# @def generic_dde_system_fields begin
+#     @generic_dynamic_system_fields
+#     history::H 
+# end
+

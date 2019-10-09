@@ -1,15 +1,16 @@
 # This file includes DDESystems
 
-import ....Components.Base: @generic_dde_system_fields, AbstractDDESystem
+import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractDDESystem
 
 const DDESolver = Solver(MethodOfSteps(Tsit5()))
 
-mutable struct DDESystem{SF, OF, ST, T, H, IB, OB, S, L} <: AbstractDDESystem
-    @generic_dde_system_fields
+mutable struct DDESystem{IB, OB, L, SF, OF, ST, T, S, H} <: AbstractDDESystem
+    @generic_dynamic_system_fields
+    history::H 
     function DDESystem(statefunc, outputfunc, state, history, t, input, output)
         solver = DDESolver
         trigger = Link()
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(history), typeof(input), typeof(output),  typeof(solver), typeof(trigger)}(statefunc, outputfunc, state, history, t, input, output, solver, trigger, Callback[], uuid4())
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver), typeof(history)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver, history)
     end
 end
 

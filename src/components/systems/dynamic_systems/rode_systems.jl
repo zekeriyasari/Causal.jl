@@ -1,17 +1,18 @@
 # This file includes RODESystems
 
-import ....Components.Base: @generic_rode_system_fields, AbstractRODESystem
+import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractRODESystem
 
 const RODESolver = Solver(RandomEM())
 const RODENoise = Noise(WienerProcess(0.,0.))
 
 
-mutable struct RODESystem{SF, OF, ST, T, IB, OB, N, S, L} <: AbstractRODESystem
-    @generic_rode_system_fields
+mutable struct RODESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractRODESystem
+    @generic_dynamic_system_fields
+    noise::N
     function RODESystem(statefunc, outputfunc, state, t, input, output, noise)
         solver = RODESolver
         trigger = Link()
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(input), typeof(output), typeof(noise), typeof(solver), typeof(trigger)}(statefunc, outputfunc, state, t, input, output, noise, solver, trigger, Callback[], uuid4())
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver, noise)
     end
 end
 

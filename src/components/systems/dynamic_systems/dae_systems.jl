@@ -1,16 +1,18 @@
 # This file includes DAESystems
 
-import ....Components.Base: @generic_dae_system_fields, AbstractDAESystem
+import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractDAESystem
 
 const DAESolver = Solver(IDA())
 
 
-mutable struct DAESystem{SF, OF, ST, T, D, IB, OB, S, L} <: AbstractDAESystem
-    @generic_dae_system_fields 
+mutable struct DAESystem{IB, OB, L, SF, OF, ST, T, S, D} <: AbstractDAESystem
+    @generic_dynamic_system_fields
+    stateder::ST
+    diffvars::D
     function DAESystem(statefunc, outputfunc, state, stateder, t, diffvars, input, output)
         solver = DAESolver
         trigger = Link()
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(diffvars), typeof(input), typeof(output), typeof(solver), typeof(trigger)}(statefunc, outputfunc, state, stateder, t, diffvars, input, output, solver, trigger, Callback[], uuid4())
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver), typeof(diffvars)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver, stateder, diffvars)
     end
 end
 

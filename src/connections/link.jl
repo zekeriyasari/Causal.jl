@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!, RefValue, close, isready, eltype, isopen
+import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable
 
 
 struct Pin
@@ -25,7 +25,7 @@ Link(ln=64) = Link{Float64}(ln)
 
 show(io::IO, link::Link{Union{Missing, T}}) where T = print(io, 
     "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), ", 
-    "numslaves:$(length(link.slaves)))")
+    "numslaves:$(length(link.slaves)), isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
 
 ##### Link reading writing.
 function put!(link::Link{Union{Missing, T}}, val::Union{Missing, T}) where T 
@@ -48,9 +48,7 @@ function close(link::Link)
     isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
     isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
     return 
-end
-
-isopen(link::Link) = isopen(link.channel)
+end 
 
 ##### Auxilary functions to launch links.
 function taker(link)
@@ -71,9 +69,11 @@ end
 (link::Link)(t) = take!(link, t)
 
 ##### State check of link.
+isopen(link::Link) = isopen(link.channel) 
+isreadable(link::Link) = !isempty(link.channel.cond_put)
+iswritable(link::Link) = !isempty(link.channel.cond_take) 
 isfull(link::Link) = isfull(link.buffer)
 isconnected(l1::Link, l2::Link) = l1.rightpin == l2.leftpin || l1.leftpin == l2.rightpin
-snapshot(link::Link) = link.buffer.data
 hasslaves(link::Link) = !isempty(link.slaves)
 function hasmaster(link::Link) 
     try
@@ -83,6 +83,7 @@ function hasmaster(link::Link)
     end
     return true
 end
+snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links
 function connect(srclink::Link, dstlink::Link)

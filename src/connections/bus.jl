@@ -13,7 +13,8 @@ struct Bus{T}
 end
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
-show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T))")
+show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T), ",
+    "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
 
 ##### Make bus indexable.
 eltype(bus::Bus{T}) where {T} = T
@@ -57,6 +58,8 @@ close(bus::Bus) = foreach(close, bus)
 
 ##### Bus state checks
 isfull(bus::Bus) = all(isfull.(bus.links))
+isreadable(bus::Bus) = all(isreadable.(bus.links))
+iswritable(bus::Bus) = all(iswritable.(bus.links))
 isconnected(srcbus::Bus, dstbus::Bus) = all(isconnected.(srcbus.links, dstbus.links))
 isconnected(bus::Bus, links::Vector{Link}) = all(isconnected.(bus.links, links))
 isconnected(bus::Bus, link::Link) = all(isconnected.(bus.links, [link]))

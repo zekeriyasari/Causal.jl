@@ -10,6 +10,7 @@ abstract type AbstractSink <: AbstractComponent end
 
 abstract type AbstractStaticSystem <: AbstractSystem end
 abstract type AbstractDynamicSystem <: AbstractSystem end
+abstract type AbstractSubSystem <: AbstractSystem end
 abstract type AbstractMemory <: AbstractStaticSystem end
 abstract type AbstractDiscreteSystem <: AbstractDynamicSystem end
 abstract type AbstractODESystem <: AbstractDynamicSystem end

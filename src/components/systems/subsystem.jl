@@ -1,11 +1,12 @@
 
-import ....Components.Base: @generic_system_fields, AbstractSystem, Callback, Link, Bus
+import ....Components.Base: @generic_system_fields, AbstractSubSystem, Callback, Link, Bus
 
 
-mutable struct Subsystem{IB, OB, L, C} <: AbstractSystem
+mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
     @generic_system_fields
     components::C
-    function Subsystem(components, input::Union{Nothing, <:Bus, <:AbstractVector{<:Link}}, output::Union{Nothing, <:Bus, <:AbstractVector{<:Link}})
+    function SubSystem(components, input::Union{Nothing, <:Bus, <:AbstractVector{<:Link}}, 
+        output::Union{Nothing, <:Bus, <:AbstractVector{<:Link}})
         trigger = Link()
         if typeof(input) <: AbstractVector{<:Link}
             inputbus = Bus(length(input))
@@ -25,5 +26,5 @@ mutable struct Subsystem{IB, OB, L, C} <: AbstractSystem
     end
 end
 
-show(io::IO, sub::Subsystem) = print(io, "Subsystem(input:$(checkandshow(sub.input)), ",
+show(io::IO, sub::SubSystem) = print(io, "SubSystem(input:$(checkandshow(sub.input)), ",
     "output:$(checkandshow(sub.output)), components:$(checkandshow(sub.components)))")

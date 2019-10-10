@@ -118,3 +118,8 @@ end
 
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
 terminate(comp::AbstractComponent) = drive(comp, missing)
+
+takestep(comp::AbstractSubSystem) = foreach(takestep, comp.components)
+drive(comp::AbstractSubSystem, t) = foreach(subcomp -> drive(subcomp, t), comp.components)
+launch(comp::AbstractSubSystem, t) = foreach(launch, comp.components)
+terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)

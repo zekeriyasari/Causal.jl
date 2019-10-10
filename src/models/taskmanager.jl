@@ -1,13 +1,13 @@
 # This file is for TaskManager object.
 
 
-mutable struct TaskManager{T}
-    pairs::Dict{T, Task}
+mutable struct TaskManager{T, S}
+    pairs::Dict{T, S}
     callbacks::Vector{Callback}
     id::UUID
-    TaskManager(pairs::Dict{T, Task}) where T  = new{T}(pairs, Callback[], uuid4())
+    TaskManager(pairs::Dict{T, S}) where {T, S}  = new{T, S}(pairs, Callback[], uuid4())
 end
-TaskManager() = TaskManager(Dict{Any, Task}())
+TaskManager() = TaskManager(Dict{Any, Union{Task, Vector{Task}}}())
 
 show(io::IO, tm::TaskManager) = print(io, "TaskManager(pairs:$(tm.pairs))")
 
@@ -17,6 +17,7 @@ function checktasks(tm::TaskManager)
     end
 end
 
-istaskfailed(task) = task.state == :failed
+istaskfailed(task::Task) = task.state == :failed
+istaskfailed(task::Vector{Task}) = any(istaskfailed.(task))  # Subsystem interface
 istaskrunning(task) = task.state == :runnable
 isalive(tm) = !isempty(tm.pairs) && all(istaskrunning.(values(tm.pairs)))

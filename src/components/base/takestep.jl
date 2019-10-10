@@ -87,6 +87,12 @@ function takestep(comp::AbstractComponent)
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
 
+function takestep(comp::AbstractSubSystem)
+    t = readtime(comp)
+    t === missing && return t
+    foreach(takestep, comp.components)
+end
+
 function forwardstep(comp, t)
     u = readinput(comp)
     x = readstate(comp)
@@ -119,7 +125,7 @@ end
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
 terminate(comp::AbstractComponent) = drive(comp, missing)
 
-takestep(comp::AbstractSubSystem) = foreach(takestep, comp.components)
+# Subsystem interface
+launch(comp::AbstractSubSystem) = launch.(comp.components)
 drive(comp::AbstractSubSystem, t) = foreach(subcomp -> drive(subcomp, t), comp.components)
-launch(comp::AbstractSubSystem, t) = foreach(launch, comp.components)
-terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
+terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)

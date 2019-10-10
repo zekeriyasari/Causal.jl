@@ -1,3 +1,4 @@
+# This file includes SubSystem for interconnected subsystems.
 
 import ....Components.Base: @generic_system_fields, AbstractSubSystem, Callback, Link, Bus
 
@@ -21,7 +22,8 @@ mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
         else
             outputbus = output
         end
-        new{typeof(input), typeof(output), typeof(trigger), typeof(components)}(inputbus, outputbus, trigger, 
+        # TODO: Check if there exists an unconnected interconnected buses between the components of the subsytem.
+        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(components)}(inputbus, outputbus, trigger, 
             Callback[], uuid4(), components)
     end
 end

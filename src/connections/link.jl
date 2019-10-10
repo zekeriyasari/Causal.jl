@@ -18,13 +18,14 @@ mutable struct Link{T}
     id::UUID
     master::RefValue{Link{T}}
     slaves::Vector{RefValue{Link{T}}}
-    Link{T}(ln::Int=64) where {T} = new{Union{Missing, T}}(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(), Callback[], uuid4(), 
-    RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
+    Link{T}(ln::Int=64) where {T} = new{Union{Missing, T}}(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(),
+        Callback[], uuid4(), RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
 end
 Link(ln=64) = Link{Float64}(ln)
 
 show(io::IO, link::Link{Union{Missing, T}}) where T = print(io, 
-    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), numslaves:$(length(link.slaves)))")
+    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), ", 
+    "numslaves:$(length(link.slaves)))")
 
 ##### Link reading writing.
 function put!(link::Link{Union{Missing, T}}, val::Union{Missing, T}) where T 

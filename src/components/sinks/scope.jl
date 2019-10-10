@@ -13,8 +13,8 @@ mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(plt)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), 
-            update!)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(plt)}(input, 
+            databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), update!)
     end
 end
 

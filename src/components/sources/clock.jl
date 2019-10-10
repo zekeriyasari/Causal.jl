@@ -14,9 +14,11 @@ mutable struct Clock{T<:Real}
     callbacks::Vector{Callback}
     id::UUID
 end
-Clock(t, dt, tf) = Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, Callback[], uuid4())
+Clock(t, dt, tf) = Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, 
+    Callback[], uuid4())
 
-show(io::IO, clk::Clock) = print(io, "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")
+show(io::IO, clk::Clock) = print(io, 
+    "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")
 
 ##### Reading from clock
 function take!(clk::Clock)
@@ -43,7 +45,8 @@ ispaused(clk::Clock) = clk.paused
 isoutoftime(clk::Clock) = clk.t >= clk.tf
 
 ##### Controlling clock.
-set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) = (clk.generator = generator; clk.paused=false; clk)
+set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) = 
+    (clk.generator = generator; clk.paused=false; clk)
 function set!(clk::Clock, t::Real, dt::Real, tf::Real)
     set!(clk, Generator(t, dt, tf))
     clk.t = t 

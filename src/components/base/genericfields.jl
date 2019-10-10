@@ -5,7 +5,7 @@ import ....Jusdl.Connections: Bus, Link
 
 
 @def generic_source_fields begin
-    outputfunc::OF 
+    outputfunc::OF
     output::OB
     trigger::L
     callbacks::Vector{Callback}

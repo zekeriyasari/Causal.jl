@@ -12,11 +12,15 @@ mutable struct SDESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractSDESystem
     function SDESystem(statefunc, outputfunc, state, t, input, output, noise)
         solver = SDESolver
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver, noise)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
+            typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 
+            outputfunc, state, t, solver, noise)
     end
 end
 
-show(io::IO, ds::SDESystem) = print(io, "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
+show(io::IO, ds::SDESystem) = print(io, 
+    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",
+    "output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
 
 ##### Noisy Linear System
 

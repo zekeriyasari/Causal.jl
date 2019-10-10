@@ -21,15 +21,18 @@ function writeoutput(comp::AbstractComponent, out)
 end
 
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
-computeoutput(comp::AbstractStaticSystem, x, u, t) =  typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
-computeoutput(comp::AbstractDynamicSystem, x, u, t) = typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, u, t)
+computeoutput(comp::AbstractStaticSystem, x, u, t) =  
+    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
+computeoutput(comp::AbstractDynamicSystem, x, u, t) = 
+    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, u, t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 evolve!(comp::AbstractSource, x, u, t) = nothing
 evolve!(comp::AbstractSink, x, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
 evolve!(comp::AbstractStaticSystem, x, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
 function evolve!(comp::AbstractDynamicSystem, x, u, t)
-    # For DDESystems, the problem for a time span of (t, t) cannot be solved. Thus, there will be no evolution in such a case.
+    # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
+    # Thus, there will be no evolution in such a case.
     comp.t == t && return comp.state  
     sol = solve(comp, x, u, t)
     update!(comp, sol)
@@ -38,11 +41,13 @@ end
 
 constructprob(comp::AbstractDiscreteSystem, x, u, t) = DiscreteProblem(comp.statefunc, x, (comp.t, t),  u)
 constructprob(comp::AbstractODESystem, x, u, t) = ODEProblem(comp.statefunc, x, (comp.t, t), u)
-constructprob(comp::AbstractDAESystem, x, u, t) = DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), u, differential_vars=comp.diffvars)
-constructprob(comp::AbstractRODESystem, x, u, t) = RODEProblem(comp.statefunc, x, (comp.t, t), u, noise=comp.noise.process, 
-    rand_prototype=comp.noise.prototype, seed=comp.noise.seed)
-constructprob(comp::AbstractSDESystem, x, u, t) = SDEProblem(comp.statefunc..., x, (comp.t, t), u, noise=comp.noise.process, 
-    noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
+constructprob(comp::AbstractDAESystem, x, u, t) = 
+    DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), u, differential_vars=comp.diffvars)
+constructprob(comp::AbstractRODESystem, x, u, t) = 
+    RODEProblem(comp.statefunc, x, (comp.t, t), u, noise=comp.noise.process, rand_prototype=comp.noise.prototype, 
+    seed=comp.noise.seed)
+constructprob(comp::AbstractSDESystem, x, u, t) = SDEProblem(comp.statefunc..., x, (comp.t, t), u, 
+    noise=comp.noise.process, noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
 constructprob(comp::AbstractDDESystem, x, u, t) = DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), u, 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral)
 
@@ -71,7 +76,8 @@ update_state!(comp::AbstractDynamicSystem, state) = (comp.state = state; comp)
 update_stateder!(comp::AbstractDAESystem, stateder) = (comp.stateder = stateder; comp)
 function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, noise)
     Z = typeof(noise.Z) <: Nothing ? noise.Z : noise.Z[end]
-    comp.noise.process = NoiseProcess(noise.t[end], noise.u[end], Z, noise.dist, noise.bridge, rng=noise.rng, reseed=false)
+    comp.noise.process = NoiseProcess(noise.t[end], noise.u[end], Z, noise.dist, noise.bridge, rng=noise.rng, 
+    reseed=false)
     comp
 end
 

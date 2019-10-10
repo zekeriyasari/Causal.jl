@@ -12,9 +12,12 @@ mutable struct RODESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractRODESystem
     function RODESystem(statefunc, outputfunc, state, t, input, output, noise)
         solver = RODESolver
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver, noise)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state),   
+            typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 
+                outputfunc, state, t, solver, noise)
     end
 end
 
-show(io::IO, ds::RODESystem) = print(io, "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
+show(io::IO, ds::RODESystem) = print(io, "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",  
+    "output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
 

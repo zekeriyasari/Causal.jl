@@ -19,8 +19,8 @@ mutable struct Buffer{M<:BufferMode, T}
     state::Symbol 
     callbacks::Vector{Callback}
     id::UUID
-    Buffer{M}(::Type{T}, ln::Int) where {M, T} = 
-        new{M, Union{Missing, T}}(fill!(Vector{Union{Missing,T}}(undef, ln), missing), 1, :empty, Callback[], uuid4())
+    Buffer{M}(::Type{T}, ln::Int) where {M, T} = new{M, Union{Missing, T}}(fill!(Vector{Union{Missing,T}}(undef, ln),
+         missing), 1, :empty, Callback[], uuid4())
 end
 Buffer(::Type{T}, ln::Int) where T = Buffer{Cyclic}(T, ln)
 Buffer{M}(ln::Int) where M = Buffer{M}(Float64, ln)
@@ -55,7 +55,8 @@ end
 ##### Writing into buffers
 resetindex(buf::Buffer) = setfield!(buf, :index, %(buf.index, size(buf.data, 1)))
 checkindex(buf::Buffer) = isfull(buf) && resetindex(buf)
-writelinear(buf::Buffer{M, T}, val) where {M, T} = isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
+writelinear(buf::Buffer{M, T}, val) where {M, T} = 
+    isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
 writecylic(buf::Buffer{M, T}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1; checkindex(buf))
 writeinto(buf::Buffer{M, T}, val) where{M<:LinearMode, T} = writelinear(buf, val)
 writeinto(buf::Buffer{M, T}, val) where{M<:CyclicMode, T} = writecylic(buf, val)

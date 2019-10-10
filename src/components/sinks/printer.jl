@@ -11,8 +11,8 @@ mutable struct Printer{IB, DB, TB, P, L} <: AbstractSink
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4()), 
-            print)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger)}(input, databuf, 
+            timebuf, plugin, trigger, Callback[], uuid4()), print)
     end
 end
 

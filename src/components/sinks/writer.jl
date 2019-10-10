@@ -15,8 +15,8 @@ mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(file)}(input, databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), 
-            write!)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(file)}(input, 
+            databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), write!)
     end
 end
 

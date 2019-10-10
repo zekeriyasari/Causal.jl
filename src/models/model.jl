@@ -33,7 +33,8 @@ function adjacency_matrix(model::Model)
 end
 
 isterminated(output) = isa(output, Nothing) ? true : hasslaves(output)
-has_unterminated_bus(model::Model) = any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
+has_unterminated_bus(model::Model) = 
+    any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
 
 function terminate_securely!(model::Model)
     # TODO: Complete the function.

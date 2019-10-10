@@ -26,7 +26,8 @@ mutable struct SinewaveGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) =  amplitude * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), amplitude, frequency, phase, delay, offset)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            amplitude, frequency, phase, delay, offset)
     end
 end
 
@@ -43,7 +44,8 @@ mutable struct DampedSinewaveGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = amplitude * exp(decay) * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), amplitude, decay,frequency, phase, delay, offset)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            amplitude, decay,frequency, phase, delay, offset)
     end
 end
 
@@ -66,7 +68,8 @@ mutable struct SquarewaveGenerator{OF, OB, L} <: AbstractSource
         end
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), high, low, period, duty, delay)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), high,
+            low, period, duty, delay)
     end
 end
 
@@ -93,7 +96,8 @@ mutable struct TriangularwaveGenerator{OF, OB, L} <: AbstractSource
         end
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), tyepof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), amplitude, period, duty, delay, offset)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            amplitude, period, duty, delay, offset)
     end
 end
 
@@ -105,7 +109,8 @@ mutable struct ConstantGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = amplitude
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), amplitude)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            amplitude)
     end
 end
 
@@ -117,7 +122,8 @@ mutable struct RampGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = scale * t
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), scale)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            scale)
     end
 end
 
@@ -131,7 +137,8 @@ mutable struct StepGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = t - delay >= 0 ? one(t) + offset : zero(t) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, Link(), Callback[], uuid4(), amplitude, delay, offset)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, Link(), Callback[], uuid4(), 
+            amplitude, delay, offset)
     end
 end
 
@@ -144,7 +151,8 @@ mutable struct ExponentialGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = scale * exp(decay * t)
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), scale, decay)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            scale, decay)
     end
 end
 
@@ -157,23 +165,33 @@ mutable struct DampedExponentialGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = scale * t * exp(decay * t)
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), scale, decay)
+        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
+            scale, decay)
     end
 end
 
 
 ##### Pretty-Printing of generators.
-show(io::IO, gen::FunctionGenerator) = print(io::IO, "FunctionGenerator(outputfunc:$(gen.outputfunc), nout:$(length(gen.output)))")
-show(io::IO, gen::SinewaveGenerator) = print(io, "SinewaveGenerator(amp:$(gen.amplitude), freq:$(gen.frequency), phase:$(gen.phase), ",
+show(io::IO, gen::FunctionGenerator) = print(io, 
+    "FunctionGenerator(outputfunc:$(gen.outputfunc), nout:$(length(gen.output)))")
+show(io::IO, gen::SinewaveGenerator) = print(io, 
+    "SinewaveGenerator(amp:$(gen.amplitude), freq:$(gen.frequency), phase:$(gen.phase), ",
     "offset:$(gen.offset), delay:$(gen.delay))")
-show(io::IO, gen::DampedSinewaveGenerator) = print(io, "DampedSinewaveGenerator(amp:$(gen.amplitude), decay:$(gen.delay), freq:$(gen.frequency), ", 
+show(io::IO, gen::DampedSinewaveGenerator) = print(io, 
+    "DampedSinewaveGenerator(amp:$(gen.amplitude), decay:$(gen.delay), freq:$(gen.frequency), ", 
     "phase:$(gen.phase), delay:$(gen.delay), offset:$(gen.offset))")
-show(io::IO, gen::SquarewaveGenerator) = print(io, "SquarewaveGenerator(high:$(gen.high), low:$(gen.low), period:$(gen.period), duty:$(gen.duty), ",   
+show(io::IO, gen::SquarewaveGenerator) = print(io, 
+    "SquarewaveGenerator(high:$(gen.high), low:$(gen.low), period:$(gen.period), duty:$(gen.duty), ",   
     "delay:$(gen.delay))")
-show(io::IO, gen::TriangularwaveGenerator) = print(io, "TriangularwaveGenerator(amp:$(gen.amplitude), period:$(gen.period), duty:$(gen.duty), ", 
+show(io::IO, gen::TriangularwaveGenerator) = print(io, 
+    "TriangularwaveGenerator(amp:$(gen.amplitude), period:$(gen.period), duty:$(gen.duty), ", 
     "delay:$(gen.delay), offset:$(gen.offset))")
-show(io::IO, gen::ConstantGenerator) = print(io, "ConstantGenerator(amp:$(gen.amplitude)")
+show(io::IO, gen::ConstantGenerator) = print(io, 
+    "ConstantGenerator(amp:$(gen.amplitude)")
 show(io::IO, gen::RampGenerator) = print(io, "RampGenerator(scale:$(gen.scale))")
-show(io::IO, gen::StepGenerator) = print(io, "StepGenerator(amp:$(gen.amplitude), delay:$(gen.delay), offset:$(gen.offset))")
-show(io::IO, gen::ExponentialGenerator) = print(io, "ExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")
-show(io::IO, gen::DampedExponentialGenerator) = print(io, "DampedExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")
+show(io::IO, gen::StepGenerator) = print(io, 
+    "StepGenerator(amp:$(gen.amplitude), delay:$(gen.delay), offset:$(gen.offset))")
+show(io::IO, gen::ExponentialGenerator) = print(io, 
+    "ExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")
+show(io::IO, gen::DampedExponentialGenerator) = print(io, 
+    "DampedExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")

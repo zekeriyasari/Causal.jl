@@ -10,8 +10,11 @@ mutable struct DiscreteSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractDiscreteSy
     function DiscreteSystem(statefunc, outputfunc, state, t, input, output)
         solver = DiscreteSolver
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, solver)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
+            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
+            solver)
     end
 end
 
-show(io::IO, ds::DiscreteSystem) = print(io, "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::DiscreteSystem) = print(io, "DiscreteSystem(state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")

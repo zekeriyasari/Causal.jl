@@ -8,7 +8,8 @@ struct Bus{T}
     links::Vector{Link{T}}
     callbacks::Vector{Callback}
     id::UUID
-    Bus{T}(nlinks::Int=1, ln::Int=64) where T = new{Union{Missing, T}}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
+    Bus{T}(nlinks::Int=1, ln::Int=64) where T = 
+        new{Union{Missing, T}}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 end
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
@@ -64,7 +65,8 @@ isconnected(links::Vector{Link}, bus::Bus) = all(isconnected.(links, bus.links))
 
 ##### Methods on busses.
 clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)
-snapshot(bus::Bus) = length(bus) == 1 ? vcat([snapshot(link) for link in bus.links]...) : hcat([snapshot(link) for link in bus.links]...)
+snapshot(bus::Bus) = 
+    length(bus) == 1 ? vcat([snapshot(link) for link in bus.links]...) : hcat([snapshot(link) for link in bus.links]...)
     
 ##### Launching bus
 launch(bus::Bus) = launch.(bus.links)

@@ -1,6 +1,6 @@
 # This file constains the Clock tools for time synchronization of DsSimulator.
 
-import Base: iterate, take!
+import Base: iterate, take!, length
 
 Generator(t0::T, dt::T, tf::T) where T <: Real = Channel(channel -> foreach(t -> put!(channel, t), t0:dt:tf), ctype=T)
 Generator(t0::Real, dt::Real, tf::Real) = Generator(promote(t0, dt, tf)...)
@@ -58,3 +58,6 @@ unset!(clk::Clock) = (set!(clk, Channel{typeof(clk.t)}(0)); clk)
 
 ##### Iterating clock.
 iterate(clk::Clock, t=clk.t) = isready(clk.generator) ? (take!(clk), clk.t) : nothing
+
+##### ProgressMeter interface.
+length(clk::Clock) = length(clk.t:clk.dt:clk.tf)

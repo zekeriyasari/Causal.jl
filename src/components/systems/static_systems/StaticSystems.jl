@@ -96,8 +96,8 @@ struct Coupler{IB, OB, L, OF, T, S} <: AbstractStaticSystem
     @generic_static_system_fields
     adjmat::T
     cplmat::S
-    function Coupler(adjmat::AbstractMatrix, cplmat::AbstractMatrix)
-        n = size(adjmat, 1)
+    function Coupler(adjmat::Union{<:Function, <:AbstractMatrix}, cplmat::AbstractMatrix)
+        n = typeof(adjmat) <: AbstractMatrix ? size(adjmat, 1) : size(adjmat(0.), 1)
         d = size(cplmat, 1)
         input = Bus(n * d)
         output = Bus(n * d)

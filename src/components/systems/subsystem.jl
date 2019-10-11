@@ -44,7 +44,30 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
     adjmat::T 
     cplmat::S 
     function Network(components, adjmat, cplmat, input=nothing, output=vcat([component.output.links for component in components]...))
-        numnodes = size(adjmat, 1)
+        # Construct input output
+        trigger = Link()
+         if typeof(input) <: AbstractVector{<:Link}
+            inputbus = Bus(length(input))
+            for (i, link) in enumerate(input)
+                inputbus[i] = link
+            end
+            # inputbus .= input
+        else 
+            inputbus = input
+        end
+        
+        if typeof(output) <: AbstractVector{<:Link}
+            outputbus = Bus(length(output))
+            for (i, link) in enumerate(output)
+                outputbus[i] = link
+            end
+            # outputbus .= output
+        else
+            outputbus = output
+        end
+
+        ##### Connect components
+        numnodes = typeof(adjmat) <: AbstractMatrix ? size(adjmat, 1) : size(adjmat(0.), 1) 
         dimnodes = size(cplmat, 1)
         coupler = Coupler(adjmat, cplmat)
         memories = [Memory(Bus(dimnodes), 2, zeros(dimnodes)) for i = 1 : numnodes]
@@ -57,9 +80,9 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
         for (memory, component) in zip(memories, components)                            # Connect memories to components
             connect(memory.output, component.input)
         end
-        trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(components), typeof(adjmat), typeof(cplmat)}(input, output, trigger, 
-            Callback[], uuid4(), components, adjmat, cplmat)
+        allcomponents = [components..., coupler, memories...]
+        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(allcomponents), typeof(adjmat), typeof(cplmat)}(inputbus, 
+            outputbus, trigger, Callback[], uuid4(), allcomponents, adjmat, cplmat)
     end
 end
 

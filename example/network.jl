@@ -16,7 +16,7 @@ connect(net.output, writer.input)
 model = Model(net, writer)
 
 # Simulate the model 
-sim = simulate(model, 0, 0.01, 100)
+sim = simulate(model, 0, 0.01, 10)
 
 # Read and process the simulation data.
 content = read(writer)

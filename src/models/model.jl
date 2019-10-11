@@ -1,5 +1,6 @@
 # This file includes the Model object
 
+using ProgressMeter
 
 mutable struct Model{BL<:AbstractVector, CLK, TM}
     blocks::BL
@@ -89,7 +90,7 @@ function run(model::Model)
     taskmanager = model.taskmanager
     components = model.blocks
     clk = model.clk
-    for t in clk
+    @showprogress 0.1 for t in clk
         foreach(component -> drive(component, t), components)       # Drive _blocks with time tick of the clock.
         # foreach(memory -> update(memory, t), memories)              # Update memories after driving _blocks.
         checktasks(taskmanager)                                     # Check if the task are running.

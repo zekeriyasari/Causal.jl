@@ -1,6 +1,9 @@
 # This file includes SubSystem for interconnected subsystems.
 
-import ....Components.Base: @generic_system_fields, AbstractSubSystem, Callback, Link, Bus
+import ....Components.Base: @generic_system_fields, AbstractSubSystem
+import ....Components.Systems.StaticSystems: Memory, Coupler
+import ......Jusdl.Connections: Link, Bus, connect
+import ......Jusdl.Utilities: Callback
 
 
 mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
@@ -11,14 +14,20 @@ mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
         trigger = Link()
         if typeof(input) <: AbstractVector{<:Link}
             inputbus = Bus(length(input))
-            inputbus .= input
+            for (i, link) in enumerate(input)
+                inputbus[i] = link
+            end
+            # inputbus .= input
         else 
             inputbus = input
         end
         
         if typeof(output) <: AbstractVector{<:Link}
             outputbus = Bus(length(output))
-            outputbus .= output
+            for (i, link) in enumerate(output)
+                outputbus[i] = link
+            end
+            # outputbus .= output
         else
             outputbus = output
         end
@@ -28,5 +37,33 @@ mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
     end
 end
 
+
+mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
+    @generic_system_fields
+    components::C
+    adjmat::T 
+    cplmat::S 
+    function Network(components, adjmat, cplmat, input=nothing, output=vcat([component.output.links for component in components]...))
+        numnodes = size(adjmat, 1)
+        dimnodes = size(cplmat, 1)
+        coupler = Coupler(adjmat, cplmat)
+        memories = [Memory(Bus(dimnodes), 2, zeros(dimnodes)) for i = 1 : numnodes]
+        for (component, idx) in zip(components, 1 : dimnodes : numnodes * dimnodes)     # Connect components to coupler
+            connect(component.output, coupler.input[idx : idx + dimnodes - 1])
+        end
+        for (memory, idx) in zip(memories, 1 : dimnodes : numnodes * dimnodes)          # Connect coupler to memories
+            connect(coupler.output[idx : idx + dimnodes - 1], memory.input)
+        end
+        for (memory, component) in zip(memories, components)                            # Connect memories to components
+            connect(memory.output, component.input)
+        end
+        trigger = Link()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(components), typeof(adjmat), typeof(cplmat)}(input, output, trigger, 
+            Callback[], uuid4(), components, adjmat, cplmat)
+    end
+end
+
 show(io::IO, sub::SubSystem) = print(io, "SubSystem(input:$(checkandshow(sub.input)), ",
     "output:$(checkandshow(sub.output)), components:$(checkandshow(sub.components)))")
+show(io::IO, net::Network) = print(io, "Network(adjmat:$(checkandshow(net.adjmat)), cplmat:$(checkandshow(net.cplmat))",
+    "input:$(checkandshow(net.input)), output:$(checkandshow(net.output)))")

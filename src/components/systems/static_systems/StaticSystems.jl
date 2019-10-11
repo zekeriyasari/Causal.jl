@@ -91,20 +91,42 @@ struct Memory{IB, OB, L, OF, B} <: AbstractMemory
     end
 end
 
+
+struct Coupler{IB, OB, L, OF, T, S} <: AbstractStaticSystem
+    @generic_static_system_fields
+    adjmat::T
+    cplmat::S
+    function Coupler(adjmat::AbstractMatrix, cplmat::AbstractMatrix)
+        n = size(adjmat, 1)
+        d = size(cplmat, 1)
+        input = Bus(n * d)
+        output = Bus(n * d)
+        if eltype(adjmat) <: Real 
+            outputfunc = (u, t) -> kron(adjmat, cplmat) * u     # Time invariant coupling
+        else
+            outputfunc = (u, t) -> kron(adjmat(t), cplmat) * u  # Time varying coupling 
+        end
+        trigger = Link()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc), typeof(adjmat), typeof(cplmat)}(input, output, trigger, 
+            Callback[], uuid4(), outputfunc, adjmat, cplmat)
+    end
+end
+
 # ##### Pretty-printing
 show(io::IO, ss::StaticSystem) = print(io, 
     "StaticSystem(outputfunc:$(ss.outputfunc), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
 show(io::IO, ss::Adder) = print(io, 
-    "Adder(signs:$(ss.signs), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output))")
+    "Adder(signs:$(ss.signs), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
 show(io::IO, ss::Multiplier) = print(io, 
-    "Multiplier(ops:$(ss.ops), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output))")
+    "Multiplier(ops:$(ss.ops), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
 show(io::IO, ss::Gain) = print(io, 
-    "Gain(gain:$(ss.gain), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output))")
-show(io::IO, ss::Terminator) = print(io, "Gain(input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output))")
+    "Gain(gain:$(ss.gain), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+show(io::IO, ss::Terminator) = print(io, "Gain(input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
 show(io::IO, ss::Memory) = print(io, 
-    "Memory(ndelay:$(length(ss.buffer)), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output))")
+    "Memory(ndelay:$(length(ss.buffer)), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+show(io::IO, ss::Coupler) = print(io, "Coupler(adjmat:$(ss.adjmat), cplmat:$(ss.cplmat))")
 
 
-export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory
+export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler
 
 end  # module

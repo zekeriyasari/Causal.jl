@@ -12,6 +12,6 @@ include("static_systems/StaticSystems.jl")
 include("dynamic_systems/DynamicSystems.jl")
 include("subsystem.jl")
 
-export SubSystem
+export SubSystem, Network
 
 end

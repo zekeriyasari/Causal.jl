@@ -8,7 +8,8 @@ import ..Components.Base: @generic_source_fields
 mutable struct FunctionGenerator{OF, L, OB} <: AbstractSource
     @generic_source_fields
     function FunctionGenerator(outputfunc)
-        output =  Bus{typeof(outputfunc(0.))}()
+        out = outputfunc(0.)
+        output =  Bus{eltype(out)}(length(out))
         trigger = Link()
         new{typeof(outputfunc), typeof(trigger), typeof(output)}(outputfunc, output, trigger, Callback[], uuid4())
     end

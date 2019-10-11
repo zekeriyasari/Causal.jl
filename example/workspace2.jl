@@ -1,26 +1,27 @@
 using Jusdl 
 using Plots 
 
-gen1 = FunctionGenerator(sin)
-gen2 = FunctionGenerator(sin)
-adder = Adder(Bus(2))
-gain = Gain(Bus(), 2)
-writer = Writer(Bus())
-connect(gen1.output, adder.input[1])
-connect(gen2.output, adder.input[2])
-connect(adder.output, gain.input)
-connect(gain.output, writer.input)
+# Define the network parameters 
+numnodes = 2
+nodes = [LorenzSystem(10, 8/3, 28, 1, (x,u,t) -> x, rand(3), 0., Bus(3), Bus(3)) for i = 1 : numnodes]
+adjmat = [-10 10; 10 -10]
+cplmat = [1 0 0; 0 0 0; 0 0 0]
+net = Network(nodes, adjmat, cplmat)
+writer = Writer(Bus(length(net.output)))
 
-model = Model(gen1, gen2, adder, gain, writer)
+# Connect the blocks
+connect(net.output, writer.input)
 
-sim = simulate(model, 0, 0.01, 10)
+# Construct the model 
+model = Model(net, writer)
 
+# Simulate the model 
+sim = simulate(model, 0, 0.01, 100)
+
+# Read and process the simulation data.
 content = read(writer)
 t = vcat(collect(keys(content))...)
-x = vcat(vcat(collect(values(content))...)...)
-plot(t, x)
-
-# sub = SubSystem([adder, gain], adder.input, gain.output)
-# t1 = launch(sub)
-# t2 = launch(sub.input, [[rand() for i in 1 : 10] for j in 1 : length(adder.input)])
-# t3 = launch(sub.output)
+x = collect(hcat(vcat(collect(values(content))...)...)')
+plot(t, x[:, 1])
+plot!(t, x[:, 4])
+plot(t, abs.(x[:, 1] - x[:, 4]))

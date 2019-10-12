@@ -10,8 +10,6 @@ import Base.show
 include("utils.jl")
 include("static_systems/StaticSystems.jl")
 include("dynamic_systems/DynamicSystems.jl")
-include("subsystem.jl")
-
-export SubSystem, Network
+include("subsystems/SubSystems.jl")
 
 end

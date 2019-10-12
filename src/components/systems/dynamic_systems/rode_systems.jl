@@ -9,7 +9,7 @@ const RODENoise = Noise(WienerProcess(0.,0.))
 mutable struct RODESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractRODESystem
     @generic_dynamic_system_fields
     noise::N
-    function RODESystem(statefunc, outputfunc, state, t, input, output, noise)
+    function RODESystem(input, output, statefunc, outputfunc, state, t, noise)
         solver = RODESolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state),   

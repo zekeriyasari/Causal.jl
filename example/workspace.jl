@@ -3,10 +3,10 @@ using Plots
 
 # Define the network parameters 
 numnodes = 2
-nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
-adjmat = [-10 10; 10 -10]
-cplmat = [1 0 0; 0 0 0; 0 0 0]
-net = Network(nodes, adjmat, cplmat)
+dimnodes = 3
+weight = 50.
+net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
+    getconmat(:cycle_graph, numnodes, weight=weight), getcplmat(dimnodes, 1))
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks
@@ -16,12 +16,11 @@ connect(net.output, writer.input)
 model = Model(net, writer)
 
 # Simulate the model 
-sim = simulate(model, 0, 0.01, 10)
+sim = simulate(model, 0, 0.01, 100)
 
 # Read and process the simulation data.
-content = read(writer)
-t = vcat(collect(keys(content))...)
-x = collect(hcat(vcat(collect(values(content))...)...)')
+gplot(net)
+t, x = read(writer, flatten=true)
 plot(t, x[:, 1])
-plot!(t, x[:, 4])
+plot(x[:, 1], x[:, 2])
 plot(t, abs.(x[:, 1] - x[:, 4]))

@@ -26,7 +26,17 @@ show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$
 write!(writer::Writer, td, xd) = fwrite(writer.file, td, xd)
 fwrite(file, td, xd) = file[string(td)] = xd
 
-read(writer::Writer) = fread(writer.file.path)
+function read(writer::Writer; flatten=false) 
+    content = fread(writer.file.path)
+    if flatten
+        t = vcat(collect(keys(content))...)
+        x = collect(hcat(vcat(collect(values(content))...)...)')
+        return t, x
+    else
+        return content
+    end
+end
+
 function fread(path::String)
     content = load(path)
     SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])

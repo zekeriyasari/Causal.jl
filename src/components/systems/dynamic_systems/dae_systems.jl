@@ -9,7 +9,7 @@ mutable struct DAESystem{IB, OB, L, SF, OF, ST, T, S, D} <: AbstractDAESystem
     @generic_dynamic_system_fields
     stateder::ST
     diffvars::D
-    function DAESystem(statefunc, outputfunc, state, stateder, t, diffvars, input, output)
+    function DAESystem(input, output, statefunc, outputfunc, state, stateder, t, diffvars)
         solver = DAESolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 

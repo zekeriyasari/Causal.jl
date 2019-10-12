@@ -3,10 +3,10 @@ using Plots
 
 # Define the network parameters 
 numnodes = 2
-nodes = [LorenzSystem(10, 8/3, 28, 1, (x,u,t) -> x, rand(3), 0., Bus(3), Bus(3)) for i = 1 : numnodes]
-adjmat = [-10 10; 10 -10]
+nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
+conmat = [-10 10; 10 -10]
 cplmat = [1 0 0; 0 0 0; 0 0 0]
-net = Network(nodes, adjmat, cplmat)
+net = Network(nodes, conmat, cplmat)
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks

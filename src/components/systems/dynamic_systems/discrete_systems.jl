@@ -7,7 +7,7 @@ const DiscreteSolver = Solver(FunctionMap())
 
 mutable struct DiscreteSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractDiscreteSystem
     @generic_dynamic_system_fields
-    function DiscreteSystem(statefunc, outputfunc, state, t, input, output)
+    function DiscreteSystem(input, output, statefunc, outputfunc, state, t)
         solver = DiscreteSolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 

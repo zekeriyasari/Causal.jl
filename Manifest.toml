@@ -111,6 +111,12 @@ git-tree-sha1 = "ed2c4abadf84c53d9e58510b5fc48912c2336fbb"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "2.2.0"
 
+[[Compose]]
+deps = ["Base64", "Colors", "DataStructures", "Dates", "IterTools", "JSON", "LinearAlgebra", "Measures", "Printf", "Random", "Requires", "Test", "UUIDs"]
+git-tree-sha1 = "7d8fe0ad6f73c40ccc4e01f426a700c5a843a1d3"
+uuid = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
+version = "0.7.3"
+
 [[Conda]]
 deps = ["JSON", "VersionParsing"]
 git-tree-sha1 = "9a11d428dcdc425072af4aea19ab1e8c3e01c032"
@@ -308,6 +314,12 @@ git-tree-sha1 = "c59a30ef95fa4b5e0567c1911652e0c70a5d055c"
 uuid = "01680d73-4ee2-5a08-a1aa-533608c188bb"
 version = "0.2.2"
 
+[[GraphPlot]]
+deps = ["ArnoldiMethod", "ColorTypes", "Colors", "Compose", "DelimitedFiles", "LightGraphs", "LinearAlgebra", "Random", "SparseArrays", "Test"]
+git-tree-sha1 = "f4435ce0055d4da938f3bab0c0e523826735c96a"
+uuid = "a2cc645c-3eea-5389-862e-a155d0052231"
+version = "0.3.1"
+
 [[Inflate]]
 deps = ["Pkg", "Printf", "Random", "Test"]
 git-tree-sha1 = "b7ec91c153cf8bff9aff58b39497925d133ef7fd"
@@ -317,6 +329,11 @@ version = "0.1.1"
 [[InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
+[[IterTools]]
+git-tree-sha1 = "2ebe60d7343962966d1779a74a760f13217a6901"
+uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+version = "1.2.0"
 
 [[IterativeSolvers]]
 deps = ["LinearAlgebra", "Printf", "Random", "RecipesBase", "SparseArrays", "Test"]

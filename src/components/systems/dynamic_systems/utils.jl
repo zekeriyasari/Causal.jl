@@ -3,6 +3,8 @@
 import ..Systems: hasargs
 
 
+allstates(x, u, t) = x
+
 struct Solver{A, T}
     alg::A 
     params::Dict{Symbol, T}

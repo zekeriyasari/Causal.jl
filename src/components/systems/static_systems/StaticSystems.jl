@@ -94,21 +94,21 @@ end
 
 struct Coupler{IB, OB, L, OF, T, S} <: AbstractStaticSystem
     @generic_static_system_fields
-    adjmat::T
+    conmat::T
     cplmat::S
-    function Coupler(adjmat::AbstractMatrix, cplmat::AbstractMatrix)
-        n = size(adjmat, 1)
+    function Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
+        n = size(conmat, 1)
         d = size(cplmat, 1)
         input = Bus(n * d)
         output = Bus(n * d)
-        if eltype(adjmat) <: Real 
-            outputfunc = (u, t) -> kron(adjmat, cplmat) * u     # Time invariant coupling
+        if eltype(conmat) <: Real 
+            outputfunc = (u, t) -> kron(conmat, cplmat) * u     # Time invariant coupling
         else
-            outputfunc = (u, t) -> kron(map(f->f(t), adjmat), cplmat) * u  # Time varying coupling 
+            outputfunc = (u, t) -> kron(map(f->f(t), conmat), cplmat) * u  # Time varying coupling 
         end
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc), typeof(adjmat), typeof(cplmat)}(input, 
-            output, trigger, Callback[], uuid4(), outputfunc, adjmat, cplmat)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc), typeof(conmat), typeof(cplmat)}(input, 
+            output, trigger, Callback[], uuid4(), outputfunc, conmat, cplmat)
     end
 end
 
@@ -124,7 +124,7 @@ show(io::IO, ss::Gain) = print(io,
 show(io::IO, ss::Terminator) = print(io, "Gain(input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
 show(io::IO, ss::Memory) = print(io, 
     "Memory(ndelay:$(length(ss.buffer)), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
-show(io::IO, ss::Coupler) = print(io, "Coupler(adjmat:$(ss.adjmat), cplmat:$(ss.cplmat))")
+show(io::IO, ss::Coupler) = print(io, "Coupler(conmat:$(ss.conmat), cplmat:$(ss.cplmat))")
 
 
 export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler

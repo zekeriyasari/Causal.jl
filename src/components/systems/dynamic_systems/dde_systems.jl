@@ -7,7 +7,7 @@ const DDESolver = Solver(MethodOfSteps(Tsit5()))
 mutable struct DDESystem{IB, OB, L, SF, OF, ST, T, S, H} <: AbstractDDESystem
     @generic_dynamic_system_fields
     history::H 
-    function DDESystem(statefunc, outputfunc, state, history, t, input, output)
+    function DDESystem(input, output, statefunc, outputfunc, state, history, t)
         solver = DDESolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 

@@ -96,19 +96,19 @@ struct Coupler{IB, OB, L, OF, T, S} <: AbstractStaticSystem
     @generic_static_system_fields
     adjmat::T
     cplmat::S
-    function Coupler(adjmat::Union{<:Function, <:AbstractMatrix}, cplmat::AbstractMatrix)
-        n = typeof(adjmat) <: AbstractMatrix ? size(adjmat, 1) : size(adjmat(0.), 1)
+    function Coupler(adjmat::AbstractMatrix, cplmat::AbstractMatrix)
+        n = size(adjmat, 1)
         d = size(cplmat, 1)
         input = Bus(n * d)
         output = Bus(n * d)
         if eltype(adjmat) <: Real 
             outputfunc = (u, t) -> kron(adjmat, cplmat) * u     # Time invariant coupling
         else
-            outputfunc = (u, t) -> kron(adjmat(t), cplmat) * u  # Time varying coupling 
+            outputfunc = (u, t) -> kron(map(f->f(t), adjmat), cplmat) * u  # Time varying coupling 
         end
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc), typeof(adjmat), typeof(cplmat)}(input, output, trigger, 
-            Callback[], uuid4(), outputfunc, adjmat, cplmat)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc), typeof(adjmat), typeof(cplmat)}(input, 
+            output, trigger, Callback[], uuid4(), outputfunc, adjmat, cplmat)
     end
 end
 

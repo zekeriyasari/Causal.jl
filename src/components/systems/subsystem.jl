@@ -43,7 +43,8 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
     components::C
     adjmat::T 
     cplmat::S 
-    function Network(components, adjmat, cplmat, input=nothing, output=vcat([component.output.links for component in components]...))
+    function Network(components, adjmat, cplmat, input=nothing, 
+            output=vcat([component.output.links for component in components]...))
         # Construct input output
         trigger = Link()
          if typeof(input) <: AbstractVector{<:Link}
@@ -67,7 +68,7 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
         end
 
         ##### Connect components
-        numnodes = typeof(adjmat) <: AbstractMatrix ? size(adjmat, 1) : size(adjmat(0.), 1) 
+        numnodes = size(adjmat, 1)
         dimnodes = size(cplmat, 1)
         coupler = Coupler(adjmat, cplmat)
         memories = [Memory(Bus(dimnodes), 2, zeros(dimnodes)) for i = 1 : numnodes]

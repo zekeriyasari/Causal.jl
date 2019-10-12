@@ -6,7 +6,7 @@ numnodes = 2
 nodes = [LorenzSystem(10, 8/3, 28, 1, (x,u,t) -> x, rand(3), 0., Bus(3), Bus(3)) for i = 1 : numnodes]
 weightpos(t, high=5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
 weightneg(t, high=-5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
-adjmat(t) = [weightneg(t) weightpos(t); weightpos(t) weightneg(t)]
+adjmat = [weightneg weightpos; weightpos weightneg]
 cplmat = [1 0 0; 0 0 0; 0 0 0]
 net = Network(nodes, adjmat, cplmat)
 writer = Writer(Bus(length(net.output)))

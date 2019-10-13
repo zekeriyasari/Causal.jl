@@ -7,8 +7,7 @@ const ODESolver = Solver(Tsit5())
 
 mutable struct ODESystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     @generic_dynamic_system_fields
-    function ODESystem(input, output, statefunc, outputfunc, state, t)
-        solver = ODESolver
+    function ODESystem(input, output, statefunc, outputfunc, state, t; solver=ODESolver)
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
@@ -23,8 +22,8 @@ mutable struct LinearSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     B::Matrix{Float64}
     C::Matrix{Float64}
     D::Matrix{Float64}
-    function LinearSystem(input, output, A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0.)
-        solver = ODESolver
+    function LinearSystem(input, output; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
+        state=rand(size(A,1)), t=0., solver=ODESolver)
         trigger = Link()
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
@@ -51,7 +50,8 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     beta::Float64
     rho::Float64
     gamma::Float64
-    function LorenzSystem(input, output, sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.)
+    function LorenzSystem(input, output; sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        solver=ODESolver)
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = sigma * (x[2] - x[1])
@@ -67,7 +67,6 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
                 dx .*= gamma
             end
         end
-        solver = ODESolver 
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
@@ -116,7 +115,8 @@ mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
     alpha::Float64
     beta::Float64
     gamma::Float64
-    function ChuaSystem(input, output, diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0.)
+    function ChuaSystem(input, output; diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., 
+        outputfunc=allstates, state=rand(3), t=0., solver=ODESolver)
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
@@ -132,7 +132,6 @@ mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
             dx .*= gamma
             end
         end
-        solver = ODESolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver), typeof(diode)}(input, output, trigger, Callback[], uuid4(), statefunc, 
@@ -148,7 +147,8 @@ mutable struct RosslerSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     b::Float64
     c::Float64
     gamma::Float64
-    function RosslerSystem(input, output, a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0.)
+    function RosslerSystem(input, output; a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        solver=ODESolver)
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3]
@@ -164,7 +164,6 @@ mutable struct RosslerSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
                 dx .*= gamma
             end
         end
-        solver = ODESolver 
         trigger = Link() 
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
@@ -178,7 +177,8 @@ mutable struct VanderpolSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
-    function VanderpolSystem(input, output, mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0.)
+    function VanderpolSystem(input, output; mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
+        solver=ODESolver)
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = gamma * x[2]
@@ -190,7 +190,6 @@ mutable struct VanderpolSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
                 dx[2] = gamma * (-mu * (x[1]^2 - 1) * x[2] - x[1]) + u[2]
             end
         end
-        solver = ODESolver
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 

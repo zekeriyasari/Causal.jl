@@ -9,8 +9,7 @@ const SDENoise = Noise(WienerProcess(0.,0.))
 mutable struct SDESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractSDESystem
     @generic_dynamic_system_fields
     noise::N
-    function SDESystem(input, output, statefunc, outputfunc, state, t, noise)
-        solver = SDESolver
+    function SDESystem(input, output, statefunc, outputfunc, state, t, noise; solver=SDESolver)
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
             typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 

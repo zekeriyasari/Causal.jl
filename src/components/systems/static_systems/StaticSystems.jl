@@ -12,7 +12,7 @@ import Base.show
 
 struct StaticSystem{IB, OB, L, OF} <: AbstractStaticSystem
     @generic_static_system_fields
-    function StaticSystem(outputfunc, input, output)
+    function StaticSystem(input, output, outputfunc)
         trigger = Link()
         new{typeof(input), typeof(output), typeof(trigger), typeof(outputfunc)}(input, output, trigger, Callback[], 
             uuid4(), outputfunc)
@@ -55,7 +55,7 @@ end
 struct Gain{IB, OB, L, OF, T} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::T
-    function Gain(input::Bus, gain=1.)
+    function Gain(input::Bus; gain=1.)
         outputfunc(u, t) =  gain * u
         output = Bus{eltype(input)}(length(input))
         trigger = Link()
@@ -80,7 +80,7 @@ end
 struct Memory{IB, OB, L, OF, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int, initial=missing) where T 
+    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int; initial=missing) where T 
         buffer = Buffer{Fifo}(Vector{T}, numdelay)
         fill!(buffer, initial)
         outputfunc(u, t) = buffer()

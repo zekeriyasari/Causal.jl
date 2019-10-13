@@ -39,7 +39,7 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
         numnodes = size(conmat, 1)
         dimnodes = size(cplmat, 1)
         coupler = Coupler(conmat, cplmat)
-        memories = [Memory(Bus(dimnodes), 2, zeros(dimnodes)) for i = 1 : numnodes]
+        memories = [Memory(Bus(dimnodes), 2, initial=zeros(dimnodes)) for i = 1 : numnodes]
         for (component, idx) in zip(components, 1 : dimnodes : numnodes * dimnodes)     # Connect components to coupler
             connect(component.output, coupler.input[idx : idx + dimnodes - 1])
         end

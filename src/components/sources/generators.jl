@@ -23,7 +23,7 @@ mutable struct SinewaveGenerator{OF, OB, L} <: AbstractSource
     phase::Float64
     delay::Float64
     offset::Float64
-    function SinewaveGenerator(amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
+    function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
         outputfunc(t) =  amplitude * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
@@ -41,7 +41,7 @@ mutable struct DampedSinewaveGenerator{OF, OB, L} <: AbstractSource
     phase::Float64
     delay::Float64
     offset::Float64
-    function DampedSinewaveGenerator(amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
+    function DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
         outputfunc(t) = amplitude * exp(decay) * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
@@ -59,7 +59,7 @@ mutable struct SquarewaveGenerator{OF, OB, L} <: AbstractSource
     period::Float64
     duty::Float64
     delay::Float64
-    function SquarewaveGenerator(high=1., low=0., period=1., duty=0.5, delay=0.)
+    function SquarewaveGenerator(;high=1., low=0., period=1., duty=0.5, delay=0.)
         function outputfunc(t)
             if t <= delay
                 return low
@@ -82,7 +82,7 @@ mutable struct TriangularwaveGenerator{OF, OB, L} <: AbstractSource
     duty::Float64
     delay::Float64
     offset::Float64
-    function TriangularwaveGenerator(amplitude=1, period=1, duty=0.5, delay=0, offset=0)
+    function TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0)
         function outputfunc(t)
             if t <= delay
                 return offset
@@ -106,7 +106,7 @@ end
 mutable struct ConstantGenerator{OF, OB, L} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
-    function ConstantGenerator(amplitude=1.)
+    function ConstantGenerator(;amplitude=1.)
         outputfunc(t) = amplitude
         output = Bus()
         trigger = Link()
@@ -119,7 +119,7 @@ end
 mutable struct RampGenerator{OF, OB, L} <: AbstractSource
     @generic_source_fields
     scale::Float64
-    function RampGenerator(scale=1)
+    function RampGenerator(;scale=1)
         outputfunc(t) = scale * t
         output = Bus()
         trigger = Link()
@@ -134,7 +134,7 @@ mutable struct StepGenerator{OF, OB, L} <: AbstractSource
     amplitude::Float64
     delay::Float64
     offset::Float64
-    function StepGenerator(amplitude=1, delay=0, offset=0)
+    function StepGenerator(;amplitude=1, delay=0, offset=0)
         outputfunc(t) = t - delay >= 0 ? one(t) + offset : zero(t) + offset
         output = Bus()
         trigger = Link()
@@ -148,7 +148,7 @@ mutable struct ExponentialGenerator{OF, OB, L} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
-    function ExponentialGenerator(scale=1, decay=-1)
+    function ExponentialGenerator(;scale=1, decay=-1)
         outputfunc(t) = scale * exp(decay * t)
         output = Bus()
         trigger = Link()

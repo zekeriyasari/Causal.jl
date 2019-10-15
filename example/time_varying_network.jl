@@ -1,14 +1,19 @@
 using Jusdl 
 using Plots 
 
+# Simulation settings 
+t0 = 0
+dt = 0.001
+tf = 500.
+
 # Define the network parameters 
 numnodes = 2
-nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
+dimnodes = 3
 weightpos(t, high=5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
 weightneg(t, high=-5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
-conmat = [weightneg weightpos; weightpos weightneg]
-cplmat = [1 0 0; 0 0 0; 0 0 0]
-net = Network(nodes, conmat, cplmat)
+net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
+    [weightneg weightpos; weightpos weightneg],
+    getcplmat(dimnodes, 1))
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks
@@ -21,11 +26,9 @@ model = Model(net, writer)
 sim = simulate(model, 0, 0.01, 500)
 
 # Read and process the simulation data.
-content = read(writer)
-t = vcat(collect(keys(content))...)
-x = collect(hcat(vcat(collect(values(content))...)...)')
-plot(t, x[:, 1])
-plot!(t, x[:, 4])
-plot(t, abs.(x[:, 1] - x[:, 4]))
-plot!(t, map(weightpos, t))
-
+t, x = read(writer, flatten=true)
+p1 = plot(t, x[:, 1], label=:x1)
+    plot!(t, x[:, 4], label=:x2)
+p2 = plot(t, abs.(x[:, 1] - x[:, 4]), label=:err)
+    plot!(t, map(weightpos, t), label=:coupling)
+display(plot(p1, p2, layout=(2,1)))

@@ -52,6 +52,6 @@ p2 = plot!(t, xr, label=:xr)
 p3 = plot!(t, xd, label=:xd)
 p4 = plot(t, abs.(xj - xr), label=:err_jusdl)
 p5 = plot!(t, abs.(xd - xr), label=:err_diffeq)
-plot(p3, p5, layout=(2,1))
+display(plot(p3, p5, layout=(2,1)))
 
 

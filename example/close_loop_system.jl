@@ -6,9 +6,9 @@ using Plots
 # Define the components
 f(dx, x, u, t) = (dx[1] = -x[1] + u[1])
 g(x, u, t) = x
-ds = ODESystem(f, g, [1.], 0., Bus(1), Bus(1))
-gen = SinewaveGenerator(1, 1/100)
-mem = Memory(Bus(1), 1, [0.])
+ds = ODESystem(Bus(1), Bus(1), f, g, [1.], 0.)
+gen = SinewaveGenerator(frequency=0.01)
+mem = Memory(Bus(1), 1, initial=[0.])
 adder = Adder(Bus(2), (+,-))
 writer1 = Writer(Bus(1))
 writer2 = Writer(Bus(1))

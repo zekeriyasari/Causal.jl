@@ -14,11 +14,13 @@ eps = 1.
 # Simulate the system using Jusdl by constructing a network
 numnodes = 5 
 dimnodes = 3
-conmat = [-eps eps 0 0 0; 
+conmat = [
+    -eps eps 0 0 0; 
     eps -2eps eps 0 0; 
     0 eps -2eps eps 0;
     0 0 eps -eps 0;
-    0 0 0 0 0]
+    0 0 0 0 0
+    ]
 net = Network(
     [LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes],
     conmat, getcplmat(dimnodes, 1))

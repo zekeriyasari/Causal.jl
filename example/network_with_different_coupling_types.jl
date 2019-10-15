@@ -1,12 +1,17 @@
 using Jusdl 
 using Plots 
 
+# Simulation parameters
+t0 = 0
+dt = 0.001
+tf = 50
+
 # Define the network parameters 
-numnodes = 2
+numnodes = 10
 dimnodes = 3
-weight = 50.
+weight = 100.
 net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
-    getconmat(:cycle_graph, numnodes, weight=weight), getcplmat(dimnodes, 1))
+    getconmat(:erdos_renyi, numnodes, 0.7, weight=weight), getcplmat(dimnodes, 1))
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks
@@ -16,12 +21,13 @@ connect(net.output, writer.input)
 model = Model(net, writer)
 
 # Simulate the moadel 
-sim = simulate(model, 0, 0.01, 100)
+sim = simulate(model, t0, dt, tf)
 
 # Read and process the simulation data.
 gplot(net)
 t, x = read(writer, flatten=true)
-plot(t, x[:, 1])
-plot(x[:, 1], x[:, 2])
-plot(t, abs.(x[:, 1] - x[:, 4]))
-
+p1 = plot(t, x[:, 1])
+p2 = plot(x[:, 1], x[:, 2])
+p3 = plot(t, abs.(x[:, 1] - x[:, 4]))
+display(gplot(net))
+display(plot(p1, p2, p3, layout=(3,1)))

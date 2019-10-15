@@ -1,6 +1,11 @@
 using Jusdl 
 using Plots 
 
+# Simulation settings 
+t0 = 0
+dt = 0.001
+tf = 10.
+
 # Define the network parameters 
 numnodes = 2
 nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
@@ -16,12 +21,11 @@ connect(net.output, writer.input)
 model = Model(net, writer)
 
 # Simulate the model 
-sim = simulate(model, 0, 0.01, 10)
+sim = simulate(model, t0, dt, tf)
 
 # Read and process the simulation data.
-content = read(writer)
-t = vcat(collect(keys(content))...)
-x = collect(hcat(vcat(collect(values(content))...)...)')
-plot(t, x[:, 1])
-plot!(t, x[:, 4])
-plot(t, abs.(x[:, 1] - x[:, 4]))
+t, x = read(writer, flatten=true)
+p1 = plot(t, x[:, 1])
+    plot!(t, x[:, 4])
+p2 = plot(t, abs.(x[:, 1] - x[:, 4]))
+display(plot(p1, p2, layout=(2,1)))

@@ -1,41 +1,43 @@
-# Step-by-step solution of chaotic systems 
-
-using Jusdl 
-using Plots
-using DifferentialEquations 
-using LinearAlgebra
+using Jusdl
+using Plots 
 
 # Simulation settings 
-dstype = :LinearSystem  # Choose :LinearSystem or :LorenzSystem
-x0 = ones(3)
-t0, dt, tf = 0., 0.001, 100.
+t0 = 0
+dt = 0.001
+tf = 500.
 
+# Construct the network 
+numnodes = 4 
+dimnodes = 3
+weightcon = 5.
+weightpos(t, high=weightcon, low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
+weightneg(t, high=-weightcon, low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
+conmat = [
+    t -> 3 * weightneg(t)   t -> 3 * weightpos(t)   t -> -weightcon         t -> weightcon;
+    t -> 3 * weightpos(t)   t -> 3 * weightneg(t)   t -> weightcon          t -> -weightcon;
+    t -> -weightcon         t -> weightcon          t -> -3 * weightcon     t -> 3 * weightcon;
+    t -> weightcon          t -> -weightcon         t -> 3 * weightcon      t -> -3 * weightcon]
+cplmat = [1 0 0; 0 0 0; 0 0 0]
+net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], conmat, cplmat)
+writer = Writer(Bus(length(net.output)))
 
-if dstype == :LorenzSystem
-    ds = LorenzSystem(nothing, Bus(3), state=x0)
-    f = (dx, x, u, t, sigma=10, beta=8/3, rho=28,) -> begin 
-        dx[1] = sigma * (x[2] - x[1])
-        dx[2] = x[1] * (rho - x[3]) - x[2]
-        dx[3] = x[1] * x[2] - beta * x[3]
-    end
-elseif dstype == :LinearSystem
-    A=diagm(-1*ones(3))
-    C=diagm(ones(3))
-    ds = LinearSystem(nothing, Bus(3), A=A, C=C, state=x0)
-    f = (dx, x, u, t, A=A) -> (dx .= A * x)
-end
-writer = Writer(Bus(3))
-connect(ds.output, writer.input)
-model = Model(ds, writer)
-sim = simulate(model, t0, dt, tf)
-t, xj = read(writer, flatten=true)
+# Connect the model components 
+connect(net.output, writer.input)
 
-tspan = (t0, tf)
-sol = solve(ODEProblem(f, x0, tspan), saveat=dt)
-xd  = collect(hcat(sol.u[1 : size(xj, 1)]...)')
+# Construct the model 
+model = Model(net, writer)
 
+# Simulate the model 
+sim = simulate(model, t0, dt ,tf)
 
-p1 = plot(t, xj[:, 1], label=:xj1)
-    plot!(t, xd[:, 1], label=:xd1)
-p2 = plot(t, abs.(xj[:, 1] - xd[:, 1]), label=:err1)
-display(plot(p1, p2, layout=(2,1)))
+# Read simulation data 
+t, x = read(writer, flatten=true)
+
+p1 = plot(t, x[:, 1])
+p2 = plot(t, abs.(x[:, 1] - x[:, 4]))
+    plot!(t, map(weightpos, t), label=:coupling)
+p3 = plot(t, abs.(x[:, 4] - x[:, 7]))
+    plot!(t, map(weightpos, t), label=:coupling)
+p4 = plot(t, abs.(x[:, 7] - x[:, 10]))
+    plot!(t, map(weightpos, t), label=:coupling)
+display(plot(p1, p2, p3, p4, layout=(4, 1)))

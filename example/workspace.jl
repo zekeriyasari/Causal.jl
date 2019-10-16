@@ -1,43 +1,35 @@
-using Jusdl
+# This exampe illustrates the simulation of chaotic system with different time steps
+
+using DifferentialEquations
 using Plots 
 
 # Simulation settings 
-t0 = 0
-dt = 0.001
-tf = 500.
+t0, dt, tf = 0., 0.01, 100.
+x0 = rand(6)
 
-# Construct the network 
-numnodes = 4 
-dimnodes = 3
-weightcon = 5.
-weightpos(t, high=weightcon, low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
-weightneg(t, high=-weightcon, low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
-conmat = [
-    t -> 3 * weightneg(t)   t -> 3 * weightpos(t)   t -> -weightcon         t -> weightcon;
-    t -> 3 * weightpos(t)   t -> 3 * weightneg(t)   t -> weightcon          t -> -weightcon;
-    t -> -weightcon         t -> weightcon          t -> -3 * weightcon     t -> 3 * weightcon;
-    t -> weightcon          t -> -weightcon         t -> 3 * weightcon      t -> -3 * weightcon]
-cplmat = [1 0 0; 0 0 0; 0 0 0]
-net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], conmat, cplmat)
-writer = Writer(Bus(length(net.output)))
+# Define the system 
+function f(dx, x, u, t, sigma=10, beta=8/3, rho=28, weight=10000.)
+    dx[1] = sigma * (x[2] - x[1]) + weight * (x[4] - x[1])
+    dx[2] = x[1] * (rho - x[3]) - x[2]
+    dx[3] = x[1] * x[2] - beta * x[3]
+    dx[4] = sigma * (x[5] - x[4]) + weight * (x[1] - x[4])
+    dx[5] = x[4] * (rho - x[6]) - x[5]
+    dx[6] = x[4] * x[5] - beta * x[6]
+end
 
-# Connect the model components 
-connect(net.output, writer.input)
+# Solve the system in steps 
+buf = [x0]
+x = x0 
+for t in 0 : dt : tf
+    global x 
+    sol = solve(ODEProblem(f, x, (t, t + dt)), dt=1e-15)
+    x = sol.u[end]
+    push!(buf, x)
+end
+x = collect(hcat(buf...)')
 
-# Construct the model 
-model = Model(net, writer)
-
-# Simulate the model 
-sim = simulate(model, t0, dt ,tf)
-
-# Read simulation data 
-t, x = read(writer, flatten=true)
-
-p1 = plot(t, x[:, 1])
-p2 = plot(t, abs.(x[:, 1] - x[:, 4]))
-    plot!(t, map(weightpos, t), label=:coupling)
-p3 = plot(t, abs.(x[:, 4] - x[:, 7]))
-    plot!(t, map(weightpos, t), label=:coupling)
-p4 = plot(t, abs.(x[:, 7] - x[:, 10]))
-    plot!(t, map(weightpos, t), label=:coupling)
-display(plot(p1, p2, p3, p4, layout=(4, 1)))
+# Plot the results 
+p1 = plot(x[:, 1])
+p2 = plot(x[:, 1], x[:, 2])
+p3 = plot(abs.(x[:, 1] - x[:, 4]))
+display(plot(p1, p2, p3, layout=(3,1)))

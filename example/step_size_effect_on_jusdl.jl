@@ -11,16 +11,6 @@ tf = 10.
 x0 = [1.]
 inputfunc = one
 
-# Define the real solution
-if inputfunc == zero
-    xr = x0[1] * exp.(-t) 
-elseif inputfunc == identity
-    xr = (x0[1] + 1) * exp.(-t) + t .- 1 
-elseif  inputfunc == sin 
-    xr = (x0[1] + 1 / 2) * exp.(-t) + (sin.(t) - cos.(t)) / 2
-else
-    error("inputfunc is undefined.")
-end
 
 # Solve the system using Jusdl 
 gen = FunctionGenerator(inputfunc)
@@ -31,6 +21,17 @@ connect(ds.output, writer.input)
 model = Model(gen, ds, writer)
 sim = simulate(model, t0, dt, tf)
 t, xj  = read(writer, flatten=true)
+
+# Define the real solution
+if inputfunc == zero
+    xr = x0[1] * exp.(-t) 
+elseif inputfunc == identity
+    xr = (x0[1] + 1) * exp.(-t) + t .- 1 
+elseif  inputfunc == sin 
+    xr = (x0[1] + 1 / 2) * exp.(-t) + (sin.(t) - cos.(t)) / 2
+else
+    error("inputfunc is undefined.")
+end
 
 # Solve the system using DifferentialEquations
 function f(dx, x, u, t)

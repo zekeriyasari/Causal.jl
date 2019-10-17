@@ -30,7 +30,9 @@ show(io::IO, link::Link{Union{Missing, T}}) where T = print(io,
 ##### Link reading writing.
 function put!(link::Link{Union{Missing, T}}, val::Union{Missing, T}) where T 
     write!(link.buffer, val)
-    isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
+    put!(link.channel, val)
+    isempty(link.slaves) || foreach(junc -> put!(junc[], val), link.slaves)
+    # isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
     return val
 end

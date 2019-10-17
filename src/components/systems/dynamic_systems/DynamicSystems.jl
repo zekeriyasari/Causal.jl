@@ -5,6 +5,7 @@
 using DifferentialEquations
 using Sundials
 using UUIDs
+using LinearAlgebra
 import ..Systems: infer_number_of_outputs, checkandshow
 import ......Jusdl.Utilities: Callback, Buffer
 import ......Jusdl.Connections: Link, Bus

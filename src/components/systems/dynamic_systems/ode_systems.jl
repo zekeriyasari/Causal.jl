@@ -51,7 +51,7 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     rho::Float64
     gamma::Float64
     function LorenzSystem(input, output; sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        solver=ODESolver)
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = sigma * (x[2] - x[1])
@@ -61,9 +61,10 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
             end
         else
             statefunc = (dx, x, u, t) -> begin
-                dx[1] = sigma * (x[2] - x[1]) + u[1]
-                dx[2] = x[1] * (rho - x[3]) - x[2] + u[2]
-                dx[3] = x[1] * x[2] - beta * x[3] + u[3]
+                dx[1] = sigma * (x[2] - x[1])
+                dx[2] = x[1] * (rho - x[3]) - x[2]
+                dx[3] = x[1] * x[2] - beta * x[3]
+                dx .+= cplmat * u   # Couple inputs
                 dx .*= gamma
             end
         end

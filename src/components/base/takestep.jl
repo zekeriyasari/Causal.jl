@@ -114,6 +114,9 @@ function backwardstep(comp, t)
 end
 
 function launch(comp::AbstractComponent)
+    @async while true 
+        typeof(comp.output) <: Bus ? take!(comp.output) : nothing  # empty task for output to be writable.
+    end
     @async begin 
         while true
             takestep(comp) === missing && break

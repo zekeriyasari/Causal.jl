@@ -8,13 +8,13 @@ mutable struct Model{BL<:AbstractVector, CLK, TM}
     taskmanager::TM
     callbacks::Vector{Callback}
     id::UUID
-    function Model(blocks)
+    function Model(blocks::AbstractVector{<:AbstractComponent})
         taskmanager = TaskManager()
         clk = Clock(NaN, NaN, NaN)
         new{typeof(blocks), typeof(clk), typeof(taskmanager)}(blocks, clk, taskmanager, Callback[], uuid4())
     end
 end
-Model(blocks...) = Model([blocks...])
+Model(blocks::AbstractComponent...) = Model([blocks...])
 
 show(io::IO, model::Model) = print(io, "Model(blocks:$(model.blocks))")
 
@@ -54,10 +54,10 @@ end
 
 function inspect(model)
     # TODO : Complete the function.
-    if has_unterminated_bus(model)
-        msg = "Model has unterminated busses. Please check the model carefully for unterminated busses."
-        throw(SimulationError(msg))
-    end
+    # if has_unterminated_bus(model)
+    #     msg = "Model has unterminated busses. Please check the model carefully for unterminated busses."
+    #     throw(SimulationError(msg))
+    # end
     if has_algeraic_loop(model)
         try
             break_algebraic_loop!(model)

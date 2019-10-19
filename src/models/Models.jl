@@ -5,7 +5,7 @@ using Logging
 using JLD2
 import ..Jusdl.Utilities: Callback
 import ..Jusdl.Connections: launch, isconnected, hasslaves
-import ..Jusdl.Components.Base: terminate, drive, AbstractSink
+import ..Jusdl.Components.Base: terminate, drive, AbstractSink, AbstractComponent
 import ..Jusdl.Components.Systems.StaticSystems.Memory
 import ..Jusdl.Components.Sinks: Writer, deleteplugin
 import ..Jusdl.Components.Sources: Clock, isrunning, set!, unset!

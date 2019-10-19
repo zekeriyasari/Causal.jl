@@ -64,8 +64,8 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
                 dx[1] = sigma * (x[2] - x[1])
                 dx[2] = x[1] * (rho - x[3]) - x[2]
                 dx[3] = x[1] * x[2] - beta * x[3]
-                dx .+= cplmat * u   # Couple inputs
                 dx .*= gamma
+                dx .+= cplmat * u   # Couple inputs
             end
         end
         trigger = Link()
@@ -117,7 +117,7 @@ mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
     beta::Float64
     gamma::Float64
     function ChuaSystem(input, output; diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., 
-        outputfunc=allstates, state=rand(3), t=0., solver=ODESolver)
+        outputfunc=allstates, state=rand(3), t=0., solver=ODESolver, cplmat=diagm([1., 1., 1.]))
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
@@ -127,10 +127,11 @@ mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
             end
         else
             statefunc = (dx, x, u, t) -> begin
-            dx[1] = alpha * (x[2] - x[1] - diode(x[1])) + u[1]
-            dx[2] = x[1] - x[2] + x[3] + u[2]
-            dx[3] = -beta * x[2] + u[3]
+            dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
+            dx[2] = x[1] - x[2] + x[3]
+            dx[3] = -beta * x[2]
             dx .*= gamma
+            dx .+= cplmat * u
             end
         end
         trigger = Link()
@@ -149,13 +150,14 @@ mutable struct RosslerSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     c::Float64
     gamma::Float64
     function RosslerSystem(input, output; a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        solver=ODESolver)
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3]
                 dx[2] = x[1] + a * x[2]
                 dx[3] = b + x[3] * (x[1] - c)
                 dx .*= gamma
+                dx .+= cplmat * u
             end
         else
             statefunc = (dx, x, u, t) -> begin
@@ -179,16 +181,19 @@ mutable struct VanderpolSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     mu::Float64
     gamma::Float64
     function VanderpolSystem(input, output; mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
-        solver=ODESolver)
+        solver=ODESolver, cplmat=diagm([1., 1]))
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
-                dx[1] = gamma * x[2]
-                dx[2] = gamma * (-mu * (x[1]^2 - 1) * x[2] - x[1])
+                dx[1] = x[2]
+                dx[2] = -mu * (x[1]^2 - 1) * x[2] - x[1]
+                dx .*= gamma
             end
         else
             statefunc = (dx, x, u, t) -> begin
-                dx[1] = gamma * x[2] + u[1]
-                dx[2] = gamma * (-mu * (x[1]^2 - 1) * x[2] - x[1]) + u[2]
+                dx[1] = x[2] 
+                dx[2] = -mu * (x[1]^2 - 1) * x[2] - x[1]
+                dx .*= gamma
+                dx .+= cplmat * u
             end
         end
         trigger = Link()

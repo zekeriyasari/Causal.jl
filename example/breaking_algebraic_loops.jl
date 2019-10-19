@@ -1,3 +1,5 @@
+# This file illustrates the use of memory blocks to break algebraic loops
+
 using Jusdl 
 using Plots 
 
@@ -6,7 +8,7 @@ t0, dt, tf = 0, 0.01, 10.
 
 gen = FunctionGenerator(identity)
 adder = Adder(Bus(2), (+, -))
-mem = Memory(Bus(1), 1, initial=rand(1))
+mem = Memory(Bus(1), 1, initial=zeros(1))    # Initial condition is very important for accurate solutions. 
 writer1 = Writer(Bus(1))
 writer2 = Writer(Bus(1))
 writer3 = Writer(Bus(1))
@@ -26,13 +28,15 @@ t, x1 = read(writer1, flatten=true)
 t, x2 = read(writer2, flatten=true)
 t, x3 = read(writer3, flatten=true)
 
-plot(t, x1, label=:input)
-plot!(t, x3, label=:memout)
-plot!(t, x2, label=:output)
-plot!(t, x1 / 2, label=:theoout)
-plot!(t, abs.(x1 / 2 - x2), label=:theoout)
-# plot(t[1:20], x1[1:20], markershape=:circle, label=:input)
-# plot!(t[1:20], x3[1:20], markershape=:circle, label=:memout)
-# plot!(t[1:20], x2[1:20], markershape=:circle, label=:output)
-# plot!(t[1:20], x1[1:20] / 2, markershape=:circle, label=:theoout)
-# plot!(t[1:20], abs.(x1[1:20] / 2 - x2[1:20]), markershape=:circle, label=:theoout)
+p1 = plot(t, x1, label=:input)
+    plot!(t, x3, label=:memout)
+    plot!(t, x2, label=:output)
+    plot!(t, x1 / 2, label=:theoout)
+    plot!(t, abs.(x1 / 2 - x2), label=:theoout)
+    
+p2 = plot(t[1:20], x1[1:20], marker=(:circle, 1), label=:input)
+    plot!(t[1:20], x3[1:20], marker=(:circle, 1), label=:memout)
+    plot!(t[1:20], x2[1:20], marker=(:circle, 1), label=:output)
+    plot!(t[1:20], x1[1:20] / 2, marker=(:circle, 1), label=:theoout)
+    plot!(t[1:20], abs.(x1[1:20] / 2 - x2[1:20]), marker=(:circle, 1), label=:theoout)
+display(plot(p1, p2, layout=(2,1)))

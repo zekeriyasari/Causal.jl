@@ -15,6 +15,7 @@ writerdsout = Writer(Bus(length(ds.output)))
 writermemout = Writer(Bus(length(mem.output)))
 writeradderoutput = Writer(Bus(length(adder.output)))
 
+# Connect the blocks 
 connect(gen.output, adder.input[1])
 connect(adder.output, ds.input)
 connect(ds.output, mem.input)
@@ -24,14 +25,19 @@ connect(adder.output, writeradderoutput.input)
 connect(ds.output, writerdsout.input)
 connect(mem.output, writermemout.input)
 
+# Construct the model
 model = Model(gen, ds, adder, mem, writeradderoutput, writergenout, writerdsout, writermemout)
 
+# Simuate the model 
 sim = simulate(model, t0, dt, tf)
 
+# Read the simulation data.
 t, r = read(writergenout, flatten=true)
 t, u = read(writeradderoutput, flatten=true)
 t, x = read(writerdsout, flatten=true)
 t, y = read(writermemout, flatten=true)
+
+# Define the analytic solution.
 if gen.outputfunc == identity
     xr = (x0[1] + 1 / 4) * exp.(-2 * t) + t / 2 .- 1 / 4
 elseif gen.outputfunc == sin 
@@ -39,8 +45,12 @@ elseif gen.outputfunc == sin
 elseif gen.outputfunc == zero 
     xr = x0[1] * exp.(-2 * t)
 end
+
+# Compute the error.
 err = xr - x
 
-plot(t, x, label=:x)
-plot!(t, y, label=:xd)
-plot!(t, xr, label=:xr)
+# Plot the results.
+p1 = plot(t, x, label=:x)
+    plot!(t, y, label=:xd)
+    plot!(t, xr, label=:xr)
+display(p1)

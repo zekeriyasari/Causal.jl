@@ -1,8 +1,11 @@
+# This file illustrates the simulation of a driven dynamic system.
+# If the system is unstable, the solutions blow.
+
 using Jusdl 
 using Plots 
 
 # Simualation settings 
-t0, dt, tf = 0, 0.01, 10
+t0, dt, tf = 0, 0.01, 100
 
 # Construct the components 
 gen = FunctionGenerator(t -> exp(t))
@@ -26,6 +29,6 @@ t, u = read(writerin, flatten=true)
 t, x = read(writerout, flatten=true)
 
 # Plot the simulation data 
-plot(t, x[:, 1], label=:x1)
-plot!(t, u, label=:u)
-
+p1 = plot(t, x[:, 1], label=:x1)
+    plot!(t, u, label=:u)
+display(p1)

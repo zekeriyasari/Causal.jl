@@ -1,9 +1,11 @@
+# This file illustrates the simulation of a subsystem.
+
 using Jusdl 
 using Plots 
 
 # Construct a subsystem
-gain1 = Gain(Bus(), 2)
-gain2 = Gain(Bus(), 4)
+gain1 = Gain(Bus(), gain=2.)
+gain2 = Gain(Bus(), gain=4)
 connect(gain1.output, gain2.input)
 sub = SubSystem([gain1, gain2], gain1.input, gain2.output)
 
@@ -25,4 +27,4 @@ sim = simulate(model, 0, 0.01, 10)
 content = read(writer)
 t = vcat(collect(keys(content))...)
 x = vcat(vcat(collect(values(content))...)...)
-plot(t, x)
+display(plot(t, x))

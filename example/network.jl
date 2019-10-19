@@ -1,3 +1,5 @@
+# This file illustrates the simulation of a network consisting of dynamic systesm.
+
 using Jusdl 
 using Plots 
 

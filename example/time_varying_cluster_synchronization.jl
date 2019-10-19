@@ -1,3 +1,5 @@
+# This file illustrate the simulation of time varying cluster synchronzation.
+
 using Jusdl
 using Plots 
 

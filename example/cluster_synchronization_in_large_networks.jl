@@ -5,13 +5,13 @@ using Jusdl
 using Plots 
 
 # Simulation settings 
-t0, dt, tf = 0., 0.0005, 50.
+t0, dt, tf = 0., 0.001, 50.
 
 # Construct the model blocks
-clusters = (1:5, 6:10, 11:15, 16:20, 17:25)
+clusters = (1:3, 4:10, 11:20)
 numnodes = clusters[end][end]
 dimnodes = 3
-conmat = getconmat(clusters..., weight=10.)
+conmat = getconmat(clusters..., weight=5.)
 cplmat = getcplmat(dimnodes, 1)
 net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], conmat, cplmat)
 writer = Writer(Bus(length(net.output)))

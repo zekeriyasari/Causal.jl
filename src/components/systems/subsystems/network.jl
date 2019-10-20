@@ -59,11 +59,48 @@ end
 show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat)), cplmat:$(checkandshow(net.cplmat))",
     "input:$(checkandshow(net.input)), output:$(checkandshow(net.output)))")
 
+##### Plotting networks    
+gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))
 
+##### Construction of coupling matrix
 getcplmat(d, idx::Vector{Int}) = (v = zeros(d); v[idx] .= 1; diagm(v))
 getcplmat(n, idx::Int) = getcplmat(n, [idx])
 
+##### Construction of different network toplogies.
 getconmat(topology::Symbol, args...; weight=1., kwargs...) = 
     weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
 
-gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))
+_getdiagonal(n::Int) = (a = ones(n, n); d = -(n - 1); foreach(i -> (a[i, i] = d), 1 : n); a) 
+
+function getconmat(clusters::AbstractRange...; weight=1.)
+    numnodes = clusters[end][end]
+    lenclusters = length.(clusters)
+    numclusters = length(clusters)
+    mat = zeros(numnodes, numnodes)
+    for i = 1 : numclusters - 1
+        cluster = clusters[i]
+        lencluster = lenclusters[i]
+        nextcluster = clusters[i + 1]
+        lennectcluster = lenclusters[i + 1]
+        val = _getdiagonal(lencluster)
+        mat[cluster, cluster] = val
+        if lenclusters == lennectcluster
+            mat[cluster, nextcluster] = val
+            mat[nextcluster, cluster] = val
+        else
+            mat[cluster, nextcluster] = hcat(val, zeros(lencluster, lennectcluster - lencluster))
+            mat[nextcluster, cluster] = vcat(val, zeros(lennectcluster - lencluster, lencluster))
+        end
+    end
+    cluster = clusters[end]
+    lencluster = lenclusters[end]
+    mat[cluster, cluster] = _getdiagonal(lencluster)
+
+    mat[clusters[1], clusters[1]] .*= 3.
+    for cluster in clusters[2 : end - 1]
+        mat[cluster, cluster] .*= 5.
+    end
+    mat[clusters[end], clusters[end]] .*= 3.
+
+    weight * mat
+end

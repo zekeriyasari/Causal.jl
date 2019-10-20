@@ -50,19 +50,7 @@ constructprob(comp::AbstractSDESystem, x, u, t) = SDEProblem(comp.statefunc..., 
     noise=comp.noise.process, noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
 constructprob(comp::AbstractDDESystem, x, u, t) = DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), u, 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral)
-
 solve(comp::AbstractDynamicSystem, x, u,t) = solve(constructprob(comp, x, u, t), comp.solver.alg; comp.solver.params...)
-
-# solve(comp::AbstractDiscreteSystem, x, u, t) = solve(DiscreteProblem(comp.statefunc, x, (comp.t, t),  u), comp.solver.alg; comp.solver.params...)
-# solve(comp::AbstractODESystem, x, u, t) = solve(ODEProblem(comp.statefunc, x, (comp.t, t), u), comp.solver.alg; comp.solver.params...)
-# solve(comp::AbstractDAESystem, x, u, t) = solve(DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), u, 
-#     differential_vars=comp.diffvars), comp.solver.alg; comp.solver.params...)
-# solve(comp::AbstractRODESystem, x, u, t) = solve(RODEProblem(comp.statefunc, x, (comp.t, t), u, noise=comp.noise.process, 
-#     rand_prototype=comp.noise.prototype, seed=comp.noise.seed), comp.solver.alg; comp.solver.params...)
-# solve(comp::AbstractSDESystem, x, u, t) = solve(SDEProblem(comp.statefunc..., x, (comp.t, t), u, noise=comp.noise.process, 
-#     noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed), comp.solver.alg; comp.solver.params...)
-# solve(comp::AbstractDDESystem, x, u, t) = solve(DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), u, 
-#     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral), comp.solver.alg; comp.solver.params...)
 
 function update!(comp::AbstractDynamicSystem, sol)
     update_time!(comp, sol.t[end])

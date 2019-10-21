@@ -69,29 +69,39 @@ function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, n
     comp
 end
 
-function takestep(comp::AbstractComponent)
+# NOTE: The order of reading input, trigger, state, output is different for different kind of components.
+# So the different `takestep` methods have been implemented below. Note the order of reading, time, state, input, 
+# output for different types of components.
+
+# function takestep(comp::AbstractComponent)
+#     # t = readtime(comp)
+#     # t === missing && return t
+#     # typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
+# end
+
+# function forwardstep(comp, t)
+#     u = readinput(comp)
+#     x = readstate(comp)
+#     xn = evolve!(comp, x, u, t)
+#     y = computeoutput(comp, xn, u, t)
+#     writeoutput(comp, y)
+#     comp.callbacks(comp)
+#     return t
+# end
+
+# function backwardstep(comp, t)
+#     x = readstate(comp)
+#     y = computeoutput(comp, x, nothing, t)
+#     writeoutput(comp, y)
+#     u = readinput(comp)
+#     xn = evolve!(comp, x, u, t)
+#     comp.callbacks(comp)
+#     return t
+# end
+
+function takestep(comp::AbstractMemory)
     t = readtime(comp)
-    t === missing && return t
-    typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
-end
-
-function takestep(comp::AbstractSubSystem)
-    t = readtime(comp)
-    t === missing && return t
-    foreach(takestep, comp.components)
-end
-
-function forwardstep(comp, t)
-    u = readinput(comp)
-    x = readstate(comp)
-    xn = evolve!(comp, x, u, t)
-    y = computeoutput(comp, xn, u, t)
-    writeoutput(comp, y)
-    comp.callbacks(comp)
-    return t
-end
-
-function backwardstep(comp, t)
+    t === missing && (put!(comp.output, fill(t, length(comp.output))); return t) 
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)
@@ -101,22 +111,95 @@ function backwardstep(comp, t)
     return t
 end
 
-function launch(comp::AbstractComponent)
-    @async while true 
-        typeof(comp.output) <: Bus ? take!(comp.output) : nothing  # empty task for output to be writable.
+function takestep(comp::AbstractSource)
+    t = readtime(comp)
+    t === missing && (put!(comp.output, fill(t, length(comp.output))); return t)
+    u = readinput(comp)
+    x = readstate(comp)
+    xn = evolve!(comp, x, u, t)
+    y = computeoutput(comp, xn, u, t)
+    writeoutput(comp, y)
+    comp.callbacks(comp)
+    return t
+end
+
+function takestep(comp::Union{<:AbstractSystem, <:AbstractSink})
+    u = readinput(comp)
+    t = readtime(comp)
+    if t === missing
+        typeof(comp.output) <: Bus && put!(comp.output, fill(t, length(comp.output)))
+        return t 
     end
-    @async begin 
+    x = readstate(comp)
+    xn = evolve!(comp, x, u, t)
+    y = computeoutput(comp, xn, u, t)
+    writeoutput(comp, y)
+    comp.callbacks(comp)
+    return t
+end
+
+function takestep(comp::AbstractSubSystem)
+    # t = readtime(comp)
+    # t === missing && return t
+    foreach(takestep, comp.components)
+end
+
+
+function launch(comp::AbstractComponent)
+    outputtask = if !(typeof(comp) <: AbstractSink)  
+        @async while true 
+            val = take!(comp.output)
+            all(val .=== missing) && break
+        end
+    end
+    triggertask = @async begin 
         while true
             takestep(comp) === missing && break
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
+    return triggertask, outputtask
 end
 
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
-terminate(comp::AbstractComponent) = drive(comp, missing)
+# terminate(comp::AbstractComponent) = drive(comp, missing)
+# function terminate(comp::AbstractSource)
+#     close(comp.output)
+#     close(comp.trigger)
+# end
+
+# function terminate(comp::AbstractSink)
+#     close(comp.trigger)
+# end
+
+# function terminate(comp::AbstractSystem)
+#     close(comp.trigger)
+#     close(comp.output)
+# end
 
 # Subsystem interface
 launch(comp::AbstractSubSystem) = launch.(comp.components)
-drive(comp::AbstractSubSystem, t) = foreach(subcomp -> drive(subcomp, t), comp.components)
-terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)
+# drive(comp::AbstractSubSystem, t) = foreach(subcomp -> drive(subcomp, t), comp.components)
+function drive(comp::AbstractSubSystem, t)
+    components = comp.components
+    mask = falses(length(components))
+    while !all(mask)
+        @show mask
+        idx = map(comp -> iswritable(comp.trigger), components)
+        mask[idx] .= true
+        foreach(comp -> drive(comp, t), components[idx])
+    end
+end
+# terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)
+function terminate(comp::AbstractSubSystem)
+    components = comp.components
+    mask = falses(length(components))
+    while !all(mask)
+        @show mask
+        idx = map(comp -> iswritable(comp.trigger), components)
+        mask[idx] .= true
+        for comp in components[idx]
+            put!(comp.trigger, missing)  
+        end
+    end
+end

@@ -1,33 +1,19 @@
 using Jusdl 
-using Plots 
+using Plots
 
 gen = SinewaveGenerator()
 gain = Gain(Bus())
+mem = Memory(Bus(), 2, initial=rand(1))
 writer = Writer(Bus())
 
 connect(gen.output, gain.input)
-connect(gain.output, writer.input)
+connect(gain.output, mem.input)
+connect(mem.output, writer.input)
 
-model = Model(gen, gain, writer)
+model = Model(gen, mem, gain, writer)
 
-initialize(model)
-set!(model.clk, 0., 0.01, 100.)
-run(model)
+sim = simulate(model, 0., 0.01, 1.)
 
-disconnect(gen.output, gain.input)
-disconnect(gain.output, writer.input)
+t, x = read(writer, flatten=true)
 
-# sim = simulate(model, 0., 0.01, 100.)
-
-# t, x = read(writer, flatten=true)
-
-# tgen = launch(gen, true)
-# tgain = launch(gain, true)
-
-# put!(gen.trigger, 1.)
-# put!(gain.trigger, 1.)
-# put!(gen.trigger, 2.)
-# put!(gain.trigger, 2.)
-
-# terminate(gen)
-# terminate(gain)
+display(plot(t, x))

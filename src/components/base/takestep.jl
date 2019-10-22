@@ -1,6 +1,6 @@
 # This file includes stepping of abstract types.
 
-import ....Jusdl.Connections: launch, Bus
+import ....Jusdl.Connections: launch, Bus, release
 import ....Jusdl.Utilities: write!
 using DifferentialEquations
 using Sundials
@@ -157,8 +157,7 @@ end
 function launch(comp::AbstractComponent)
     outputtask = if !(typeof(comp) <: AbstractSink)  
         @async while true 
-            val = take!(comp.output)
-            all(val .=== missing) && break
+            all(take!(comp.output) .=== missing) && break
         end
     end
     triggertask = @async begin 
@@ -170,45 +169,71 @@ function launch(comp::AbstractComponent)
     return triggertask, outputtask
 end
 
-drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
-# terminate(comp::AbstractComponent) = drive(comp, missing)
-# function terminate(comp::AbstractSource)
-#     close(comp.output)
-#     close(comp.trigger)
-# end
-
-# function terminate(comp::AbstractSink)
-#     close(comp.trigger)
-# end
-
-# function terminate(comp::AbstractSystem)
-#     close(comp.trigger)
-#     close(comp.output)
-# end
-
-# Subsystem interface
 launch(comp::AbstractSubSystem) = launch.(comp.components)
-# drive(comp::AbstractSubSystem, t) = foreach(subcomp -> drive(subcomp, t), comp.components)
+
+drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
+
 function drive(comp::AbstractSubSystem, t)
     components = comp.components
     mask = falses(length(components))
     while !all(mask)
-        @show mask
         idx = map(comp -> iswritable(comp.trigger), components)
         mask[idx] .= true
         foreach(comp -> drive(comp, t), components[idx])
     end
 end
-# terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)
-function terminate(comp::AbstractSubSystem)
-    components = comp.components
-    mask = falses(length(components))
-    while !all(mask)
-        @show mask
-        idx = map(comp -> iswritable(comp.trigger), components)
-        mask[idx] .= true
-        for comp in components[idx]
-            put!(comp.trigger, missing)  
-        end
-    end
+
+function release(comp::AbstractComponent)
+    typeof(comp) <: AbstractSource  || release(comp.input)
+    typeof(comp) <: AbstractSink    || release(comp.output)
+    return 
 end
+
+function release(comp::AbstractSubSystem)
+    foreach(release, comp.components)
+    typeof(comp.input) <: Bus && release(comp.input)
+    typeof(comp.output) <: Bus && release(comp.output)
+end
+
+# terminate(comp::AbstractComponent) = drive(comp, missing)
+function terminate(comp::AbstractSource)
+    put!(comp.trigger, missing)
+    put!(comp.output, fill(missing, length(comp.output)))
+    return 
+end
+
+function terminate(comp::AbstractSystem)
+    typeof(comp.input) <: Bus && put!(comp.input, fill(missing, length(comp.input)))
+    put!(comp.trigger, missing)
+    typeof(comp.output) <: Bus && put!(comp.output, fill(missing, length(comp.output)))
+    return
+end
+
+function terminate(comp::AbstractSink)
+    put!(comp.input, fill(missing, length(comp.input)))
+    put!(comp.trigger, missing)
+    return 
+end
+
+function terminate(comp::AbstractMemory)
+    put!(comp.output, fill(missing, length(comp.output)))
+    put!(comp.trigger, missing)
+    # put!(comp.input, fill(missing, length(comp.input)))
+    return 
+end
+
+terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
+
+# terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)
+# function terminate(comp::AbstractSubSystem)
+#     components = comp.components
+#     mask = falses(length(components))
+#     while !all(mask)
+#         @show mask
+#         idx = map(comp -> iswritable(comp.trigger), components)
+#         mask[idx] .= true
+#         for comp in components[idx]
+#             put!(comp.trigger, missing)  
+#         end
+#     end
+# end

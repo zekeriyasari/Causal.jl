@@ -96,16 +96,10 @@ function run(model::Model)
         # foreach(memory -> update(memory, t), memories)              # Update memories after driving _blocks.
         checktaskmanager(taskmanager)                                     # Check if the task are running.
     end
-    # components = blocks[isa.(blocks, AbstractComponent)]
-    # memories = components[isa.(components, Memory)]     # Memory components
-    # for t in clk
-    #     foreach(component -> drive(component, t), components)       # Drive _blocks with time tick of the clock.
-    #     # foreach(memory -> update(memory, t), memories)              # Update memories after driving _blocks.
-    #     checktaskmanager(taskmanager)                                     # Check if the task are running.
-    # end
 end
 
 ##### Model termination
+release(model::Model) = foreach(release, model.blocks)
 
 # terminate(block::AbstractBlock) = drive(block, NaN)
 function terminate(model::Model)
@@ -141,6 +135,10 @@ function _simulate!(sim::Simulation, reportsim::Bool)
         @info e
     end
 
+    @siminfo "Releasing model components..."
+    release(model)
+    @siminfo "Done."
+   
     @siminfo "Terminating the simulation..."
     terminate(model)
     @siminfo "Done."

@@ -89,6 +89,7 @@ snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links
 function connect(srclink::Link, dstlink::Link)
+    isconnected(srclink, dstlink) && (@warn "$srclink and $dstlink are already connected."; return)
     dstlink.leftpin = srclink.rightpin  # NOTE: The data flows through the links from left to right.
     push!(srclink.slaves, Ref(dstlink))
     dstlink.master = Ref(srclink) 
@@ -96,14 +97,18 @@ function connect(srclink::Link, dstlink::Link)
 end
 
 function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
+    isconnected(srclink, dstlink) || (@warn "$srclink and $dstlink are already disconnected."; return)
     slaves = srclink.slaves
-    for i = 1 : length(slaves)
-        slaves[i][] == dstlink && deleteat!(slaves, i)
-    end
+    # for i = 1 : length(slaves)
+    #     slaves[i][] == dstlink && deleteat!(slaves, i)
+    # end
+    deleteat!(slaves, findall(slave -> slave[] == dstlink, slaves))
     dstlink.master = RefValue{Link{T}}()
     dstlink.leftpin = Pin()
     return
 end
+
+release(masterlink::Link) = foreach(slavelinkref -> disconnect(masterlink, slavelinkref[]), masterlink.slaves)
 
 ##### Launching links.
 eltype(link::Link{T}) where T = T

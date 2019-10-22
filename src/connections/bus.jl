@@ -50,6 +50,8 @@ disconnect(links::Vector{<:Link}, bus::Bus) = (disconnect.(links, bus.links); re
 disconnect(bus::Bus, link::Link) = (disconnect.(bus.links, [link]); return)
 disconnect(link::Link, bus::Bus) = (disconnect.([link], bus.links); return)
 
+release(bus::Bus) = foreach(release, bus.links)
+
 ##### Interconnection of busses.
 hasslaves(bus::Bus) = all(hasslaves.(bus.links))
 hasmaster(bus::Bus) = all(hasmaster.(bus.links))

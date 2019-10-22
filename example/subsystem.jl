@@ -24,7 +24,5 @@ model = Model(gen, sub, writer)
 sim = simulate(model, 0, 0.01, 10)
 
 # Read and plot simulation data 
-content = read(writer)
-t = vcat(collect(keys(content))...)
-x = vcat(vcat(collect(values(content))...)...)
+t, x = read(writer, flatten=true)
 display(plot(t, x))

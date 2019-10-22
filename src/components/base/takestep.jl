@@ -1,6 +1,6 @@
 # This file includes stepping of abstract types.
 
-import ....Jusdl.Connections: launch, Bus, release
+import ....Jusdl.Connections: launch, Bus, release, isreadable
 import ....Jusdl.Utilities: write!
 using DifferentialEquations
 using Sundials
@@ -73,35 +73,23 @@ end
 # So the different `takestep` methods have been implemented below. Note the order of reading, time, state, input, 
 # output for different types of components.
 
-# function takestep(comp::AbstractComponent)
-#     # t = readtime(comp)
-#     # t === missing && return t
-#     # typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
-# end
-
-# function forwardstep(comp, t)
-#     u = readinput(comp)
-#     x = readstate(comp)
-#     xn = evolve!(comp, x, u, t)
-#     y = computeoutput(comp, xn, u, t)
-#     writeoutput(comp, y)
-#     comp.callbacks(comp)
-#     return t
-# end
-
-# function backwardstep(comp, t)
-#     x = readstate(comp)
-#     y = computeoutput(comp, x, nothing, t)
-#     writeoutput(comp, y)
-#     u = readinput(comp)
-#     xn = evolve!(comp, x, u, t)
-#     comp.callbacks(comp)
-#     return t
-# end
-
-function takestep(comp::AbstractMemory)
+function takestep(comp::AbstractComponent)
     t = readtime(comp)
     t === missing && return t
+    typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
+end
+
+function forwardstep(comp, t)
+    u = readinput(comp)
+    x = readstate(comp)
+    xn = evolve!(comp, x, u, t)
+    y = computeoutput(comp, xn, u, t)
+    writeoutput(comp, y)
+    comp.callbacks(comp)
+    return t
+end
+
+function backwardstep(comp, t)
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)
@@ -111,53 +99,12 @@ function takestep(comp::AbstractMemory)
     return t
 end
 
-function takestep(comp::AbstractSource)
-    t = readtime(comp)
-    t === missing && return t
-    u = readinput(comp)
-    x = readstate(comp)
-    xn = evolve!(comp, x, u, t)
-    y = computeoutput(comp, xn, u, t)
-    writeoutput(comp, y)
-    comp.callbacks(comp)
-    return t
-end
-
-function takestep(comp::AbstractSystem)
-    u = readinput(comp)
-    t = readtime(comp)
-    t === missing && return t 
-    x = readstate(comp)
-    xn = evolve!(comp, x, u, t)
-    y = computeoutput(comp, xn, u, t)
-    writeoutput(comp, y)
-    comp.callbacks(comp)
-    return t
-end
-
-function takestep(comp::AbstractSink)
-    u = readinput(comp)
-    t = readtime(comp)
-    t === missing && return t 
-    x = readstate(comp)
-    xn = evolve!(comp, x, u, t)
-    y = computeoutput(comp, xn, u, t)
-    writeoutput(comp, y)
-    comp.callbacks(comp)
-    return t
-end
-
-function takestep(comp::AbstractSubSystem)
-    # t = readtime(comp)
-    # t === missing && return t
-    foreach(takestep, comp.components)
-end
-
 
 function launch(comp::AbstractComponent)
     outputtask = if !(typeof(comp) <: AbstractSink)  
         @async while true 
-            all(take!(comp.output) .=== missing) && break
+            val = take!(comp.output)
+            all(val .=== missing) && break
         end
     end
     triggertask = @async begin 
@@ -169,19 +116,7 @@ function launch(comp::AbstractComponent)
     return triggertask, outputtask
 end
 
-launch(comp::AbstractSubSystem) = launch.(comp.components)
-
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
-
-function drive(comp::AbstractSubSystem, t)
-    components = comp.components
-    mask = falses(length(components))
-    while !all(mask)
-        idx = map(comp -> iswritable(comp.trigger), components)
-        mask[idx] .= true
-        foreach(comp -> drive(comp, t), components[idx])
-    end
-end
 
 function release(comp::AbstractComponent)
     typeof(comp) <: AbstractSource  || release(comp.input)
@@ -189,51 +124,36 @@ function release(comp::AbstractComponent)
     return 
 end
 
+function terminate(comp::AbstractComponent)
+    typeof(comp) <: AbstractSink || close(comp.output)
+    close(comp.trigger)
+    return 
+end
+
+##### SubSystem interface
+launch(comp::AbstractSubSystem) = launch.(comp.components)
+function takestep(comp::AbstractSubSystem)
+    # t = readtime(comp)
+    # t === missing && return t
+    foreach(takestep, comp.components)
+end
+
+function drive(comp::AbstractSubSystem, t)
+    task = @async foreach(component -> drive(component, t), comp.components)
+    wait(task)
+end
+
+
 function release(comp::AbstractSubSystem)
     foreach(release, comp.components)
     typeof(comp.input) <: Bus && release(comp.input)
     typeof(comp.output) <: Bus && release(comp.output)
 end
 
-# terminate(comp::AbstractComponent) = drive(comp, missing)
-function terminate(comp::AbstractSource)
-    put!(comp.trigger, missing)
-    put!(comp.output, fill(missing, length(comp.output)))
-    return 
-end
-
-function terminate(comp::AbstractSystem)
-    typeof(comp.input) <: Bus && put!(comp.input, fill(missing, length(comp.input)))
-    put!(comp.trigger, missing)
-    typeof(comp.output) <: Bus && put!(comp.output, fill(missing, length(comp.output)))
+function terminate(comp::AbstractSubSystem) 
+    task = @async foreach(terminate, comp.components)
+    wait(task)
+    # typeof(comp.input) <: Bus && terminate(comp.input)
+    # typeof(comp.output) <: Bus && terminate(comp.output)
     return
 end
-
-function terminate(comp::AbstractSink)
-    put!(comp.input, fill(missing, length(comp.input)))
-    put!(comp.trigger, missing)
-    return 
-end
-
-function terminate(comp::AbstractMemory)
-    put!(comp.output, fill(missing, length(comp.output)))
-    put!(comp.trigger, missing)
-    # put!(comp.input, fill(missing, length(comp.input)))
-    return 
-end
-
-terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
-
-# terminate(comp::AbstractSubSystem) = foreach(subcomp -> drive(subcomp, missing), comp.components)
-# function terminate(comp::AbstractSubSystem)
-#     components = comp.components
-#     mask = falses(length(components))
-#     while !all(mask)
-#         @show mask
-#         idx = map(comp -> iswritable(comp.trigger), components)
-#         mask[idx] .= true
-#         for comp in components[idx]
-#             put!(comp.trigger, missing)  
-#         end
-#     end
-# end

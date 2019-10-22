@@ -6,8 +6,11 @@ using Plots
 # Construct a subsystem
 gain1 = Gain(Bus(), gain=2.)
 gain2 = Gain(Bus(), gain=4)
-connect(gain1.output, gain2.input)
-sub = SubSystem([gain1, gain2], gain1.input, gain2.output)
+mem = Memory(Bus(), 50, initial=rand(1))
+connect(gain1.output, mem.input)
+connect(mem.output, gain2.input)
+
+sub = SubSystem([gain1, gain2, mem], gain1.input, gain2.output)
 
 # Construct a source and a sink.
 gen = FunctionGenerator(sin)
@@ -26,3 +29,6 @@ sim = simulate(model, 0, 0.01, 10)
 # Read and plot simulation data 
 t, x = read(writer, flatten=true)
 display(plot(t, x))
+
+
+model.taskmanager.pairs[sub]

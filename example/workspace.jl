@@ -10,9 +10,16 @@ connect(gain.output, writer.input)
 
 model = Model(gen, gain, writer)
 
-sim = simulate(model, 0., 0.01, 100.)
+initialize(model)
+set!(model.clk, 0., 0.01, 100.)
+run(model)
 
-t, x = read(writer, flatten=true)
+disconnect(gen.output, gain.input)
+disconnect(gain.output, writer.input)
+
+# sim = simulate(model, 0., 0.01, 100.)
+
+# t, x = read(writer, flatten=true)
 
 # tgen = launch(gen, true)
 # tgain = launch(gain, true)

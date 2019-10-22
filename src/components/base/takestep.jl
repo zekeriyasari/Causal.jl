@@ -101,7 +101,7 @@ end
 
 function takestep(comp::AbstractMemory)
     t = readtime(comp)
-    t === missing && (put!(comp.output, fill(t, length(comp.output))); return t) 
+    t === missing && return t
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)
@@ -113,7 +113,7 @@ end
 
 function takestep(comp::AbstractSource)
     t = readtime(comp)
-    t === missing && (put!(comp.output, fill(t, length(comp.output))); return t)
+    t === missing && return t
     u = readinput(comp)
     x = readstate(comp)
     xn = evolve!(comp, x, u, t)
@@ -123,13 +123,22 @@ function takestep(comp::AbstractSource)
     return t
 end
 
-function takestep(comp::Union{<:AbstractSystem, <:AbstractSink})
+function takestep(comp::AbstractSystem)
     u = readinput(comp)
     t = readtime(comp)
-    if t === missing
-        typeof(comp.output) <: Bus && put!(comp.output, fill(t, length(comp.output)))
-        return t 
-    end
+    t === missing && return t 
+    x = readstate(comp)
+    xn = evolve!(comp, x, u, t)
+    y = computeoutput(comp, xn, u, t)
+    writeoutput(comp, y)
+    comp.callbacks(comp)
+    return t
+end
+
+function takestep(comp::AbstractSink)
+    u = readinput(comp)
+    t = readtime(comp)
+    t === missing && return t 
     x = readstate(comp)
     xn = evolve!(comp, x, u, t)
     y = computeoutput(comp, xn, u, t)

@@ -69,10 +69,6 @@ function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, n
     comp
 end
 
-# NOTE: The order of reading input, trigger, state, output is different for different kind of components.
-# So the different `takestep` methods have been implemented below. Note the order of reading, time, state, input, 
-# output for different types of components.
-
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
     t === missing && return t
@@ -119,8 +115,8 @@ end
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
 
 function release(comp::AbstractComponent)
-    typeof(comp) <: AbstractSource  || release(comp.input)
-    typeof(comp) <: AbstractSink    || release(comp.output)
+    typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
+    typeof(comp) <: AbstractSink    || typeof(comp.output) <: Nothing   || release(comp.output)
     return 
 end
 
@@ -133,8 +129,8 @@ end
 ##### SubSystem interface
 launch(comp::AbstractSubSystem) = launch.(comp.components)
 function takestep(comp::AbstractSubSystem)
-    # t = readtime(comp)
-    # t === missing && return t
+    t = readtime(comp)
+    t === missing && return t
     foreach(takestep, comp.components)
 end
 
@@ -153,7 +149,5 @@ end
 function terminate(comp::AbstractSubSystem) 
     task = @async foreach(terminate, comp.components)
     wait(task)
-    # typeof(comp.input) <: Bus && terminate(comp.input)
-    # typeof(comp.output) <: Bus && terminate(comp.output)
     return
 end

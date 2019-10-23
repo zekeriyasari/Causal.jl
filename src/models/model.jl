@@ -91,30 +91,24 @@ function run(model::Model)
     taskmanager = model.taskmanager
     components = model.blocks
     clk = model.clk
-    @showprogress 0.1 for t in clk
-        task = @async foreach(component -> drive(component, t), components)  # Drive blocks 
-        wait(task)
+    @showprogress clk.dt for t in clk
+        # foreach(component -> drive(component, t), components)
+        for component in components
+            drive(component, t)
+        end
         checktaskmanager(taskmanager)                                     # Check if the task are running.
     end
+    # sleep(0.001)
 end
 
 ##### Model termination
 release(model::Model) = foreach(release, model.blocks)
 
-
 function terminate(model::Model)
-    foreach(terminate, model.blocks)
-    for block in model.blocks
-        # TODO: Wait for the tasks to finish properly.
-    end
+    isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
+    isrunning(model.clk) && unset!(model.clk)
+    return
 end
-# terminate(block::AbstractBlock) = drive(block, NaN)
-# function terminate(model::Model)
-#     isempty(model.taskmanager.pairs) || (task = @async foreach(terminate, model.blocks); wait(task))
-#     isrunning(model.clk) && unset!(model.clk)
-#     # isrunning(model.clk) && turnoff(model.clk)
-#     return
-# end
 
 
 function _simulate!(sim::Simulation, reportsim::Bool)

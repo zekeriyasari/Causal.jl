@@ -80,7 +80,7 @@ end
 struct Memory{IB, OB, L, OF, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int; initial=missing) where T 
+    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int; initial=Vector{T}(undef, length(input))) where T 
         buffer = Buffer{Fifo}(Vector{T}, numdelay)
         fill!(buffer, initial)
         outputfunc(u, t) = buffer()

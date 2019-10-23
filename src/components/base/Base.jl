@@ -32,4 +32,6 @@ export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink,
 export @generic_source_fields, @generic_system_fields, @generic_sink_fields, @generic_system_fields, 
     @generic_static_system_fields, @generic_dynamic_system_fields
 
+export readtime, readstate, readinput, writeoutput, computeoutput, evolve!, update!, takestep, drive, approve
+
 end # module

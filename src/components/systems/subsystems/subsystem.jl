@@ -1,12 +1,13 @@
 # This file includes SubSystem for interconnected subsystems.
 
 
-mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
+mutable struct SubSystem{IB, OB, T, H, C} <: AbstractSubSystem
     @generic_system_fields
     components::C
     function SubSystem(components, input::Union{Nothing, <:Bus, <:AbstractVector{<:Link}}, 
         output::Union{Nothing, <:Bus, <:AbstractVector{<:Link}})
         trigger = Link()
+        handshake = Link{Bool}()
         if typeof(input) <: AbstractVector{<:Link}
             inputbus = Bus(length(input))
             for (i, link) in enumerate(input)
@@ -27,8 +28,8 @@ mutable struct SubSystem{IB, OB, L, C} <: AbstractSubSystem
             outputbus = output
         end
         # TODO: Check if there exists an unconnected interconnected buses between the components of the subsytem.
-        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(components)}(inputbus, outputbus, trigger, 
-            Callback[], uuid4(), components)
+        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components)}(inputbus, 
+            outputbus, trigger, handshake, Callback[], uuid4(), components)
     end
 end
 

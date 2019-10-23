@@ -1,7 +1,7 @@
 # This file includes the scope
 
 
-mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
+mutable struct Scope{IB, DB, TB, P, T, H, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
     function Scope(input::Bus{Union{Missing, T}}, buflen::Int=64, plugin=nothing, args...; kwargs...) where T
@@ -12,9 +12,10 @@ mutable struct Scope{IB, DB, TB, P, L, PLT} <: AbstractSink
         timebuf = Buffer(buflen)
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
+        handshake = Link{Bool}()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(plt)}(input, 
-            databuf, timebuf, plugin, trigger, Callback[], uuid4(), plt), update!)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
+            typeof(plt)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), plt), update!)
     end
 end
 

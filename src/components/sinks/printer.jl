@@ -3,16 +3,17 @@
 import Base.print
 
 
-mutable struct Printer{IB, DB, TB, P, L} <: AbstractSink
+mutable struct Printer{IB, DB, TB, P, T, H} <: AbstractSink
     @generic_sink_fields
     function Printer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing) where T
         # Construct the buffers
         timebuf = Buffer(buflen)
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
+        handshake = Link{Bool}()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger)}(input, databuf, 
-            timebuf, plugin, trigger, Callback[], uuid4()), print)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger),
+            typeof(handshake)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4()), print)
     end
 end
 

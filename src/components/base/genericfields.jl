@@ -7,7 +7,8 @@ import ....Jusdl.Connections: Bus, Link
 @def generic_source_fields begin
     outputfunc::OF
     output::OB
-    trigger::L
+    trigger::T
+    handshake::H
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -15,7 +16,8 @@ end
 @def generic_system_fields begin
     input::IB
     output::OB
-    trigger::L
+    trigger::T
+    handshake::H
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -25,7 +27,8 @@ end
     databuf::DB
     timebuf::TB
     plugin::P
-    trigger::L
+    trigger::T 
+    handshake::H
     callbacks::Vector{Callback}
     id::UUID
 end
@@ -40,9 +43,11 @@ end
     statefunc::SF 
     outputfunc::OF 
     state::ST 
-    t::T 
+    t::Float64
     solver::S
 end
+
+################# Deprecated
 
 # @def generic_discrete_system_fields begin
 #     @generic_dynamic_system_fields

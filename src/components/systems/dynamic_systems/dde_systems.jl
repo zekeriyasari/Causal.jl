@@ -4,13 +4,14 @@ import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fiel
 
 const DDESolver = Solver(MethodOfSteps(Tsit5()))
 
-mutable struct DDESystem{IB, OB, L, SF, OF, ST, T, S, H} <: AbstractDDESystem
+mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, S, HST} <: AbstractDDESystem
     @generic_dynamic_system_fields
-    history::H 
+    history::HST
     function DDESystem(input, output, statefunc, outputfunc, state, history, t; solver=DDESolver)
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver), typeof(history)}(input, output, trigger, Callback[], uuid4(), statefunc,     
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver), typeof(history)}(input, output, trigger, Callback[], uuid4(), statefunc,     
             outputfunc, state, t, solver, history)
     end
 end

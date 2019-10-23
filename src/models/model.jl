@@ -92,11 +92,9 @@ function run(model::Model)
     components = model.blocks
     clk = model.clk
     @showprogress clk.dt for t in clk
-        # foreach(component -> drive(component, t), components)
-        for component in components
-            drive(component, t)
-        end
-        checktaskmanager(taskmanager)                                     # Check if the task are running.
+        foreach(component -> drive(component, t), components)
+        all(approve.(components)) || @warn "Could not be approved"
+        checktaskmanager(taskmanager)                                     
     end
     # sleep(0.001)
 end

@@ -5,18 +5,20 @@ import ..Components.Base: @generic_source_fields
 
 
 ##### Generic Function Generator
-mutable struct FunctionGenerator{OF, L, OB} <: AbstractSource
+mutable struct FunctionGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     function FunctionGenerator(outputfunc)
         out = outputfunc(0.)
         output =  Bus{eltype(out)}(length(out))
         trigger = Link()
-        new{typeof(outputfunc), typeof(trigger), typeof(output)}(outputfunc, output, trigger, Callback[], uuid4())
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+        handshake, Callback[], uuid4())
     end
 end
 
 ##### Common generator types.
-mutable struct SinewaveGenerator{OF, OB, L} <: AbstractSource
+mutable struct SinewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     frequency::Float64
@@ -27,13 +29,14 @@ mutable struct SinewaveGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) =  amplitude * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            amplitude, frequency, phase, delay, offset)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), amplitude, frequency, phase, delay, offset)
     end
 end
 
 
-mutable struct DampedSinewaveGenerator{OF, OB, L} <: AbstractSource
+mutable struct DampedSinewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     decay::Float64
@@ -45,14 +48,15 @@ mutable struct DampedSinewaveGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = amplitude * exp(decay) * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            amplitude, decay,frequency, phase, delay, offset)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), amplitude, decay,frequency, phase, delay, offset)
     end
 end
 
 
 
-mutable struct SquarewaveGenerator{OF, OB, L} <: AbstractSource
+mutable struct SquarewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     high::Float64
     low::Float64
@@ -69,13 +73,14 @@ mutable struct SquarewaveGenerator{OF, OB, L} <: AbstractSource
         end
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), high,
-            low, period, duty, delay)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), high, low, period, duty, delay)
     end
 end
 
 
-mutable struct TriangularwaveGenerator{OF, OB, L} <: AbstractSource
+mutable struct TriangularwaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     period::Float64
@@ -97,39 +102,42 @@ mutable struct TriangularwaveGenerator{OF, OB, L} <: AbstractSource
         end
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            amplitude, period, duty, delay, offset)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), amplitude, period, duty, delay, offset)
     end
 end
 
 
-mutable struct ConstantGenerator{OF, OB, L} <: AbstractSource
+mutable struct ConstantGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     function ConstantGenerator(;amplitude=1.)
         outputfunc(t) = amplitude
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            amplitude)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+        handshake, Callback[], uuid4(), amplitude)
     end
 end
 
 
-mutable struct RampGenerator{OF, OB, L} <: AbstractSource
+mutable struct RampGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
     function RampGenerator(;scale=1)
         outputfunc(t) = scale * t
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            scale)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+        handshake, Callback[], uuid4(), scale)
     end
 end
 
 
-mutable struct StepGenerator{OF, OB, L} <: AbstractSource
+mutable struct StepGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
     delay::Float64
@@ -138,13 +146,14 @@ mutable struct StepGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = t - delay >= 0 ? one(t) + offset : zero(t) + offset
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, Link(), Callback[], uuid4(), 
-            amplitude, delay, offset)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), amplitude, delay, offset)
     end
 end
 
 
-mutable struct ExponentialGenerator{OF, OB, L} <: AbstractSource
+mutable struct ExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
@@ -152,13 +161,14 @@ mutable struct ExponentialGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = scale * exp(decay * t)
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            scale, decay)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger),typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), scale, decay)
     end
 end
 
 
-mutable struct DampedExponentialGenerator{OF, OB, L} <: AbstractSource
+mutable struct DampedExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
@@ -166,8 +176,9 @@ mutable struct DampedExponentialGenerator{OF, OB, L} <: AbstractSource
         outputfunc(t) = scale * t * exp(decay * t)
         output = Bus()
         trigger = Link()
-        new{typeof(outputfunc), typeof(output), typeof(trigger)}(outputfunc, output, trigger, Callback[], uuid4(), 
-            scale, decay)
+        handshake = Link{Bool}()
+        new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
+            handshake, Callback[], uuid4(), scale, decay)
     end
 end
 

@@ -1,7 +1,7 @@
 # This file includes the writers
 
 
-mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
+mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
     @generic_sink_fields
     file::F
     function Writer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing, path="/tmp/"*string(uuid4())) where T 
@@ -14,9 +14,10 @@ mutable struct Writer{IB, DB, TB, P, L, F} <: AbstractSink
         timebuf = Buffer(buflen)
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
+        handshake = Link{Bool}()
         addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(file)}(input, 
-            databuf, timebuf, plugin, trigger, Callback[], uuid4(), file), write!)
+            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
+            typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), file), write!)
     end
 end
 

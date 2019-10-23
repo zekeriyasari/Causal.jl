@@ -5,18 +5,19 @@ import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fiel
 const ODESolver = Solver(Tsit5())
 
 
-mutable struct ODESystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
+mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     function ODESystem(input, output, statefunc, outputfunc, state, t; solver=ODESolver)
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t,
             solver)
     end
 end
 
 ##### LinearSystem
-mutable struct LinearSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
+mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     A::Matrix{Float64}
     B::Matrix{Float64}
@@ -25,6 +26,7 @@ mutable struct LinearSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
     function LinearSystem(input, output; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
         state=rand(size(A,1)), t=0., solver=ODESolver)
         trigger = Link()
+        handshake = Link{Bool}()
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
             outputfunc = (x, u, t) -> (C * x)
@@ -36,15 +38,15 @@ mutable struct LinearSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
                 outputfunc = (x, u, t) -> (C * x .+ D * u)
             end
         end
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, outputfunc, state, t,
             solver, A, B, C, D)
     end
 end
 
 
-##### LorenzSystem
-mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
+##### LorenzSystemhandshake = Link{Bool}()
+mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     sigma::Float64
     beta::Float64
@@ -69,8 +71,9 @@ mutable struct LorenzSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
             end
         end
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, outputfunc, state, t,
             solver, sigma, beta, rho, gamma)
     end
 end
@@ -110,7 +113,7 @@ PolynomialDiode() = PolynomialDiode(1/16, -1/6)
 
 (d::PolynomialDiode)(x) = d.a * x^3 + d.b * x
 
-mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
+mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, S, DT} <: AbstractODESystem
     @generic_dynamic_system_fields
     diode::DT
     alpha::Float64
@@ -135,15 +138,16 @@ mutable struct ChuaSystem{IB, OB, L, SF, OF, ST, T, S, DT} <: AbstractODESystem
             end
         end
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver), typeof(diode)}(input, output, trigger, Callback[], uuid4(), statefunc, 
-            outputfunc, state, t, solver, diode, alpha, beta, gamma)
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver), typeof(diode)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, t, solver, diode, alpha, beta, gamma)
     end
 end
 
 
 ##### Rossler System
-mutable struct RosslerSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
+mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
     b::Float64
@@ -168,15 +172,16 @@ mutable struct RosslerSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
             end
         end
         trigger = Link() 
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
-            solver, a, b, c, gamma)
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
+            outputfunc, state, t, solver, a, b, c, gamma)
     end
 end
 
 
 ##### Vanderpol System
-mutable struct VanderpolSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
+mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
@@ -197,9 +202,10 @@ mutable struct VanderpolSystem{IB, OB, L, SF, OF, ST, T, S} <: AbstractODESystem
             end
         end
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t, 
-            solver, mu, gamma)
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
+            outputfunc, state, t, solver, mu, gamma)
     end
 end
   

@@ -5,16 +5,17 @@ import GraphPlot.gplot
 alloutputlinks(components) = vcat([component.output.links for component in components]...)
 
 
-mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
+mutable struct Network{IB, OB, T, H, C1, C2, C3} <: AbstractSubSystem
     @generic_system_fields
-    components::C
-    conmat::T 
-    cplmat::S 
+    components::C1
+    conmat::C2 
+    cplmat::C3 
     function Network(components::AbstractArray, conmat::AbstractMatrix, 
         cplmat::AbstractMatrix=getcplmat(length(components[1].output)), input=nothing, 
         output=alloutputlinks(components))
         # Construct input output
         trigger = Link()
+        handshake = Link{Bool}()
          if typeof(input) <: AbstractVector{<:Link}
             inputbus = Bus(length(input))
             for (i, link) in enumerate(input)
@@ -50,8 +51,9 @@ mutable struct Network{IB, OB, L, C, T, S} <: AbstractSubSystem
             connect(memory.output, component.input)
         end
         allcomponents = [components..., coupler, memories...]
-        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(allcomponents), typeof(conmat), 
-            typeof(cplmat)}(inputbus, outputbus, trigger, Callback[], uuid4(), allcomponents, conmat, cplmat)
+        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(allcomponents), 
+            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), allcomponents, conmat, 
+            cplmat)
     end
 end
 

@@ -5,14 +5,15 @@ import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fiel
 const DAESolver = Solver(IDA())
 
 
-mutable struct DAESystem{IB, OB, L, SF, OF, ST, T, S, D} <: AbstractDAESystem
+mutable struct DAESystem{IB, OB, T, H, SF, OF, ST, S, D} <: AbstractDAESystem
     @generic_dynamic_system_fields
     stateder::ST
     diffvars::D
     function DAESystem(input, output, statefunc, outputfunc, state, stateder, t, diffvars; solver=DAESolver)
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state), 
-            typeof(t), typeof(solver), typeof(diffvars)}(input, output, trigger, Callback[], uuid4(), statefunc, 
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver), typeof(diffvars)}(input, output, trigger, Callback[], uuid4(), statefunc, 
             outputfunc, state, t, solver, stateder, diffvars)
     end
 end

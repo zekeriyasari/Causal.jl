@@ -6,14 +6,15 @@ const RODESolver = Solver(RandomEM())
 const RODENoise = Noise(WienerProcess(0.,0.))
 
 
-mutable struct RODESystem{IB, OB, L, SF, OF, ST, T, S, N} <: AbstractRODESystem
+mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, S, N} <: AbstractRODESystem
     @generic_dynamic_system_fields
     noise::N
     function RODESystem(input, output, statefunc, outputfunc, state, t, noise, solver=RODESolver)
         trigger = Link()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(statefunc), typeof(outputfunc), typeof(state),   
-            typeof(t), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 
-                outputfunc, state, t, solver, noise)
+        handshake = Link{Bool}()
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 
+            outputfunc, state, t, solver, noise)
     end
 end
 

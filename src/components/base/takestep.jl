@@ -106,6 +106,7 @@ function launch(comp::AbstractComponent)
     triggertask = @async begin 
         while true
             takestep(comp) === missing && break
+            put!(comp.handshake, true)
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
@@ -113,6 +114,7 @@ function launch(comp::AbstractComponent)
 end
 
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
+approve(comp::AbstractComponent) = take!(comp.handshake)
 
 function release(comp::AbstractComponent)
     typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
@@ -132,12 +134,12 @@ function takestep(comp::AbstractSubSystem)
     t = readtime(comp)
     t === missing && return t
     foreach(takestep, comp.components)
+    approve(comp) ||  @warn "Could not be approved in the subsystem"
+    put!(comp.handshake, true)
 end
 
-function drive(comp::AbstractSubSystem, t)
-    task = @async foreach(component -> drive(component, t), comp.components)
-    wait(task)
-end
+drive(comp::AbstractSubSystem, t) = foreach(component -> drive(component, t), comp.components)
+approve(comp::AbstractSubSystem) = all(approve.(comp.components))
 
 
 function release(comp::AbstractSubSystem)
@@ -146,8 +148,4 @@ function release(comp::AbstractSubSystem)
     typeof(comp.output) <: Bus && release(comp.output)
 end
 
-function terminate(comp::AbstractSubSystem) 
-    task = @async foreach(terminate, comp.components)
-    wait(task)
-    return
-end
+terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)

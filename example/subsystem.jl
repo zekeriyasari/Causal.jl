@@ -31,4 +31,4 @@ t, x = read(writer, flatten=true)
 display(plot(t, x))
 
 
-model.taskmanager.pairs[sub]
+display(model.taskmanager.pairs[sub])

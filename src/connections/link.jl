@@ -99,16 +99,18 @@ end
 function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
     isconnected(srclink, dstlink) || (@warn "$srclink and $dstlink are already disconnected."; return)
     slaves = srclink.slaves
-    # for i = 1 : length(slaves)
-    #     slaves[i][] == dstlink && deleteat!(slaves, i)
-    # end
     deleteat!(slaves, findall(slave -> slave[] == dstlink, slaves))
     dstlink.master = RefValue{Link{T}}()
     dstlink.leftpin = Pin()
     return
 end
 
-release(masterlink::Link) = foreach(slavelinkref -> disconnect(masterlink, slavelinkref[]), masterlink.slaves)
+# release(masterlink::Link) = foreach(slavelinkref -> disconnect(masterlink, slavelinkref[]), masterlink.slaves)
+function release(link::Link)
+    while !isempty(link.slaves)
+        disconnect(link, link.slaves[1][])
+    end
+end
 
 ##### Launching links.
 eltype(link::Link{T}) where T = T

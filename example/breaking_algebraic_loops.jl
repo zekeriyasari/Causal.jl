@@ -3,40 +3,37 @@
 using Jusdl 
 using Plots 
 
+# Simualation settings 
+t0, dt, tf = 0, 0.01, 1.
 
-t0, dt, tf = 0, 0.01, 10.
-
+# Construct model blocks 
 gen = FunctionGenerator(identity)
 adder = Adder(Bus(2), (+, -))
 mem = Memory(Bus(1), 1, initial=zeros(1))    # Initial condition is very important for accurate solutions. 
-writer1 = Writer(Bus(1))
-writer2 = Writer(Bus(1))
-writer3 = Writer(Bus(1))
+writerout = Writer(Bus(length(adder.output)))
+writerin = Writer(Bus(length(gen.output)))
 
+# Connect model blocks 
 connect(gen.output, adder.input[1])
-connect(adder.output, mem.input)
 connect(mem.output, adder.input[2])
-connect(gen.output, writer1.input)
-connect(adder.output, writer2.input)
-connect(mem.output, writer3.input)
+connect(adder.output, mem.input)
+connect(mem.output, writerout.input)
+connect(gen.output, writerin.input)
 
-model = Model(gen, adder, mem, writer1, writer2, writer3)
+# Construct the model 
+model = Model(gen, adder, mem, writerout, writerin)
 
+# Simulate the model 
 sim = simulate(model, t0, dt, tf)
 
-t, x1 = read(writer1, flatten=true)
-t, x2 = read(writer2, flatten=true)
-t, x3 = read(writer3, flatten=true)
+# Diplay model taskmanager
+display(model.taskmanager.pairs)
 
-p1 = plot(t, x1, label=:input)
-    plot!(t, x3, label=:memout)
-    plot!(t, x2, label=:output)
-    plot!(t, x1 / 2, label=:theoout)
-    plot!(t, abs.(x1 / 2 - x2), label=:theoout)
-    
-p2 = plot(t[1:20], x1[1:20], marker=(:circle, 1), label=:input)
-    plot!(t[1:20], x3[1:20], marker=(:circle, 1), label=:memout)
-    plot!(t[1:20], x2[1:20], marker=(:circle, 1), label=:output)
-    plot!(t[1:20], x1[1:20] / 2, marker=(:circle, 1), label=:theoout)
-    plot!(t[1:20], abs.(x1[1:20] / 2 - x2[1:20]), marker=(:circle, 1), label=:theoout)
-display(plot(p1, p2, layout=(2,1)))
+# Read the simulation data 
+t, y = read(writerout, flatten=true)
+t, u = read(writerin, flatten=true)
+
+# Plot the results
+p1 = plot(t, u, label=:u, marker=(:circle, 3)) 
+    plot!(t, y, label=:y, marker=(:circle, 3)) 
+display(p1)

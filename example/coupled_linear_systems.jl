@@ -38,6 +38,8 @@ err = abs.(x - xr)
 
 ni = 50 
 nf = ni + 100
-plot(x[ni:nf, 1], marker=(:circle, 1))
-plot!(xr[ni:nf, 1], marker=(:circle, 1))
-scatter(x[:, 1], x[:, 2], marker=(:circle, 1))
+p1 = plot(x[ni:nf, 1], marker=(:circle, 1))
+    plot!(xr[ni:nf, 1], marker=(:circle, 1))
+p2 = scatter(x[:, 1], x[:, 2], marker=(:circle, 1))
+display(plot(p1, p2,layout=(2,1)))
+

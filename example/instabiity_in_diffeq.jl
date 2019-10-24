@@ -7,7 +7,7 @@ using Plots
 
 # Simulation settings 
 t0, dt, tf = 0., 0.01, 100.
-eps = 50.
+eps = 10.
 
 # Define the system 
 function f(dx, x, u, t, sigma=10, beta=8/3, rho=28)

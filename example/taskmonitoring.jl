@@ -1,3 +1,6 @@
+# This file illustrates synchronizing channels that are bound the different tasks that elapse in different amount of 
+# time..
+
 
 function taker5(ch, chr)
     while true 

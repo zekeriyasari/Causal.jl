@@ -6,7 +6,7 @@ using LinearAlgebra
 
 # Define the simulation settings 
 t0, dt, tf = 0., 0.01, 50.
-eps = 5.  # In order for the solutions not to blow, eps <= 10.
+eps = 10.  # In order for the solutions not to blow, eps <= 10.
 
 # # Simulate the system using Jusdl by constructing explicite blocks
 # ds1 = LinearSystem(Bus(3), Bus(3), A=diagm(-ones(3)), B=diagm(ones(3)), C=diagm(ones(3)), D=diagm(zeros(3)))

@@ -30,5 +30,5 @@ sim = simulate(model, 0, 0.01, 10)
 t, x = read(writer, flatten=true)
 display(plot(t, x))
 
-
+# Display the task status
 display(model.taskmanager.pairs[sub])

@@ -23,8 +23,10 @@ end
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
-computeoutput(comp::AbstractDynamicSystem, x, u, t) = 
-    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, u, t)
+function computeoutput(comp::AbstractDynamicSystem, x, u, t)
+    typeof(comp.outputfunc) <: Nothing && return nothing
+    typeof(comp.input) <: Nothing ? comp.outputfunc(x, nothing, t) : comp.outputfunc(x, interpolate(comp.t, t, comp.inputval, u), t)
+end
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 evolve!(comp::AbstractSource, x, u, t) = nothing
@@ -35,12 +37,16 @@ function evolve!(comp::AbstractDynamicSystem, x, u, t)
     # Thus, there will be no evolution in such a case.
     comp.t == t && return comp.state  
     sol = solve(comp, x, u, t)
-    update!(comp, sol)
+    update!(comp, sol, u)
     comp.state
 end
 
+interpolate(t0::Real, t1::Real, u0::Real, u1::Real) = t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed")
+interpolate(t0::Real, t1::Real, u0::AbstractVector{<:Real}, u1::AbstractVector{<:Real}) = 
+    map(items -> interpolate(t0, t1, items[1], items[2]), zip(u0, u1))
+
 constructprob(comp::AbstractDiscreteSystem, x, u, t) = DiscreteProblem(comp.statefunc, x, (comp.t, t),  u)
-constructprob(comp::AbstractODESystem, x, u, t) = ODEProblem(comp.statefunc, x, (comp.t, t), u)
+constructprob(comp::AbstractODESystem, x, u, t) = ODEProblem(comp.statefunc, x, (comp.t, t), interpolate(comp.t, t, comp.inputval, u))
 constructprob(comp::AbstractDAESystem, x, u, t) = 
     DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), u, differential_vars=comp.diffvars)
 constructprob(comp::AbstractRODESystem, x, u, t) = 
@@ -52,15 +58,17 @@ constructprob(comp::AbstractDDESystem, x, u, t) = DDEProblem(comp.statefunc, x, 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral)
 solve(comp::AbstractDynamicSystem, x, u,t) = solve(constructprob(comp, x, u, t), comp.solver.alg; comp.solver.params...)
 
-function update!(comp::AbstractDynamicSystem, sol)
+function update!(comp::AbstractDynamicSystem, sol, u)
     update_time!(comp, sol.t[end])
     update_state!(comp, sol.u[end])
+    update_inputval!(comp, u)
     typeof(comp) <: Union{<:AbstractSDESystem, <:AbstractRODESystem} && update_noise!(comp, sol.W)
     typeof(comp) <: AbstractDAESystem && update_stateder!(comp, sol.du[end])
     comp
 end
 update_time!(comp::AbstractDynamicSystem, t) = (comp.t = t; comp)
 update_state!(comp::AbstractDynamicSystem, state) = (comp.state = state; comp)
+update_inputval!(comp::AbstractDynamicSystem, u) = (comp.inputval = u; comp)
 update_stateder!(comp::AbstractDAESystem, stateder) = (comp.stateder = stateder; comp)
 function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, noise)
     Z = typeof(noise.Z) <: Nothing ? noise.Z : noise.Z[end]

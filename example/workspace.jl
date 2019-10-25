@@ -1,36 +1,26 @@
+
 using Jusdl 
-using Plots
+using Plots 
 using LinearAlgebra
 
-# Simulationk settings 
-t0, dt, tf = 0., 0.01, 50.
+# Construct model blocks.
+ds = LinearSystem(nothing, Bus())
+writerout = Writer(Bus(length(ds.output)))
 
-# Construct model components
-numnodes = 2
-dimnodes = 3
-net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
-    getconmat(:path_graph, numnodes, weight=5.), getcplmat(dimnodes, 1))
-writer = Writer(Bus(length(net.output)))
+# Connect model blocks.
+connect(ds.output, writerout.input)
 
-# Connect model components
-connect(net.output, writer.input)
+# Construct model 
+model = Model(ds, writerout)
 
-# Construct the model 
-model = Model(net, writer)
+initialize(model)
+set!(model.clk, 0., 0.01, 10.)
+# run(model)
 
-# Simuate the model
-sim = simulate(model, t0, dt, tf)
+# # Simulate the model
+# sim = simulate(model, 0., 0.01, 20.)
 
-# Check termination of the tasks 
-foreach(comp -> display(model.taskmanager.pairs[comp]), model.blocks)
-
-# Read simulation data 
-t, x = read(writer, flatten=true)
-
-# Plot the results 
-# p1 = gplot(net)
-p2 = plot(t, x[:, 1])
-p3 = plot(x[:, 1], x[:, 2])
-p4 = plot(t, x[:, 1] - x[:, 4])
-display(p1)
-display(plot(p2, p3, p4, layout=(3, 1)))
+# # Plot simulation plots
+# t, y = read(writerout, flatten=true)
+# p1 = plot(t, y)
+# display(p1)

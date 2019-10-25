@@ -6,15 +6,16 @@ const SDESolver = Solver(LambaEM{true}())
 const SDENoise = Noise(WienerProcess(0.,0.))
 
 
-mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, S, N} <: AbstractSDESystem
+mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractSDESystem
     @generic_dynamic_system_fields
     noise::N
     function SDESystem(input, output, statefunc, outputfunc, state, t, noise; solver=SDESolver)
         trigger = Link()
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(), statefunc, 
-            outputfunc, state, t, solver, noise)
+            typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(),
+            statefunc, outputfunc, state, inputval, t, solver, noise)
     end
 end
 

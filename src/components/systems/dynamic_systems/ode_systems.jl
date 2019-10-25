@@ -5,19 +5,21 @@ import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fiel
 const ODESolver = Solver(Tsit5())
 
 
-mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
+mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     function ODESystem(input, output, statefunc, outputfunc, state, t; solver=ODESolver)
         trigger = Link()
         handshake = Link{Bool}()
+        # inputval = typeof(input) <: Bus ? Vector{eltype(input)}(undef, length(input)) : nothing
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver)}(input, output, trigger, Callback[], uuid4(), statefunc, outputfunc, state, t,
-            solver)
+            typeof(state),  typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver)
     end
 end
 
 ##### LinearSystem
-mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
+mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     A::Matrix{Float64}
     B::Matrix{Float64}
@@ -27,26 +29,27 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
         state=rand(size(A,1)), t=0., solver=ODESolver)
         trigger = Link()
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
             outputfunc = (x, u, t) -> (C * x)
         else
-            statefunc = (dx, x, u, t) -> (dx .= A * x .+ B * u)
+            statefunc = (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u))
             if C === nothing || D === nothing
                 outputfunc = nothing
             else
-                outputfunc = (x, u, t) -> (C * x .+ D * u)
+                outputfunc = (x, u, t) -> (C * x + D * map(ui -> ui(t), u))
             end
         end
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, outputfunc, state, t,
-            solver, A, B, C, D)
+            typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver, A, B, C, D)
     end
 end
 
 
 ##### LorenzSystemhandshake = Link{Bool}()
-mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
+mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     sigma::Float64
     beta::Float64
@@ -67,14 +70,15 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
                 dx[2] = x[1] * (rho - x[3]) - x[2]
                 dx[3] = x[1] * x[2] - beta * x[3]
                 dx .*= gamma
-                dx .+= cplmat * u   # Couple inputs
+                dx .+= cplmat * map(ui -> ui(t), u)   # Couple inputs
             end
         end
         trigger = Link()
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, outputfunc, state, t,
-            solver, sigma, beta, rho, gamma)
+            typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver, sigma, beta, rho, gamma)
     end
 end
 
@@ -113,7 +117,7 @@ PolynomialDiode() = PolynomialDiode(1/16, -1/6)
 
 (d::PolynomialDiode)(x) = d.a * x^3 + d.b * x
 
-mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, S, DT} <: AbstractODESystem
+mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, IV, S, DT} <: AbstractODESystem
     @generic_dynamic_system_fields
     diode::DT
     alpha::Float64
@@ -134,20 +138,21 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, S, DT} <: AbstractODESystem
             dx[2] = x[1] - x[2] + x[3]
             dx[3] = -beta * x[2]
             dx .*= gamma
-            dx .+= cplmat * u
+            dx .+= cplmat * map(ui -> ui(t), u)
             end
         end
         trigger = Link()
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver), typeof(diode)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, solver, diode, alpha, beta, gamma)
+            typeof(state), typeof(inputval), typeof(solver), typeof(diode)}(input, output, trigger, handshake,
+            Callback[], uuid4(), statefunc, outputfunc, state, inputval, t, solver, diode, alpha, beta, gamma)
     end
 end
 
 
 ##### Rossler System
-mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
+mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
     b::Float64
@@ -161,27 +166,28 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
                 dx[2] = x[1] + a * x[2]
                 dx[3] = b + x[3] * (x[1] - c)
                 dx .*= gamma
-                dx .+= cplmat * u
             end
         else
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3] + u[1]
                 dx[2] = x[1] + a * x[2] + u[2]
                 dx[3] = b + x[3] * (x[1] - c) + u[3]
+                dx .+= cplmat * map(ui -> ui(t), u)
                 dx .*= gamma
             end
         end
         trigger = Link() 
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
-            outputfunc, state, t, solver, a, b, c, gamma)
+            typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver, a, b, c, gamma)
     end
 end
 
 
 ##### Vanderpol System
-mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
+mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
@@ -198,14 +204,15 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, S} <: AbstractODESystem
                 dx[1] = x[2] 
                 dx[2] = -mu * (x[1]^2 - 1) * x[2] - x[1]
                 dx .*= gamma
-                dx .+= cplmat * u
+                dx .+= cplmat * map(ui -> ui(t), u)
             end
         end
         trigger = Link()
         handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
-            outputfunc, state, t, solver, mu, gamma)
+            typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver, mu, gamma)
     end
 end
   

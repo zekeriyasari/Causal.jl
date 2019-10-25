@@ -43,6 +43,7 @@ end
     statefunc::SF 
     outputfunc::OF 
     state::ST 
+    inputval::IV
     t::Float64
     solver::S
 end

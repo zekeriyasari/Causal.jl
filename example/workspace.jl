@@ -5,16 +5,16 @@ using Plots
 
 # Simulation settings 
 t0 = 0
-dt = 0.01
+dt = 0.001
 tf = 100.
 
 # Define the network parameters 
 numnodes = 2
 ds1 = LorenzSystem(Bus(3), Bus(3)) 
 ds2 = LorenzSystem(Bus(3), Bus(3)) 
-mem1 = Memory(Bus(3), 1)
-mem2 = Memory(Bus(3), 1)
-conmat = [-1. 1.; 1. -1.] * 110.
+mem1 = Memory(Bus(3), 1, initial=ds1.state)
+mem2 = Memory(Bus(3), 1, initial=ds2.state)
+conmat = [-1. 1.; 1. -1.] * 500.
 cplmat = [1 0 0; 0 0 0; 0 0 0]
 coupler = Coupler(conmat, cplmat)
 writer1 = Writer(Bus(length(ds1.input)))
@@ -39,7 +39,6 @@ model = Model(ds1, ds2, coupler, mem1, mem2, writer1, writer2, writer3, writer4)
 
 sim = simulate(model, t0, dt, tf)
 
-
 # Read and process the simulation data.
 t, u1 = read(writer1, flatten=true)
 t, x1 = read(writer2, flatten=true)
@@ -50,4 +49,4 @@ p1 = plot(t, u1[:, 1], label=:u1)
 p2 = plot(t, u2[:, 1], label=:u2)
     plot!(t, x2[:, 1], label=:u2)
 p3 = plot(t, abs.(x1[:, 1] - x2[:, 1]), label=:error)
-display(plot(p1, p2, p3, layout=(3,1)))
+display(plot(p1, p2, p3, layout=(3, 1)))

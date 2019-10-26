@@ -26,7 +26,8 @@ computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
 computeoutput(comp::AbstractDynamicSystem, x, u, t) = 
-    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
+    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, map(ui -> t -> ui, u), t)
+    # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 evolve!(comp::AbstractSource, x, u, t) = nothing
@@ -41,13 +42,8 @@ function evolve!(comp::AbstractDynamicSystem, x, u, t)
     comp.state
 end
 
-function interpolate(t0::Real, t1::Real, u0::Real, u1::Real) 
-    if isapprox(t0, t1)
-        t -> isapprox(t, t1) ? u0 : error("Extrapolation is not allowed. Just a single point interpolation can be used.")
-    else 
-        t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed.")
-    end
-end
+interpolate(t0::Real, t1::Real, u0::Real, u1::Real) = 
+    t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed.")
 interpolate(t0::Real, t1::Real, u0::AbstractVector{<:Real}, u1::AbstractVector{<:Real}) = 
     map(items -> interpolate(t0, t1, items[1], items[2]), zip(u0, u1))
 

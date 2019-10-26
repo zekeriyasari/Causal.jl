@@ -6,7 +6,7 @@ t0, dt, tf = 0, 0.01, 10.
 
 # Construct the blocks
 x0 = rand(1)
-gen = FunctionGenerator(sin)
+gen = FunctionGenerator(identity)
 ds = LinearSystem(Bus(1), Bus(1), state=x0, B=fill(1., 1, 1))
 mem = Memory(Bus(length(ds.output)), 1, initial=x0)
 adder = Adder(Bus(length(gen.output) + length(mem.output)), (+, -))
@@ -53,4 +53,5 @@ err = xr - x
 p1 = plot(t, x, label=:x)
     plot!(t, y, label=:xd)
     plot!(t, xr, label=:xr)
-display(p1)
+p2 = plot(t, abs.(err), label=:error)
+display(plot(p1, p2, layout=(2,1)))

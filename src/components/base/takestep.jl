@@ -6,6 +6,8 @@ using DifferentialEquations
 using Sundials
 import DifferentialEquations.solve
 
+##### Input-Output reading and writing.
+
 readtime(comp::AbstractComponent) = take!(comp.trigger)
 
 readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? comp.state : nothing
@@ -23,10 +25,8 @@ end
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
-function computeoutput(comp::AbstractDynamicSystem, x, u, t)
-    typeof(comp.outputfunc) <: Nothing && return nothing
-    typeof(comp.input) <: Nothing ? comp.outputfunc(x, nothing, t) : comp.outputfunc(x, interpolate(comp.t, t, comp.inputval, u), t)
-end
+computeoutput(comp::AbstractDynamicSystem, x, u, t) = 
+    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 evolve!(comp::AbstractSource, x, u, t) = nothing
@@ -41,21 +41,35 @@ function evolve!(comp::AbstractDynamicSystem, x, u, t)
     comp.state
 end
 
-interpolate(t0::Real, t1::Real, u0::Real, u1::Real) = t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed")
+function interpolate(t0::Real, t1::Real, u0::Real, u1::Real) 
+    if isapprox(t0, t1)
+        t -> isapprox(t, t1) ? u0 : error("Extrapolation is not allowed. Just a single point interpolation can be used.")
+    else 
+        t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed.")
+    end
+end
 interpolate(t0::Real, t1::Real, u0::AbstractVector{<:Real}, u1::AbstractVector{<:Real}) = 
     map(items -> interpolate(t0, t1, items[1], items[2]), zip(u0, u1))
 
-constructprob(comp::AbstractDiscreteSystem, x, u, t) = DiscreteProblem(comp.statefunc, x, (comp.t, t),  u)
-constructprob(comp::AbstractODESystem, x, u, t) = ODEProblem(comp.statefunc, x, (comp.t, t), interpolate(comp.t, t, comp.inputval, u))
+constructinput(comp, u, t) = typeof(u) <: Nothing ? u : interpolate(comp.t, t, comp.inputval, u)
+
+constructprob(comp::AbstractDiscreteSystem, x, u, t) = 
+    DiscreteProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t))
+constructprob(comp::AbstractODESystem, x, u, t) = 
+    ODEProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t))
 constructprob(comp::AbstractDAESystem, x, u, t) = 
-    DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), u, differential_vars=comp.diffvars)
+    DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), constructinput(comp, u, t),
+    differential_vars=comp.diffvars)
 constructprob(comp::AbstractRODESystem, x, u, t) = 
-    RODEProblem(comp.statefunc, x, (comp.t, t), u, noise=comp.noise.process, rand_prototype=comp.noise.prototype, 
-    seed=comp.noise.seed)
-constructprob(comp::AbstractSDESystem, x, u, t) = SDEProblem(comp.statefunc..., x, (comp.t, t), u, 
-    noise=comp.noise.process, noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
-constructprob(comp::AbstractDDESystem, x, u, t) = DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), u, 
+    RODEProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t), 
+    noise=comp.noise.process, rand_prototype=comp.noise.prototype, seed=comp.noise.seed)
+constructprob(comp::AbstractSDESystem, x, u, t) = 
+    SDEProblem(comp.statefunc..., x, (comp.t, t), constructinput(comp, u, t), noise=comp.noise.process, 
+    noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
+constructprob(comp::AbstractDDESystem, x, u, t) = 
+    DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), constructinput(comp, u, t), 
     constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral)
+
 solve(comp::AbstractDynamicSystem, x, u,t) = solve(constructprob(comp, x, u, t), comp.solver.alg; comp.solver.params...)
 
 function update!(comp::AbstractDynamicSystem, sol, u)
@@ -77,6 +91,7 @@ function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, n
     comp
 end
 
+##### Task management
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
     t === missing && return t

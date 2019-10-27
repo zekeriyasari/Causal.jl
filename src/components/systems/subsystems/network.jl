@@ -66,16 +66,43 @@ show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat
 gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))
 
 ##### Construction of coupling matrix
-getcplmat(d, idx::Vector{Int}) = (v = zeros(d); v[idx] .= 1; diagm(v))
-getcplmat(n, idx::Int) = getcplmat(n, [idx])
+coupling(d, idx::Vector{Int}) = (v = zeros(d); v[idx] .= 1; diagm(v))
+coupling(n, idx::Int) = coupling(n, [idx])
 
-##### Construction of different network toplogies.
-getconmat(topology::Symbol, args...; weight=1., kwargs...) = 
+##### Construction of connection matrices of different network toplogies.
+
+uniformconnectivity(topology::Symbol, args...; weight=1., kwargs...) = 
     weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
 
-_getdiagonal(n::Int) = (a = ones(n, n); d = -(n - 1); foreach(i -> (a[i, i] = d), 1 : n); a) 
+function cgsconnectivity(topology::Symbol, args...; weight=1., kwargs...)
+    graph = eval(topology)(args...; kwargs...)
+    graphedges = edges(graph)
+    graphvertices = vertices(graph)
+    numvertices = nv(graph)
+    edgepathlength = Dict(zip(graphedges, zeros(length(graphedges))))
+    # Find shortest path lengths for each of edges.
+    for edge in graphedges
+        red = Edge(dst(edge), src(edge))
+        for i in 1 : numvertices
+            for j in i + 1 : numvertices
+                path_ij = a_star(graph, i, j) 
+                if edge in path_ij || red in path_ij
+                    edgepathlength[edge] += 1
+                end
+            end
+        end
+    end
+    # Construct connection matrix
+    conmat = zeros(numvertices, numvertices)
+    for (edge, pathlength) in edgepathlength
+        conmat[src(edge), dst(edge)] = pathlength
+        conmat[dst(edge), src(edge)] = pathlength
+    end
+    foreach(i -> (conmat[i, i] = -sum(conmat[i, :])), 1 : numvertices)
+    return weight / numvertices * conmat
+end
 
-function getconmat(clusters::AbstractRange...; weight=1.)
+function clusterconnectivity(clusters::AbstractRange...; weight=1.)
     numnodes = clusters[end][end]
     lenclusters = length.(clusters)
     numclusters = length(clusters)
@@ -85,7 +112,7 @@ function getconmat(clusters::AbstractRange...; weight=1.)
         lencluster = lenclusters[i]
         nextcluster = clusters[i + 1]
         lennectcluster = lenclusters[i + 1]
-        val = _getdiagonal(lencluster)
+        val = diagonal(lencluster)
         mat[cluster, cluster] = val
         if lenclusters == lennectcluster
             mat[cluster, nextcluster] = val
@@ -97,7 +124,7 @@ function getconmat(clusters::AbstractRange...; weight=1.)
     end
     cluster = clusters[end]
     lencluster = lenclusters[end]
-    mat[cluster, cluster] = _getdiagonal(lencluster)
+    mat[cluster, cluster] = diagonal(lencluster)
 
     mat[clusters[1], clusters[1]] .*= 3.
     for cluster in clusters[2 : end - 1]
@@ -108,7 +135,10 @@ function getconmat(clusters::AbstractRange...; weight=1.)
     weight * mat
 end
 
+diagonal(n::Int) = (a = ones(n, n); d = -(n - 1); foreach(i -> (a[i, i] = d), 1 : n); a) 
 
+
+##### Changing network topology
 function changeweight(net::Network, src::Int, dst::Int, weight)
     if length(net.clusters) == 1
         if eltype(net.conmat) <: Real

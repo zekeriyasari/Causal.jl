@@ -11,7 +11,7 @@ numnodes = 10
 dimnodes = 3
 weight = 1.
 net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
-    getconmat(:erdos_renyi, numnodes, 0.7, weight=weight), getcplmat(dimnodes, 1))
+    uniformconnectivity(:erdos_renyi, numnodes, 0.7, weight=weight), coupling(dimnodes, 1))
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks

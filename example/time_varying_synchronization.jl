@@ -13,7 +13,7 @@ weightpos(t, high=5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high :
 weightneg(t, high=-5., low=0., per=100.) = (0 <= mod(t, per) <= per / 2) ? high : low
 net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], 
     [weightneg weightpos; weightpos weightneg],
-    getcplmat(dimnodes, 1))
+    coupling(dimnodes, 1))
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks

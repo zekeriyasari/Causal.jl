@@ -1,26 +1,47 @@
-using LightGraphs
-using GraphPlot
+using Jusdl 
+using Plots
 
-g = path_graph(5)
-w = Dict(zip(edges(g), zeros(length(edges(g)))))
-for ed in edges(g)
-    red = Edge(dst(ed), src(ed))
-    for i in 1 : nv(g)
-        for j in i + 1 : nv(g)
-            path_ij = a_star(g, i, j) 
-            if ed in path_ij || red in path_ij
-                w[ed] += 1
-            end
-        end
-    end
-end
+# Simulation settings 
+t0, dt, tf = 0., 0.001, 50.
 
-conmat = zeros(nv(g), nv(g))
-for (e, v) in w
-    conmat[src(e), dst(e)] = v
-    conmat[dst(e), src(e)] = v
-end
+# Construct the components
+numnodes = 6
+dimnodes = 3
+weight = 50.
+adjmat = [
+    0 1 1 0 0 0;
+    1 0 1 0 1 1;
+    1 1 0 1 0 0;
+    0 0 1 0 0 0;
+    0 1 0 0 0 0;
+    0 1 0 0 0 0
+    ]
+conmat = cgsconnectivity(adjmat, weight=weight)
+cplmat = coupling(dimnodes, 1)
+net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes], conmat, cplmat)
+writer = Writer(Bus(length(net.output)))
 
-for i in 1 : nv(g)
-    conmat[i, i] = -sum(conmat[i, :])
-end
+# Connect the components
+connect(net.output, writer.input)
+
+# Construct the model
+model = Model(net, writer)
+
+# # Add callback to the model 
+# condition(model) = model.clk.t >= tf / 2
+# action(model, id=net.id) = deletelink(findin(model, id), 1, 2)
+# addcallback(model, Callback(condition, action))
+
+# Simulate the model 
+sim = simulate(model, t0, dt, tf)
+
+# Read the simulation data
+t, x = read(writer, flatten=true)
+
+# Plot the simulation data
+plots = [
+    plot(t, x[:, 1]),
+    plot(x[:, 1], x[:, 2]),
+    [plot(t, abs.(x[:, 1] - x[:, 1 + i * dimnodes]), label=string(1) * "-" * string(i + 1))
+        for i in 1 : numnodes - 1]...]
+display(plot(plots...))

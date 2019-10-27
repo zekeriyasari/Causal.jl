@@ -74,8 +74,7 @@ coupling(n, idx::Int) = coupling(n, [idx])
 uniformconnectivity(topology::Symbol, args...; weight=1., kwargs...) = 
     weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
 
-function cgsconnectivity(topology::Symbol, args...; weight=1., kwargs...)
-    graph = eval(topology)(args...; kwargs...)
+function cgsconnectivity(graph::AbstractGraph; weight=1.)
     graphedges = edges(graph)
     graphvertices = vertices(graph)
     numvertices = nv(graph)
@@ -101,6 +100,9 @@ function cgsconnectivity(topology::Symbol, args...; weight=1., kwargs...)
     foreach(i -> (conmat[i, i] = -sum(conmat[i, :])), 1 : numvertices)
     return weight / numvertices * conmat
 end
+cgsconnectivity(adjmat::AbstractMatrix; weight=1.) = cgsconnectivity(SimpleGraph(adjmat), weight=weight)
+cgsconnectivity(topology::Symbol, args...; weight=1., kwargs...) = 
+    cgsconnectivity(eval(topology)(args...; kwargs...), weight=weight)
 
 function clusterconnectivity(clusters::AbstractRange...; weight=1.)
     numnodes = clusters[end][end]

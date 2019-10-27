@@ -5,14 +5,15 @@ import GraphPlot.gplot
 alloutputlinks(components) = vcat([component.output.links for component in components]...)
 
 
-mutable struct Network{IB, OB, T, H, C1, C2, C3} <: AbstractSubSystem
+mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
     @generic_system_fields
-    components::C1
-    conmat::C2 
-    cplmat::C3 
+    components::CMP
+    conmat::CNM 
+    cplmat::CPM
+    clusters::Vector{UnitRange{Int}}
     function Network(components::AbstractArray, conmat::AbstractMatrix, 
         cplmat::AbstractMatrix=getcplmat(length(components[1].output)), input=nothing, 
-        output=alloutputlinks(components))
+        output=alloutputlinks(components); clusters=[1:length(components)])
         # Construct input output
         trigger = Link()
         handshake = Link{Bool}()
@@ -52,8 +53,8 @@ mutable struct Network{IB, OB, T, H, C1, C2, C3} <: AbstractSubSystem
         end
         allcomponents = [components..., coupler, memories...]
         new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(allcomponents), 
-            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), allcomponents, conmat, 
-            cplmat)
+            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), allcomponents,
+            conmat, cplmat, clusters)
     end
 end
 
@@ -106,3 +107,38 @@ function getconmat(clusters::AbstractRange...; weight=1.)
 
     weight * mat
 end
+
+
+function changeweight(net::Network, src::Int, dst::Int, weight)
+    if length(net.clusters) == 1
+        if eltype(net.conmat) <: Real
+            oldweight = net.conmat[src, dst]
+            net.conmat[src, dst] = weight
+            net.conmat[dst, src] = weight
+            net.conmat[src, src] -= weight - oldweight
+            net.conmat[dst, dst] -= weight - oldweight
+        else
+            @warn "Change for time varying network. To be implemented. Returning..."
+        end
+    else
+        @warn "Change for time clusters. To be implemented. Returning..."
+        return  
+    end
+end
+
+function deletelink(net::Network, src::Int, dst::Int)
+    if length(net.clusters) == 1
+        if eltype(net.conmat) <: Real
+            net.conmat[src, src] += net.conmat[src, dst]
+            net.conmat[dst, dst] += net.conmat[src, dst]
+            net.conmat[src, dst] = 0
+            net.conmat[dst, src] = 0
+        else
+            @warn "Delete from time varying network. To be implemented. Returning..."
+        end
+    else
+        @warn "Delete from clusters. To be implemented. Returning..."
+        return  
+    end
+end
+

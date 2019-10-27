@@ -34,6 +34,6 @@ t, y = read(writerout, flatten=true)
 t, u = read(writerin, flatten=true)
 
 # Plot the results
-p1 = plot(t, u, label=:u, marker=(:circle, 3)) 
-    plot!(t, y, label=:y, marker=(:circle, 3)) 
+p1 = plot(t, u, label=:u, marker=(:circle, 1)) 
+    plot!(t, y, label=:y, marker=(:circle, 1)) 
 display(p1)

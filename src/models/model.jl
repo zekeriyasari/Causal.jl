@@ -94,7 +94,8 @@ function run(model::Model)
     @showprogress clk.dt for t in clk
         foreach(component -> drive(component, t), components)
         all(approve.(components)) || @warn "Could not be approved"
-        checktaskmanager(taskmanager)                                     
+        checktaskmanager(taskmanager)          
+        model.callbacks(model)                           
     end
     # sleep(0.001)
 end
@@ -166,3 +167,6 @@ function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
     simulate(model; kwargs...)
 end
 
+
+findin(model::Model, id::UUID) = model.blocks[findfirst(block -> block.id == id, model.blocks)]
+findin(model::Model, comp::AbstractComponent) = model.blocks[findfirst(block -> block.id == comp.id, model.blocks)]

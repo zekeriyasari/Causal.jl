@@ -5,48 +5,39 @@ using Plots
 
 # Simulation settings 
 t0 = 0
-dt = 0.001
+dt = 0.005
 tf = 100.
 
 # Define the network parameters 
-numnodes = 2
-ds1 = LorenzSystem(Bus(3), Bus(3)) 
-ds2 = LorenzSystem(Bus(3), Bus(3)) 
-mem1 = Memory(Bus(3), 1, initial=ds1.state)
-mem2 = Memory(Bus(3), 1, initial=ds2.state)
-conmat = [-1. 1.; 1. -1.] * 500.
-cplmat = [1 0 0; 0 0 0; 0 0 0]
-coupler = Coupler(conmat, cplmat)
-writer1 = Writer(Bus(length(ds1.input)))
-writer2 = Writer(Bus(length(ds1.output)))
-writer3 = Writer(Bus(length(ds2.input)))
-writer4 = Writer(Bus(length(ds2.output)))
+numnodes = 5
+dimnodes = 3
+conmat = getconmat(:star_graph, numnodes, weight=10.)
+cplmat = getcplmat(dimnodes, 1)
+net = Network([LorenzSystem(Bus(dimnodes), Bus(dimnodes)) for i = 1 : numnodes],
+    conmat, cplmat)
+writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks
-connect(ds1.output, coupler.input[1:3])
-connect(ds2.output, coupler.input[4:6])
-connect(coupler.output[1:3], mem1.input)
-connect(coupler.output[4:6], mem2.input)
-connect(mem1.output, ds1.input)
-connect(mem2.output, ds2.input)
-connect(ds1.output, writer1.input)
-connect(ds1.output, writer2.input)
-connect(ds2.output, writer3.input)
-connect(ds2.output, writer4.input)
+connect(net.output, writer.input)
 
 # Construct the model 
-model = Model(ds1, ds2, coupler, mem1, mem2, writer1, writer2, writer3, writer4)
+model = Model(net, writer)
 
+# Construct a callback for the model 
+condition1(model) = model.clk.t >= 50.
+action1(model, id=net.id) = changeweight(findin(model, id), 1, 3, 0.)
+clb1 = Callback(condition1, action1)
+addcallback(model, clb1)
+
+# Simulate the model
 sim = simulate(model, t0, dt, tf)
 
 # Read and process the simulation data.
-t, u1 = read(writer1, flatten=true)
-t, x1 = read(writer2, flatten=true)
-t, u2 = read(writer3, flatten=true)
-t, x2 = read(writer4, flatten=true)
-p1 = plot(t, u1[:, 1], label=:u1)
-    plot!(t, x1[:, 1], label=:x1)
-p2 = plot(t, u2[:, 1], label=:u2)
-    plot!(t, x2[:, 1], label=:u2)
-p3 = plot(t, abs.(x1[:, 1] - x2[:, 1]), label=:error)
-display(plot(p1, p2, p3, layout=(3, 1)))
+t, x = read(writer, flatten=true)
+plots = [
+    plot(t, x[:, 1]),
+    plot(x[:, 1], x[:, 2]),
+    plot(x[:, 4], x[:, 5]),
+    [plot(t, abs.(x[:, 1] - x[:, 1 + i * dimnodes]), label=string(1) * "-" * string(i + 1))
+        for i in 1 : numnodes - 1]...]
+display(plot(plots...))

@@ -14,6 +14,7 @@ import Base: run, show
 export ComponentTask
 export TaskManager, checktaskmanager, istaskfailed, istaskrunning
 export Model, adjacency_matrix, inspect, initialize, run, terminate, simulate
+export findin
 
 include("utils.jl")
 include("taskmanager.jl")

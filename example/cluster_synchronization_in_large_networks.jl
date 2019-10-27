@@ -5,7 +5,7 @@ using Jusdl
 using Plots 
 
 # Simulation settings 
-t0, dt, tf = 0., 0.001, 50.
+t0, dt, tf = 0., 0.005, 50.
 
 # Construct the model blocks
 clusters = (1:3, 4:10, 11:20)

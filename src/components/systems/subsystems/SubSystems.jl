@@ -12,5 +12,6 @@ include("subsystem.jl")
 include("network.jl")
 
 export SubSystem, Network, getconmat, getcplmat, gplot
+export deletelink, changeweight
 
 end

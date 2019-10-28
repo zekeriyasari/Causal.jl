@@ -25,8 +25,10 @@ end
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
-computeoutput(comp::AbstractDynamicSystem, x, u, t) = 
-    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, map(ui -> t -> ui, u), t)
+function computeoutput(comp::AbstractDynamicSystem, x, u, t)
+    typeof(comp.outputfunc) <: Nothing && return nothing
+    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(ui -> t -> ui, u), t) 
+end
     # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 

@@ -12,6 +12,6 @@ include("subsystem.jl")
 include("network.jl")
 
 export SubSystem, Network, uniformconnectivity, cgsconnectivity, clusterconnectivity, coupling, gplot
-export deletelink, changeweight
+export deletelink, changeweight, maketimevarying
 
 end

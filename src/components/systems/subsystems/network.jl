@@ -71,10 +71,12 @@ coupling(n, idx::Int) = coupling(n, [idx])
 
 ##### Construction of connection matrices of different network toplogies.
 
-uniformconnectivity(topology::Symbol, args...; weight=1., kwargs...) = 
-    weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
+function uniformconnectivity(topology::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
+    conmat = weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
+    timevarying ? maketimevarying(conmat) : conmat 
+end
 
-function cgsconnectivity(graph::AbstractGraph; weight=1.)
+function cgsconnectivity(graph::AbstractGraph; weight::Real=1., timevarying::Bool=false)
     graphedges = edges(graph)
     graphvertices = vertices(graph)
     numvertices = nv(graph)
@@ -98,47 +100,50 @@ function cgsconnectivity(graph::AbstractGraph; weight=1.)
         conmat[dst(edge), src(edge)] = pathlength
     end
     foreach(i -> (conmat[i, i] = -sum(conmat[i, :])), 1 : numvertices)
-    return weight / numvertices * conmat
+    conmat *= weight / numvertices
+    timevarying ? maketimevarying(conmat) : conmat
 end
-cgsconnectivity(adjmat::AbstractMatrix; weight=1.) = cgsconnectivity(SimpleGraph(adjmat), weight=weight)
-cgsconnectivity(topology::Symbol, args...; weight=1., kwargs...) = 
-    cgsconnectivity(eval(topology)(args...; kwargs...), weight=weight)
+cgsconnectivity(adjmat::AbstractMatrix; weight::Real=1.,  timevarying::Bool=false) = 
+    cgsconnectivity(SimpleGraph(adjmat), weight=weight, timevarying=timevarying)
+cgsconnectivity(topology::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...) = 
+    cgsconnectivity(eval(topology)(args...; kwargs...), weight=weight, timevarying=timevarying)
 
-function clusterconnectivity(clusters::AbstractRange...; weight=1.)
+function clusterconnectivity(clusters::AbstractRange...; weight=1., timevarying::Bool=false)
     numnodes = clusters[end][end]
     lenclusters = length.(clusters)
     numclusters = length(clusters)
-    mat = zeros(numnodes, numnodes)
+    conmat = zeros(numnodes, numnodes)
     for i = 1 : numclusters - 1
         cluster = clusters[i]
         lencluster = lenclusters[i]
         nextcluster = clusters[i + 1]
         lennectcluster = lenclusters[i + 1]
         val = diagonal(lencluster)
-        mat[cluster, cluster] = val
+        conmat[cluster, cluster] = val
         if lenclusters == lennectcluster
-            mat[cluster, nextcluster] = val
-            mat[nextcluster, cluster] = val
+            conmat[cluster, nextcluster] = val
+            conmat[nextcluster, cluster] = val
         else
-            mat[cluster, nextcluster] = hcat(val, zeros(lencluster, lennectcluster - lencluster))
-            mat[nextcluster, cluster] = vcat(val, zeros(lennectcluster - lencluster, lencluster))
+            conmat[cluster, nextcluster] = hcat(val, zeros(lencluster, lennectcluster - lencluster))
+            conmat[nextcluster, cluster] = vcat(val, zeros(lennectcluster - lencluster, lencluster))
         end
     end
     cluster = clusters[end]
     lencluster = lenclusters[end]
-    mat[cluster, cluster] = diagonal(lencluster)
+    conmat[cluster, cluster] = diagonal(lencluster)
 
-    mat[clusters[1], clusters[1]] .*= 3.
+    conmat[clusters[1], clusters[1]] .*= 3.
     for cluster in clusters[2 : end - 1]
-        mat[cluster, cluster] .*= 5.
+        conmat[cluster, cluster] .*= 5.
     end
-    mat[clusters[end], clusters[end]] .*= 3.
-
-    weight * mat
+    conmat[clusters[end], clusters[end]] .*= 3.
+    conmat *= weight
+    timevarying ? maketimevarying(conmat) : conmat
 end
 
 diagonal(n::Int) = (a = ones(n, n); d = -(n - 1); foreach(i -> (a[i, i] = d), 1 : n); a) 
 
+maketimevarying(mat::AbstractMatrix{<:Real}) = convert(Matrix{Function}, map(item -> t -> item, mat))
 
 ##### Changing network topology
 function changeweight(net::Network, src::Int, dst::Int, weight)

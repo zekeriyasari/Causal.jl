@@ -1,21 +1,35 @@
+using Plots 
+using GLM
+using Random
+using LinearAlgebra
 
-using Jusdl 
-using Plots
+function linearpredict(data, m)
+    n = length(data)
+    y = collect(data[m + 1 : n])
+    phi = zeros(n - m, m)
+    d = n - m - 1
+    for (j, idx) in enumerate(m : -1 : 1)
+        phi[:, j] = data[idx : idx + d]
+    end
+    theta = inv(phi' * phi) * phi' * y
+    theta, phi, y
+end
 
-# Simulation settings 
-t0, dt, tf = 0., 0.01, 100.
+t = collect(0.: 0.1: 1.)
+f(t) = t
+x = f.(t)
 
-ds = VanderpolSystem(nothing, Bus(2))
-writer = Writer(Bus(length(ds.output)))
+m = 5
+theta, phi, y = linearpredict(x, m)
+fit(LinearModel, phi, y)
 
-# connect(gen.output, ds.input)
-connect(ds.output, writer.input)
+xest = dot(theta, x[end - m + 1 : 1: end])
 
-# model = Model(gen, ds, writer)
-model = Model(ds, writer)
+tt = t[end] + 0.1
+xt = f(tt)
 
-sim = simulate(model, t0,dt, tf)
 
-t, x = read(writer, flatten=true)
-
-display(plot(t, x))
+p = scatter(t, x, label="")
+scatter!([tt], [xt], label="", color=:blue)
+scatter!([tt], [xest], label="", color=:green)
+display(p)

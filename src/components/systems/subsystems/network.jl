@@ -250,3 +250,7 @@ function deletelink(net::Network, src::Int, dst::Int)
     end
 end
 
+##### Pin network 
+function pin(ds::AbstractDynamicSystem, net::Network, idx=collect(1 : nodes(net)), weights=ones(length(idx)))
+    # TODO: Complete the function.
+end

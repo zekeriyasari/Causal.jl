@@ -48,7 +48,7 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyste
 end
 
 
-##### LorenzSystemhandshake = Link{Bool}()
+##### Lorenz System
 mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     sigma::Float64
@@ -82,8 +82,42 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyste
     end
 end
 
+##### Chen System 
+mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
+    @generic_dynamic_system_fields
+    a::Float64
+    b::Float64
+    c::Float64
+    gamma::Float64
+    function ChenSystem(input, output; a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+        if input === nothing
+            statefunc = (dx, x, u, t) -> begin
+                dx[1] = a * (x[2] - x[1])
+                dx[2] = (c - a) * x[1] + c * x[2] - x[1] * x[3]
+                dx[3] = x[1] * x[2] - b * x[3]
+                dx .*= gamma
+            end
+        else
+            statefunc = (dx, x, u, t) -> begin
+                dx[1] = a * (x[2] - x[1])
+                dx[2] = (c - a) * x[1] + c * x[2] - x[1] * x[3]
+                dx[3] = x[1] * x[2] - b * x[3]
+                dx .*= gamma
+                dx .+= cplmat * map(ui -> ui(t), u)   # Couple inputs
+            end
+        end
+        trigger = Link()
+        handshake = Link{Bool}()
+        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
+            typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
+            statefunc, outputfunc, state, inputval, t, solver, a, b, c, gamma)
+    end
+end
 
-# ##### Chua System
+
+##### Chua System
 struct PiecewiseLinearDiode
     m0::Float64
     m1::Float64
@@ -224,7 +258,10 @@ show(io::IO, ds::LinearSystem) = print(io,
     "Linearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
     "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 show(io::IO, ds::LorenzSystem) = print(io, 
-    "Lorenzystem(sigma:$(ds.sigma), beta:$(ds.beta), rho:$(ds.rho), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "LorenzSystem(sigma:$(ds.sigma), beta:$(ds.beta), rho:$(ds.rho), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::ChenSystem) = print(io, 
+    "ChenSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
     "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 show(io::IO, d::PiecewiseLinearDiode) = print(io, 
     "PiecewiseLinearDiode(m0:$(d.m0), m1:$(d.m1), m2:$(d.m2), bp1:$(d.bp1), bp2:$(d.bp2))")

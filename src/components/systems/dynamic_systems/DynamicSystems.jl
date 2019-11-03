@@ -22,7 +22,7 @@ include("dde_systems.jl")
 
 export Solver, Noise, History, Diffusion
 export DiscreteSystem
-export ODESystem, LinearSystem, LorenzSystem, ChuaSystem, RosslerSystem, VanderpolSystem 
+export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem 
 export DAESystem 
 export RODESystem 
 export SDESystem, NoisyLinearSystem, NoisyLorenzSystem, NoisyChuaSystem, NoisyRosslerSystem, NoisyVanderpolSystem, Noise

@@ -2,65 +2,136 @@
 
 import GraphPlot.gplot
 
-alloutputlinks(components) = vcat([component.output.links for component in components]...)
 
-
+##### Network
 mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
     @generic_system_fields
     components::CMP
     conmat::CNM 
     cplmat::CPM
     clusters::Vector{UnitRange{Int}}
-    function Network(components::AbstractArray, conmat::AbstractMatrix, 
-        cplmat::AbstractMatrix=getcplmat(length(components[1].output)), input=nothing, 
-        output=alloutputlinks(components); clusters=[1:length(components)])
-        # Construct input output
+    function Network(nodes::AbstractArray, conmat::AbstractMatrix, 
+        cplmat::AbstractMatrix=coupling(length(nodes[1].output)), inputnodeidx=[], outputnodeidx=[]; 
+        clusters=[1:length(nodes)])
+        coupler = construct_coupler(conmat, cplmat)
+        memories = construct_memories(nodes)
+        adders = construct_adders(nodes[inputnodeidx])
+        components = [nodes..., coupler, memories..., adders...]
         trigger = Link()
         handshake = Link{Bool}()
-         if typeof(input) <: AbstractVector{<:Link}
-            inputbus = Bus(length(input))
-            for (i, link) in enumerate(input)
-                inputbus[i] = link
-            end
-            # inputbus .= input
-        else 
-            inputbus = input
-        end
-        
-        if typeof(output) <: AbstractVector{<:Link}
-            outputbus = Bus(length(output))
-            for (i, link) in enumerate(output)
-                outputbus[i] = link
-            end
-            # outputbus .= output
-        else
-            outputbus = output
-        end
-
-        ##### Connect components
-        numnodes = size(conmat, 1)
-        dimnodes = size(cplmat, 1)
-        coupler = Coupler(conmat, cplmat)
-        memories = [Memory(Bus(dimnodes), 1, initial=zeros(dimnodes)) for i = 1 : numnodes]
-        for (component, idx) in zip(components, 1 : dimnodes : numnodes * dimnodes)     # Connect components to coupler
-            connect(component.output, coupler.input[idx : idx + dimnodes - 1])
-        end
-        for (memory, idx) in zip(memories, 1 : dimnodes : numnodes * dimnodes)          # Connect coupler to memories
-            connect(coupler.output[idx : idx + dimnodes - 1], memory.input)
-        end
-        for (memory, component) in zip(memories, components)                            # Connect memories to components
-            connect(memory.output, component.input)
-        end
-        allcomponents = [components..., coupler, memories...]
-        new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(allcomponents), 
-            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), allcomponents,
+        inputbus = construct_inputbus(adders)
+        outputbus = construct_outputbus(nodes[outputnodeidx])
+        net = new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components), 
+            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
             conmat, cplmat, clusters)
+        connect_internally(net, inputnodeidx)
     end
 end
 
 
 show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat)), cplmat:$(checkandshow(net.cplmat))",
     "input:$(checkandshow(net.input)), output:$(checkandshow(net.output)))")
+
+
+##### Network auxilary components construction
+construct_coupler(conmat, cplmat) = Coupler(conmat, cplmat)
+construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=node.state) for node in nodes]
+construct_adders(inputnodes) = [construct_an_adder(length(node.input), 2, fill(+, 2)) for node in inputnodes]
+function construct_an_adder(dim, n, ops)
+    K = hcat([op(diagm(ones(dim))) for op in ops]...)
+    StaticSystem(Bus(n * dim), Bus(dim), (u, t) -> K * u)
+end
+
+
+##### Network input-output bus construction
+function construct_inputbus(adders=[])
+    if isempty(adders)
+        inputbus = nothing
+    else
+        links = vcat([adder.input[Int(end / 2) + 1 : end] for adder in adders]...)
+        inputbus = Bus(length(links))
+        for (i, link) in enumerate(links)
+            inputbus[i] = link
+        end
+    end
+    return inputbus
+end
+
+function construct_outputbus(outputnodes)
+    if isempty(outputnodes)
+        output = nothing
+    else
+        links = vcat([node.output.links for node in outputnodes]...)
+        outputbus = Bus(length(links))
+        for (i, link) in enumerate(links)
+            outputbus[i] = link
+        end
+    end
+    return outputbus
+end
+
+
+##### Network internal connection.
+function connect_internally(net::Network, inputnodeidx=[])
+    nodes = filter(comp -> typeof(comp) <: AbstractDynamicSystem, net.components)
+    coupler = filter(comp -> typeof(comp) <: Coupler, net.components)[1]
+    memories = filter(comp -> typeof(comp) <: Memory, net.components)
+    adders = filter(comp -> typeof(comp) <: StaticSystem, net.components)
+    inputnodes, noninputnodes = dividecomponents(nodes, inputnodeidx)
+    inputmemories, noninputmemories = dividecomponents(memories, inputnodeidx)
+    connect_nodes_to_coupler(nodes, coupler)
+    connect_coupler_to_memories(coupler, memories)
+    connect_memories_to_nodes(noninputmemories, noninputnodes)
+    connect_memories_to_adders(inputmemories, adders)
+    connect_adders_to_nodes(adders, inputnodes)
+    net
+end
+
+function connect_nodes_to_coupler(nodes, coupler)
+    numnodes = size(coupler.conmat, 1)
+    dimnodes = size(coupler.cplmat, 1)
+    for (node, idx) in zip(nodes, 1 : dimnodes : numnodes * dimnodes) 
+        connect(node.output, coupler.input[idx : idx + dimnodes - 1])
+    end
+end
+
+function connect_coupler_to_memories(coupler, memories)
+    numnodes = size(coupler.conmat, 1)
+    dimnodes = size(coupler.cplmat, 1)
+    for (memory, idx) in zip(memories, 1 : dimnodes : numnodes * dimnodes) 
+        connect(coupler.output[idx : idx + dimnodes - 1], memory.input)
+    end
+end
+
+function connect_memories_to_nodes(memories, nodes)
+    for (memory, node) in zip(memories, nodes)
+        connect(memory.output, node.input)
+    end  
+end
+
+function connect_memories_to_adders(memories, adders)
+    for (memory, adder) in zip(memories, adders)
+        connect(memory.output, adder.input[1 : length(memory.output)])
+    end
+end
+
+function connect_adders_to_nodes(adders, nodes)
+    for (adder, node) in zip(adders, nodes)
+        connect(adder.output, node.input)
+    end
+end
+
+function dividecomponents(nodes, inputnodeidx)
+    allidx = collect(1:length(nodes))
+    inputmask = in(inputnodeidx).(allidx)
+    noninputmask = .!(inputmask)
+    nodes[inputmask], nodes[noninputmask]
+end
+
+
+nodes(net::Network) = filter(comp -> typeof(comp) <: AbstractDynamicSystem, net.components)
+numnodes(net::Network) = size(net.conmat, 1)
+dimnodes(net::Network) = size(net.cplmat, 1)
 
 ##### Plotting networks    
 gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))

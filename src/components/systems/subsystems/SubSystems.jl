@@ -3,8 +3,8 @@
 using UUIDs
 using LightGraphs, LinearAlgebra, GraphPlot
 import ..Systems: checkandshow
-import ..Systems.StaticSystems: Memory, Coupler
-import ....Components.Base: @generic_system_fields, AbstractSubSystem
+import ..Systems.StaticSystems: Memory, Coupler, StaticSystem
+import ....Components.Base: @generic_system_fields, AbstractSubSystem, AbstractDynamicSystem
 import ......Jusdl.Connections: Link, Bus, connect
 import ......Jusdl.Utilities: Callback
 

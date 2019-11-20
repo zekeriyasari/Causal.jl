@@ -4,7 +4,7 @@
 mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
     @generic_sink_fields
     file::F
-    function Writer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing, path="/tmp/"*string(uuid4())) where T 
+    function Writer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing, path=tempdir()*string(uuid4())) where T 
         # Construct the file
         endswith(path, ".jld2") || (path *= ".jld2")
         file = isfile(path) ? error("$path exists") :  jldopen(path, "w")

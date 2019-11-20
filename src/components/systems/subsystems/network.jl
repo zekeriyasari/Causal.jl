@@ -59,7 +59,7 @@ end
 
 function construct_outputbus(outputnodes)
     if isempty(outputnodes)
-        output = nothing
+        outputbus = nothing
     else
         links = vcat([node.output.links for node in outputnodes]...)
         outputbus = Bus(length(links))

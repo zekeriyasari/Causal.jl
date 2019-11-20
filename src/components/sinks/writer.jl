@@ -6,6 +6,7 @@ mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
     file::F
     function Writer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4()))) where T 
         # Construct the file
+        @info "$path"
         endswith(path, ".jld2") || (path *= ".jld2")
         file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
         close(file)     # Close file so that the file can be sent to remote Julia processes

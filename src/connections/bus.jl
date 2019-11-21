@@ -36,7 +36,7 @@ take!(bus::Bus) = (out = take!.(bus.links); bus.callbacks(bus); out)
 put!(bus::Bus, vals)  = (put!.(bus.links, vals); bus.callbacks(bus); vals)
 
 ##### Iterating bus
-iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)
+iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, bus links are returned.
 
 ##### Connecting disconnecting busses.
 connect(srcbus::Bus, dstbus::Bus) = (connect.(srcbus.links, dstbus.links); return)
@@ -49,6 +49,8 @@ disconnect(bus::Bus, links::Vector{<:Link}) = (disconnect.(bus.links, links); re
 disconnect(links::Vector{<:Link}, bus::Bus) = (disconnect.(links, bus.links); return)
 disconnect(bus::Bus, link::Link) = (disconnect.(bus.links, [link]); return)
 disconnect(link::Link, bus::Bus) = (disconnect.([link], bus.links); return)
+
+insert(b1, b2, b3) = (insert.(b1, b2, b3); return )
 
 release(bus::Bus) = foreach(release, bus.links)
 

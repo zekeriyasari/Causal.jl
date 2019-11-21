@@ -4,28 +4,27 @@ import GraphPlot.gplot
 
 
 ##### Network
-mutable struct Network{IB, OB, T, H, CMP, CNM, CPM, PT} <: AbstractSubSystem
+mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
     @generic_system_fields
     components::CMP
     conmat::CNM 
     cplmat::CPM
     clusters::Vector{UnitRange{Int}}
-    pins::Vector{PT}
     function Network(nodes::AbstractArray, conmat::AbstractMatrix, 
-        cplmat::AbstractMatrix=coupling(length(nodes[1].output)); inputnodeidx=[], outputnodeidx=[], 
-        clusters=[1:length(nodes)], pins=Vector{eltype(nodes)}(undef, 0))
+        cplmat::AbstractMatrix=coupling(length(nodes[1].output)); inputnodeidx=[], 
+        outputnodeidx=1:length(nodes), clusters=[1:length(nodes)])
         coupler = construct_coupler(conmat, cplmat)
         memories = construct_memories(nodes)
         adders = construct_adders(nodes[inputnodeidx])
-        components = [nodes..., pins..., coupler, memories..., adders...]
+        components = [nodes..., coupler, memories..., adders...]
         trigger = Link()
         handshake = Link{Bool}()
         inputbus = construct_inputbus(adders)
         outputbus = construct_outputbus(nodes[outputnodeidx])
         net = new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components), 
-            typeof(conmat), typeof(cplmat), eltype(pins)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
-            conmat, cplmat, clusters, pins)
-        connect_internally(net, inputnodeidx, pins)
+            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
+            conmat, cplmat, clusters)
+        connect_internally(net, inputnodeidx)
     end
 end
 
@@ -73,7 +72,7 @@ end
 
 
 ##### Network internal connection.
-function connect_internally(net::Network, inputnodeidx, pins)
+function connect_internally(net::Network, inputnodeidx)
     nodes = filter(comp -> typeof(comp) <: AbstractDynamicSystem, net.components)
     coupler = filter(comp -> typeof(comp) <: Coupler, net.components)[1]
     memories = filter(comp -> typeof(comp) <: Memory, net.components)

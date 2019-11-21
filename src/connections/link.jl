@@ -96,12 +96,34 @@ function connect(srclink::Link, dstlink::Link)
     return 
 end
 
-function disconnect(srclink::Link{T}, dstlink::Link{T}) where T
-    isconnected(srclink, dstlink) || (@warn "$srclink and $dstlink are already disconnected."; return)
+struct UnconnectedLinkError <: Exception
+    msg::String
+end
+Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
+
+function findflow(l1::Link, l2::Link)
+    isconnected(l1, l2) || throw(UnconnectedLinkError("$l1, and $l2 are not connected."))
+    l2 in [slave[] for slave in l1.slaves] ? (l1, l2) : (l2, l1)
+end
+
+function disconnect(link1::Link{T}, link2::Link{T}) where T
+    srclink, dstlink = findflow(link1, link2)
     slaves = srclink.slaves
     deleteat!(slaves, findall(slave -> slave[] == dstlink, slaves))
     dstlink.master = RefValue{Link{T}}()
     dstlink.leftpin = Pin()
+    return
+end
+
+function insert(l1::Link, l2::Link, l3::Link)
+    if isconnected(l1, l2)
+        master, slave = findflow(l1, l2)
+        disconnect(master, slave)
+    else
+        master, slave = l1, l2
+    end
+    connect(master, l3)
+    connect(l3, slave)
     return
 end
 

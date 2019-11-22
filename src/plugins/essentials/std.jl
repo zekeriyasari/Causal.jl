@@ -5,7 +5,7 @@ using Statistics
 struct Std <: AbstractPlugin
     dims::Int
 end
-Std(;dims=1) = Std(dims)
+Std(;dims::Int=1) = Std(dims)
 
 show(io::IO, plg::Std) = print(io, "Mean(dims:$(plg.dims))")
 

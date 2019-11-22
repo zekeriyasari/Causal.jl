@@ -5,7 +5,7 @@ using Statistics
 struct Variance <: AbstractPlugin
     dims::Int
 end
-Variance(;dims=1) = Variance(dims)
+Variance(;dims::Int=1) = Variance(dims)
 
 show(io::IO, plg::Variance) = print(io, "Mean(dims:$(plg.dims))")
 

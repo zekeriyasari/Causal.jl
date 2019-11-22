@@ -16,7 +16,7 @@ function check end
 function add end
 function remove end
 
-function search(rootpath::String, filename)
+function search(rootpath::AbstractString, filename::AbstractString)
     paths = String[]
     for (root, dirs, files) in walkdir(rootpath)
         for file in files
@@ -30,7 +30,7 @@ end
 
 const remote_repo_url = "https://imel.eee.deu.edu.tr/git/JusdlPlugins.jl.git"
 
-function add(name, url=remote_repo_url)
+function add(name::AbstractString, url::AbstractString=remote_repo_url)
     startswith(name, ".") && error("Name of plugin should not start with `.`")
     startswith(name, "Plugins") && error("Name of plugin cannot be `Plugins`")
     startswith(".jl", name) || (name *= ".jl")

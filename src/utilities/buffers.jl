@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length
+import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype
 
 ##### Buffer modes
 abstract type BufferMode end
@@ -26,10 +26,16 @@ Buffer(::Type{T}, ln::Int) where T = Buffer{Cyclic}(T, ln)
 Buffer{M}(ln::Int) where M = Buffer{M}(Float64, ln)
 Buffer(ln::Int) = Buffer(Float64, ln)
 
-show(io::IO, buf::Buffer{M, Union{Missing, T}}) where {M, T} = print(io, 
-    "Buffer(mode:$(M), eltype:$(T), length:$(length(buf)), index:$(buf.index), state:$(buf.state))")
+show(io::IO, buf::Buffer)= print(io, 
+    "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), length:$(length(buf)), index:$(buf.index), state:$(buf.state))")
+
+
+##### Buffer info.
+mode(buf::Buffer{M, T}) where {M, T} = M
+eltype(buf::Buffer{M, T}) where {M, T} = T
 
 ##### AbstractArray interface.
+eltype(buf::Buffer) = eltype(buf.data)
 length(buf::Buffer) = length(buf.data)
 size(buf::Buffer) = size(buf.data)
 getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.data[idx...]
@@ -94,9 +100,6 @@ function content(buf::Buffer; flip::Bool=true)
 end
 
 snapshot(buf::Buffer) = buf.data
-
-##### Buffer info.
-mode(buf::Buffer{M, T}) where {M, T} = M
 
 ##### Calling buffers.
 (buf::Buffer)() = read(buf)

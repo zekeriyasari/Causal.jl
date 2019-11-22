@@ -4,7 +4,7 @@ using FFTW
 struct Fft <: AbstractPlugin 
     dims::Int
 end 
-Fft(;dims=1) = Fft(dims)
+Fft(;dims::Int=1) = Fft(dims)
 
 show(io::IO, plg::Fft) = print(io, "Fft(dims:$(plg.dims))")
 

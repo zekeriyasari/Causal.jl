@@ -2,8 +2,8 @@
 
 import Base: iterate, take!, length
 
-Generator(t0::T, dt::T, tf::T) where T <: Real = Channel(channel -> foreach(t -> put!(channel, t), t0:dt:tf), ctype=T)
-Generator(t0::Real, dt::Real, tf::Real) = Generator(promote(t0, dt, tf)...)
+Generator(t0::Real, dt::Real, tf::Real) = 
+    Channel(channel -> foreach(t -> put!(channel, t), t0:dt:tf), ctype=promote_type(typeof(t0), typeof(dt), typeof(tf)))
 
 mutable struct Clock{T<:Real}
     t::T
@@ -14,8 +14,8 @@ mutable struct Clock{T<:Real}
     callbacks::Vector{Callback}
     id::UUID
 end
-Clock(t, dt, tf) = Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, 
-    Callback[], uuid4())
+Clock(t::Real, dt::Real, tf::Real) = 
+    Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, Callback[], uuid4())
 
 show(io::IO, clk::Clock) = print(io, 
     "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")
@@ -45,8 +45,11 @@ ispaused(clk::Clock) = clk.paused
 isoutoftime(clk::Clock) = clk.t >= clk.tf
 
 ##### Controlling clock.
-set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) = 
-    (clk.generator = generator; clk.paused=false; clk)
+function set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) 
+    clk.generator = generator
+    clk.paused=false
+    clk
+end
 function set!(clk::Clock, t::Real, dt::Real, tf::Real)
     set!(clk, Generator(t, dt, tf))
     clk.t = t 
@@ -54,7 +57,10 @@ function set!(clk::Clock, t::Real, dt::Real, tf::Real)
     clk.tf = tf
     clk
 end
-unset!(clk::Clock) = (set!(clk, Channel{typeof(clk.t)}(0)); clk)
+function unset!(clk::Clock)
+    set!(clk, Channel{typeof(clk.t)}(0)) 
+    clk
+end
 
 ##### Iterating clock.
 iterate(clk::Clock, t=clk.t) = isready(clk.generator) ? (take!(clk), clk.t) : nothing

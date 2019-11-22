@@ -2,7 +2,6 @@
 
 import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable
 
-
 struct Pin
     id::UUID
     Pin() = new(uuid4())
@@ -21,22 +20,22 @@ mutable struct Link{T}
     Link{T}(ln::Int=64) where {T} = new{Union{Missing, T}}(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(),
         Callback[], uuid4(), RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
 end
-Link(ln=64) = Link{Float64}(ln)
+Link(ln::Int=64) = Link{Float64}(ln)
 
-show(io::IO, link::Link{Union{Missing, T}}) where T = print(io, 
-    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(T), hasmaster:$(isassigned(link.master)), ", 
+eltype(link::Link{T}) where T = T
+
+show(io::IO, link::Link) = print(io, 
+    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), hasmaster:$(isassigned(link.master)), ", 
     "numslaves:$(length(link.slaves)), isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
 
 ##### Link reading writing.
-function put!(link::Link{Union{Missing, T}}, val::Union{Missing, T}) where T 
+function put!(link::Link, val) 
     write!(link.buffer, val)
     isempty(link.slaves) || foreach(junc -> put!(junc[], val), link.slaves)
     put!(link.channel, val)
-    # isempty(link.slaves) ? put!(link.channel, val) : foreach(junc -> put!(junc[], val), link.slaves)
     link.callbacks(link)
     return val
 end
-put!(link::Link{Union{Missing, T}}, val::Union{Missing, S}) where {T, S} = put!(link, convert(T, val))
 
 function take!(link::Link)
     val = take!(link.channel)
@@ -53,7 +52,7 @@ function close(link::Link)
 end 
 
 ##### Auxilary functions to launch links.
-function taker(link)
+function taker(link::Link)
     while true
         val = take!(link)
         val isa Missing && break  # Poison-pill the tasks to terminate safely.
@@ -61,21 +60,19 @@ function taker(link)
     end
 end
 
-function putter(link, vals)
+function putter(link::Link, vals)
     for val in vals
         put!(link, val)
     end
 end
-
-##### Calling link
-(link::Link)(t) = take!(link, t)
 
 ##### State check of link.
 isopen(link::Link) = isopen(link.channel) 
 isreadable(link::Link) = !isempty(link.channel.cond_put)
 iswritable(link::Link) = !isempty(link.channel.cond_take) 
 isfull(link::Link) = isfull(link.buffer)
-isconnected(l1::Link, l2::Link) = l1.rightpin == l2.leftpin || l1.leftpin == l2.rightpin
+isconnected(link1::Link, link2::Link) = 
+    link2 in [slave[] for slave in link1.slaves] || link1 in [slave[] for slave in link2.slaves]
 hasslaves(link::Link) = !isempty(link.slaves)
 function hasmaster(link::Link) 
     try
@@ -88,12 +85,20 @@ end
 snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links
-function connect(srclink::Link, dstlink::Link)
-    isconnected(srclink, dstlink) && (@warn "$srclink and $dstlink are already connected."; return)
-    dstlink.leftpin = srclink.rightpin  # NOTE: The data flows through the links from left to right.
-    push!(srclink.slaves, Ref(dstlink))
-    dstlink.master = Ref(srclink) 
+function connect(master::Link, slave::Link)
+    isconnected(master, slave) && (@warn "$master and $slave are already connected."; return)
+    slave.leftpin = master.rightpin  # NOTE: The data flows through the links from left to right.
+    push!(master.slaves, Ref(slave))
+    slave.master = Ref(master) 
     return 
+end
+function connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link})
+    foreach(pair -> connect(pair[1], pair[2]), zip(master, slave))
+end
+function connect(links::Link...)
+    for i = 1 : length(links) - 1
+        connect(links[i], links[i + 1])
+    end
 end
 
 struct UnconnectedLinkError <: Exception
@@ -101,29 +106,29 @@ struct UnconnectedLinkError <: Exception
 end
 Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
 
-function findflow(l1::Link, l2::Link)
-    isconnected(l1, l2) || throw(UnconnectedLinkError("$l1, and $l2 are not connected."))
-    l2 in [slave[] for slave in l1.slaves] ? (l1, l2) : (l2, l1)
+function findflow(link1::Link, link2::Link)
+    isconnected(link1, link2) || throw(UnconnectedLinkError("$link1, and $link2 are not connected."))
+    link2 in [slave[] for slave in link1.slaves] ? (link1, link2) : (link2, link1)
 end
 
 function disconnect(link1::Link{T}, link2::Link{T}) where T
-    srclink, dstlink = findflow(link1, link2)
-    slaves = srclink.slaves
-    deleteat!(slaves, findall(slave -> slave[] == dstlink, slaves))
-    dstlink.master = RefValue{Link{T}}()
-    dstlink.leftpin = Pin()
+    master, slave = findflow(link1, link2)
+    slaves = master.slaves
+    deleteat!(slaves, findall(linkref -> linkref[] == slave, slaves))
+    slave.master = RefValue{Link{T}}()
+    slave.leftpin = Pin()
     return
 end
 
-function insert(l1::Link, l2::Link, l3::Link)
-    if isconnected(l1, l2)
-        master, slave = findflow(l1, l2)
+function insert(master::Link, slave::Link, new::Link)
+    if isconnected(master, slave)
+        master, slave = findflow(master, slave)
         disconnect(master, slave)
     else
-        master, slave = l1, l2
+        master, slave = master, slave
     end
-    connect(master, l3)
-    connect(l3, slave)
+    connect(master, new)
+    connect(new, slave)
     return
 end
 
@@ -135,9 +140,16 @@ function release(link::Link)
 end
 
 ##### Launching links.
-eltype(link::Link{T}) where T = T
-launch(link::Link) = (task = @async taker(link); bind(link.channel, task); task)
-launch(link::Link, valrange) = (task = @async putter(link, valrange); bind(link.channel, task); task)
+function launch(link::Link) 
+    task = @async taker(link)
+    bind(link.channel, task)
+    task
+end
+function launch(link::Link, valrange)
+    task = @async putter(link, valrange) 
+    bind(link.channel, task) 
+    task
+end
 function launch(link::Link, taskname::Symbol, valrange)
     msg = "`launch(link, taskname, valrange)` has been deprecated."
     msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"

@@ -72,21 +72,15 @@ function initialize(model::Model)
     pairs = model.taskmanager.pairs
     blocks = model.blocks
     for block in blocks
-        # pairs[block] = launch(block)
         pairs[block] = typeof(block) <: AbstractSubSystem ? ComponentTask.(launch(block)) : ComponentTask(launch(block))
     end
     isrunning(model.clk) || set!(model.clk)  # Turnon clock internal generator.
-    # isrunning(model.clk) || turnon(model.clk)  # Turnon clock internal generator.
     for writer in filter(block->isa(block, Writer), model.blocks)  # Open writer files.
         writer.file = jldopen(writer.file.path, "a")
     end
 end
 
 ##### Model running
-
-# drive(component::AbstractComponent, t) = put!(component.clk_link, t)    
-# update(memory::Memory, t) = write!(memory.buffer, memory.input(t))
-
 function run(model::Model)
     taskmanager = model.taskmanager
     components = model.blocks
@@ -97,7 +91,6 @@ function run(model::Model)
         checktaskmanager(taskmanager)          
         model.callbacks(model)                           
     end
-    # sleep(0.001)
 end
 
 ##### Model termination

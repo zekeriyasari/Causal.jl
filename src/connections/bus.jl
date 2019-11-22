@@ -32,27 +32,32 @@ firstindex(bus::Bus) = 1
 lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
 
 ##### Reading from and writing into from buses
-take!(bus::Bus) = (out = take!.(bus.links); bus.callbacks(bus); out)
-put!(bus::Bus, vals)  = (put!.(bus.links, vals); bus.callbacks(bus); vals)
+function take!(bus::Bus) 
+    out = take!.(bus.links)
+    bus.callbacks(bus)
+    out
+end
+function put!(bus::Bus, vals)
+    put!.(bus.links, vals)
+    bus.callbacks(bus)
+    vals
+end
 
 ##### Iterating bus
-iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, bus links are returned.
+iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
 
 ##### Connecting disconnecting busses.
-connect(srcbus::Bus, dstbus::Bus) = (connect.(srcbus.links, dstbus.links); return)
-connect(bus::Bus, links::Vector{<:Link}) = (connect.(bus.links, links); return)
-connect(bus::Bus, link::Link) = (connect.(bus.links, [link]); return)
-connect(link::Link, bus::Bus) = (connect.([link], bus.links); return)
-connect(links::Vector{<:Link}, bus::Bus) = (connect.(links, bus.links); return)
-disconnect(srcbus::Bus, dstbus::Bus) = (disconnect.(srcbus.links, dstbus.links); return)
-disconnect(bus::Bus, links::Vector{<:Link}) = (disconnect.(bus.links, links); return)
-disconnect(links::Vector{<:Link}, bus::Bus) = (disconnect.(links, bus.links); return)
-disconnect(bus::Bus, link::Link) = (disconnect.(bus.links, [link]); return)
-disconnect(link::Link, bus::Bus) = (disconnect.([link], bus.links); return)
-
-insert(b1, b2, b3) = (insert.(b1, b2, b3); return )
-
-release(bus::Bus) = foreach(release, bus.links)
+const LinkOrLinkArrayOrBus = Union{<:Link, <:AbstractVector{<:Link}, <:Bus}
+getlinks(bus::Bus) = bus.links
+getlinks(linkchunk::AbstractVector{<:Link}) = linkchunk
+getlinks(link::Link) = [link]
+connect(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus) = 
+    connect(getlinks(linkchunk1), getlinks(linkchunk2))
+disconnect(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus) = 
+    disconnect(getlinks(linkchunk1), getlinks(linkchunk2))
+insert(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus, linkchunk3::LinkOrLinkArrayOrBus) = 
+    insert(getlinks(linkchunk1), getlinks(linkchunk2), getlinks(linkchunk3))
+release(linkchunk::LinkOrLinkArrayOrBus) = foreach(release, getlinks(linkchunk))
 
 ##### Interconnection of busses.
 hasslaves(bus::Bus) = all(hasslaves.(bus.links))
@@ -65,11 +70,7 @@ close(bus::Bus) = foreach(close, bus)
 isfull(bus::Bus) = all(isfull.(bus.links))
 isreadable(bus::Bus) = all(isreadable.(bus.links))
 iswritable(bus::Bus) = all(iswritable.(bus.links))
-isconnected(srcbus::Bus, dstbus::Bus) = all(isconnected.(srcbus.links, dstbus.links))
-isconnected(bus::Bus, links::Vector{<:Link}) = all(isconnected.(bus.links, links))
-isconnected(bus::Bus, link::Link) = all(isconnected.(bus.links, [link]))
-isconnected(link::Link, bus::Bus) = all(isconnected.([link], bus.links))
-isconnected(links::Vector{<:Link}, bus::Bus) = all(isconnected.(links, bus.links))
+isconnected(linkchunk1, linkchunk2) = all(isconnected.(getlinks(linkchunk1), getlinks(linkchunk2)))
 
 ##### Methods on busses.
 clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)

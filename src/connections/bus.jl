@@ -57,6 +57,8 @@ disconnect(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus) =
     disconnect(getlinks(linkchunk1), getlinks(linkchunk2))
 insert(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus, linkchunk3::LinkOrLinkArrayOrBus) = 
     insert(getlinks(linkchunk1), getlinks(linkchunk2), getlinks(linkchunk3))
+getmaster(linkchunk::LinkOrLinkArrayOrBus) = getmaster.(getlinks(linkchunk))
+getslaves(linkchunk::LinkOrLinkArrayOrBus) = getslaves.(getlinks(linkchunk))
 release(linkchunk::LinkOrLinkArrayOrBus) = foreach(release, getlinks(linkchunk))
 
 ##### Interconnection of busses.

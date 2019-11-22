@@ -82,6 +82,8 @@ function hasmaster(link::Link)
     end
     return true
 end
+getmaster(link::Link) = hasmaster(link) ? link.master[] : nothing
+getslaves(link::Link) = [slave[] for slave in link.slaves]
 snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links

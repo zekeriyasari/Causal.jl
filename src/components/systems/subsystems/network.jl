@@ -11,19 +11,27 @@ mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
     cplmat::CPM
     clusters::Vector{UnitRange{Int}}
     function Network(nodes::AbstractArray, conmat::AbstractMatrix, 
-        cplmat::AbstractMatrix=coupling(length(nodes[1].output)); inputnodeidx=[], 
-        outputnodeidx=1:length(nodes), clusters=[1:length(nodes)])
+        cplmat::AbstractMatrix=coupling(length(nodes[1].output)); inputnodeidx=[], outputnodeidx=1:length(nodes), 
+        clusters=[1:length(nodes)])
+
+        # Construct network components
         coupler = construct_coupler(conmat, cplmat)
         memories = construct_memories(nodes)
         adders = construct_adders(nodes[inputnodeidx])
         components = [nodes..., coupler, memories..., adders...]
-        trigger = Link()
-        handshake = Link{Bool}()
+
+        # Construct input and output
         inputbus = construct_inputbus(adders)
         outputbus = construct_outputbus(nodes[outputnodeidx])
+        
+        # Construct network
+        trigger = Link()
+        handshake = Link{Bool}()
         net = new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components), 
             typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
             conmat, cplmat, clusters)
+        
+            # Connect network internally.
         connect_internally(net, inputnodeidx)
     end
 end
@@ -132,6 +140,20 @@ end
 nodes(net::Network) = filter(comp -> typeof(comp) <: AbstractDynamicSystem, net.components)
 numnodes(net::Network) = size(net.conmat, 1)
 dimnodes(net::Network) = size(net.cplmat, 1)
+
+function openinputbus(net::Network, idx::Int)
+    netnodes = nodes(net)
+    nodes = netnodes[idx]
+    inputbus = node.input
+    dimnode = length(inputbus)
+    masterlinks = getmaster(inputbus)
+    adder = construct_an_adder(dimnode, 2, (+, -))
+    disconnect(masterlinks, inputbus)
+    connect(masterlinks, adder.input[1:dimnode])
+    connect(adder.output, inputbus)
+    push!(net.components, adder)
+    # TODO: Complete function 
+end
 
 ##### Plotting networks    
 gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))

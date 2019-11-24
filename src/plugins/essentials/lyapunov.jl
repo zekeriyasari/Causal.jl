@@ -15,10 +15,16 @@ show(io::IO, plg::Lyapunov) = print(io,
     "Lyapunov(embeddingdim:$(plg.m), numlags:$(plg.J), numiteration:$(plg.ni), samplingtime:$(plg.ts)")
 
 function process(plg::Lyapunov, x)
-    ks = 1 : plg.ni
+    if !(eltype(x) <: Real)
+        x = vcat(x...)
+    end
+    ntype = FixedMassNeighborhood(5)
+    ks = 1 : 4 : plg.ni
     R = reconstruct(x, plg.m, plg.J)
-    E = numericallyapunov(R, ks)
-    linear_region(plg.ts .* ks, E)[2] 
+    E = numericallyapunov(R, ks, ntype=ntype)
+    val = linear_region(plg.ts .* ks, E)[2] 
+    @info "val = $val"
+    return val
 end
 
 # using NearestNeighbors

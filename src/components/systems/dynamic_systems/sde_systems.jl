@@ -9,12 +9,14 @@ const SDENoise = Noise(WienerProcess(0.,0.))
 mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractSDESystem
     @generic_dynamic_system_fields
     noise::N
-    function SDESystem(input, output, statefunc, outputfunc, state, t, noise; solver=SDESolver)
+    function SDESystem(input, output, statefunc, outputfunc, state, t, 
+        noise=Noise(WienerProcess(0., zeros(length(state)))); solver=SDESolver)
         trigger = Link()
         handshake = Link{Bool}()
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, Callback[], uuid4(),
+            typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, handshake, 
+            Callback[], uuid4(),
             statefunc, outputfunc, state, inputval, t, solver, noise)
     end
 end

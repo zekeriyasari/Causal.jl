@@ -156,7 +156,8 @@ function openinputbus(net::Network, idx::Int)
 end
 
 ##### Plotting networks    
-gplot(net::Network) = gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1))
+gplot(net::Network, args...; kwargs...) = 
+    gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1), args...; kwargs...)
 
 ##### Construction of coupling matrix
 coupling(d, idx::Vector{Int}) = (v = zeros(d); v[idx] .= 1; diagm(v))

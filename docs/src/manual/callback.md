@@ -8,19 +8,6 @@ end
 
 `Callback`s are used to monitor the existence of a specific events and if that specific event occurs, some other special jobs are invoked. `Callback`s are intended to provide additional monitoring capability to any user-defined composite types. As such, `Callback`s are *generaly* fields of user defined composite types objects. When a `Callback` is called, if the `Callback` is enabled and its `condition` function returns true, then its `action` function is invoked. 
 
-## Callback Construction 
-
-```@docs
-Callback
-```
-
-## Callback Control
-A  `Callback` can be controlled, i.e., activated and deactivated.
-```@docs 
-enable!
-disable!
-```
-
 ## A Simple Example 
 
 Let's define a test object first that has a field named `x` of type `Int` and named `callback` of type `Callback`. 
@@ -56,4 +43,14 @@ Now, if the callback is called, since the `condition` returns true and the callb
 ```julia
 julia> testobject.callback(testobject) 
 testobject.x is greater than zero
+```
+
+## Full API 
+
+```@docs 
+Callback
+enable!
+disable!
+addcallback
+deletecallback
 ```

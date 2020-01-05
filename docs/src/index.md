@@ -7,5 +7,6 @@ This is the official documentation of Jusdl that enables fast and effective syst
 ```@contents
 Pages = [
     "manual/callback.md"
+    "manual/buffers.md"
     ]
 ```

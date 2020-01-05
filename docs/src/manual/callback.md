@@ -51,6 +51,7 @@ testobject.x is greater than zero
 Callback
 enable!
 disable!
+isenabled
 addcallback
 deletecallback
 ```

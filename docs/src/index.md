@@ -11,10 +11,20 @@ Pkg.add(PackageSpec(url="https://imel.eee.deu.edu.tr/git/JuSDL.jl.git"))
 ```
 
 ## Table of Contents
+```@contents
+Pages = [
+    "manual/utilities/callback.md"
+    "manual/utilities/buffers.md"
+    ]
+```
 
 ```@contents
 Pages = [
-    "manual/callback.md"
-    "manual/buffers.md"
+    "manual/connections/link.md"
     ]
+```
+
+## Index
+
+```@index
 ```

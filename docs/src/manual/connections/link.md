@@ -6,12 +6,12 @@ DocTestSetup  = quote
 end
 ```
 
-Links are built on top of `Channel`s[https://docs.julialang.org/en/v1/manual/parallel-computing/#Channels-1] of Julia. They are used as communication primitives for `Task`s[https://docs.julialang.org/en/v1/manual/control-flow/#man-tasks-1] of Julia. A `Link` includes a `Channel` and a `Buffer`. The mode of the buffer is `Cyclic`.(see [Buffer Modes][@ref) for information on buffer modes). Every item sent through a `Link` is sent through the channel of the `Link` and written to the `Buffer` so that all the data flowing through a `Link` is recorded. Any type of Julia can be transmitted through a `Link`, even if user-defined types. 
+Links are built on top of  [`Channel`s](https://docs.julialang.org/en/v1/manual/parallel-computing/#Channels-1) of Julia. They are used as communication primitives for [`Task`s](https://docs.julialang.org/en/v1/manual/control-flow/#man-tasks-1) of Julia. A `Link` includes a `Channel` and a `Buffer`. The mode of the buffer is `Cyclic`.(see [Buffer Modes](@ref) for information on buffer modes). Every item sent through a `Link` is sent through the channel of the `Link` and written to the `Buffer` so that all the data flowing through a `Link` is recorded. Any type of Julia can be transmitted through a `Link`, even if user-defined types. 
 
 A `Link` has a buffer to record flowing data and channel to transmit data between tasks. The `Link`s can be connected to each other. To manage connection of the `Links`, `Pin` types are used. Thus, a `Link` has one pair of pin: `leftpin` and `rightpin`. When connected, a link has a `master` link and `slaves` links. Let us assume that links `l1` and `l2` are connected to each other and data flows from `l1` to `l2`. Then, `l1` is the master link of `l2`, similarly, `l2` is the slave links of `l1`. 
 
 
-# Construction of Links 
+## Construction of Links 
 The construction of a `Link` is very simple. See the main constructor. 
 
 ```@docs 
@@ -40,12 +40,21 @@ end
 l = Link{Object}(3)     # A `Link` that with element type `Object` with buffer size `3`.
 ```
 
-## Connection of Links 
-The `Link`s can be connected to each other. For that, `connect` function is used. 
+## Connection and Disconnection of Links 
+The `Link`s can be connected to each other via `connect` function.
 
 ```@docs 
 connect 
 ```
+
+Similarly `Link`s can be disconnected. 
+
+```@docs 
+disconnect
+```
+
+!!! warning 
+    Note that the order or arguments is important when the links are connected. `connect(l1, l2)` connects `l1` and `l2` such that `l1` drives `l2`, i.e., data flows from `l1` to `l2`. In other words, `l1` is the master link and `l2` is the slave link. However, the order of arguments is not important when the links are disconnected. `disconnect(l1, l2)` does the same thing with `disconnect(l2, l1)`, i.e., it justs breaks the connection between `l2` and `l1`.
 
 ## Full API 
 
@@ -66,7 +75,6 @@ Connections.snapshot
 Connections.Connections.UnconnectedLinkError
 Connections.Connections.Pin
 Connections.findflow 
-Connections.disconnect 
 Connections.insert 
 Connections.release
 Connections.launch 

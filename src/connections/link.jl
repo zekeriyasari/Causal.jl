@@ -258,6 +258,16 @@ Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkEr
     findflow(link1::Link, link2::Link)
 
 Returns a tuple of (`masterlink`, `slavelink`) where `masterlink` is the link that drives the other and `slavelink` is the link that is driven by the other.
+
+# Example
+```jldoctest
+julia> ls = [Link() for i = 1 : 2];
+
+julia> connect(ls[1], ls[2])
+
+julia> findflow(ls[2], ls[1]) .== (ls[1], ls[2])
+(true, true)
+```
 """
 function findflow(link1::Link, link2::Link)
     isconnected(link1, link2) || throw(UnconnectedLinkError("$link1, and $link2 are not connected."))
@@ -268,6 +278,18 @@ end
     disconnect(link1::Link, link2::Link)
 
 Disconnects `link1` and `link2`. The order of arguments is not important. 
+
+# Example
+```jldoctest
+julia> ls = [Link() for i = 1 : 2];
+
+julia> connect(ls[1], ls[2])
+
+julia> disconnect(ls[1], ls[2])
+
+julia> isconnected(ls[1], ls[2])
+false
+```
 """
 function disconnect(link1::Link{T}, link2::Link{T}) where T
     master, slave = findflow(link1, link2)
@@ -282,6 +304,22 @@ end
     insert(master::Link, slave::Link, new::Link)
 
 Inserts the `new` link between the `master` link and `slave` link. The `master` is connected to `new`, and `new` is connected to `slave`.
+
+# Example 
+```jldoctest
+julia> ls = [Link() for i = 1 : 3];  
+
+julia> connect(ls[1], ls[2]) 
+
+julia> insert(ls[1], ls[2], ls[3])
+
+julia> isconnected(ls[1], ls[2])
+false
+
+julia> isconnected(ls[1], ls[3]) && isconnected(ls[3], ls[2])
+true
+```
+
 """
 function insert(master::Link, slave::Link, new::Link)
     if isconnected(master, slave)

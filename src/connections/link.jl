@@ -45,6 +45,18 @@ Puts `val` to `link`. `val` is handed over to the `channel` of `link`. `val` is 
 
 !!! warning
     `link` must be writable to put `val`. See [`launch`](@ref)
+
+# Example
+```julia
+julia> l = Link();
+
+julia> t = launch(l);  # To be able to put values, `l` must be bound to a runnable task.
+
+julia> put!(l, 1.)
+┌ Info: Took 
+└   val = 1.0
+1.0
+```
 """
 function put!(link::Link, val) 
     write!(link.buffer, val)
@@ -61,6 +73,22 @@ Take an element from `link`.
 
 !!! warning 
     `link` must be readable to take value. See [`launch`](@ref)
+
+# Example
+```julia
+julia> l = Link(5);
+
+julia> t = launch(l, 1. : 5.);
+
+julia> for i in 1 : 5
+       @show take!(l)
+       end
+take!(l) = 1.0
+take!(l) = 2.0
+take!(l) = 3.0
+take!(l) = 4.0
+take!(l) = 5.0
+```
 """
 function take!(link::Link)
     val = take!(link.channel)
@@ -71,7 +99,29 @@ end
 """
     close(link)
 
-Closes `link`. All the task bound the `link` is also terminated safely.
+Closes `link`. All the task bound the `link` is also terminated safely. When closed, data cannot ben into or read from the `link`.
+
+# Example
+```julia
+julia> l  = Link();
+
+julia> t = launch(l);
+
+julia> put!(l, 1.)
+┌ Info: Took 
+└   val = 1.0
+1.0
+
+julia> close(l)
+
+julia> put!(l, 1.)
+ERROR: InvalidStateException("Channel is closed.", :closed)
+Stacktrace:
+ [1] check_channel_state at ./channels.jl:167 [inlined]
+ [2] put! at ./channels.jl:323 [inlined]
+ [3] put!(::Link{Union{Missing, Float64}}, ::Float64) at /home/sari/.julia/dev/Jusdl/src/connections/link.jl:64
+ [4] top-level scope at REPL[99]:1
+```
 """
 function close(link::Link)
     channel = link.channel
@@ -168,9 +218,7 @@ Connects `master` to `slave`. When connected, the flow is from `master` to `slav
 
 # Example 
 ```jldoctest 
-julia> l1 = Link();
-
-julia> l2 = Link();
+julia> l1, l2 = Link(), Link();
 
 julia> isconnected(l1, l2)
 false
@@ -205,21 +253,19 @@ Connect each link of `links` in the form of a path.
 
 # Example 
 ```jldoctest
-julia> l1, l2, l3 = Link(), Link(), Link();
+julia> ls = [Link() for i = 1 : 3];
 
-julia> isconnected(l1, l2)
-false
+julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
+2-element Array{Bool,1}:
+ 0
+ 0
 
-julia> isconnected(l2, l3)
-false
+julia> connect(ls...)
 
-julia> connect(l1, l2, l3)
-
-julia> isconnected(l1, l2)
-true
-
-julia> isconnected(l2, l3)
-true
+julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
+2-element Array{Bool,1}:
+ 1
+ 1
 ```
 """
 function connect(links::Link...)

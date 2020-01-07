@@ -20,7 +20,8 @@ Pages = [
 
 ```@contents
 Pages = [
-    "manual/connections/link.md"
+    "manual/connections/link.md",
+    "manual/connections/bus.md"
     ]
 ```
 

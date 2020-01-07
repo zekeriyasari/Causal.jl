@@ -47,7 +47,7 @@ disconnect
 !!! warning 
     Note that the order or arguments is **important** when the links are connected. `connect(l1, l2)` connects `l1` and `l2` such that `l1` drives `l2`, i.e., data flows from `l1` to `l2`. In other words, `l1` is the master link and `l2` is the slave link. However, the order of arguments is not important when the links are disconnected. `disconnect(l1, l2)` does the same thing with `disconnect(l2, l1)`, i.e., it justs breaks the connection between `l2` and `l1`.
 
-## Data Flow Through Links
+## Data Flow through Links
 The data can be read from and written into `Link`s if active tasks are bound to them. Links can be thought of a pipe. In order to write data to a `Link` from one of its ends, a task that reads written data from the other end must be bounded to the `Link`. Similarly, in order to read data from one of the `Link` from one of its end, a task that writes the read data must be bound to the `Link`. Reading from and writing to `Link` is carried out with [`take!`](@ref) and [`put!`](@ref) functions. For more clarity, let us see some example. 
 
 Let us first construct a `Link`,

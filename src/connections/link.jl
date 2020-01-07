@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable
+import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable, bind, collect
 
 """
     Pin() 
@@ -80,22 +80,6 @@ function close(link::Link)
     # isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
     return 
 end 
-
-##### Auxilary functions to launch links.
-### The `taker` and `puter` functions are just used for troubleshooting purpose.
-function taker(link::Link)
-    while true
-        val = take!(link)
-        val isa Missing && break  # Poison-pill the tasks to terminate safely.
-        @info "Took " val
-    end
-end
-
-function putter(link::Link, vals)
-    for val in vals
-        put!(link, val)
-    end
-end
 
 ##### State check of link.
 """
@@ -338,6 +322,29 @@ end
     release(link::Link)
 
 Release all the slave links of `link`. That is, all the slave links of `link` is disconnected.
+
+# Example
+```jldoctest
+julia> ls = [Link() for i = 1 : 5];
+
+julia> foreach(l -> connect(ls[1], l), ls[2:5])
+
+julia> map(l -> isconnected(ls[1], l), ls[2:5])
+4-element Array{Bool,1}:
+ 1
+ 1
+ 1
+ 1
+
+julia> release(ls[1])  # Release all the slaves.
+
+julia> map(l -> isconnected(ls[1], l), ls[2:5])
+4-element Array{Bool,1}:
+ 0
+ 0
+ 0
+ 0
+```
 """
 function release(link::Link)
     while !isempty(link.slaves)
@@ -346,10 +353,41 @@ function release(link::Link)
 end
 
 ##### Launching links.
+
+##### Auxilary functions to launch links.
+### The `taker` and `puter` functions are just used for troubleshooting purpose.
+function taker(link::Link)
+    while true
+        val = take!(link)
+        val isa Missing && break  # Poison-pill the tasks to terminate safely.
+        @info "Took " val
+    end
+end
+
+function putter(link::Link, vals)
+    for val in vals
+        put!(link, val)
+    end
+end
+
+"""
+    bind(link::Link, task::Task)
+
+Binds `task` to `link`. When `task` is done `link` is closed.
+"""
+bind(link::Link, task::Task) = bind(link.channel, task)
+
+"""
+    collect(link::Link)
+
+Collects all the available data on the `link`.
+"""
+collect(link::Link) = collect(link.channel)
+
 """
     launch(link::Link)
 
-Constructs a `taker` task and binds it to `link`.
+Constructs a `taker` task and binds it to `link`. The `taker` task reads the data and prints an info message until `missing` is read from the `link`.
 """
 function launch(link::Link) 
     task = @async taker(link)
@@ -358,15 +396,16 @@ function launch(link::Link)
 end
 
 """
-    launch(link:Link)
+    launch(link:Link, valrange)
 
-Constructs a `putter` task and binds it to `link`.
+Constructs a `putter` task and binds it to `link`. `putter` tasks puts the data in `valrange`.
 """
 function launch(link::Link, valrange)
     task = @async putter(link, valrange) 
     bind(link.channel, task) 
     task
 end
+
 function launch(link::Link, taskname::Symbol, valrange)
     msg = "`launch(link, taskname, valrange)` has been deprecated."
     msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"

@@ -99,10 +99,16 @@ function writer(link::Link, vals)
     end
 end
 t = @async writer(l, 1.:5.)
+bind(l, t)
 take!(l)
 take!(l)
 ```
 It is possible to read data from `l` until `t` is active. To read all the data at once, `collect` can be used. 
+```@repl link_reading_ex_1
+t   
+collect(l)
+t  # Show that `t` is terminated.
+```
 
 ## Full API 
 
@@ -125,5 +131,7 @@ Connections.Connections.Pin
 Connections.findflow 
 Connections.insert 
 Connections.release
+Connections.bind
+Connections.collect
 Connections.launch 
 ```

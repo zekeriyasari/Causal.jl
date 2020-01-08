@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable, bind, collect
+import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate
 
 """
     Pin() 
@@ -160,13 +160,6 @@ Returns `true` if the `buffer` of `link` is full.
 """
 isfull(link::Link) = isfull(link.buffer)
 
-"""
-    isconnected(link1, link2)
-
-Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important.
-"""
-isconnected(link1::Link, link2::Link) = 
-    link2 in [slave[] for slave in link1.slaves] || link1 in [slave[] for slave in link2.slaves]
 
 """
     hasslaves(link::Link)
@@ -211,10 +204,17 @@ Returns all the data of the `buffer` of `link`.
 snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links
+# This `iterate` function is dummy. It is defined just for `[l...]` to be written.
+iterate(l::Link, i=1) = i > 1 ? nothing : (l, i + 1)
+
 """
     connect(master::Link, slave::Link)
 
 Connects `master` to `slave`. When connected, the flow is from `master` to `slave`.
+
+    connect(links...)
+
+Connect each link of `links` in the form of a path.
 
 # Example 
 ```jldoctest 
@@ -227,32 +227,7 @@ julia> connect(l1, l2)
 
 julia> isconnected(l1, l2)
 true
-```
-"""
-function connect(master::Link, slave::Link)
-    isconnected(master, slave) && (@warn "$master and $slave are already connected."; return)
-    slave.leftpin = master.rightpin  # NOTE: The data flows through the links from left to right.
-    push!(master.slaves, Ref(slave))
-    slave.master = Ref(master) 
-    return 
-end
 
-"""
-    connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link})
-
-Connect `master` links to `slave` links by applying one-to-one matching of `master` links to `slave` links.
-"""
-function connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link})
-    foreach(pair -> connect(pair[1], pair[2]), zip(master, slave))
-end
-
-"""
-    connect(links...)
-
-Connect each link of `links` in the form of a path.
-
-# Example 
-```jldoctest
 julia> ls = [Link() for i = 1 : 3];
 
 julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
@@ -268,11 +243,56 @@ julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
  1
 ```
 """
-function connect(links::Link...)
-    for i = 1 : length(links) - 1
-        connect(links[i], links[i + 1])
-    end
+function connect(master::Link, slave::Link)
+    isconnected(master, slave) && (@warn "$master and $slave are already connected."; return)
+    slave.leftpin = master.rightpin  # NOTE: The data flows through the links from left to right.
+    push!(master.slaves, Ref(slave))
+    slave.master = Ref(master) 
+    return 
 end
+connect(master::Link, slaves::Vector{<:Link}) = foreach(ls -> connect(master, ls), slaves)
+connect(masters::Vector{<:Link}, slaves::Vector{<:Link}) = foreach(ls -> connect(ls[1], ls[2]), zip(masters, slaves))
+connect(b1, b2) = connect([b1...], [b2...])
+connect(links::Link...) = foreach(i -> connect(links[i], links[i + 1]), 1 : length(links) - 1)
+
+"""
+    disconnect(link1::Link, link2::Link)
+
+Disconnects `link1` and `link2`. The order of arguments is not important. 
+
+# Example
+```jldoctest
+julia> ls = [Link() for i = 1 : 2];
+
+julia> connect(ls[1], ls[2])
+
+julia> disconnect(ls[1], ls[2])
+
+julia> isconnected(ls[1], ls[2])
+false
+```
+"""
+function disconnect(link1::Link{T}, link2::Link{T}) where T
+    master, slave = findflow(link1, link2)
+    slaves = master.slaves
+    deleteat!(slaves, findall(linkref -> linkref[] == slave, slaves))
+    slave.master = RefValue{Link{T}}()
+    slave.leftpin = Pin()
+    return
+end
+disconnect(links::Link...) = foreach(i -> disconnect(links[i], links[i + 1]), 1 : length(links) - 1)
+disconnect(masters::Vector{<:Link}, slaves::Vector{<:Link}) = foreach(ls->disconnect(ls[1], ls[2]), zip(masters,slaves))
+disconnect(b1, b2) = disconnect([b1...], [b2...])
+
+"""
+    isconnected(link1, link2)
+
+Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important.
+"""
+isconnected(l1::Link, l2::Link) = l2 in [slave[] for slave in l1.slaves] || l1 in [slave[] for slave in l2.slaves]
+isconnected(ls...) = all(map(i -> isconnected(links[i], links[i + 1]), 1 : length(links) - 1))
+isconnected(ls1::Vector{<:Link}, ls2::Vector{<:Link}) = all(isconnected.(ls1, ls2))
+isconnected(ls1, ls2) = isconnected([ls1...], [ls2...])
 
 """
     UnconnectedLinkError <: Exception
@@ -304,31 +324,6 @@ function findflow(link1::Link, link2::Link)
     link2 in [slave[] for slave in link1.slaves] ? (link1, link2) : (link2, link1)
 end
 
-"""
-    disconnect(link1::Link, link2::Link)
-
-Disconnects `link1` and `link2`. The order of arguments is not important. 
-
-# Example
-```jldoctest
-julia> ls = [Link() for i = 1 : 2];
-
-julia> connect(ls[1], ls[2])
-
-julia> disconnect(ls[1], ls[2])
-
-julia> isconnected(ls[1], ls[2])
-false
-```
-"""
-function disconnect(link1::Link{T}, link2::Link{T}) where T
-    master, slave = findflow(link1, link2)
-    slaves = master.slaves
-    deleteat!(slaves, findall(linkref -> linkref[] == slave, slaves))
-    slave.master = RefValue{Link{T}}()
-    slave.leftpin = Pin()
-    return
-end
 
 """
     insert(master::Link, slave::Link, new::Link)
@@ -362,6 +357,8 @@ function insert(master::Link, slave::Link, new::Link)
     connect(new, slave)
     return
 end
+insert(master::Vector{<:Link}, slave::Vector{<:Link}, new::Vector{<:Link}) = 
+    foreach(l -> insert(l...), zip(master, slave, new))
 
 # release(masterlink::Link) = foreach(slavelinkref -> disconnect(masterlink, slavelinkref[]), masterlink.slaves)
 """
@@ -397,6 +394,8 @@ function release(link::Link)
         disconnect(link, link.slaves[1][])
     end
 end
+release(links::Vector{<:Link}) = foreach(release, links)
+release(links) = release([links...])
 
 ##### Launching links.
 

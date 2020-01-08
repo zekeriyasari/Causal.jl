@@ -28,13 +28,38 @@ show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(len
     "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
 
 ##### Make bus indexable.
-eltype(bus::Bus{T}) where {T} = T
+"""
+    eltype(bus::Bus)
+
+Returns the element type of `bus`. Element type of `bus` is a subtype of `Link`.
+
+# Example 
+```jldoctest
+julia> b = Bus{Matrix{Float64}}(5)
+Bus(nlinks:5, eltype:Array{Float64,2}, isreadable:false, iswritable:false)
+
+julia> eltype(b)
+Link{Union{Missing, Array{Float64,2}}}
+```
+"""
+eltype(bus::Bus{T}) where {T} = Link{T}
+
+"""
+    length(bus::Bus)
+
+Returns the number of links in `bus`.
+
+# Example
+```jldoctest
+julia> b = Bus(5)
+Bus(nlinks:5, eltype:Float64, isreadable:false, iswritable:false)
+
+julia> length(b)
+5
+```
+"""
 length(bus::Bus) = length(bus.links)
 size(bus::Bus) = size(bus.links)
-getindex(bus::Bus, I::Int) =  bus.links[I]
-getindex(bus::Bus, I::Vector{Int}) =  bus.links[I]
-getindex(bus::Bus, I::UnitRange{Int}) = bus.links[I]
-getindex(bus::Bus, ::Colon) = bus.links[:]
 
 """
     getindex(bus::Bus, I)
@@ -57,17 +82,36 @@ julia> b[end]
 Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 ```
 """
-function getindex end
+getindex
+getindex(bus::Bus, I::Int) =  bus.links[I]
+getindex(bus::Bus, I::Vector{Int}) =  bus.links[I]
+getindex(bus::Bus, I::UnitRange{Int}) = bus.links[I]
+getindex(bus::Bus, ::Colon) = bus.links[:]
 
+
+"""
+    setindex!(bus::Bus, val, I::Int) 
+
+Sets `val` to the links of `bus` corresponding to index `I`. The syntax `bus[I] = val` is the same as `setindex!(bus, val, I)`.
+
+# Example 
+```jldoctest
+julia> b = Bus(5);
+
+julia> b[2:3] .= [Link() for i = 1 : 2]
+2-element Array{Link{Union{Missing, Float64}},1}:
+ Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> b[end] = Link() 
+Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+```
+"""
+setindex!
 setindex!(bus::Bus, val, I::Int) = bus.links[I] = val
 setindex!(bus::Bus, val::AbstractVector, I::Vector{Int}) = bus.links[I] = val
 setindex!(bus::Bus, val::AbstractVector, I::UnitRange{Int}) = bus.links[I] = val
 setindex!(bus::Bus, val::AbstractVector, ::Colon) = bus.links[:] = val
-
-"""
-"""
-function setindex! end
-
 
 firstindex(bus::Bus) = 1
 lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
@@ -133,41 +177,83 @@ function put!(bus::Bus, vals)
 end
 
 ##### Iterating bus
-iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
+"""
+    iterate(bus::Bus[, i=1])
 
-##### Connecting disconnecting busses.
-const LinkOrLinkArrayOrBus = Union{<:Link, <:AbstractVector{<:Link}, <:Bus}
-getlinks(bus::Bus) = bus.links
-getlinks(linkchunk::AbstractVector{<:Link}) = linkchunk
-getlinks(link::Link) = [link]
-connect(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus) = 
-    connect(getlinks(linkchunk1), getlinks(linkchunk2))
-disconnect(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus) = 
-    disconnect(getlinks(linkchunk1), getlinks(linkchunk2))
-insert(linkchunk1::LinkOrLinkArrayOrBus, linkchunk2::LinkOrLinkArrayOrBus, linkchunk3::LinkOrLinkArrayOrBus) = 
-    insert(getlinks(linkchunk1), getlinks(linkchunk2), getlinks(linkchunk3))
-getmaster(linkchunk::LinkOrLinkArrayOrBus) = getmaster.(getlinks(linkchunk))
-getslaves(linkchunk::LinkOrLinkArrayOrBus) = getslaves.(getlinks(linkchunk))
-release(linkchunk::LinkOrLinkArrayOrBus) = foreach(release, getlinks(linkchunk))
+İteration interface so that `bus` can be iterated in a loop. The links of `bus` are iterated.
+
+# Example 
+```jldoctest
+julia> b = Bus(3);
+
+julia> for l in b 
+       @show l 
+       end
+l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+```
+"""
+iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
 
 ##### Interconnection of busses.
 hasslaves(bus::Bus) = all(hasslaves.(bus.links))
 hasmaster(bus::Bus) = all(hasmaster.(bus.links))
 
 ##### Closing bus
+"""
+    close(bus::Bus)
+
+Closes `bus`. When closed, no more data flow is possible for `bus`. 
+"""
 close(bus::Bus) = foreach(close, bus)
 
 ##### Bus state checks
+"""
+    isfull(bus::Bus)
+
+Returns `true` when the links of `bus` are full.
+"""
 isfull(bus::Bus) = all(isfull.(bus.links))
+
+"""
+    isreadable(bus::Bus)
+
+Returns `true` if all the links of `bus` is readable.
+"""
 isreadable(bus::Bus) = all(isreadable.(bus.links))
+
+"""
+    iswritable(bus::Bus)
+
+Returns `true` if all the links of `bus` is writable.
+"""
 iswritable(bus::Bus) = all(iswritable.(bus.links))
-isconnected(linkchunk1, linkchunk2) = all(isconnected.(getlinks(linkchunk1), getlinks(linkchunk2)))
 
 ##### Methods on busses.
-clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)
-snapshot(bus::Bus) = 
-    length(bus) == 1 ? vcat([snapshot(link) for link in bus.links]...) : hcat([snapshot(link) for link in bus.links]...)
+# clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)
+
+"""
+    snapshot(bus::Bus)
+
+Returns all the data in links of `bus`.
+"""
+function snapshot(bus::Bus)
+    if length(bus) == 1 
+        return vcat([snapshot(link) for link in bus.links]...)
+    end
+    return hcat([snapshot(link) for link in bus.links]...)
+end
     
 ##### Launching bus
+"""
+    launch(bus::Bus)
+
+Launches every link of `bus`. See [`launch(link::Link)`](@ref)
+
+    launch(bus::Bus, valrange::AbstractVector)
+
+Launches every links of `bus` with every item of `valrange`. See [`launch(link:Link, valrange)`(@ref)]
+"""
 launch(bus::Bus) = launch.(bus.links)
 launch(bus::Bus, valrange::AbstractVector) = launch.(bus.links, valrange)

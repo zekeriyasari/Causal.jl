@@ -28,3 +28,13 @@ b[:]
 b[1] = Link()
 b[1:2] = [Link(), Link()]
 ```
+
+## Full API 
+
+```@docs 
+Connections.iterate
+Connections.eltype
+Connections.length
+Connections.getindex
+Connections.setindex!
+```

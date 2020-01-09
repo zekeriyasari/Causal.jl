@@ -9,11 +9,47 @@ A `Bus` is constructed by specifying its element type `T`, number of links `nlin
 Bus
 ```
 
+## Connection and Disconnection of Busses
+The `Bus`ses can be connected and disconnected to each other. When connected any data written to the master bus is also written all slave busses. See the following example.
+
+Let us connect two busses and connect them together.
+```@repl connection_of_busses 1
+using Jusdl # hide
+b1 = Bus(2, 5)  # Bus with `2` links with buffer length of `5`.
+b2 = Bus(2, 5)  # Bus with `2` links with buffer length of `5`.
+connect(b1, b2)
+```
+Here, `b1` is the master bus and `b2` is the slave bus. That is, data written to `b1` is also written into `b2`.
+```@repl connection_of_busses 1
+t1 = launch(b1);
+t2 = launch(b2);
+put!(b1, [5., 10.]);
+[b1[i].buffer.data for i = 1 : 2]
+[b2[i].buffer.data for i = 1 : 2]
+```
+Note that the data `[5, 10]` written to `b1` is also written `b2` since they are connected.
+
+The `Bus`ses connected to each other can be disconnected. When disconnected, the data written to master is not written to slaves
+```@repl connection_of_busses 1
+disconnect(b1, b2)
+isconnected(b1, b2)
+```
+
+
 ## Data Flow through Busses
 Data flow through the `Bus`ses is very similar to the case in `Link`s. See [Data Flow through Links](@ref) for information about data flow through `Link`s. Runnable tasks must be bound to the links of the busses for data flow through the `Bus`. Again, `put!` and `take!` functions are used to write data from a `Bus` and read from data from a `Bus`.
 ```@docs 
 Connections.put!(bus::Bus, vals)
 Connections.take!(bus::Bus)
+```
+Any data written to a `Bus` is recorded into the buffers of its links.
+```
+@repl writing_to_busses
+using Jusdl # hide
+b = Bus(2, 5);
+launch(b);
+put!(b, 1.);
+b[1].buffer.data
 ```
 
 ## Indexing and Iteration of Busses 
@@ -27,6 +63,14 @@ b[end]
 b[:]
 b[1] = Link()
 b[1:2] = [Link(), Link()]
+```
+The iteration of `Bus`ses in a loop is also possible. When iterated, the links of the `Bus` is returned.
+```@repl 
+using Jusdl # hide 
+bus = Bus(3)
+for link in bus
+    @show link
+end
 ```
 
 ## Full API 

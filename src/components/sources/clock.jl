@@ -5,6 +5,11 @@ import Base: iterate, take!, length
 Generator(t0::Real, dt::Real, tf::Real) = 
     Channel(channel -> foreach(t -> put!(channel, t), t0:dt:tf), ctype=promote_type(typeof(t0), typeof(dt), typeof(tf)))
 
+"""
+    Clock(t::Real, dt::Real, tf::Real)
+
+Constructs a `Clock` with starting time `t`, final time `tf` and sampling inteval `dt`. When iterated, the `Clock` returns its current time. 
+"""
 mutable struct Clock{T<:Real}
     t::T
     dt::T

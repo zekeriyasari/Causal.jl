@@ -1,6 +1,6 @@
 # This file is for TaskManager object.
 
-import Base: istaskdone
+import Base: istaskdone, istaskfailed
 
 struct ComponentTask{T, S}
     triggertask::T 
@@ -35,7 +35,7 @@ end
 checkcomptask(comptask...) = all(checkcomptask.(comptask))
 
 istaskfailed(task::Nothing) = false
-istaskfailed(task::Task) = task.state == :failed
+# istaskfailed(task::Task) = task.state == :failed  # Already built-in in Base module of Julia standard library.
 istaskfailed(comptask::ComponentTask) = istaskfailed(comptask.triggertask) || istaskfailed(comptask.outputtask)
 
 istaskrunning(task::Task) = task.state == :runnable

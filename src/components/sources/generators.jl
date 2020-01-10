@@ -8,7 +8,10 @@ import ..Components.Base: @generic_source_fields
 """
     FunctionGenerator(outputfunc)
 
-Constructs a `FunctionGenerator` with output function `outputfunc`.
+Constructs a `FunctionGenerator` with output function `outputfunc`. When called, it returns 
+```math
+    f(t) = outputfunc(t)
+```
 """
 mutable struct FunctionGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields

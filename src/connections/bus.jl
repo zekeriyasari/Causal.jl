@@ -261,10 +261,12 @@ end
     launch(bus::Bus)
 
 Launches every link of `bus`. See [`launch(link::Link)`](@ref)
+"""
+launch(bus::Bus) = launch.(bus.links)
 
+"""
     launch(bus::Bus, valrange::AbstractVector)
 
 Launches every links of `bus` with every item of `valrange`. See [`launch(link:Link, valrange)`(@ref)]
 """
-launch(bus::Bus) = launch.(bus.links)
 launch(bus::Bus, valrange::AbstractVector) = launch.(bus.links, valrange)

@@ -431,11 +431,6 @@ git-tree-sha1 = "cf6bc444a74ddcb781b04d0be8988bbff83c91df"
 uuid = "f9640e96-87f6-5992-9c3b-0743c6a49ffa"
 version = "1.5.0"
 
-[[MyPackage]]
-path = "/home/sari/.julia/dev/MyPackage"
-uuid = "eb2d6272-a6cb-420c-b712-8c32f0cc65af"
-version = "0.1.0"
-
 [[NLSolversBase]]
 deps = ["Calculus", "DiffEqDiffTools", "DiffResults", "Distributed", "ForwardDiff"]
 git-tree-sha1 = "f1b8ed89fa332f410cfc7c937682eb4d0b361521"

@@ -213,4 +213,5 @@ t = 0.3
 iterate(clk::Clock, t=clk.t) = isready(clk.generator) ? (take!(clk), clk.t) : nothing
 
 ##### ProgressMeter interface.
+### This `length` method is implemented for [ProgressMeter](https://github.com/timholy/ProgressMeter.jl)
 length(clk::Clock) = length(clk.t:clk.dt:clk.tf)

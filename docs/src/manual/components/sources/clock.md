@@ -51,6 +51,19 @@ end
 ```
 Note that we, constructed a simple callback. It is of course possible to construct more complex callbacks.
 
+## Usage of Clocks with ProgressMeter 
+It also possible to iterate the `Clock`s by using a progress meter. See [ProgressMeter](https://github.com/timholy/ProgressMeter.jl) for further information for progress meter.
+
+```@repl
+using Jusdl
+using ProgressMeter
+clk = Clock(0., 0.01, 1.)
+set!(clk)
+@showprogress for t in clk 
+end 
+```
+Note that `clk` is just iterated.
+
 ## Full API
 ```@docs 
 take!(clk::Clock)

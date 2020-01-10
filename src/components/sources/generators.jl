@@ -5,6 +5,11 @@ import ..Components.Base: @generic_source_fields
 
 
 ##### Generic Function Generator
+"""
+    FunctionGenerator(outputfunc)
+
+Constructs a `FunctionGenerator` with output function `outputfunc`.
+"""
 mutable struct FunctionGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     function FunctionGenerator(outputfunc)

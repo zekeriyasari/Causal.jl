@@ -76,9 +76,18 @@ end
 ## Full API 
 
 ```@docs 
-Connections.iterate
 Connections.eltype
 Connections.length
+Connections.iterate
+Connections.hasslaves(bus::Bus)
+Connections.hasmaster(bus::Bus)
+Connections.close(bus::Bus)
+Connections.isfull(bus::Bus)
+Connections.isreadable(bus::Bus)
+Connections.iswritable(bus::Bus)
+Connections.snapshot(bus::Bus)
+Connections.launch(bus::Bus)
+Connections.launch(bus::Bus, valrange::AbstractVector)
 Connections.getindex
 Connections.setindex!
 ```

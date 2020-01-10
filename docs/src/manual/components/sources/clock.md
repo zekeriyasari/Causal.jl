@@ -4,3 +4,8 @@
 
 ## Construction of Clock
 Construction of `Clock` is done by specifying its start time and final time and the simulation sampling period. 
+
+```@docs 
+Clock
+```
+

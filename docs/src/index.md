@@ -25,6 +25,13 @@ Pages = [
     ]
 ```
 
+```@contents
+Pages = [
+    "manual/components/sources/clock.md",
+    "manual/components/sources/generators.md",
+    ]
+```
+
 ## Index
 
 ```@index

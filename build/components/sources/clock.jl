@@ -57,7 +57,7 @@ function set!(clk::Clock, t::Real, dt::Real, tf::Real)
     clk.tf = tf
     clk
 end
-function unset!(clk::Clock)
+function stop!(clk::Clock)
     set!(clk, Channel{typeof(clk.t)}(0)) 
     clk
 end

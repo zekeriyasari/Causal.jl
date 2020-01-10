@@ -98,7 +98,7 @@ release(model::Model) = foreach(release, model.blocks)
 
 function terminate(model::Model)
     isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
-    isrunning(model.clk) && unset!(model.clk)
+    isrunning(model.clk) && stop!(model.clk)
     return
 end
 

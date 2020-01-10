@@ -197,7 +197,18 @@ l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
 
 ##### Interconnection of busses.
+"""
+    hasslaves(bus:Bus)
+
+Returns `true` is all the links of `bus` has slaves. See also [`hasslaves(link::Link)`](@ref)
+"""
 hasslaves(bus::Bus) = all(hasslaves.(bus.links))
+
+"""
+   hasmaster(bus::Bus) 
+
+Returns `true` is all the links of `bus` has master. See alsos [`hasmaster(link::Link)`](@ref)
+"""
 hasmaster(bus::Bus) = all(hasmaster.(bus.links))
 
 ##### Closing bus

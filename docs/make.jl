@@ -9,11 +9,17 @@ makedocs(
         "Home" => "index.md",
         "Utilities" => [
             "manual/utilities/callback.md",
-            "manual/utilities/buffers.md"]
-        , 
+            "manual/utilities/buffers.md"
+            ], 
         "Connections" => [
-        "manual/connections/link.md",
-        "manual/connections/bus.md",
+            "manual/connections/link.md",
+            "manual/connections/bus.md",
+            ],
+        "Components" => [
+            "Sources" => [
+                "manual/components/sources/clock.md",
+                "manual/components/sources/generators.md",
+            ],
         ]
     ]
 )

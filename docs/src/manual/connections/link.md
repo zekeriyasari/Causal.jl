@@ -113,25 +113,26 @@ t  # Show that `t` is terminated.
 ## Full API 
 
 ```@docs  
-Connections.put!
-Connections.take!
-Connections.close
-Connections.isopen
-Connections.isreadable
-Connections.iswritable
-Connections.isfull 
+Connections.put!(link::Link, val)
+Connections.take!(link::Link)
+Connections.close(link::Link)
+Connections.isopen(link::Link)
+Connections.isreadable(link::Link)
+Connections.iswritable(link::Link)
+Connections.isfull(link::Link)
 Connections.isconnected
-Connections.hasslaves 
-Connections.hasmaster 
-Connections.getmaster 
-Connections.getslaves 
-Connections.snapshot 
+Connections.hasslaves(link::Link) 
+Connections.hasmaster(link::Link)
+Connections.getmaster(link::Link) 
+Connections.getslaves(link::Link)
+Connections.snapshot(link::Link) 
 Connections.Connections.UnconnectedLinkError
 Connections.Connections.Pin
-Connections.findflow 
-Connections.insert 
+Connections.findflow(link1::Link, link2::Link) 
+Connections.insert
 Connections.release
 Connections.bind
-Connections.collect
-Connections.launch 
+Connections.collect(link::Link)
+Connections.launch(link::Link) 
+Connections.launch(link::Link, valrange) 
 ```

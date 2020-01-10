@@ -8,7 +8,7 @@ import ..Jusdl.Connections: launch, isconnected, hasslaves, release
 import ..Jusdl.Components.Base: terminate, drive, AbstractSink, AbstractComponent, AbstractSubSystem, approve
 import ..Jusdl.Components.Systems.StaticSystems.Memory
 import ..Jusdl.Components.Sinks: Writer, deleteplugin
-import ..Jusdl.Components.Sources: Clock, isrunning, set!, unset!
+import ..Jusdl.Components.Sources: Clock, isrunning, set!, stop!
 import Base: run, show
 
 export ComponentTask

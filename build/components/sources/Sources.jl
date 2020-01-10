@@ -8,7 +8,7 @@ import ....Jusdl.Utilities: Callback
 import ....Jusdl.Connections: Link, Bus
 import Base.show
 
-export Clock, isrunning, ispaused, isoutoftime, set!, unset!
+export Clock, isrunning, ispaused, isoutoftime, set!, stop!
 export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 
     ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator
 

@@ -29,6 +29,11 @@ makedocs(
                 ],
             ],
         "Plugins" => "manual/plugins/plugins.md",
+        "Models" => [
+            "manual/models/taskmanager.md",
+            "manual/models/simulation.md",
+            "manual/models/model.md",
+            ],
     ],
     # format=DocumenterLaTeX.LaTeX()  # Uncomment this option to generate pdf output.
 )  # end makedocs

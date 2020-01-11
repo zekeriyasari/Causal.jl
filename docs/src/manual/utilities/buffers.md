@@ -114,7 +114,7 @@ buf[1] = 5
 buf[3:5] = [7, 8, 9]
 ```
 
-# Full API
+## Full API
 ```@docs 
 fill!
 isempty

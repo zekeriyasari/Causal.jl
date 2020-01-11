@@ -133,6 +133,15 @@ Pages = [
 ```@contents
 Pages = [
     "manual/components/sinks/sink.md",
+    "manual/components/sinks/writer.md",
+    "manual/components/sinks/printer.md",
+    "manual/components/sinks/scope.md",
+    ]
+```
+
+```@contents
+Pages = [
+    "manual/plugins/plugins.md",
     ]
 ```
 

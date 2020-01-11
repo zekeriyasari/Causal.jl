@@ -19,6 +19,40 @@ We constructed a [`FunctionGenerator`](@ref) which is an `AbstractSource`.
 ```@repl source_ex
 gen isa AbstractSource
 ```
+To drive `gen`, that is to make `gen` evolve, we need to launch `gen`. 
+```@repl source_ex
+t = launch(gen)
+```
+At this moment, `gen` is ready to be triggered from its `trigger` link. Note that the trigger link `gen.trigger` and the output `gen.output` of `gen` are writable. 
+```@repl source_ex
+gen.trigger
+gen.output
+```
+`gen` is triggered by writing time `t` to its trigger link `gen.trigger`.
+```@repl source_ex
+put!(gen.trigger, 1.)
+```
+When triggered `gen` writes `true` to its handshake link `gen.handshake`. Note that `gen.handshake` is readable.
+```@repl source_ex
+gen.handshake
+```
+and to drive `gen` for another time `gen.handshake` must be read. 
+```@repl source_ex
+take!(gen.handshake)
+```
+Now continue driving `gen`.
+```@repl source_ex
+for t in 2. : 10.
+    put!(gen.trigger, t)
+    take!(gen.handshake)
+end
+```
+When triggered, the output of `gen` is written to its output `gen.output`.
+```@repl source_ex 
+println(gen.output[1].buffer.data)
+```
+
+In addition to generic `FunctionGenerator`, `Jusdl` provides some other function generators which are documented in the following section.
 
 ## Full API 
 ```@docs 

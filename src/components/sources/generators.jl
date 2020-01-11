@@ -120,7 +120,7 @@ end
 Constructs a `TriangularwaveGenerator` with output of the form
 ```math 
     x(t) = \left\{\begin{array}{lr}
-	\dfrac{A t}{\alpha T} + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\
+	\dfrac{A t}{\alpha T} + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\[0.25cm]
 	\dfrac{A (T - t)}{T (1 - \alpha)} + B,  &  (k + \alpha) T + \tau \leq t \leq (k + 1) T + \tau	
 	\end{array} \right. \quad k \in Z
 ```

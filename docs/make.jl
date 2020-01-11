@@ -5,7 +5,7 @@ DocMeta.setdocmeta!(Jusdl, :DocTestSetup, :(using Jusdl); recursive=true)
 
 makedocs(
     modules = [Jusdl], 
-    sitename = "Jusdl.jl",
+    sitename = "Jusdl",
     pages = [
         "Home" => "index.md",
         "Utilities" => [

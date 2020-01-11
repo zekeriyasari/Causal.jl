@@ -130,6 +130,12 @@ Pages = [
     ]
 ```
 
+```@contents
+Pages = [
+    "manual/components/sinks/sink.md",
+    ]
+```
+
 ## Index
 
 ```@index

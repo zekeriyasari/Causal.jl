@@ -41,16 +41,47 @@ As the output of a static system depends on input and time, a static system is d
 Busses consist of bunches of links. Links are built upon channels that are defined in standard Julia library. The data written to(read from) the busses is written to(read from) the links which are then written to(read from) the channels. Active Julia tasks that are bound to channels must exist for data to flow over these channels. Ju- lia tasks are control flow features that allow calculations to be flexibly suspended and maintained without directly communicating the task scheduler of the operating system. Communication and data exchange between the tasks are carried out through Julia channels to which they are bound. 
 
 ```@raw html
-<center>
+<head>
+    <style>
+    * {
+    box-sizing: border-box;
+    }
+
+    .column {
+    float: left;
+    width: 33.33%;
+    padding: 5px;
+    }
+
+    /* Clearfix (clear floats) */
+    .row::after {
+    content: "";
+    clear: both;
+    display: table;
+    }
+
+    /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+    @media screen and (max-width: 500px) {
+    .column {
+        width: 100%;
+    }
+    }
+    </style>
+</head>
+
+<body>
     <div class="row">
         <div class="column">
-            <img src="assets/reader_task.png" alt="model" width="10%"/>
+            <img src="assets/reader_task.png" alt="reader_task" style="width:100%">
         </div>
         <div class="column">
-            <img src="assets/writer_task.png" alt="model" width="10%"/>
+            <img src="assets/writer_task.png" alt="writer_task" style="width:100%">
+        </div>
+        <div class="column">
+            <img src="assets/reader_writer_task.png" alt="reader_writer_task" style="width:100%">
         </div>
     </div>
-</center>
+</body>
 ```
 
 In the figure above are shown symbolically the tasks that must be bound to the channel to make a channel readable, writable and both readable and writable. The putter and the taker task is the task that writes data to and reads data from the channel, respectively. To be able to read data from one side of the channel, an active putter task must be bound to the chan- nel at the other side of the channel, and the channel is called a readable channel. Similarly, to be able to write data to one side of the channel, an active taker task must be bound to the channel at the other side, and the channel is called a writable channel. If both active putter and taker tasks are bound to either side of the channel, then the data can both be read from and written to the channel, and the channel is called a both readable and writable channel. The data-flow through the channel is only achieved if the channel is both readable and writable channel. The data read from a readable channel is the data written to the channel by the putter task of the channel. If data has not been written yet to the channel by the putter task of the channel during a reading process, then reading does not occur and the putter task is waited to put data to the channel. Similarly, if the data on the channel has not been read yet from the channel by the taker task during a writing process, then the taker task is waited to take data from the channel. In the modeling approach adopted, the components reading data from a bus are driven by other components writing data to the bus. Therefore, all of the busses of the model must be both readable and writable busses so that data can flow the busses. This means that all the busses of the model must be connected to a component from both ends. Otherwise, the simulation gets stuck and does not end during a reading process from a channel that is not connected to a component. During the simulation, the busses can be arranged as desired, the gain of the busses can be changed, new busses can be added or an existing bus can be broken. In other words, the structure of the system being simulated can change dynamically. This allows one to perform topological studies such as the investigation of the effects of change in the topology of a network or the change o coupling strengths on the behavior of the network.

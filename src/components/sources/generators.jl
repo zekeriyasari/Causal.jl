@@ -8,10 +8,7 @@ import ..Components.Base: @generic_source_fields
 """
     FunctionGenerator(outputfunc)
 
-Constructs a `FunctionGenerator` with output function `outputfunc`. When called, it returns 
-```math
-    f(t) = outputfunc(t)
-```
+Constructs a `FunctionGenerator` with the output of the form `x(t) = f(t)` where ``f`` is `outputfunc`.
 """
 mutable struct FunctionGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
@@ -26,6 +23,15 @@ mutable struct FunctionGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 ##### Common generator types.
+ @doc raw"""
+    SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
+
+Constructs a `SinewaveGenerator` with output of the form
+```math 
+    x(t) = A sin(2 * \pi f * (t - \tau) + \phi) + B
+```
+where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi`` is `phase` and ``B`` is `offset`.
+"""
 mutable struct SinewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
@@ -44,6 +50,15 @@ mutable struct SinewaveGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
+
+Constructs a `DampedSinewaveGenerator` which generates outputs of the form 
+```math 
+    x(t) = A e^{\alpha t} * sin(2 \pi f (t - \tau) + \phi) + B
+```
+where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`` is `phase`, ``\tau`` is `delay` and ``B`` is `offset`.
+"""
 mutable struct DampedSinewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
@@ -53,7 +68,7 @@ mutable struct DampedSinewaveGenerator{OF, OB, T, H} <: AbstractSource
     delay::Float64
     offset::Float64
     function DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
-        outputfunc(t) = amplitude * exp(decay) * sin(2 * pi * frequency * (t - delay)) + offset
+        outputfunc(t) = amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset
         output = Bus()
         trigger = Link()
         handshake = Link{Bool}()
@@ -63,7 +78,18 @@ mutable struct DampedSinewaveGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    SquarewaveGenerator(;level1=1., level2=0., period=1., duty=0.5, delay=0.)
 
+Constructs a `SquarewaveGenerator` with output of the form 
+```math 
+    x(t) = \left\{\begin{array}{lr}
+	A_1 + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\
+	A_2 + B,  &  (k + \alpha) T + \tau \leq t \leq (k + 1) T + \tau	
+	\end{array} \right. \quad k \in Z
+```
+where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
+"""
 mutable struct SquarewaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     high::Float64
@@ -88,6 +114,18 @@ mutable struct SquarewaveGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0)
+
+Constructs a `TriangularwaveGenerator` with output of the form
+```math 
+    x(t) = \left\{\begin{array}{lr}
+	\dfrac{A t}{\alpha T} + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\
+	\dfrac{A (T - t)}{T (1 - \alpha)} + B,  &  (k + \alpha) T + \tau \leq t \leq (k + 1) T + \tau	
+	\end{array} \right. \quad k \in Z
+```
+where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
+"""
 mutable struct TriangularwaveGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
@@ -117,6 +155,15 @@ mutable struct TriangularwaveGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    ConstantGenerator(;amplitude=1.)
+
+Constructs a `Constructs` with output of the form
+```math 
+    x(t) = A
+```
+where ``A`` is `amplitude.
+"""
 mutable struct ConstantGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
@@ -131,6 +178,15 @@ mutable struct ConstantGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    RampGenerator(;scale=1)
+
+Constructs a `RampGenerator` with output of the form
+```math 
+    x(t) = \alpha t
+```
+where ``\alpha`` is the `scale`.
+"""
 mutable struct RampGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
@@ -145,6 +201,17 @@ mutable struct RampGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    StepGenerator(;amplitude=1, delay=0, offset=0)
+
+Constructs a `StepGenerator` with output of the form 
+```math
+    x(t) = \left\{\begin{array}{lr}
+	B, &  t \leq 0  \\
+	A + B,  &  t > 0
+	\end{array} \right.
+```
+"""
 mutable struct StepGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     amplitude::Float64
@@ -161,6 +228,15 @@ mutable struct StepGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    ExponentialGenerator(;scale=1, decay=-1)
+
+Constructs an `ExponentialGenerator` with output of the form
+```math 
+    x(t) = A e^{\alpha t}
+```
+where ``A`` is `scale`, ``\alpha`` is `decay`.
+"""
 mutable struct ExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
@@ -176,6 +252,15 @@ mutable struct ExponentialGenerator{OF, OB, T, H} <: AbstractSource
 end
 
 
+@doc raw"""
+    DampedExponentialGenerator(;scale=1, decay=-1)
+
+Constructs an `DampedExponentialGenerator` with outpsuts of the form 
+```math 
+    x(t) = A t e^{\alpha t}
+```
+where ``A`` is `scale`, ``\alpha`` is `decay`.
+"""
 mutable struct DampedExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64

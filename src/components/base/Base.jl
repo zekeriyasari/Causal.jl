@@ -1,7 +1,6 @@
 # This file contains the Base module of Plugins module.
 
-# @reexport module Base 
-module Base 
+@reexport module Base 
 
 # Type hierarhcy
 abstract type AbstractComponent end

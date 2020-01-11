@@ -3,7 +3,7 @@
 @reexport module Sources
 
 using UUIDs
-import ..Components.Base: AbstractSource
+import ..Components.ComponentsBase: AbstractSource
 import ....Jusdl.Utilities: Callback
 import ....Jusdl.Connections: Link, Bus
 import Base.show

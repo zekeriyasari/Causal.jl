@@ -1,6 +1,6 @@
 # This file includes DDESystems
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractDDESystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDDESystem
 
 const DDESolver = Solver(MethodOfSteps(Tsit5()))
 

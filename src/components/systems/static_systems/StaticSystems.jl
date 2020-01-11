@@ -4,7 +4,7 @@
 
 using UUIDs
 import ..Systems: infer_number_of_outputs, checkandshow, hasargs
-import ....Components.Base: @generic_system_fields, @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
+import ....Components.ComponentsBase: @generic_system_fields, @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
 import ......Jusdl.Utilities: Callback, Buffer, Fifo
 import ......Jusdl.Connections: Link, Bus, Bus
 import Base.show

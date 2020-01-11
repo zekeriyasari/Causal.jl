@@ -9,7 +9,7 @@ using JLD2
 using UUIDs
 import Base: write, read, close, setproperty!, mv, cp, open, show
 import FileIO: load
-import ....Jusdl.Components.Base: @generic_sink_fields, AbstractSink, update!
+import ....Jusdl.Components.ComponentsBase: @generic_sink_fields, AbstractSink, update!
 import ....Jusdl.Utilities: write!, snapshot, Buffer, Callback, isfull
 import ....Jusdl.Connections: Link, Bus
 import ....Jusdl.Plugins: process

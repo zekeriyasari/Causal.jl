@@ -1,6 +1,6 @@
 # This file includes RODESystems
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractRODESystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractRODESystem
 
 const RODESolver = Solver(RandomEM())
 const RODENoise = Noise(WienerProcess(0.,0.))

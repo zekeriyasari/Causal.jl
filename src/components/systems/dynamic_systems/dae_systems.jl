@@ -1,6 +1,6 @@
 # This file includes DAESystems
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractDAESystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDAESystem
 
 const DAESolver = Solver(IDA())
 

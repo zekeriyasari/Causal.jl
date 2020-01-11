@@ -1,7 +1,7 @@
 # This file contains the function generator tools to drive other tools of DsSimulator.
 
 
-import ..Components.Base: @generic_source_fields
+import ..Components.ComponentsBase: @generic_source_fields
 
 
 ##### Generic Function Generator

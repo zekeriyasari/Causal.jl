@@ -1,6 +1,6 @@
 # This file includes the Discrete Systems
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractDiscreteSystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDiscreteSystem
 
 const DiscreteSolver = Solver(FunctionMap())
 

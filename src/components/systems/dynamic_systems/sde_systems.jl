@@ -1,6 +1,6 @@
 # This file contains SDESystem prototypes
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractSDESystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractSDESystem
 
 const SDESolver = Solver(LambaEM{true}())
 const SDENoise = Noise(WienerProcess(0.,0.))

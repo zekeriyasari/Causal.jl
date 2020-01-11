@@ -51,7 +51,7 @@ Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, i
 reader (generic function with 1 method)
 
 julia&gt; t = @async reader(l)
-Task (runnable) @0x00007f52f1570c40</code></pre><p>The <code>reader</code> is defined such that the data written from one end of <code>l</code> is read until the data is <code>missing</code>. Now, we have runnable task <code>t</code>. This means the <code>l</code> is ready for data writing. </p><pre><code class="language-julia-repl">julia&gt; put!(l, 1.)
+Task (runnable) @0x00007f10c66c6e60</code></pre><p>The <code>reader</code> is defined such that the data written from one end of <code>l</code> is read until the data is <code>missing</code>. Now, we have runnable task <code>t</code>. This means the <code>l</code> is ready for data writing. </p><pre><code class="language-julia-repl">julia&gt; put!(l, 1.)
 1.0
 
 julia&gt; put!(l, 2.)
@@ -59,7 +59,7 @@ julia&gt; put!(l, 2.)
 missing
 
 julia&gt; t   # Show that the `t` is terminated.
-Task (done) @0x00007f52f1570c40</code></pre><p>Note that the data flown through the <code>l</code> is written to its <code>buffer</code>. </p><pre><code class="language-julia-repl">julia&gt; l.buffer.data
+Task (done) @0x00007f10c66c6e60</code></pre><p>Note that the data flown through the <code>l</code> is written to its <code>buffer</code>. </p><pre><code class="language-julia-repl">julia&gt; l.buffer.data
 5-element Array{Union{Missing, Float64},1}:
  1.0
  2.0
@@ -69,7 +69,7 @@ Task (done) @0x00007f52f1570c40</code></pre><p>Note that the data flown through 
 Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 
 julia&gt; t = @async reader(l)
-Task (runnable) @0x00007f52f19d0760
+Task (runnable) @0x00007f10c6b6b0d0
 
 julia&gt; for item in 1. : 10.
            put!(l, item)
@@ -96,7 +96,7 @@ julia&gt; function writer(link::Link, vals)
 writer (generic function with 1 method)
 
 julia&gt; t = @async writer(l, 1.:5.)
-Task (runnable) @0x00007f52f155a980
+Task (runnable) @0x00007f10c66aa980
 
 julia&gt; bind(l, t)
 Channel{Union{Missing, Float64}}(sz_max:0,sz_curr:1)
@@ -106,7 +106,7 @@ julia&gt; take!(l)
 
 julia&gt; take!(l)
 2.0</code></pre><p>It is possible to read data from <code>l</code> until <code>t</code> is active. To read all the data at once, <code>collect</code> can be used. </p><pre><code class="language-julia-repl">julia&gt; t
-Task (runnable) @0x00007f52f155a980
+Task (runnable) @0x00007f10c66aa980
 
 julia&gt; collect(l)
 3-element Array{Union{Missing, Float64},1}:
@@ -115,7 +115,7 @@ julia&gt; collect(l)
  5.0
 
 julia&gt; t  # Show that `t` is terminated.
-Task (done) @0x00007f52f155a980</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Base.put!-Tuple{Link,Any}" href="#Base.put!-Tuple{Link,Any}"><code>Base.put!</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">put!(link::Link, val)</code></pre><p>Puts <code>val</code> to <code>link</code>. <code>val</code> is handed over to the <code>channel</code> of <code>link</code>. <code>val</code> is also written in to the <code>buffer</code> of <code>link</code>.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p><code>link</code> must be writable to put <code>val</code>. See <a href="../bus/#Jusdl.Connections.launch-Tuple{Bus}"><code>launch</code></a></p></div></div><p><strong>Example</strong></p><pre><code class="language-julia">julia&gt; l = Link();
+Task (done) @0x00007f10c66aa980</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Base.put!-Tuple{Link,Any}" href="#Base.put!-Tuple{Link,Any}"><code>Base.put!</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">put!(link::Link, val)</code></pre><p>Puts <code>val</code> to <code>link</code>. <code>val</code> is handed over to the <code>channel</code> of <code>link</code>. <code>val</code> is also written in to the <code>buffer</code> of <code>link</code>.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p><code>link</code> must be writable to put <code>val</code>. See <a href="../bus/#Jusdl.Connections.launch-Tuple{Bus}"><code>launch</code></a></p></div></div><p><strong>Example</strong></p><pre><code class="language-julia">julia&gt; l = Link();
 
 julia&gt; t = launch(l);  # To be able to put values, `l` must be bound to a runnable task.
 
@@ -183,4 +183,4 @@ julia&gt; map(l -&gt; isconnected(ls[1], l), ls[2:5])
  0
  0
  0
- 0</code></pre></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.bind" href="#Base.bind"><code>Base.bind</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">bind(link::Link, task::Task)</code></pre><p>Binds <code>task</code> to <code>link</code>. When <code>task</code> is done <code>link</code> is closed.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.collect-Tuple{Link}" href="#Base.collect-Tuple{Link}"><code>Base.collect</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">collect(link::Link)</code></pre><p>Collects all the available data on the <code>link</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Connections.launch-Tuple{Link}" href="#Jusdl.Connections.launch-Tuple{Link}"><code>Jusdl.Connections.launch</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">launch(link::Link)</code></pre><p>Constructs a <code>taker</code> task and binds it to <code>link</code>. The <code>taker</code> task reads the data and prints an info message until <code>missing</code> is read from the <code>link</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Connections.launch-Tuple{Link,Any}" href="#Jusdl.Connections.launch-Tuple{Link,Any}"><code>Jusdl.Connections.launch</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">launch(link:Link, valrange)</code></pre><p>Constructs a <code>putter</code> task and binds it to <code>link</code>. <code>putter</code> tasks puts the data in <code>valrange</code>.</p></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../utilities/buffers/">« Buffer</a><a class="docs-footer-nextpage" href="../bus/">Busses »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 11 January 2020 16:08">Saturday 11 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 0</code></pre></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.bind" href="#Base.bind"><code>Base.bind</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">bind(link::Link, task::Task)</code></pre><p>Binds <code>task</code> to <code>link</code>. When <code>task</code> is done <code>link</code> is closed.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.collect-Tuple{Link}" href="#Base.collect-Tuple{Link}"><code>Base.collect</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">collect(link::Link)</code></pre><p>Collects all the available data on the <code>link</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Connections.launch-Tuple{Link}" href="#Jusdl.Connections.launch-Tuple{Link}"><code>Jusdl.Connections.launch</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">launch(link::Link)</code></pre><p>Constructs a <code>taker</code> task and binds it to <code>link</code>. The <code>taker</code> task reads the data and prints an info message until <code>missing</code> is read from the <code>link</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Connections.launch-Tuple{Link,Any}" href="#Jusdl.Connections.launch-Tuple{Link,Any}"><code>Jusdl.Connections.launch</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">launch(link:Link, valrange)</code></pre><p>Constructs a <code>putter</code> task and binds it to <code>link</code>. <code>putter</code> tasks puts the data in <code>valrange</code>.</p></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../utilities/buffers/">« Buffer</a><a class="docs-footer-nextpage" href="../bus/">Busses »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 11 January 2020 16:25">Saturday 11 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

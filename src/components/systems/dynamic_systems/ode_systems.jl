@@ -1,6 +1,6 @@
 # This file contains ODESystem prototypes
 
-import ....Components.Base: @generic_system_fields, @generic_dynamic_system_fields, AbstractODESystem
+import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractODESystem
 
 const ODESolver = Solver(Tsit5())
 

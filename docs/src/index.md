@@ -145,6 +145,20 @@ Pages = [
     ]
 ```
 
+```@contents
+Pages = [
+    "manual/components/systems/staticsystems/staticsystems.md",
+    "manual/components/systems/staticsystems/subsytem.md",
+    "manual/components/systems/staticsystems/network.md",
+    "manual/components/systems/dynamicsystems/discretesystem.md",
+    "manual/components/systems/dynamicsystems/odesystem.md",
+    "manual/components/systems/dynamicsystems/daesystem.md",
+    "manual/components/systems/dynamicsystems/rodesystem.md",
+    "manual/components/systems/dynamicsystems/sdesystem.md",
+    "manual/components/systems/dynamicsystems/ddesystem.md",
+    ]
+```
+
 ## Index
 
 ```@index

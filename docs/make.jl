@@ -27,6 +27,21 @@ makedocs(
                 "manual/components/sinks/printer.md",
                 "manual/components/sinks/scope.md",
                 ],
+            "Systems" => [
+                "StaticSystems" => [
+                    "StaticSystems" => "manual/components/systems/staticsystems/staticsystems.md",
+                    "Subsystem" => "manual/components/systems/staticsystems/subsystem.md",
+                    "Network" => "manual/components/systems/staticsystems/network.md",
+                    ],
+                "DynamicSystems" => [
+                    "DiscreteSystem" => "manual/components/systems/dynamicsystems/discretesystem.md",
+                    "ODESystem" => "manual/components/systems/dynamicsystems/odesystem.md",
+                    "DAESystem" => "manual/components/systems/dynamicsystems/daesystem.md",
+                    "RODESystem" => "manual/components/systems/dynamicsystems/rodesystem.md",
+                    "SDESystem" => "manual/components/systems/dynamicsystems/sdesystem.md",
+                    "DDESystem" => "manual/components/systems/dynamicsystems/ddesystem.md",
+                    ],
+                ],
             ],
         "Plugins" => "manual/plugins/plugins.md",
         "Models" => [

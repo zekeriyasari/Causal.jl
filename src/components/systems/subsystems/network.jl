@@ -165,8 +165,10 @@ coupling(n, idx::Int) = coupling(n, [idx])
 
 ##### Construction of connection matrices of different network toplogies.
 
-function uniformconnectivity(topology::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
-    conmat = weight * (-1) * collect(laplacian_matrix(eval(topology)(args...; kwargs...)))
+@deprecate uniformconnectivty(args...; kwargs...) topology(args...; kwargs...)
+
+function topology(graphname::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
+    conmat = weight * (-1) * collect(laplacian_matrix(eval(graphname)(args...; kwargs...)))
     timevarying ? maketimevarying(conmat) : conmat 
 end
 

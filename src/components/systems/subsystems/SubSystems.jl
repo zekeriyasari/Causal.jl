@@ -11,7 +11,7 @@ import ......Jusdl.Utilities: Callback
 include("subsystem.jl")
 include("network.jl")
 
-export SubSystem, Network, uniformconnectivity, cgsconnectivity, clusterconnectivity, coupling, gplot
+export SubSystem, Network, uniformconnectivity, cgsconnectivity, clusterconnectivity, coupling, gplot, topology
 export deletelink, changeweight, maketimevarying, openinputbus
 
 end

@@ -67,7 +67,7 @@ struct Adder{IB, OB, T, H, OF, S} <: AbstractStaticSystem
     signs::S
     function Adder(input::Bus, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...))
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-        output = Bus{eltype(input)}()
+        output = similar(input)
         trigger = Link()
         handshake = Link{Bool}()
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(signs)}(input,
@@ -104,7 +104,7 @@ struct Multiplier{IB, OB, T, H, OF, S} <: AbstractStaticSystem
             end
             val
         end
-        output = Bus{eltype(input)}()
+        output = similar()
         trigger = Link()
         handshake = Link{Bool}()
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(ops)}(input, 
@@ -137,7 +137,7 @@ struct Gain{IB, OB, T, H, OF, G} <: AbstractStaticSystem
     gain::G
     function Gain(input::Bus; gain=1.)
         outputfunc(u, t) =  gain * u
-        output = Bus{eltype(input)}(length(input))
+        output = similar(input, length(input))
         trigger = Link()
         handshake = Link{Bool}()
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(gain)}(input, 
@@ -176,7 +176,7 @@ struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
         buffer = Buffer{Fifo}(Vector{T}, numdelay)
         fill!(buffer, initial)
         outputfunc(u, t) = buffer()
-        output = Bus{eltype(input)}(length(input))
+        output = similar(input, length(input))
         trigger = Link()
         handshake = Link{Bool}()
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), 

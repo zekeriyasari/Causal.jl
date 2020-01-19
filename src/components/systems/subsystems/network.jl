@@ -57,10 +57,11 @@ function construct_inputbus(adders=[])
         inputbus = nothing
     else
         links = vcat([adder.input[Int(end / 2) + 1 : end] for adder in adders]...)
-        inputbus = Bus(length(links))
-        for (i, link) in enumerate(links)
-            inputbus[i] = link
-        end
+        inputbus = Bus(links)
+        # inputbus = Bus(length(links))
+        # for (i, link) in enumerate(links)
+        #     inputbus[i] = link
+        # end
     end
     return inputbus
 end
@@ -70,10 +71,11 @@ function construct_outputbus(outputnodes)
         outputbus = nothing
     else
         links = vcat([node.output.links for node in outputnodes]...)
-        outputbus = Bus(length(links))
-        for (i, link) in enumerate(links)
-            outputbus[i] = link
-        end
+        outputbus = Bus(links)
+        # outputbus = Bus(length(links))
+        # for (i, link) in enumerate(links)
+        #     outputbus[i] = link
+        # end
     end
     return outputbus
 end

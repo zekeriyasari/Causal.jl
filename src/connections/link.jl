@@ -26,8 +26,8 @@ mutable struct Link{T}
     id::UUID
     master::RefValue{Link{T}}
     slaves::Vector{RefValue{Link{T}}}
-    Link{T}(ln::Int=64) where {T} = new{Union{Missing, T}}(Buffer(T, ln), Channel{Union{Missing, T}}(0), Pin(), Pin(),
-        Callback[], uuid4(), RefValue{Link{Union{Missing,T}}}(), Vector{RefValue{Link{Union{Missing, T}}}}()) 
+    Link{T}(ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), Pin(), Pin(),
+        Callback[], uuid4(), RefValue{Link{T}}(), Vector{RefValue{Link{T}}}()) 
 end
 Link(ln::Int=64) = Link{Float64}(ln)
 
@@ -125,7 +125,8 @@ Stacktrace:
 """
 function close(link::Link)
     channel = link.channel
-    isempty(channel.cond_take.waitq) || put!(link, missing)   # Terminate taker task 
+    # isempty(channel.cond_take.waitq) || put!(link, missing)   # Terminate taker task 
+    isempty(channel.cond_take.waitq) || put!(link, NaN)   # Terminate taker task 
     isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
     # isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
     return 
@@ -250,10 +251,8 @@ function connect(master::Link, slave::Link)
     slave.master = Ref(master) 
     return 
 end
-connect(master::Link, slaves::Vector{<:Link}) = foreach(ls -> connect(master, ls), slaves)
-connect(masters::Vector{<:Link}, slaves::Vector{<:Link}) = foreach(ls -> connect(ls[1], ls[2]), zip(masters, slaves))
-connect(b1, b2) = connect([b1...], [b2...])
-connect(links::Link...) = foreach(i -> connect(links[i], links[i + 1]), 1 : length(links) - 1)
+connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link}) = (connect.(master, slave); nothing)
+connect(master, slave) = connect([master...], [slave...])
 
 """
     disconnect(link1::Link, link2::Link)
@@ -280,19 +279,17 @@ function disconnect(link1::Link{T}, link2::Link{T}) where T
     slave.leftpin = Pin()
     return
 end
-disconnect(links::Link...) = foreach(i -> disconnect(links[i], links[i + 1]), 1 : length(links) - 1)
-disconnect(masters::Vector{<:Link}, slaves::Vector{<:Link}) = foreach(ls->disconnect(ls[1], ls[2]), zip(masters,slaves))
-disconnect(b1, b2) = disconnect([b1...], [b2...])
+disconnect(link1::AbstractVector{<:Link}, link2::AbstractVector{<:Link}) = (disconnect.(link1, link2); nothing)
+disconnect(link1, link2) = disconnect([link1...], [link2...])
 
 """
     isconnected(link1, link2)
 
 Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important.
 """
-isconnected(l1::Link, l2::Link) = l2 in [slave[] for slave in l1.slaves] || l1 in [slave[] for slave in l2.slaves]
-isconnected(ls...) = all(map(i -> isconnected(links[i], links[i + 1]), 1 : length(links) - 1))
-isconnected(ls1::Vector{<:Link}, ls2::Vector{<:Link}) = all(isconnected.(ls1, ls2))
-isconnected(ls1, ls2) = isconnected([ls1...], [ls2...])
+isconnected(link1::Link, link2::Link) = link2 in [sl[] for sl in link1.slaves] || link1 in [sl[] for sl in link2.slaves]
+isconnected(link1::AbstractVector{<:Link}, link2::AbstractVector{<:Link}) = all(isconnected.(link1, link2))
+isconnected(link1, link2) = isconnected([link1...], [link2...])
 
 """
     UnconnectedLinkError <: Exception
@@ -357,10 +354,9 @@ function insert(master::Link, slave::Link, new::Link)
     connect(new, slave)
     return
 end
-insert(master::Vector{<:Link}, slave::Vector{<:Link}, new::Vector{<:Link}) = 
-    foreach(l -> insert(l...), zip(master, slave, new))
+# insert(master::Vector{<:Link}, slave::Vector{<:Link}, new::Vector{<:Link}) = 
+#     foreach(l -> insert(l...), zip(master, slave, new))
 
-# release(masterlink::Link) = foreach(slavelinkref -> disconnect(masterlink, slavelinkref[]), masterlink.slaves)
 """
     release(link::Link)
 
@@ -394,8 +390,7 @@ function release(link::Link)
         disconnect(link, link.slaves[1][])
     end
 end
-release(links::Vector{<:Link}) = foreach(release, links)
-release(links) = release([links...])
+release(links::AbstractVector{<:Link}) = foreach(release, links)
 
 ##### Launching links.
 
@@ -404,7 +399,7 @@ release(links) = release([links...])
 function taker(link::Link)
     while true
         val = take!(link)
-        val isa Missing && break  # Poison-pill the tasks to terminate safely.
+        val === NaN && break  # Poison-pill the tasks to terminate safely.
         @info "Took " val
     end
 end

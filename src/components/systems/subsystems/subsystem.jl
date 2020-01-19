@@ -9,21 +9,23 @@ mutable struct SubSystem{IB, OB, T, H, C} <: AbstractSubSystem
         trigger = Link()
         handshake = Link{Bool}()
         if typeof(input) <: AbstractVector{<:Link}
-            inputbus = Bus(length(input))
-            for (i, link) in enumerate(input)
-                inputbus[i] = link
-            end
+            # inputbus = Bus(length(input))
+            # for (i, link) in enumerate(input)
+            #     inputbus[i] = link
+            # end
             # inputbus .= input
+            inputbus = Bus(input)  # Wrap input directly to construct a bus.
         else 
             inputbus = input
         end
         
         if typeof(output) <: AbstractVector{<:Link}
-            outputbus = Bus(length(output))
-            for (i, link) in enumerate(output)
-                outputbus[i] = link
-            end
+            # outputbus = Bus(length(output))
+            # for (i, link) in enumerate(output)
+            #     outputbus[i] = link
+            # end
             # outputbus .= output
+            outputbus = Bus(output)  # Wrap output directly to construct a bus.
         else
             outputbus = output
         end

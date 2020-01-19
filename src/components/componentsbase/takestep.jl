@@ -92,7 +92,8 @@ end
 ##### Task management
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
-    t === missing && return t
+    # t === missing && return t
+    t === NaN && return t
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
 
@@ -121,12 +122,14 @@ function launch(comp::AbstractComponent)
     outputtask = if !(typeof(comp) <: AbstractSink)  
         @async while true 
             val = take!(comp.output)
-            all(val .=== missing) && break
+            # all(val .=== missing) && break
+            all(val .=== NaN) && break
         end
     end
     triggertask = @async begin 
         while true
-            takestep(comp) === missing && break
+            # takestep(comp) === missing && break
+            takestep(comp) === NaN && break
             put!(comp.handshake, true)
         end
         typeof(comp) <: AbstractSink && close(comp)
@@ -153,7 +156,8 @@ end
 launch(comp::AbstractSubSystem) = launch.(comp.components)
 function takestep(comp::AbstractSubSystem)
     t = readtime(comp)
-    t === missing && return t
+    # t === missing && return t
+    t === NaN && return t
     foreach(takestep, comp.components)
     approve(comp) ||  @warn "Could not be approved in the subsystem"
     put!(comp.handshake, true)

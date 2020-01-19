@@ -87,8 +87,7 @@ mutable struct Buffer{M<:BufferMode, T}
     state::Symbol 
     callbacks::Vector{Callback}
     id::UUID
-    Buffer{M}(::Type{T}, ln::Int) where {M, T} = new{M, Union{Missing, T}}(fill!(Vector{Union{Missing,T}}(undef, ln),
-         missing), 1, :empty, Callback[], uuid4())
+    Buffer{M}(::Type{T}, ln::Int) where {M, T} = new{M, T}(Vector{T}(undef, ln), 1, :empty, Callback[], uuid4())
 end
 Buffer(::Type{T}, ln::Int) where T = Buffer{Cyclic}(T, ln)
 Buffer{M}(ln::Int) where M = Buffer{M}(Float64, ln)
@@ -99,19 +98,46 @@ show(io::IO, buf::Buffer)= print(io,
 
 
 ##### Buffer info.
+"""
+    mode(buf::Buffer)
+
+Returns buffer mode of `buf`.
+"""
 mode(buf::Buffer{M, T}) where {M, T} = M
+
+"""
+    eltype(buf::Buffer)
+
+Returns element type of `buf`.
+"""
 eltype(buf::Buffer{M, T}) where {M, T} = T
 
 ##### AbstractArray interface.
-eltype(buf::Buffer) = eltype(buf.data)
+"""
+    length(buf::Buffer)
+
+Returns maximum number of elements that can be hold in `buf`.
+"""
 length(buf::Buffer) = length(buf.data)
 size(buf::Buffer) = size(buf.data)
-getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.data[idx...]
+
+"""
+    getindex(buf::Buffer, idx)
+
+Returns an element from `buf` at index `idx`. Same as `buf[idx]`
+"""
+getindex(buf::Buffer, idx::Int) where N = buf.data[idx]
 getindex(buf::Buffer, idx::UnitRange) = buf.data[idx]
 getindex(buf::Buffer, idx::Vector{Int}) =  buf.data[idx]
 getindex(buf::Buffer, idx::UnitRange{Int}) = buf.data[idx]
 getindex(buf::Buffer, ::Colon) = buf.data[:]
-setindex!(buf::Buffer, val, inds::Vararg{Int, N}) where N = (buf.data[inds...] = val)
+
+"""
+    setindex!(buf::Buffer, val, idx)
+
+Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`
+"""
+setindex!(buf::Buffer, val, inds::Int) where N = (buf.data[inds] = val)
 setindex!(buf::Buffer, val, idx::Vector{Int}) = buf.data[idx] = val
 setindex!(buf::Buffer, val, idx::UnitRange{Int}) = buf.data[idx] = val
 setindex!(buf::Buffer, val, ::Colon) = buf.data[:] = val
@@ -132,6 +158,11 @@ isempty(buf::Buffer) = buf.state == :empty
 Returns `true` if `buf` is full.
 """
 isfull(buf::Buffer) = buf.state == :full
+
+#
+# `setproperty!` function is used to keep track of buffer status. 
+# The tracking is done through the updates of `index` of buffer. 
+#
 function setproperty!(buf::Buffer, name::Symbol, val::Int)
     if name == :index
         val < 1 && error("Buffer index cannot be less than 1.")
@@ -147,14 +178,6 @@ function setproperty!(buf::Buffer, name::Symbol, val::Int)
 end
 
 ##### Writing into buffers
-resetindex(buf::Buffer) = setfield!(buf, :index, %(buf.index, size(buf.data, 1)))
-checkindex(buf::Buffer) = isfull(buf) && resetindex(buf)
-writelinear(buf::Buffer{M, T}, val) where {M, T} = 
-    isfull(buf) ? (@warn "Buffer is full.") : (buf[buf.index] = val; buf.index +=1)
-writecylic(buf::Buffer{M, T}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1; checkindex(buf))
-# writeinto(buf::Buffer{M, T}, val) where{M<:LinearMode, T} = writelinear(buf, val)
-# writeinto(buf::Buffer{M, T}, val) where{M<:CyclicMode, T} = writecylic(buf, val)
-
 """
     write!(buf::Buffer{M, T}, val) where {M, T}
 
@@ -181,41 +204,38 @@ julia> buf.data
   missing
 ```
 """
-function write!(buf::Buffer{M, T}, val) where {M, T}
-    # writeinto(buf, val)
-    if buf isa Buffer{<:Cyclic, T} where T 
-        writecylic(buf, val)
-    else
-        writelinear(buf, val)
-    end
+function write!(buf::Buffer, val)
+    _write!(buf, val)
     buf.callbacks(buf)
     val
 end
-write!(buf::Buffer{M, T}, val::AbstractArray{Missing}) where {M, T} = write!(buf, missing)
+function _write!(buf::Buffer{M, T}, val) where {M <: LinearMode, T}
+    if isfull(buf) 
+        @warn "Buffer is full."
+    else 
+        buf[buf.index] = val 
+        buf.index +=1
+    end
+end
+function _write!(buf::Buffer{M, T}, val) where {M <: CyclicMode, T}
+    buf[buf.index] = val
+    buf.index += 1
+    if isfull(buf)
+        setfield!(buf, :index, %(buf.index, length(buf)))
+    end
+end
 
 """
     fill!(buf::Buffer{M, T}, val::T) where {M,T}
 
 Writes `val` into `buf` until `buf` is full.
 """
-fill!(buf::Buffer{M, T}, val::T) where {M, T} = foreach(i -> write!(buf, val), 1 : length(buf))
+fill!(buf::Buffer{M, T}, val::T) where {M, T} = (foreach(i -> write!(buf, val), 1 : length(buf)); buf)
+fill!(buf::Buffer{M, T}, val::S) where {M, T, S} = fill!(buf, convert(T, val))
+fill!(buf::Buffer{M, T}, val::AbstractVector{T}) where {M, T} = (foreach(i -> write!(buf, i), val); buf)
+fill!(buf::Buffer{M, T}, val::AbstractVector{S}) where {M, T, S} = fill!(buf, convert(Vector{T}, val))
 
 ##### Reading from buffers
-readfrom(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = buf.data[buf.index - 1]
-function readfrom(buf::Buffer{M, T}) where {M<:Fifo, T}
-    val = buf.data[1]
-    buf.data .= circshift(buf.data, -1)
-    buf.data[end] = missing
-    buf.index -= 1
-    val
-end
-function readfrom(buf::Buffer{M, T}) where {M<:Lifo, T}
-    val = buf.data[end]
-    buf.data[end] = missing
-    buf.index -= 1
-    val
-end
-
 """
     read(buf::Buffer)
 
@@ -245,8 +265,22 @@ julia> for i in 1 : 3
 """
 function read(buf::Buffer) 
     isempty(buf) && error("Buffer is empty")
-    val = readfrom(buf)
+    val = _read(buf)
     buf.callbacks(buf)
+    val
+end
+_read(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = isfull(buf) ? buf[1] :  buf[buf.index - 1]
+function _read(buf::Buffer{M, T}) where {M<:Fifo, T}
+    val = buf[1]
+    buf.data .= circshift(buf.data, -1)
+    buf[end] = Vector{T}(undef, 1)[1]
+    buf.index -= 1
+    val
+end
+function _read(buf::Buffer{M, T}) where {M<:Lifo, T}
+    buf.index -= 1
+    val = buf[buf.index]
+    buf[buf.index] = Vector{T}(undef, 1)[1]
     val
 end
 

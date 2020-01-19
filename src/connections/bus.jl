@@ -1,7 +1,7 @@
 # This file contains the Bus tool for connecting the tools of DsSimulator
 
 import Base: put!, wait, take!
-import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close, eltype
+import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close, eltype, similar
 
 
 """
@@ -13,9 +13,10 @@ struct Bus{T}
     links::Vector{Link{T}}
     callbacks::Vector{Callback}
     id::UUID
-    Bus{T}(nlinks::Int=1, ln::Int=64) where T = 
-        new{Union{Missing, T}}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
 end
+Bus{T}(nlinks::Int=1, ln::Int=64) where T = Bus{T}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
+Bus(links::AbstractVector{L}) where {L<:Link{T}} where {T} = Bus{T}(links, Callback[], uuid4())
+
 
 """
     Bus([nlinks::Int=1, [ln::Int=64]])
@@ -24,7 +25,7 @@ Constructs a `Bus` consisting of `nlinks` links with element type `T`. `ln` is t
 """
 Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
 
-show(io::IO, bus::Bus{Union{Missing, T}})  where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T), ",
+show(io::IO, bus::Bus{T}) where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T), ",
     "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
 
 ##### Make bus indexable.
@@ -197,6 +198,14 @@ l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
 
 ##### Interconnection of busses.
+connect(master::Bus, slave::Bus) = connect(master[:], slave[:])
+disconnect(bus1::Bus, bus2::Bus) = disconnect(bus1[:], bus2[:])
+isconnected(bus1::Bus, bus2::Bus) = isconnected(bus1[:], bus2[:])
+release(bus::Bus) = release(bus[:])
+
+similar(bus::Bus{T}, nlinks::Int=1, ln::Int=64) where {T} = Bus{T}(nlinks, ln)
+
+
 """
     hasslaves(bus:Bus)
 

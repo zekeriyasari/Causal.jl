@@ -13,9 +13,13 @@ struct Pin
 end
 
 """
-    Link{T}([ln::Int=64]) where T 
+    Link{T}(ln::Int=64) where T 
 
-Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type of `T` and mode is `Cyclic`.
+Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type is `T` and mode is `Cyclic`.
+
+    Link(ln::Int=64)
+
+Constructs a `Link` with element type `Float64` and buffer length `ln`. The buffer element type is `Float64` and mode is `Cyclic`.
 """
 mutable struct Link{T}
     buffer::Buffer{Cyclic, T}
@@ -31,11 +35,16 @@ mutable struct Link{T}
 end
 Link(ln::Int=64) = Link{Float64}(ln)
 
-eltype(link::Link{T}) where T = T
-
 show(io::IO, link::Link) = print(io, 
     "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), hasmaster:$(isassigned(link.master)), ", 
     "numslaves:$(length(link.slaves)), isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
+
+"""
+    eltype(link::Link)
+
+Returns element type of `link`.
+"""
+eltype(link::Link{T}) where T = T
 
 ##### Link reading writing.
 """
@@ -44,18 +53,30 @@ show(io::IO, link::Link) = print(io,
 Puts `val` to `link`. `val` is handed over to the `channel` of `link`. `val` is also written in to the `buffer` of `link`.
 
 !!! warning
-    `link` must be writable to put `val`. See [`launch`](@ref)
+    `link` must be writable to put `val`. That is, a runnable task that takes items from the link must be bounded to `link`.
 
 # Example
-```julia
+```jldoctest
 julia> l = Link();
 
-julia> t = launch(l);  # To be able to put values, `l` must be bound to a runnable task.
+julia> t  = @async while true 
+       item = take!(l)
+       item === NaN && break 
+       println("Took " * string(item))
+       end;
+
+julia> bind(l, t);
 
 julia> put!(l, 1.)
-┌ Info: Took 
-└   val = 1.0
+Took 1.0
 1.0
+
+julia> put!(l, 2.)
+Took 2.0
+2.0
+
+julia> put!(l, NaN)
+NaN
 ```
 """
 function put!(link::Link, val) 
@@ -72,22 +93,23 @@ end
 Take an element from `link`.
 
 !!! warning 
-    `link` must be readable to take value. See [`launch`](@ref)
+    `link` must be readable to take value. That is, a runnable task that puts items from the link must be bounded to `link`.
 
 # Example
-```julia
+```jldoctest
 julia> l = Link(5);
 
-julia> t = launch(l, 1. : 5.);
+julia> t = @async for item in 1. : 5.
+       put!(l, item)
+       end;
 
-julia> for i in 1 : 5
-       @show take!(l)
-       end
-take!(l) = 1.0
-take!(l) = 2.0
-take!(l) = 3.0
-take!(l) = 4.0
-take!(l) = 5.0
+julia> bind(l, t);
+
+julia> take!(l)
+1.0
+
+julia> take!(l)
+2.0
 ```
 """
 function take!(link::Link)
@@ -99,28 +121,7 @@ end
 """
     close(link)
 
-Closes `link`. All the task bound the `link` is also terminated safely. When closed, data cannot ben into or read from the `link`.
-
-# Example
-```julia
-julia> l  = Link();
-
-julia> t = launch(l);
-
-julia> put!(l, 1.)
-┌ Info: Took 
-└   val = 1.0
-1.0
-
-julia> close(l)
-
-julia> put!(l, 1.)
-ERROR: InvalidStateException("Channel is closed.", :closed)
-Stacktrace:
- [1] check_channel_state at ./channels.jl:167 [inlined]
- [2] put! at ./channels.jl:323 [inlined]
- [3] put!(::Link{Union{Missing, Float64}}, ::Float64) at /home/sari/.julia/dev/Jusdl/src/connections/link.jl:64
- [4] top-level scope at REPL[99]:1
+Closes `link`. All the task bound the `link` is also terminated safely. When closed, it is not possible to take and put element from the `link`. See also: [`take!(link::Link)`](@ref), [`put!(link::Link, val)`](@ref)
 ```
 """
 function close(link::Link)
@@ -134,7 +135,7 @@ end
 
 ##### State check of link.
 """
-    open(link::Link)
+    isopen(link::Link)
 
 Returns `true` if `link` is open. A `link` is open if its `channel` is open.
 """
@@ -205,43 +206,28 @@ Returns all the data of the `buffer` of `link`.
 snapshot(link::Link) = link.buffer.data
 
 ##### Connecting and disconnecting links
+#
 # This `iterate` function is dummy. It is defined just for `[l...]` to be written.
+#
 iterate(l::Link, i=1) = i > 1 ? nothing : (l, i + 1)
 
 """
     connect(master::Link, slave::Link)
 
-Connects `master` to `slave`. When connected, the flow is from `master` to `slave`.
+Connects `master` to `slave`. When connected, any element that is put into `master` is also put into `slave`. 
 
-    connect(links...)
+    connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link})
 
-Connect each link of `links` in the form of a path.
+Connects each link in `master` to each link in `slave` one by one.
 
 # Example 
 ```jldoctest 
 julia> l1, l2 = Link(), Link();
 
-julia> isconnected(l1, l2)
-false
-
 julia> connect(l1, l2)
 
-julia> isconnected(l1, l2)
+julia> l2.master[] == l1
 true
-
-julia> ls = [Link() for i = 1 : 3];
-
-julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
-2-element Array{Bool,1}:
- 0
- 0
-
-julia> connect(ls...)
-
-julia> map(i -> isconnected(ls[i], ls[i + 1]), 1 : 2)
-2-element Array{Bool,1}:
- 1
- 1
 ```
 """
 function connect(master::Link, slave::Link)
@@ -257,19 +243,7 @@ connect(master, slave) = connect([master...], [slave...])
 """
     disconnect(link1::Link, link2::Link)
 
-Disconnects `link1` and `link2`. The order of arguments is not important. 
-
-# Example
-```jldoctest
-julia> ls = [Link() for i = 1 : 2];
-
-julia> connect(ls[1], ls[2])
-
-julia> disconnect(ls[1], ls[2])
-
-julia> isconnected(ls[1], ls[2])
-false
-```
+Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect`](@ref)
 """
 function disconnect(link1::Link{T}, link2::Link{T}) where T
     master, slave = findflow(link1, link2)

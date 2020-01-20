@@ -1,5 +1,5 @@
 using Documenter, Jusdl
-using DocumenterLaTeX
+# using DocumenterLaTeX
 
 DocMeta.setdocmeta!(Jusdl, :DocTestSetup, :(using Jusdl); recursive=true)
 

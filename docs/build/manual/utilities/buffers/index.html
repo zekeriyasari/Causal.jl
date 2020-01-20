@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Buffer · Jusdl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../../"><img src="../../../assets/logo.png" alt="Jusdl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Jusdl</span></div><form class="docs-search" action="../../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Utilities</span><ul><li><a class="tocitem" href="../callback/">Callback</a></li><li class="is-active"><a class="tocitem" href>Buffer</a><ul class="internal"><li><a class="tocitem" href="#Buffer-Modes-1"><span>Buffer Modes</span></a></li><li><a class="tocitem" href="#Buffer-Constructors-1"><span>Buffer Constructors</span></a></li><li><a class="tocitem" href="#Writing-Data-into-Buffers-1"><span>Writing Data into Buffers</span></a></li><li><a class="tocitem" href="#Reading-Data-from-Buffers-1"><span>Reading Data from Buffers</span></a></li><li><a class="tocitem" href="#AbstractArray-Interface-of-Buffers-1"><span>AbstractArray Interface of Buffers</span></a></li><li><a class="tocitem" href="#Full-API-1"><span>Full API</span></a></li></ul></li></ul></li><li><span class="tocitem">Connections</span><ul><li><a class="tocitem" href="../../connections/link/">Links</a></li><li><a class="tocitem" href="../../connections/bus/">Busses</a></li></ul></li><li><span class="tocitem">Components</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Sources</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../components/sources/clock/">Clock</a></li><li><a class="tocitem" href="../../components/sources/generators/">Generators</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Sinks</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../components/sinks/sinks/">Sinks</a></li><li><a class="tocitem" href="../../components/sinks/writer/">Writer</a></li><li><a class="tocitem" href="../../components/sinks/printer/">Printer</a></li><li><a class="tocitem" href="../../components/sinks/scope/">Scope</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Systems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-1"><span class="docs-label">StaticSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../components/systems/staticsystems/staticsystems/">StaticSystems</a></li><li><a class="tocitem" href="../../components/systems/staticsystems/subsystem/">Subsystem</a></li><li><a class="tocitem" href="../../components/systems/staticsystems/network/">Network</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-2"><span class="docs-label">DynamicSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../components/systems/dynamicsystems/discretesystem/">DiscreteSystem</a></li><li><a class="tocitem" href="../../components/systems/dynamicsystems/odesystem/">ODESystem</a></li><li><a class="tocitem" href="../../components/systems/dynamicsystems/daesystem/">DAESystem</a></li><li><a class="tocitem" href="../../components/systems/dynamicsystems/rodesystem/">RODESystem</a></li><li><a class="tocitem" href="../../components/systems/dynamicsystems/sdesystem/">SDESystem</a></li><li><a class="tocitem" href="../../components/systems/dynamicsystems/ddesystem/">DDESystem</a></li></ul></li></ul></li></ul></li><li><a class="tocitem" href="../../plugins/plugins/">Plugins</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../models/taskmanager/">Task Manager</a></li><li><a class="tocitem" href="../../models/simulation/">Simulation</a></li><li><a class="tocitem" href="../../models/model/">Model</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Utilities</a></li><li class="is-active"><a href>Buffer</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Buffer</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com//blob/master/docs/src/manual/utilities/buffers.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Buffer-1"><a class="docs-heading-anchor" href="#Buffer-1">Buffer</a><a class="docs-heading-anchor-permalink" href="#Buffer-1" title="Permalink"></a></h1><p><code>Buffer</code> is a primitive to <em>buffer</em> the data. Data can be of any Julia type. Data can be read from and written into a buffer, and the mode of the buffer determines the way to read from and write into the buffers. </p><h2 id="Buffer-Modes-1"><a class="docs-heading-anchor" href="#Buffer-Modes-1">Buffer Modes</a><a class="docs-heading-anchor-permalink" href="#Buffer-Modes-1" title="Permalink"></a></h2><p>Buffer mode determines the way the data is read from and written into a <code>Buffer</code>. </p><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.BufferMode" href="#Jusdl.Utilities.BufferMode"><code>Jusdl.Utilities.BufferMode</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">BufferMode</code></pre><p>Abstract type for buffer mode. Subtypes of <code>BufferMode</code> is <code>CyclicMode</code> and <code>LinearMode</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.LinearMode" href="#Jusdl.Utilities.LinearMode"><code>Jusdl.Utilities.LinearMode</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">LinearMode &lt;: BufferMode</code></pre><p>Abstract type of linear buffer modes. See <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a></p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.CyclicMode" href="#Jusdl.Utilities.CyclicMode"><code>Jusdl.Utilities.CyclicMode</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">CyclicMode &lt;: BufferMode</code></pre><p>Abstract type of cyclic buffer modes. See <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a></p></div></section></article><p>There are four different buffer modes.</p><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.Normal" href="#Jusdl.Utilities.Normal"><code>Jusdl.Utilities.Normal</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Normal &lt;: LinearMode</code></pre><p>LinearMode buffer mode. The data is written to buffer until the buffer is full. When it is full, no more data is written to the buffer. When read, the data written last is returned and the returned data is not deleted from the internal container of the buffer. </p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.Cyclic" href="#Jusdl.Utilities.Cyclic"><code>Jusdl.Utilities.Cyclic</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Cyclic &lt;: CyclicMode</code></pre><p>Cyclic buffer mode. The data is written to buffer until the buffer is full. When the buffer is full, new data is written by overwriting the data available in the buffer starting from the beginning of the buffer. When the buffer is read, the element written last is returned and the returned element is not deleted from the buffer.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.Lifo" href="#Jusdl.Utilities.Lifo"><code>Jusdl.Utilities.Lifo</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Lifo &lt;: LinearMode</code></pre><p>Lifo (Last-in-first-out) buffer mode. This type of buffer is a <em>last-in-first-out</em> buffer. Data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the last element written into buffer is returned. The returned element is deleted from the buffer.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.Fifo" href="#Jusdl.Utilities.Fifo"><code>Jusdl.Utilities.Fifo</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Fifo &lt;: LinearMode</code></pre><p>Fifo (First-in-last-out) buffer mode. This type of buffer is a <em>first-in-first-out</em> buffer. The data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first element written into the buffer is returned. The returned element is deleted from the buffer. </p></div></section></article><h2 id="Buffer-Constructors-1"><a class="docs-heading-anchor" href="#Buffer-Constructors-1">Buffer Constructors</a><a class="docs-heading-anchor-permalink" href="#Buffer-Constructors-1" title="Permalink"></a></h2><p>The <code>Buffer</code> construction is very similar to the construction of arrays in Julia. Just specify the mode, element type and length of the buffer. Here are the main <code>Buffer</code> constructors: </p><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.Buffer" href="#Jusdl.Utilities.Buffer"><code>Jusdl.Utilities.Buffer</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Buffer{M}(::Type{T}, ln::Int) where {M, T}</code></pre><p>Constructs a <code>Buffer</code> of length <code>ln</code> with element type of <code>T</code>. <code>M</code> is the mode of the <code>Buffer</code> that determines how data is to read from and written into the <code>Buffer</code>.  There exists for different buffer modes: </p><ul><li><p><code>Normal</code>: See <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a></p></li><li><p><code>Cyclic</code>: See <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a></p></li><li><p><code>Lifo</code>: See <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a></p></li><li><p><code>Fifo</code>: See <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a></p></li></ul><p>The default mode for <code>Buffer</code> is <code>Cyclic</code> and default element type is <code>Float64</code>.</p><pre><code class="language-none">Buffer(::Type{T}, ln::Int) where T</code></pre><p>Constructs a <code>Buffer</code> of length <code>ln</code> and with element type of <code>T</code>. The mode of the buffer is <code>Cyclic</code>.</p><pre><code class="language-none">Buffer{M}(ln::Int) where M</code></pre><p>Constructs a <code>Buffer</code> of length of <code>ln</code> and with mode <code>M</code>. <code>M</code> can be <code>Normal</code>, <code>Cyclic</code>, <code>Fifo</code> and <code>Lifo</code>. The element type of the <code>Buffer</code> is <code>Float64</code>.</p><pre><code class="language-none">Buffer(ln::Int)</code></pre><p>Constructs a <code>Buffer</code> of length <code>ln</code> with mode <code>Cyclic</code> and element type of <code>Float64</code>.</p></div></section></article><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>Note that <code>Buffer</code> is one dimensional. That is, the length of the data must be specified when constructing a <code>Buffer</code>. </p></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>Note that when a <code>Buffer</code> is initialized, the internal data of the <code>Buffer</code> is of <code>missing</code>. </p></div></div><p>Let us try some examples. Here are some simple buffer construction.</p><pre><code class="language-julia-repl">
 julia&gt; buf1 = Buffer{Normal}(Float64, 5)   # Buffer of length `5` with mode `Normal` and element type of `Float64`.
-Buffer(mode:Normal, eltype:Union{Missing, Float64}, length:5, index:1, state:empty)
+Buffer(mode:Normal, eltype:Float64, length:5, index:1, state:empty)
 
 julia&gt; buf2 = Buffer{Fifo}(Int, 3)       # Buffer of length `5` with mode `Fifo` and element type of `Int`.
-Buffer(mode:Fifo, eltype:Union{Missing, Int64}, length:3, index:1, state:empty)
+Buffer(mode:Fifo, eltype:Int64, length:3, index:1, state:empty)
 
 julia&gt; buf3 = Buffer(Vector{Int}, 3)       # Buffer of length `5` with mode `Cyclic` and element type of `Vector{Int}`.
-Buffer(mode:Cyclic, eltype:Union{Missing, Array{Int64,1}}, length:3, index:1, state:empty)
+Buffer(mode:Cyclic, eltype:Array{Int64,1}, length:3, index:1, state:empty)
 
 julia&gt; buf4 = Buffer(Matrix{Float64}, 5)    # Buffer of length `5` with mode `Cyclic` and element type of `Matrix{Float64}`.
-Buffer(mode:Cyclic, eltype:Union{Missing, Array{Float64,2}}, length:5, index:1, state:empty)
+Buffer(mode:Cyclic, eltype:Array{Float64,2}, length:5, index:1, state:empty)
 
 julia&gt; buf5 = Buffer(5)                    # Buffer of length `5` with mode `Cyclic` and element type of `Float64`.
-Buffer(mode:Cyclic, eltype:Union{Missing, Float64}, length:5, index:1, state:empty)</code></pre><p>Note that the element type of <code>Buffer</code> can be any Julia type, even any user-defined type. Note the following example, </p><pre><code class="language-julia-repl">julia&gt; using Jusdl #hide
+Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:empty)</code></pre><p>Note that the element type of <code>Buffer</code> can be any Julia type, even any user-defined type. Note the following example, </p><pre><code class="language-julia-repl">julia&gt; using Jusdl #hide
 
 julia&gt; struct Object end       # Define a dummy type.
 
 julia&gt; buf = Buffer{Normal}(Object, 4)  # Buffer of length `4` with element type `Object`.
-Buffer(mode:Normal, eltype:Union{Main.##ex-#396.Object, Missing}, length:4, index:1, state:empty)</code></pre><h2 id="Writing-Data-into-Buffers-1"><a class="docs-heading-anchor" href="#Writing-Data-into-Buffers-1">Writing Data into Buffers</a><a class="docs-heading-anchor-permalink" href="#Writing-Data-into-Buffers-1" title="Permalink"></a></h2><p>Writing data into a <code>Buffer</code> is done with <code>write!</code> function.</p><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.write!" href="#Jusdl.Utilities.write!"><code>Jusdl.Utilities.write!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">write!(writer, td, xd)</code></pre><p>Writes <code>xd</code> corresponding to <code>xd</code> to the file of <code>writer</code>.</p><p><strong>Example</strong></p><pre><code class="language-julia">julia&gt; w = Writer(Bus(1))
+Buffer(mode:Normal, eltype:Main.##ex-#431.Object, length:4, index:1, state:empty)</code></pre><h2 id="Writing-Data-into-Buffers-1"><a class="docs-heading-anchor" href="#Writing-Data-into-Buffers-1">Writing Data into Buffers</a><a class="docs-heading-anchor-permalink" href="#Writing-Data-into-Buffers-1" title="Permalink"></a></h2><p>Writing data into a <code>Buffer</code> is done with <code>write!</code> function.</p><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.write!" href="#Jusdl.Utilities.write!"><code>Jusdl.Utilities.write!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">write!(writer, td, xd)</code></pre><p>Writes <code>xd</code> corresponding to <code>xd</code> to the file of <code>writer</code>.</p><p><strong>Example</strong></p><pre><code class="language-julia">julia&gt; w = Writer(Bus(1))
 Writer(path:/tmp/e907d6ad-8db2-4c4a-9959-5b8d33d32156.jld2, nin:1)
 
 julia&gt; open(w)
@@ -36,45 +36,51 @@ JLDFile /tmp/e907d6ad-8db2-4c4a-9959-5b8d33d32156.jld2 (read/write)
  └─🔢 1.0
 
 julia&gt; w.file[string(0.)]
-10.0</code></pre></div></section><section><div><pre><code class="language-none">write!(buf::Buffer{M, T}, val) where {M, T}</code></pre><p>Writes <code>val</code> into <code>buf</code>. Writing is carried occurding the mode <code>M</code> of <code>buf</code>. See <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a> for buffer modes. </p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; buf = Buffer(3)
-Buffer(mode:Cyclic, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
-
-julia&gt; buf.data  # Initailly all the elements of `buf` is missing.
-3-element Array{Union{Missing, Float64},1}:
- missing
- missing
- missing
-
-julia&gt; write!(buf, 3.)
-3.0
+10.0</code></pre></div></section><section><div><pre><code class="language-none">write!(buf::Buffer{M, T}, val) where {M, T}</code></pre><p>Writes <code>val</code> into <code>buf</code>. Writing is carried occurding the mode <code>M</code> of <code>buf</code>. See also: <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a> for buffer modes. </p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; buf = Buffer(Vector{Float64}, 3)
+Buffer(mode:Cyclic, eltype:Array{Float64,1}, length:3, index:1, state:empty)
 
 julia&gt; buf.data
-3-element Array{Union{Missing, Float64},1}:
- 3.0     
-  missing
-  missing</code></pre></div></section></article><p>Recall that when the buffer is full, no more data can be written into the buffer if the buffer mode is of type <code>LinearMode</code>. </p><pre><code class="language-julia-repl">
+3-element Array{Array{Float64,1},1}:
+ #undef
+ #undef
+ #undef
+
+julia&gt; write!(buf, ones(4))
+4-element Array{Float64,1}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+
+julia&gt; buf.data
+3-element Array{Array{Float64,1},1}:
+    [1.0, 1.0, 1.0, 1.0]
+ #undef                 
+ #undef                 </code></pre></div></section></article><p>Recall that when the buffer is full, no more data can be written into the buffer if the buffer mode is of type <code>LinearMode</code>. </p><pre><code class="language-julia-repl">
 julia&gt; normalbuf = Buffer{Normal}(3)
-Buffer(mode:Normal, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
+Buffer(mode:Normal, eltype:Float64, length:3, index:1, state:empty)
 
 julia&gt; fill!(normalbuf, 1.)
+Buffer(mode:Normal, eltype:Float64, length:3, index:4, state:full)
 
 julia&gt; normalbuf.data
-3-element Array{Union{Missing, Float64},1}:
+3-element Array{Float64,1}:
  1.0
  1.0
  1.0
 
 julia&gt; write!(normalbuf, 1.)
 ┌ Warning: Buffer is full.
-└ @ Jusdl.Utilities ~/.julia/dev/Jusdl/src/utilities/buffers.jl:153
+└ @ Jusdl.Utilities ~/.julia/dev/Jusdl/src/utilities/buffers.jl:272
 1.0</code></pre><p>This situation is the same for <code>Lifo</code> and <code>Fifo</code> buffers, but not the case for <code>Cyclic</code> buffer. </p><pre><code class="language-julia-repl">
 julia&gt; normalbuf = Buffer{Cyclic}(3)
-Buffer(mode:Cyclic, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
 
 julia&gt; fill!(normalbuf, 1.)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
 
 julia&gt; normalbuf.data
-3-element Array{Union{Missing, Float64},1}:
+3-element Array{Float64,1}:
  1.0
  1.0
  1.0
@@ -83,26 +89,37 @@ julia&gt; write!(normalbuf, 3.)
 3.0
 
 julia&gt; write!(normalbuf, 4.)
-4.0</code></pre><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>Since when a <code>Buffer</code> is constructed, it is empty, no data is written to it. But it is initialized with <code>missing</code> data. Thus, the element type of buffer of type <code>Buffer{M, T} where {M, T}</code> is <code>Union{Missing, T} where T</code>. Benchmarks that has been carried out shows that there is no performance bottle neck is such design since Julia&#39;s compiler can compile optimized code for such a small unions. Therefore it is possible to write <code>missing</code> into a buffer of type <code>Buffer{M,T} where {M,T}</code>.</p></div></div><h2 id="Reading-Data-from-Buffers-1"><a class="docs-heading-anchor" href="#Reading-Data-from-Buffers-1">Reading Data from Buffers</a><a class="docs-heading-anchor-permalink" href="#Reading-Data-from-Buffers-1" title="Permalink"></a></h2><p>Reading data from a <code>Buffer</code> is done with <code>read</code> function.</p><article class="docstring"><header><a class="docstring-binding" id="Base.read" href="#Base.read"><code>Base.read</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">read(writer::Writer, flatten=false)</code></pre><p>Read the contents of the file of <code>writer</code> and returns the sorted content of the file. If <code>flatten</code> is <code>true</code>, the content is also flattened.</p></div></section><section><div><pre><code class="language-none">read(buf::Buffer)</code></pre><p>Reads an element from <code>buf</code>. Reading is performed according to the mode of <code>buf</code>. See <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a> for buffer modes. </p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; buf = Buffer{Fifo}(3)
-Buffer(mode:Fifo, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
-
-julia&gt; for val in 1 : 3. 
-       write!(buf, val)
-       @show buf.data
-       end 
-buf.data = Union{Missing, Float64}[1.0, missing, missing]
-buf.data = Union{Missing, Float64}[1.0, 2.0, missing]
-buf.data = Union{Missing, Float64}[1.0, 2.0, 3.0]
+4.0</code></pre><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>Since when a <code>Buffer</code> is constructed, it is empty, no data is written to it. But it is initialized with <code>missing</code> data. Thus, the element type of buffer of type <code>Buffer{M, T} where {M, T}</code> is <code>Union{Missing, T} where T</code>. Benchmarks that has been carried out shows that there is no performance bottle neck is such design since Julia&#39;s compiler can compile optimized code for such a small unions. Therefore it is possible to write <code>missing</code> into a buffer of type <code>Buffer{M,T} where {M,T}</code>.</p></div></div><h2 id="Reading-Data-from-Buffers-1"><a class="docs-heading-anchor" href="#Reading-Data-from-Buffers-1">Reading Data from Buffers</a><a class="docs-heading-anchor-permalink" href="#Reading-Data-from-Buffers-1" title="Permalink"></a></h2><p>Reading data from a <code>Buffer</code> is done with <code>read</code> function.</p><article class="docstring"><header><a class="docstring-binding" id="Base.read" href="#Base.read"><code>Base.read</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">read(writer::Writer, flatten=false)</code></pre><p>Read the contents of the file of <code>writer</code> and returns the sorted content of the file. If <code>flatten</code> is <code>true</code>, the content is also flattened.</p></div></section><section><div><pre><code class="language-none">read(buf::Buffer)</code></pre><p>Reads an element from <code>buf</code>. Reading is performed according to the mode of <code>buf</code>. See also: <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a> for buffer modes. </p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; buf = fill!(Buffer{Fifo}(3), 1. : 3.)
+Buffer(mode:Fifo, eltype:Float64, length:3, index:4, state:full)
 
 julia&gt; for i in 1 : 3 
-       item = read(buf)
-       @show (item, buf.data)
+       @show read(buf)
        end
-(item, buf.data) = (1.0, Union{Missing, Float64}[2.0, 3.0, missing])
-(item, buf.data) = (2.0, Union{Missing, Float64}[3.0, missing, missing])
-(item, buf.data) = (3.0, Union{Missing, Float64}[missing, missing, missing])</code></pre></div></section></article><h2 id="AbstractArray-Interface-of-Buffers-1"><a class="docs-heading-anchor" href="#AbstractArray-Interface-of-Buffers-1">AbstractArray Interface of Buffers</a><a class="docs-heading-anchor-permalink" href="#AbstractArray-Interface-of-Buffers-1" title="Permalink"></a></h2><p>A <code>Buffer</code> can be indexed using the similar syntax of arrays in Julia. That is, <code>getindex</code> and <code>setindex!</code> methods can be used with known Julia syntax. i.e. <code>getindex(buf, idx)</code> is equal to <code>buf[idx]</code> and <code>setindex(buf, val, idx)</code> is equal to <code>buf[idx] = val</code>.</p><pre><code class="language-julia-repl">
+read(buf) = 1.0
+read(buf) = 2.0
+read(buf) = 3.0
+
+julia&gt; buf = fill!(Buffer{Lifo}(3), 1. : 3.)
+Buffer(mode:Lifo, eltype:Float64, length:3, index:4, state:full)
+
+julia&gt; for i in 1 : 3 
+       @show read(buf)
+       end
+read(buf) = 3.0
+read(buf) = 2.0
+read(buf) = 1.0
+
+julia&gt; buf = fill!(Buffer{Cyclic}(3), 1. : 3.)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia&gt; for i in 1 : 3 
+       @show read(buf)
+       end
+read(buf) = 3.0
+read(buf) = 3.0
+read(buf) = 3.0</code></pre></div></section></article><h2 id="AbstractArray-Interface-of-Buffers-1"><a class="docs-heading-anchor" href="#AbstractArray-Interface-of-Buffers-1">AbstractArray Interface of Buffers</a><a class="docs-heading-anchor-permalink" href="#AbstractArray-Interface-of-Buffers-1" title="Permalink"></a></h2><p>A <code>Buffer</code> can be indexed using the similar syntax of arrays in Julia. That is, <code>getindex</code> and <code>setindex!</code> methods can be used with known Julia syntax. i.e. <code>getindex(buf, idx)</code> is equal to <code>buf[idx]</code> and <code>setindex(buf, val, idx)</code> is equal to <code>buf[idx] = val</code>.</p><pre><code class="language-julia-repl">
 julia&gt; buf = Buffer(5)
-Buffer(mode:Cyclic, eltype:Union{Missing, Float64}, length:5, index:1, state:empty)
+Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:empty)
 
 julia&gt; size(buf)
 (5,)
@@ -118,12 +135,12 @@ julia&gt; buf[1]
 2.0
 
 julia&gt; buf[3:4]
-2-element Array{Union{Missing, Float64},1}:
+2-element Array{Float64,1}:
  6.0
  8.0
 
 julia&gt; buf[[3, 5]]
-2-element Array{Union{Missing, Float64},1}:
+2-element Array{Float64,1}:
   6.0
  10.0
 
@@ -137,4 +154,20 @@ julia&gt; buf[3:5] = [7, 8, 9]
 3-element Array{Int64,1}:
  7
  8
- 9</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Base.fill!" href="#Base.fill!"><code>Base.fill!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">fill!(buf::Buffer{M, T}, val::T) where {M,T}</code></pre><p>Writes <code>val</code> into <code>buf</code> until <code>buf</code> is full.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.isempty" href="#Base.isempty"><code>Base.isempty</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isempty(buf::Buffer)</code></pre><p>Returns <code>true</code> if <code>buf</code> is empty.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.isfull" href="#Jusdl.Utilities.isfull"><code>Jusdl.Utilities.isfull</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isfull(buf::Buffer)</code></pre><p>Returns <code>true</code> if <code>buf</code> is full.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.content" href="#Jusdl.Utilities.content"><code>Jusdl.Utilities.content</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">content(buf, [flip=true])</code></pre><p>Returns the current data of <code>buf</code>. If <code>flip</code> is <code>true</code>, the data to be returned is flipped. </p></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../callback/">« Callback</a><a class="docs-footer-nextpage" href="../../connections/link/">Links »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 12 January 2020 18:41">Sunday 12 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 9</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Base.fill!" href="#Base.fill!"><code>Base.fill!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">fill!(buf::Buffer{M, T}, val::T)</code></pre><p>Writes <code>val</code> into <code>buf</code> until <code>buf</code> is full. If <code>val</code> is a vector</p><pre><code class="language-none">fill!(buf::Buffer{M, T}, val::AbstractVector{T}) where {M, T}</code></pre><p>Writes all items in <code>val</code> into <code>buf</code>. </p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; buf = Buffer(3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
+
+julia&gt; fill!(buf, 1.)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia&gt; all(buf.data .== ones(3))
+true
+
+julia&gt; buf = Buffer(3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
+
+julia&gt; fill!(buf, 1:3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia&gt; all(buf.data .== 1. : 3.)
+true</code></pre></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Base.isempty" href="#Base.isempty"><code>Base.isempty</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isempty(buf::Buffer)</code></pre><p>Returns <code>true</code> if the index of <code>buf</code> is 1.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.isfull" href="#Jusdl.Utilities.isfull"><code>Jusdl.Utilities.isfull</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isfull(buf::Buffer)</code></pre><p>Returns <code>true</code> if the index of <code>buf</code> is equal to the length of <code>buf</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.content" href="#Jusdl.Utilities.content"><code>Jusdl.Utilities.content</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">content(buf, [flip=true])</code></pre><p>Returns the current data of <code>buf</code>. If <code>flip</code> is <code>true</code>, the data to be returned is flipped. </p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.mode" href="#Jusdl.Utilities.mode"><code>Jusdl.Utilities.mode</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">mode(buf::Buffer)</code></pre><p>Returns buffer mode of <code>buf</code>. See also: <a href="#Jusdl.Utilities.Normal"><code>Normal</code></a>, <a href="#Jusdl.Utilities.Cyclic"><code>Cyclic</code></a>, <a href="#Jusdl.Utilities.Lifo"><code>Lifo</code></a>, <a href="#Jusdl.Utilities.Fifo"><code>Fifo</code></a> for buffer modes. </p></div></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Utilities.snapshot" href="#Jusdl.Utilities.snapshot"><code>Jusdl.Utilities.snapshot</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">snapshot(buf::Buffer)</code></pre><p>Returns all elements in <code>buf</code>.</p></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../callback/">« Callback</a><a class="docs-footer-nextpage" href="../../connections/link/">Links »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 20 January 2020 16:34">Monday 20 January 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

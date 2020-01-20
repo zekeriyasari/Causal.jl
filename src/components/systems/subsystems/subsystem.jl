@@ -1,6 +1,11 @@
 # This file includes SubSystem for interconnected subsystems.
 
 
+"""
+    SubSystem(components, input, output)
+
+Constructs a `SubSystem` consisting of `components`. `input` and `output` determines the inpyt and output of `SubSystem`. `input` and `output` may be of type `Nothing`, `Bus` of `Vector{<:Link}`.
+"""
 mutable struct SubSystem{IB, OB, T, H, C} <: AbstractSubSystem
     @generic_system_fields
     components::C

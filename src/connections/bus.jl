@@ -40,7 +40,7 @@ julia> b = Bus{Matrix{Float64}}(5)
 Bus(nlinks:5, eltype:Array{Float64,2}, isreadable:false, iswritable:false)
 
 julia> eltype(b)
-Link{Union{Missing, Array{Float64,2}}}
+Link{Array{Float64,2}}
 ```
 """
 eltype(bus::Bus{T}) where {T} = Link{T}
@@ -72,15 +72,15 @@ Returns the links of `bus` corresponding to `I`. The syntax `bus[I]` is the same
 julia> b = Bus(3);
 
 julia> b[1]
-Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 
 julia> b[1:2]
-2-element Array{Link{Union{Missing, Float64}},1}:
- Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
- Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+2-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 
 julia> b[end]
-Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 ```
 """
 getindex
@@ -100,12 +100,12 @@ Sets `val` to the links of `bus` corresponding to index `I`. The syntax `bus[I] 
 julia> b = Bus(5);
 
 julia> b[2:3] .= [Link() for i = 1 : 2]
-2-element Array{Link{Union{Missing, Float64}},1}:
- Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
- Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+2-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 
 julia> b[end] = Link() 
-Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 ```
 """
 setindex!
@@ -130,15 +130,19 @@ Takes an element from `bus`. Each link of the `bus` is a read and a vector conta
 ```julia 
 julia> b = Bus(2);
 
-julia> t = launch(b, [[rand() for i = 1 : 5] for j = 1 : 2])
-2-element Array{Task,1}:
- Task (runnable) @0x00007f9634734280
- Task (runnable) @0x00007f96347344f0
+julia> t = @async for i in 1. : 5. 
+       put!(b, [i, i + 1])
+       end;
 
 julia> take!(b)
 2-element Array{Float64,1}:
- 0.6216364091492494
- 0.0781964275368685
+ 1.0
+ 2.0
+
+julia> take!(b)
+2-element Array{Float64,1}:
+ 2.0
+ 3.0
 ```
 """
 function take!(bus::Bus) 
@@ -159,16 +163,29 @@ Puts `vals` to `bus`. Each item in `vals` is putted to the `links` of the `bus`.
 ```julia
 julia> b = Bus(2);
 
-julia> t = launch(b);
+julia> t = @async while true
+       item = take!(b)
+       all(item .=== [NaN, NaN]) && break
+       println("Took" * string(item))
+       end
+Task (runnable) @0x00007fdabfc3bd00
 
 julia> put!(b, [1., 2.])
-┌ Info: Took 
-└   val = 1.0
-┌ Info: Took 
-└   val = 2.0
+Took[1.0, 2.0]
 2-element Array{Float64,1}:
  1.0
  2.0
+
+julia> put!(b, [4., 5.])
+Took[4.0, 5.0]
+2-element Array{Float64,1}:
+ 4.0
+ 5.0
+
+julia> put!(b, [NaN, NaN])
+2-element Array{Float64,1}:
+ NaN
+ NaN
 ```
 """
 function put!(bus::Bus, vals)
@@ -190,9 +207,9 @@ julia> b = Bus(3);
 julia> for l in b 
        @show l 
        end
-l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-l = Link(state:open, eltype:Union{Missing, Float64}, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 ```
 """
 iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links

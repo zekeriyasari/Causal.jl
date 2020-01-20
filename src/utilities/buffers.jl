@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype, firstindex, lastindex
+import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype, firstindex, lastindex, IndexStyle
 
 ##### Buffer modes
 """
@@ -101,7 +101,7 @@ show(io::IO, buf::Buffer)= print(io,
 """
     mode(buf::Buffer)
 
-Returns buffer mode of `buf`.
+Returns buffer mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 """
 mode(buf::Buffer{M, T}) where {M, T} = M
 
@@ -113,6 +113,12 @@ Returns element type of `buf`.
 eltype(buf::Buffer{M, T}) where {M, T} = T
 
 ##### AbstractArray interface.
+#
+# `Buffer` type has linear index style. That means, it can only be indexed by single index. 
+# For more information, see (https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-array-1) 
+#
+IndexStyle(::Type{<:Buffer}) = IndexLinear()
+
 """
     length(buf::Buffer)
 
@@ -125,6 +131,28 @@ size(buf::Buffer) = size(buf.data)
     getindex(buf::Buffer, idx)
 
 Returns an element from `buf` at index `idx`. Same as `buf[idx]`
+
+# Example
+```jldoctest
+julia> buf = fill!(Buffer(5), 1:5)
+Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:full)
+
+julia> buf[1]
+1.0
+
+julia> buf[2:3]
+2-element Array{Float64,1}:
+ 2.0
+ 3.0
+
+julia> buf[[3, 5]]
+2-element Array{Float64,1}:
+ 3.0
+ 5.0
+
+julia> buf[end]
+5.0
+```
 """
 getindex(buf::Buffer, idx::Int) where N = buf.data[idx]
 getindex(buf::Buffer, idx::UnitRange) = buf.data[idx]
@@ -135,12 +163,38 @@ getindex(buf::Buffer, ::Colon) = buf.data[:]
 """
     setindex!(buf::Buffer, val, idx)
 
-Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`
+Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`.
+
+# Example
+```jldoctest
+julia> buf = Buffer(5)
+Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:empty)
+
+julia> buf[1] = 1
+1
+
+julia> buf[2:3] = 4:5
+4:5
+
+julia> buf[[4, 5]] = [10, 20]
+2-element Array{Int64,1}:
+ 10
+ 20
+
+julia> buf.data
+5-element Array{Float64,1}:
+  1.0
+  4.0
+  5.0
+ 10.0
+ 20.0
+```
 """
 setindex!(buf::Buffer, val, inds::Int) where N = (buf.data[inds] = val)
 setindex!(buf::Buffer, val, idx::Vector{Int}) = buf.data[idx] = val
 setindex!(buf::Buffer, val, idx::UnitRange{Int}) = buf.data[idx] = val
 setindex!(buf::Buffer, val, ::Colon) = buf.data[:] = val
+
 firstindex(buf::Buffer) = 1
 lastindex(buf::Buffer) = length(buf)  # For indexing like bus[end]
 
@@ -148,14 +202,14 @@ lastindex(buf::Buffer) = length(buf)  # For indexing like bus[end]
 """
     isempty(buf::Buffer)
 
-Returns `true` if `buf` is empty.
+Returns `true` if the index of `buf` is 1.
 """
 isempty(buf::Buffer) = buf.state == :empty
 
 """
     isfull(buf::Buffer)
 
-Returns `true` if `buf` is full.
+Returns `true` if the index of `buf` is equal to the length of `buf`.
 """
 isfull(buf::Buffer) = buf.state == :full
 
@@ -181,27 +235,31 @@ end
 """
     write!(buf::Buffer{M, T}, val) where {M, T}
 
-Writes `val` into `buf`. Writing is carried occurding the mode `M` of `buf`. See [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+Writes `val` into `buf`. Writing is carried occurding the mode `M` of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example 
 ```jldoctest 
-julia> buf = Buffer(3)
-Buffer(mode:Cyclic, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
-
-julia> buf.data  # Initailly all the elements of `buf` is missing.
-3-element Array{Union{Missing, Float64},1}:
- missing
- missing
- missing
-
-julia> write!(buf, 3.)
-3.0
+julia> buf = Buffer(Vector{Float64}, 3)
+Buffer(mode:Cyclic, eltype:Array{Float64,1}, length:3, index:1, state:empty)
 
 julia> buf.data
-3-element Array{Union{Missing, Float64},1}:
- 3.0     
-  missing
-  missing
+3-element Array{Array{Float64,1},1}:
+ #undef
+ #undef
+ #undef
+
+julia> write!(buf, ones(4))
+4-element Array{Float64,1}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+
+julia> buf.data
+3-element Array{Array{Float64,1},1}:
+    [1.0, 1.0, 1.0, 1.0]
+ #undef                 
+ #undef                 
 ```
 """
 function write!(buf::Buffer, val)
@@ -226,9 +284,34 @@ function _write!(buf::Buffer{M, T}, val) where {M <: CyclicMode, T}
 end
 
 """
-    fill!(buf::Buffer{M, T}, val::T) where {M,T}
+    fill!(buf::Buffer{M, T}, val::T)
 
-Writes `val` into `buf` until `buf` is full.
+Writes `val` into `buf` until `buf` is full. If `val` is a vector
+
+    fill!(buf::Buffer{M, T}, val::AbstractVector{T}) where {M, T}
+
+Writes all items in `val` into `buf`. 
+
+# Example 
+```jldoctest
+julia> buf = Buffer(3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
+
+julia> fill!(buf, 1.)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia> all(buf.data .== ones(3))
+true
+
+julia> buf = Buffer(3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
+
+julia> fill!(buf, 1:3)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia> all(buf.data .== 1. : 3.)
+true
+```
 """
 fill!(buf::Buffer{M, T}, val::T) where {M, T} = (foreach(i -> write!(buf, val), 1 : length(buf)); buf)
 fill!(buf::Buffer{M, T}, val::S) where {M, T, S} = fill!(buf, convert(T, val))
@@ -239,28 +322,39 @@ fill!(buf::Buffer{M, T}, val::AbstractVector{S}) where {M, T, S} = fill!(buf, co
 """
     read(buf::Buffer)
 
-Reads an element from `buf`. Reading is performed according to the mode of `buf`. See [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+Reads an element from `buf`. Reading is performed according to the mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
 ```jldoctest
-julia> buf = Buffer{Fifo}(3)
-Buffer(mode:Fifo, eltype:Union{Missing, Float64}, length:3, index:1, state:empty)
-
-julia> for val in 1 : 3. 
-       write!(buf, val)
-       @show buf.data
-       end 
-buf.data = Union{Missing, Float64}[1.0, missing, missing]
-buf.data = Union{Missing, Float64}[1.0, 2.0, missing]
-buf.data = Union{Missing, Float64}[1.0, 2.0, 3.0]
+julia> buf = fill!(Buffer{Fifo}(3), 1. : 3.)
+Buffer(mode:Fifo, eltype:Float64, length:3, index:4, state:full)
 
 julia> for i in 1 : 3 
-       item = read(buf)
-       @show (item, buf.data)
+       @show read(buf)
        end
-(item, buf.data) = (1.0, Union{Missing, Float64}[2.0, 3.0, missing])
-(item, buf.data) = (2.0, Union{Missing, Float64}[3.0, missing, missing])
-(item, buf.data) = (3.0, Union{Missing, Float64}[missing, missing, missing])
+read(buf) = 1.0
+read(buf) = 2.0
+read(buf) = 3.0
+
+julia> buf = fill!(Buffer{Lifo}(3), 1. : 3.)
+Buffer(mode:Lifo, eltype:Float64, length:3, index:4, state:full)
+
+julia> for i in 1 : 3 
+       @show read(buf)
+       end
+read(buf) = 3.0
+read(buf) = 2.0
+read(buf) = 1.0
+
+julia> buf = fill!(Buffer{Cyclic}(3), 1. : 3.)
+Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
+
+julia> for i in 1 : 3 
+       @show read(buf)
+       end
+read(buf) = 3.0
+read(buf) = 3.0
+read(buf) = 3.0
 ```
 """
 function read(buf::Buffer) 
@@ -269,7 +363,7 @@ function read(buf::Buffer)
     buf.callbacks(buf)
     val
 end
-_read(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = isfull(buf) ? buf[1] :  buf[buf.index - 1]
+_read(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = isfull(buf) ? buf[end] :  buf[buf.index - 1]
 function _read(buf::Buffer{M, T}) where {M<:Fifo, T}
     val = buf[1]
     buf.data .= circshift(buf.data, -1)
@@ -295,7 +389,9 @@ function content(buf::Buffer; flip::Bool=true)
     flip ? reverse(val, dims=1) : val
 end
 
-snapshot(buf::Buffer) = buf.data
+"""
+    snapshot(buf::Buffer)
 
-##### Calling buffers.
-(buf::Buffer)() = read(buf)
+Returns all elements in `buf`.
+"""
+snapshot(buf::Buffer) = buf.data

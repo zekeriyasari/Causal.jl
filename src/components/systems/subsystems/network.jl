@@ -4,6 +4,17 @@ import GraphPlot.gplot
 
 
 ##### Network
+@doc raw"""
+    Network(nodes, conmat, cplmat; inputnodeidx, outputnodeidx, clusters)
+
+Constructs a `Network` consisting of `nodes` with the connection matrix `conmat` and the coupling matrix `cplmat`. The dynamics of the `Network` evolves by,
+```math 
+    \dot(x)_i = f(x_i) + \sum_{j = 1}^n \epsilon_{ij} P x_j \quad i = 1, \ldots, n
+```
+where ``n`` is the number of nodes, ``f`` is the function corresponding to individual node dynamics, ``\epsilon_{ij}`` is the coupling strength between nodes ``i`` and ``j``. The diagonal matrix ``P`` determines the state variables through which the nodes are coupled. In the equation above, we have `conmat` is eqaul to ``E = [\epsilon_{ij}]`` and `cplmat` is eqaul to ``P``.
+
+`inputnodeidx` and `outputnodeidx` is the input and output node indices for the input and output, respectively. `clusters` is the set of indices of node groups in the same cluster. `inputnodeidx` and `outputnodeidx` may be of type `Nothing`, `Bus` or `Vector{<:Link}`.
+"""
 mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
     @generic_system_fields
     components::CMP
@@ -138,11 +149,30 @@ function dividecomponents(nodes, inputnodeidx)
     nodes[inputmask], nodes[noninputmask]
 end
 
+"""
+    nodes(net::Network)
 
+Returns the `nodes` of `net`. `nodes` are the dynamical system components of `net`.
+"""
 nodes(net::Network) = filter(comp -> typeof(comp) <: AbstractDynamicSystem, net.components)
+
+"""
+    numnodes(net::Network)
+
+Returns the number of nodes in `net`.
+"""
 numnodes(net::Network) = size(net.conmat, 1)
+
+"""
+    dimnodes(net::Network)
+
+Returns the dimension of nodes in `net`.
+"""
 dimnodes(net::Network) = size(net.cplmat, 1)
 
+#
+# Opens the input by of `net` corresponding to node whose index is `idx`.
+#
 function openinputbus(net::Network, idx::Int)
     netnodes = nodes(net)
     nodes = netnodes[idx]
@@ -157,7 +187,12 @@ function openinputbus(net::Network, idx::Int)
     # TODO: Complete function 
 end
 
-##### Plotting networks    
+##### Plotting networks
+"""
+    gplplot(net::Network, args...; kwargs...)
+
+Plots `net`
+"""
 gplot(net::Network, args...; kwargs...) = 
     gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1), args...; kwargs...)
 

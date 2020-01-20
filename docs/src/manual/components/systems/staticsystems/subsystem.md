@@ -28,7 +28,7 @@ To trigger the `sub`, we need to launch it,
 ```@repl subsystem_ex
 t = launch(sub)
 ```
-`sub` is ready to be triggered
+`sub` is ready to be triggered,
 ```@repl subsystem_ex
 drive(sub, 1.)
 ```

@@ -172,7 +172,7 @@ Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `i
 struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{Union{Missing, T}}, numdelay::Int; initial=Vector{T}(undef, length(input))) where T 
+    function Memory(input::Bus{T}, numdelay::Int; initial=[Vector{T}(undef, length(input)) for i=1:numdelay]) where T 
         buffer = Buffer{Fifo}(Vector{T}, numdelay)
         fill!(buffer, initial)
         outputfunc(u, t) = buffer()

@@ -12,6 +12,7 @@ include("subsystem.jl")
 include("network.jl")
 
 export SubSystem, Network, uniformconnectivity, cgsconnectivity, clusterconnectivity, coupling, gplot, topology
+export nodes, numnodes, dimnodes
 export deletelink, changeweight, maketimevarying, openinputbus
 
 end

@@ -9,7 +9,7 @@ import GraphPlot.gplot
 
 Constructs a `Network` consisting of `nodes` with the connection matrix `conmat` and the coupling matrix `cplmat`. The dynamics of the `Network` evolves by,
 ```math 
-    \dot(x)_i = f(x_i) + \sum_{j = 1}^n \epsilon_{ij} P x_j \quad i = 1, \ldots, n
+    \dot{x}_i = f(x_i) + \sum_{j = 1}^n \epsilon_{ij} P x_j \quad i = 1, \ldots, n
 ```
 where ``n`` is the number of nodes, ``f`` is the function corresponding to individual node dynamics, ``\epsilon_{ij}`` is the coupling strength between nodes ``i`` and ``j``. The diagonal matrix ``P`` determines the state variables through which the nodes are coupled. In the equation above, we have `conmat` is eqaul to ``E = [\epsilon_{ij}]`` and `cplmat` is eqaul to ``P``.
 
@@ -54,7 +54,7 @@ show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat
 
 ##### Network auxilary components construction
 construct_coupler(conmat, cplmat) = Coupler(conmat, cplmat)
-construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=node.state) for node in nodes]
+construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=[node.state]) for node in nodes]
 construct_adders(inputnodes) = [construct_an_adder(length(node.input), 2, fill(+, 2)) for node in inputnodes]
 function construct_an_adder(dim, n, ops)
     K = hcat([op(diagm(ones(dim))) for op in ops]...)
@@ -191,12 +191,36 @@ end
 """
     gplplot(net::Network, args...; kwargs...)
 
-Plots `net`
+Plots `net`.
 """
 gplot(net::Network, args...; kwargs...) = 
     gplot(SimpleGraph(net.conmat), nodelabel=1:size(net.conmat, 1), args...; kwargs...)
 
 ##### Construction of coupling matrix
+"""
+    coupling(d, idx::Vector{Int})
+
+Returns a `d`-by-`d` diagonal matrix whose diagonal elements are ones corresponding to `idx`.
+
+    coupling(d, idx::Int)
+
+Returns a `d`-by-`d` diagonal matrix whose diagonal element is one corresponding to `idx`.
+
+# Example 
+```jldoctest
+julia> coupling(3, [1, 2])
+3×3 Array{Float64,2}:
+ 1.0  0.0  0.0
+ 0.0  1.0  0.0
+ 0.0  0.0  0.0
+
+julia> coupling(3, 1)
+3×3 Array{Float64,2}:
+ 1.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+```
+"""
 coupling(d, idx::Vector{Int}) = (v = zeros(d); v[idx] .= 1; diagm(v))
 coupling(n, idx::Int) = coupling(n, [idx])
 
@@ -204,11 +228,59 @@ coupling(n, idx::Int) = coupling(n, [idx])
 
 @deprecate uniformconnectivty(args...; kwargs...) topology(args...; kwargs...)
 
-function topology(graphname::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
-    conmat = weight * (-1) * collect(laplacian_matrix(eval(graphname)(args...; kwargs...)))
+"""
+    topology(name::Symbol, args...; weight::Real=1., timevarying::Bool=false)
+
+
+Returns an outer connectivity matrix whose graph is given by `name`. `weight` is the scaling vector of the connection matrix. If `timevarying` is `true`, all elements of the connectivity matrix is a function of time `t`.
+
+!!! note 
+    See (https://juliagraphs.github.io/LightGraphs.jl/latest/generators/#Graph-Generators-1) for different `name`s.
+
+# Example
+```jldoctest
+julia> topology(:path_graph, 5, weight=10)
+5×5 Array{Int64,2}:
+ -10   10    0    0    0
+  10  -20   10    0    0
+   0   10  -20   10    0
+   0    0   10  -20   10
+   0    0    0   10  -10
+```
+"""
+function topology(name::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
+    conmat = weight * (-1) * collect(laplacian_matrix(eval(name)(args...; kwargs...)))
     timevarying ? maketimevarying(conmat) : conmat 
 end
 
+
+"""
+    cgsconnectivity(graph::AbstractGraph; weight::Real=1., timevarying::Bool=false)
+
+Constructs an outer connnectivity matrix corresponding to *connection graph stability* method. `graph` is graph of the network, `weight` scales the connectivity matrix. If `timevarying` is `true`, each element of the connnectivity matrix is a function of time `t`.
+
+    cgsconnectivity(adjmat::AbstractMatrix; weight::Real=1.,  timevarying::Bool=false)
+
+Constructs an outer connnectivity matrix corresponding to *connection graph stability* method. `adjmat` is the adjacency matrix of the network, `weight` scales the connectivity matrix. If `timevarying` is `true`, each element of the connnectivity matrix is a function of time `t`.
+
+    cgsconnectivity(topology::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...)
+
+Constructs an outer connnectivity matrix corresponding to *connection graph stability* method. `topology` is the name of the graph of the network, `weight` scales the connectivity matrix. If `timevarying` is `true`, each element of the connnectivity matrix is a function of time `t`.
+
+# Example
+```jldoctest
+julia> cgsconnectivity(:path_graph, 5)
+5×5 Array{Float64,2}:
+ -0.8   0.8   0.0   0.0   0.0
+  0.8  -2.0   1.2   0.0   0.0
+  0.0   1.2  -2.4   1.2   0.0
+  0.0   0.0   1.2  -2.0   0.8
+  0.0   0.0   0.0   0.8  -0.8
+```
+
+# References 
+* Belykh, V. N., Belykh, I. V., & Hasler, M. (2004). Connection graph stability method for synchronized coupled chaotic systems. Physica D: nonlinear phenomena, 195(1-2), 159-187.
+"""
 function cgsconnectivity(graph::AbstractGraph; weight::Real=1., timevarying::Bool=false)
     graphedges = edges(graph)
     graphvertices = vertices(graph)
@@ -241,6 +313,27 @@ cgsconnectivity(adjmat::AbstractMatrix; weight::Real=1.,  timevarying::Bool=fals
 cgsconnectivity(topology::Symbol, args...; weight::Real=1., timevarying::Bool=false, kwargs...) = 
     cgsconnectivity(eval(topology)(args...; kwargs...), weight=weight, timevarying=timevarying)
 
+"""
+    clusterconnectivity(clusters::AbstractRange...; weight=1., timevarying::Bool=false)
+
+Construct an outer connnectivity matrix using *arbitrary clusters* method. `clusters` is the set of node indices in each clusters. `weight` scales the connectivity matrix. If  `timevarying` is `true`, all elements of the connectivity matrix is a function of time `t`.
+
+# Example 
+```jldoctest
+julia> clusterconnectivity(1:2, 3:6)
+6×6 Array{Float64,2}:
+ -3.0   3.0  -1.0   1.0   0.0   0.0
+  3.0  -3.0   1.0  -1.0   0.0   0.0
+ -1.0   1.0  -9.0   3.0   3.0   3.0
+  1.0  -1.0   3.0  -9.0   3.0   3.0
+  0.0   0.0   3.0   3.0  -9.0   3.0
+  0.0   0.0   3.0   3.0   3.0  -9.0
+```
+
+# References
+* Ma, Z., Liu, Z., & Zhang, G. (2006). A new method to realize cluster synchronization in connected chaotic networks. Chaos: An Interdisciplinary Journal of Nonlinear Science, 16(2), 023103.
+
+"""
 function clusterconnectivity(clusters::AbstractRange...; weight=1., timevarying::Bool=false)
     numnodes = clusters[end][end]
     lenclusters = length.(clusters)
@@ -276,9 +369,36 @@ end
 
 diagonal(n::Int) = (a = ones(n, n); d = -(n - 1); foreach(i -> (a[i, i] = d), 1 : n); a) 
 
+"""
+    maketimevarying(mat::AbstractMatrix{<:Real})
+
+Returns a matrix of function of time `t` corresponding to `mat`.
+
+# Example
+```jldoctest
+julia> a = collect(reshape(1:9, 3, 3))
+3×3 Array{Int64,2}:
+ 1  4  7
+ 2  5  8
+ 3  6  9
+
+julia> b = maketimevarying(a);
+
+julia> b[1, 1](0.)
+1
+
+julia> b[3, 2](0.)
+6
+```
+"""
 maketimevarying(mat::AbstractMatrix{<:Real}) = convert(Matrix{Function}, map(item -> t -> item, mat))
 
 ##### Changing network topology
+"""
+    changeweight(net::Network, src::Int, dst::Int, weight)
+
+Changes the weight of the coupling between the nodes `src` and `dst` with `weight`.
+"""
 function changeweight(net::Network, src::Int, dst::Int, weight)
     if length(net.clusters) == 1
         if eltype(net.conmat) <: Real
@@ -296,6 +416,11 @@ function changeweight(net::Network, src::Int, dst::Int, weight)
     end
 end
 
+"""
+    deletelink(net::Network, src::Int, dst::Int)
+
+Changes the strength of the link between `src` and `dst` to zero.
+"""
 function deletelink(net::Network, src::Int, dst::Int)
     if length(net.clusters) == 1
         if eltype(net.conmat) <: Real

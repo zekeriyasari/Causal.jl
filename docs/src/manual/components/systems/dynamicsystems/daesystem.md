@@ -27,11 +27,15 @@ Note the signature of  `statefunc`. The `statefunc` *modifies* a vector `out` us
 ```@repl dae_ex 
 outputfunc(x, u, t) = x
 ```
-Note that `outputfunc`, vector `x` is *generated* but not mutated. We also need to specifiy the differential variables. 
+Note that `outputfunc`, vector `x` is *generated* but not mutated. We also need to specify the differential variables. 
 ```@repl dae_ex 
 diffvars = [true, true, false]
 ```
 Note that the first two variables are differential variables and the last variable is algebraic variable. From above equation, the system does not any inputs. But, we need a bus as output with three links. 
+```@repl dae_ex 
+input = nothing 
+output = Bus(3)
+```
 
 
 

@@ -5,6 +5,44 @@ import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_s
 const ODESolver = Solver(Tsit5())
 
 
+@doc raw"""
+    ODESystem(input, output, statefunc, outputfunc, state, t,; solver=ODESolver)
+
+Constructs an `ODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `ODESystem` is represented by the equations.
+```math 
+    \begin{array}{l}
+        \dot{x} = f(x, u, t) \\[0.25cm]
+        y = g(x, u, t)
+    \end{array}
+```
+where ``t`` is the time `t`, ``x`` is `state`, ``u`` is the value of `input`, ``y`` is the value of `output`. ``f`` is `statefunc` and ``g`` is `outputfunc`. `solver` is used to solve the above differential equation.
+
+The signature of `statefunc` must be of the form,
+```julia 
+function statefunc(dx, x, u, t)
+    dx .= ... # Update dx 
+end
+```
+and the signature of `outputfunc` must be of the form,
+```julia 
+function outputfunc(x, u, t)
+    y = ... # Compute y
+    return y
+end
+```
+
+# Example 
+```jldoctest
+julia> sfunc(dx,x,u,t) = (dx .= 0.5x)
+sfunc (generic function with 1 method)
+
+julia> ofunc(x, u, t) = x
+ofunc (generic function with 1 method)
+
+julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
+ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))
+```
+"""
 mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     function ODESystem(input, output, statefunc, outputfunc, state, t; solver=ODESolver)
@@ -19,6 +57,19 @@ mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
 end
 
 ##### LinearSystem
+@doc raw"""
+    LinearSystem(input, output; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
+        state=rand(size(A,1)), t=0., solver=ODESolver)
+
+Constructs a `LinearSystem` with `input` and `output`. The `LinearSystem` is represented by the following state and output equations.
+```math
+\begin{array}{l}
+    \dot{x} = A x + B u \\[0.25cm]
+    y = C x + D u 
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation.
+"""
 mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     A::Matrix{Float64}
@@ -49,6 +100,32 @@ end
 
 
 ##### Lorenz System
+@doc raw"""
+    LorenzSystem(input, output; sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+
+Constructs a `LorenzSystem` with `input` and `output`. `sigma`, `beta`, `rho` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 (\rho - x_3) - x_2) \\[0.25cm]
+    \dot{x}_3 = \gamma (x_1 x_2 - \beta x_3) 
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation. If `input` is not `nothing`, then the state eqaution is
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) + \sum_{j = 1}^3 \alpha_{1j} u_j \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 (\rho - x_3) - x_2) + \sum_{j = 1}^3 \alpha_{2j} u_j \\[0.25cm]
+    \dot{x}_3 = \gamma (x_1 x_2 - \beta x_3) + \sum_{j = 1}^3 \alpha_{3j} u_j 
+\end{array}
+```
+where ``A = [\alpha_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the `input`. The output function is 
+```math
+    y = g(x, u, t)
+```
+where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
+"""
 mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     sigma::Float64
@@ -83,6 +160,32 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyste
 end
 
 ##### Chen System 
+@doc raw"""
+    ChenSystem(input, output; a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+
+Constructs a `ChenSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (a (x_2 - x_1)) \\[0.25cm]
+    \dot{x}_2 = \gamma ((c - a) x_1 + c x_2 + x_1 x_3) \\[0.25cm]
+    \dot{x}_3 = \gamma (x_1 x_2 - b x_3) 
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation. If `input` is not `nothing`, then the state eqaution is
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (a (x_2 - x_1)) + \sum_{j = 1}^3 \alpha_{1j} u_j \\[0.25cm]
+    \dot{x}_2 = \gamma ((c - a) x_1 + c x_2 + x_1 x_3) + \sum_{j = 1}^3 \alpha_{2j} u_j \\[0.25cm]
+    \dot{x}_3 = \gamma (x_1 x_2 - b x_3) + \sum_{j = 1}^3 \alpha_{3j} u_j 
+\end{array}
+```
+where ``A = [\alpha_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the `input`. The output function is 
+```math
+    y = g(x, u, t)
+```
+where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
+"""
 mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
@@ -151,6 +254,33 @@ PolynomialDiode() = PolynomialDiode(1/16, -1/6)
 
 (d::PolynomialDiode)(x) = d.a * x^3 + d.b * x
 
+
+@doc raw"""
+    ChuaSystem(input, output; diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., 
+        outputfunc=allstates, state=rand(3), t=0., solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+
+Constructs a `ChuaSystem` with `input` and `output`. `diode`, `alpha`, `beta` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (\alpha (x_2 - x_1 - h(x_1))) \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 - x_2 + x_3 ) \\[0.25cm]
+    \dot{x}_3 = \gamma (-\beta x_2) 
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation. If `input` is not `nothing`, then the state eqaution is
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (\alpha (x_2 - x_1 - h(x_1))) + \sum_{j = 1}^3 \theta_{1j} u_j \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 - x_2 + x_3 ) + \sum_{j = 1}^3 \theta_{2j} u_j \\[0.25cm]
+    \dot{x}_3 = \gamma (-\beta x_2) + \sum_{j = 1}^3 \theta_{3j} u_j 
+\end{array}
+```
+where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the `input`. The output function is 
+```math
+    y = g(x, u, t)
+```
+where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
+"""
 mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, IV, S, DT} <: AbstractODESystem
     @generic_dynamic_system_fields
     diode::DT
@@ -186,6 +316,32 @@ end
 
 
 ##### Rossler System
+@doc raw"""
+    RosslerSystem(input, output; a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+
+Constructs a `RosllerSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (-x_2 - x_3) \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 + a x_2) \\[0.25cm]
+    \dot{x}_3 = \gamma (b + x_3 (x_1 - c))
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation. If `input` is not `nothing`, then the state eqaution is
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (-x_2 - x_3) + \sum_{j = 1}^3 \theta_{1j} u_j \\[0.25cm]
+    \dot{x}_2 = \gamma (x_1 + a x_2 ) + \sum_{j = 1}^3 \theta_{2j} u_j \\[0.25cm]
+    \dot{x}_3 = \gamma (b + x_3 (x_1 - c)) + \sum_{j = 1}^3 \theta_{3j} u_j 
+\end{array}
+```
+where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the `input`. The output function is 
+```math
+    y = g(x, u, t)
+```
+where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
+"""
 mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
@@ -221,6 +377,30 @@ end
 
 
 ##### Vanderpol System
+@doc raw"""
+    VanderpolSystem(input, output; mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
+        solver=ODESolver, cplmat=diagm([1., 1]))
+
+Constructs a `VanderpolSystem` with `input` and `output`. `mu` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (x_2) \\[0.25cm]
+    \dot{x}_2 = \gamma (\mu (x_1^2 - 1) x_2 - x_1 )
+\end{array}
+```
+where ``x`` is `state`. `solver` is used to solve the above differential equation. If `input` is not `nothing`, then the state eqaution is
+```math
+\begin{array}{l}
+    \dot{x}_1 = \gamma (x_2) + \sum_{j = 1}^3 \theta_{1j} u_j \\[0.25cm]
+    \dot{x}_2 = \gamma (\mu (x_1^2 - 1) x_2 - x_1) + \sum_{j = 1}^3 \theta_{2j} u_j 
+\end{array}
+```
+where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the `input`. The output function is 
+```math
+    y = g(x, u, t)
+```
+where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
+"""
 mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64

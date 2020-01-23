@@ -16,7 +16,7 @@ Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false)</code></pre><p
 julia&gt; t = 0.
 0.0</code></pre><p>We are now ready to construct the system <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; ds = DiscreteSystem(input, output, sfunc, ofunc, x0, t)
 DiscreteSystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))</code></pre><p>To drive <code>ds</code>, we need to <code>launch</code> it.</p><pre><code class="language-julia-repl">julia&gt; task = launch(ds)
-(Task (runnable) @0x00007f2be0274280, Task (runnable) @0x00007f2bdf7e7820)</code></pre><p>At this point, <code>ds</code> is ready to be driven. To drive <code>ds</code>, we can either use <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code>. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
+(Task (runnable) @0x00007fd04810cc40, Task (runnable) @0x00007fd04810c280)</code></pre><p>At this point, <code>ds</code> is ready to be driven. To drive <code>ds</code>, we can either use <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code>. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
 1.0</code></pre><p>When the above code is executed, <code>ds</code> evolves until its time is <code>ds.t</code> is 1., During this evolution, <code>ds</code> reads time <code>t</code> from its <code>trigger</code> link, reads its <code>input</code> (in this example, <code>ds</code> has no input, so it does nothing when reading its input), solves its difference equation, computes its output and writes its output value to its <code>output</code>. To signal that the evolution is succeeded, <code>ds</code> writes <code>true</code> its <code>handshake</code> link which needs to be taken to further drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; ds.handshake  # `handshake` link is readable
 ERROR: UndefVarError: ds not defined
 
@@ -28,27 +28,27 @@ ERROR: UndefVarError: ds not defined</code></pre><p>We continue to drive <code>d
 ERROR: UndefVarError: drive not defined</code></pre><p>Note that all the output values of <code>ds</code> is written to its <code>output</code> bus.</p><pre><code class="language-julia-repl">julia&gt; ds.output[1].buffer.data
 64-element Array{Float64,1}:
  -0.5
-  6.9084406456938e-310
-  6.9084406876052e-310
-  6.9084406338082e-310
-  6.9084406455855e-310
-  6.9084406575486e-310
-  6.9083923984436e-310
-  6.9083923986025e-310
-  6.90839239852107e-310
-  6.9084406185696e-310
+  6.943256845797e-310
+  6.9432568411184e-310
+  6.94320693898896e-310
+  6.94320693889924e-310
+  6.94320693894864e-310
+  6.94320693887434e-310
+  6.94325688974946e-310
+  6.9432568202024e-310
+  6.94320693887987e-310
   ⋮
-  6.90839239835546e-310
-  6.9083923984764e-310
-  6.90839239843055e-310
-  6.90839239845783e-310
-  6.90839239837127e-310
-  6.90839239847126e-310
-  6.9083923985444e-310
-  6.908392398576e-310
-  6.90839239864043e-310</code></pre><p>When we launched <code>ds</code>, we constructed a <code>task</code> which is still running.</p><pre><code class="language-julia-repl">julia&gt; task
-(Task (runnable) @0x00007f2be0274280, Task (runnable) @0x00007f2bdf7e7820)</code></pre><p>As long nothing goes wrong, i.e. no exception is thrown, during the evolution of <code>ds</code>, it is possible to drive <code>ds</code>. To safely terminate the <code>task</code>, we need to terminate the <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>We can confirm that the <code>task</code> is not running and its state is <code>done</code>.</p><pre><code class="language-julia-repl">julia&gt; task
-(Task (runnable) @0x00007f2be0274280, Task (done) @0x00007f2bdf7e7820)</code></pre><p>Since the <code>task</code> is not running any more, <code>ds</code> cannot be drivable any more. However to drive <code>ds</code> again, we need launch <code>ds</code> again.</p><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.DiscreteSystem" href="#Jusdl.Components.Systems.DynamicSystems.DiscreteSystem"><code>Jusdl.Components.Systems.DynamicSystems.DiscreteSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">DiscreteSystem(input, output, statefunc, outputfunc, state, t;  solver=DiscreteSolver)</code></pre><p>Construct a <code>DiscreteSystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function of <code>DiscreteSystem</code>. <code>state</code> is the state and <code>t</code> is the current time of <code>t</code>. <code>solver</code> is numerical difference eqaution solver of the system. The system is represented by</p><div>\[    \begin{array}{l}
+  6.9432069386696e-310
+  6.94325688384795e-310
+  6.94320693874865e-310
+  6.9432568199534e-310
+  6.94320693877315e-310
+  6.9432069389352e-310
+  6.94325690482993e-310
+  6.94320693895536e-310
+  6.9432069355226e-310</code></pre><p>When we launched <code>ds</code>, we constructed a <code>task</code> which is still running.</p><pre><code class="language-julia-repl">julia&gt; task
+(Task (runnable) @0x00007fd04810cc40, Task (runnable) @0x00007fd04810c280)</code></pre><p>As long nothing goes wrong, i.e. no exception is thrown, during the evolution of <code>ds</code>, it is possible to drive <code>ds</code>. To safely terminate the <code>task</code>, we need to terminate the <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>We can confirm that the <code>task</code> is not running and its state is <code>done</code>.</p><pre><code class="language-julia-repl">julia&gt; task
+(Task (runnable) @0x00007fd04810cc40, Task (done) @0x00007fd04810c280)</code></pre><p>Since the <code>task</code> is not running any more, <code>ds</code> cannot be drivable any more. However to drive <code>ds</code> again, we need launch <code>ds</code> again.</p><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.DiscreteSystem" href="#Jusdl.Components.Systems.DynamicSystems.DiscreteSystem"><code>Jusdl.Components.Systems.DynamicSystems.DiscreteSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">DiscreteSystem(input, output, statefunc, outputfunc, state, t;  solver=DiscreteSolver)</code></pre><p>Construct a <code>DiscreteSystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function of <code>DiscreteSystem</code>. <code>state</code> is the state and <code>t</code> is the current time of <code>t</code>. <code>solver</code> is numerical difference eqaution solver of the system. The system is represented by</p><div>\[    \begin{array}{l}
         x_{k + 1} = f(x_k, u_k, k) \\
         y_k = g(x_k, u_k, k)
     \end{array}\]</div><p>where <span>$x_k$</span> is the state,  <span>$y_k$</span> is the value of output, <span>$u_k$</span> is the value of input at dicrete time <span>$k$</span>. <span>$f` is `statefunc` and$</span>g`<code>is</code>outputfunc`. </p><p>The signature of <code>statefunc</code> must be of the form </p><pre><code class="language-julia">function statefunc(dx, x, u, t)
@@ -63,4 +63,4 @@ julia&gt; ofunc(x, u, t) = x
 ofunc (generic function with 1 method)
 
 julia&gt; ds = DiscreteSystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
-DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../staticsystems/network/">« Network</a><a class="docs-footer-nextpage" href="../odesystem/">ODESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 23 January 2020 16:54">Thursday 23 January 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../staticsystems/network/">« Network</a><a class="docs-footer-nextpage" href="../odesystem/">ODESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 23 January 2020 19:11">Thursday 23 January 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

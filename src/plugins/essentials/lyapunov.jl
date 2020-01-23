@@ -3,6 +3,11 @@
 
 using ChaosTools
 
+"""
+    Lyapunov(;m::Int=15, J::Int=5, ni::Int=300, ts::Float64=0.01)
+
+Constructs a `Lyapunov` plugin. The [`process(plg::Lyapunov, x)`](@ref) function computes the maximum numerical Lyapunov exponents. `m` is the reconstruction dimension, `J` is the amount of delay in reconstruction, `ni` is the number of steps during transient steps and `ts` is the sampling time between samples of the input data `x`. See also: (https://juliadynamics.github.io/DynamicalSystems.jl/latest/chaos/nlts/)
+"""
 struct Lyapunov <: AbstractPlugin
     m::Int
     J::Int
@@ -14,6 +19,26 @@ Lyapunov(;m::Int=15, J::Int=5, ni::Int=300, ts::Float64=0.01) = Lyapunov(m, J, n
 show(io::IO, plg::Lyapunov) = print(io, 
     "Lyapunov(embeddingdim:$(plg.m), numlags:$(plg.J), numiteration:$(plg.ni), samplingtime:$(plg.ts)")
 
+"""
+    process(plg::Lyapunov, x)
+
+Computes the maximum Lyapunov exponent of the input data `x`. 
+
+# Example
+```jldoctest 
+julia> using Random 
+
+julia> rng = MersenneTwister(1234);
+
+julia> x = rand(rng, 1000);
+
+julia> plg = Plugins.Lyapunov()
+Lyapunov(embeddingdim:15, numlags:5, numiteration:300, samplingtime:0.01
+
+julia> process(plg, x)
+-0.42032928176193973
+```
+"""
 function process(plg::Lyapunov, x)
     if !(eltype(x) <: Real)
         x = vcat(x...)
@@ -23,7 +48,6 @@ function process(plg::Lyapunov, x)
     R = reconstruct(x, plg.m, plg.J)
     E = numericallyapunov(R, ks, ntype=ntype)
     val = linear_region(plg.ts .* ks, E)[2] 
-    @info "val = $val"
     return val
 end
 

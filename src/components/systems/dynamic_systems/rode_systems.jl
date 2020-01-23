@@ -15,7 +15,7 @@ Constructs a `RODESystem` with `input` and `output`. `statefunc` is the state fu
         y = g(x, u, t)
     \end{array}
 ```
-where ``x`` is the `state`, ``u`` is the value of `input`, ``y`` the value of `output`, ant ``t`` is the time `t`. ``f`` is the `statefunc` and ``g`` is the `outputfunc`. ``W`` is the Wiene process. `solver` is used to solve the above differential equation.
+where ``x`` is the `state`, ``u`` is the value of `input`, ``y`` the value of `output`, ant ``t`` is the time `t`. ``f`` is the `statefunc` and ``g`` is the `outputfunc`. ``W`` is the Wiene process. `noise` is the noise of the system and `solver` is used to solve the above differential equation.
 
 The signature of `statefunc` must be of the form 
 ```julia

@@ -27,7 +27,7 @@ end
 As an example, consider the system with the state function
 ```math 
     \begin{array}{l}
-        dx_1 = 2 x_1 sin(W_1 - W_2) \\[0.25]
+        dx_1 = 2 x_1 sin(W_1 - W_2) \\
         dx_2 = -2 x_2 cos(W_1 + W_2)
     \end{array}
 ```

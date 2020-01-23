@@ -6,11 +6,55 @@ const SDESolver = Solver(LambaEM{true}())
 const SDENoise = Noise(WienerProcess(0.,0.))
 
 
+@doc raw"""
+    SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
+
+Constructs a `SDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `SDESystem`. The `SDESystem` is represented by the state equation
+```math 
+    \begin{array}{l}
+        dx = f(x, u, t) dt + h(x, u, t)dW \\[0.25]
+        y = g(x, u, t)
+    \end{array}
+```
+where ``f`` is the drift equation and ``h`` is the diffusion equation.  The `statefunc` is the tuple of drift function ``f`` and diffusion function ``h`` i.e. `statefunc = (f, h)`. ``g`` is `outputfunc`. ``t`` is the time `t`, ``x`` is the `state`, ``u`` is the value of `input` and ``y`` is the value of the `output`. ``W`` is the Wiever process. `noise` is the noise of the system and `solver` is used to solve the above differential equation.
+
+The syntax of the drift and diffusion function of `statefunc` must be of the form
+```julia
+function f(dx, x, u, t)
+    dx .= ... # Update dx
+end
+function h(dx, x, u, t)
+    dx .= ... # Update dx.
+end
+```
+and the syntax of `outputfunc` must be of the form 
+```julia
+function outputfunc(x, u, t)
+    y = ... # Compute y 
+    return y
+end
+```
+
+# Example 
+```jldoctest
+julia> f(dx, x, u, t) = (dx[1] = -x[1])
+f (generic function with 1 method)
+
+julia> h(dx, x, u, t) = (dx[1] = -x[1])
+h (generic function with 1 method)
+
+julia> g(x, u, t) = x
+g (generic function with 1 method)
+
+julia> ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
+u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
+```
+"""
 mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractSDESystem
     @generic_dynamic_system_fields
     noise::N
-    function SDESystem(input, output, statefunc, outputfunc, state, t, 
-        noise=Noise(WienerProcess(0., zeros(length(state)))); solver=SDESolver)
+    function SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
         trigger = Link()
         handshake = Link{Bool}()
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing

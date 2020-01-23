@@ -7,7 +7,7 @@ end</code></pre><p>and </p><pre><code class="language-julia">function outputfunc
     y = ... # Compute y
     return y
 end</code></pre><p>As an example, consider the system with the state function</p><div>\[    \begin{array}{l}
-        dx_1 = 2 x_1 sin(W_1 - W_2) \\[0.25]
+        dx_1 = 2 x_1 sin(W_1 - W_2) \\
         dx_2 = -2 x_2 cos(W_1 + W_2)
     \end{array}\]</div><p>and with the output function </p><div>\[    y = x\]</div><p>That is, all the state variable are taken as output. The <code>statefunc</code> and the <code>outputfunc</code> is defined as,</p><pre><code class="language-julia-repl">
 julia&gt; function statefunc(dx, x, u, t, W)
@@ -30,38 +30,38 @@ Bus(nlinks:2, eltype:Float64, isreadable:false, iswritable:false)</code></pre><p
 RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
 u: Array{Float64,1}[[0.0, 0.0]], prototype:nothing, seed:0))</code></pre><p>Note that <code>ds</code> has a solver to solve its state function <code>statefunc</code> which is random differential equation. To solve its <code>statefunc</code>, the step size of the solver must be specified. See <a href="https://docs.juliadiffeq.org/latest/tutorials/rode_example/"><code>Random Differential Equtions</code></a> of <a href="https://docs.juliadiffeq.org/latest/"><code>DifferentialEquations</code></a> package.</p><pre><code class="language-julia-repl">julia&gt; ds.solver.params[:dt] = 1 / 100
 0.01</code></pre><h2 id="Basic-Operation-of-RODESystem-1"><a class="docs-heading-anchor" href="#Basic-Operation-of-RODESystem-1">Basic Operation of RODESystem</a><a class="docs-heading-anchor-permalink" href="#Basic-Operation-of-RODESystem-1" title="Permalink"></a></h2><p>When a <code>RODESystem</code> is triggered from its <code>trigger</code> link, it read the current time from its <code>trigger</code> link, reads its input (if available, i.e. its input is not nothing), solves its state function, computes its output value and writes its output value its <code>output</code> bus (again, if available, i.e., its output bus is not nothing). To drive a <code>RODESystem</code>, it must be <code>launched</code>. Let us continue with <code>ds</code> constructed in the previous section.</p><pre><code class="language-julia-repl">julia&gt; task = launch(ds)
-(Task (runnable) @0x00007f514fc34760, Task (runnable) @0x00007f514fc344f0)</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
+(Task (runnable) @0x00007fc9d3e22bf0, Task (runnable) @0x00007fc9d3e22980)</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
 1.0</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(ds.handshake)
 true</code></pre><p>We can continue to drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
            put!(ds.trigger, t)
            take!(ds.handshake)
        end</code></pre><p>After each evolution, <code>ds</code> writes its current output value to its <code>output</code> bus. </p><pre><code class="language-julia-repl">julia&gt; [ds.output[1].buffer.data ds.output[2].buffer.data]
 64×2 Array{Float64,2}:
- 0.232622       0.546858
- 0.0545353      1.18637
- 0.0188977      1.74646
- 0.00539991     0.813837
- 0.0052659      0.4679
- 0.00927538     0.0697148
- 0.0172673      0.0982246
- 0.0955703      0.50825
- 0.523066       3.20538
- 2.46241       18.8901
- ⋮
- 6.91639e-310   6.91639e-310
- 6.91639e-310   6.91635e-310
- 6.91629e-310   6.91639e-310
- 6.91639e-310   6.91639e-310
- 6.91639e-310   6.91639e-310
- 6.91639e-310   6.91639e-310
- 6.91639e-310   6.91629e-310
- 6.91639e-310   6.91629e-310
- 6.91639e-310   6.91639e-310</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
-(Task (runnable) @0x00007f514fc34760, Task (runnable) @0x00007f514fc344f0)</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
-(Task (done) @0x00007f514fc34760, Task (done) @0x00007f514fc344f0)</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.RODESystem" href="#Jusdl.Components.Systems.DynamicSystems.RODESystem"><code>Jusdl.Components.Systems.DynamicSystems.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(input, output, statefunc, outputfunc, state, t, noise, solver=RODESolver)</code></pre><p>Constructs a <code>RODESystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function.  The <code>RODESystem</code> is represented by the equations,</p><div>\[    \begin{array}{l}
+   1.41112       0.297288
+   1.40053       0.0869054
+   8.76359       0.017603
+  13.1048        0.0563204
+   9.3705        0.212219
+   3.86745       0.883723
+   9.13453       4.84038
+  25.4705        2.52274
+ 156.526         0.626469
+  71.8165        0.108558
+   ⋮
+   0.0           0.0
+   6.94195e-310  6.94195e-310
+   6.94195e-310  6.94195e-310
+   0.0           0.0
+   6.94195e-310  6.94195e-310
+   6.94195e-310  6.94195e-310
+   0.0           0.0
+   6.94195e-310  6.94195e-310
+   6.94195e-310  6.94195e-310</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
+(Task (runnable) @0x00007fc9d3e22bf0, Task (runnable) @0x00007fc9d3e22980)</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
+(Task (done) @0x00007fc9d3e22bf0, Task (done) @0x00007fc9d3e22980)</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.RODESystem" href="#Jusdl.Components.Systems.DynamicSystems.RODESystem"><code>Jusdl.Components.Systems.DynamicSystems.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(input, output, statefunc, outputfunc, state, t, noise, solver=RODESolver)</code></pre><p>Constructs a <code>RODESystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function.  The <code>RODESystem</code> is represented by the equations,</p><div>\[    \begin{array}{l}
         dx = f(x, u, t, W)dt \\[0.25]
         y = g(x, u, t)
-    \end{array}\]</div><p>where <span>$x$</span> is the <code>state</code>, <span>$u$</span> is the value of <code>input</code>, <span>$y$</span> the value of <code>output</code>, ant <span>$t$</span> is the time <code>t</code>. <span>$f$</span> is the <code>statefunc</code> and <span>$g$</span> is the <code>outputfunc</code>. <span>$W$</span> is the Wiene process. <code>solver</code> is used to solve the above differential equation.</p><p>The signature of <code>statefunc</code> must be of the form </p><pre><code class="language-julia">function statefunc(dx, x, u, t, W)
+    \end{array}\]</div><p>where <span>$x$</span> is the <code>state</code>, <span>$u$</span> is the value of <code>input</code>, <span>$y$</span> the value of <code>output</code>, ant <span>$t$</span> is the time <code>t</code>. <span>$f$</span> is the <code>statefunc</code> and <span>$g$</span> is the <code>outputfunc</code>. <span>$W$</span> is the Wiene process. <code>noise</code> is the noise of the system and <code>solver</code> is used to solve the above differential equation.</p><p>The signature of <code>statefunc</code> must be of the form </p><pre><code class="language-julia">function statefunc(dx, x, u, t, W)
     dx .= ... # Update dx 
 end</code></pre><p>and the signature of <code>outputfunc</code> must be of the form </p><pre><code class="language-julia">function outputfunc(x, u, t)
     y = ... # Compute y
@@ -78,4 +78,4 @@ outputfunc (generic function with 1 method)
 julia&gt; ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.)
 RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t
 : [0.0]
-u: Array{Float64,1}[[0.0, 0.0]], prototype:nothing, seed:0))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 23 January 2020 12:02">Thursday 23 January 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+u: Array{Float64,1}[[0.0, 0.0]], prototype:nothing, seed:0))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 23 January 2020 14:51">Thursday 23 January 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

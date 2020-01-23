@@ -30,7 +30,7 @@ struct History{F, C, D}
     depslags::D
     neutral::Bool
 end
-History(func) = History(func, [], [], false)
+History(func, conslags, depslags) = History(func, conslags, depslags, false)
 (hist::History)(u, t) = hist.func(u, t)
 
 ##### Pretty-printing

@@ -12,7 +12,7 @@ const SDENoise = Noise(WienerProcess(0.,0.))
 Constructs a `SDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `SDESystem`. The `SDESystem` is represented by the state equation
 ```math 
     \begin{array}{l}
-        dx = f(x, u, t) dt + h(x, u, t)dW \\[0.25]
+        dx = f(x, u, t) dt + h(x, u, t)dW \\
         y = g(x, u, t)
     \end{array}
 ```

@@ -2,19 +2,32 @@
 
 using ProgressMeter
 
+"""
+    Model(blocks::AbstractVector)
+
+Constructs a `Model` whose with components `blocks` which are of type `AbstractComponent`.
+
+    Model()
+
+Constructs a `Model` with empty components. After the construction, components can be added to `Model`.
+
+!!! warning
+    `Model`s are units that can be simulated. As the data flows through the connections i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
+"""
 mutable struct Model{BL<:AbstractVector, CLK, TM}
     blocks::BL
     clk::CLK
     taskmanager::TM
     callbacks::Vector{Callback}
     id::UUID
-    function Model(blocks::AbstractVector{<:AbstractComponent})
+    function Model(blocks::AbstractVector)
         taskmanager = TaskManager()
         clk = Clock(NaN, NaN, NaN)
         new{typeof(blocks), typeof(clk), typeof(taskmanager)}(blocks, clk, taskmanager, Callback[], uuid4())
     end
 end
 Model(blocks::AbstractComponent...) = Model([blocks...])
+Model() = Model([])
 
 show(io::IO, model::Model) = print(io, "Model(blocks:$(model.blocks))")
 
@@ -141,6 +154,11 @@ function _simulate!(sim::Simulation, reportsim::Bool)
     return sim
 end
 
+"""
+    simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
+
+Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. If `logtofile` is `true`, a log file for the simulation is constructed. If `reportsim` is `true`, model components are saved into files.
+"""
 function simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
     sim = Simulation(model, simdir)
     if logtofile

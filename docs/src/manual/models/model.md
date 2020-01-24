@@ -1,3 +1,7 @@
 # Model 
 
-To be written...
+## Full API 
+```@docs 
+Model
+simulate
+```

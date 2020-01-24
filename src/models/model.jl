@@ -31,6 +31,24 @@ Model() = Model([])
 
 show(io::IO, model::Model) = print(io, "Model(blocks:$(model.blocks))")
 
+##### Adding components to model 
+"""
+    addcomponent(model::Model, comp::AbstractComponent)
+
+Adds `comp` to `model` components.
+
+# Example
+```jldoctest 
+julia> m = Model()
+Model(blocks:Any[])
+
+julia> addcomponent(m, SinewaveGenerator())
+1-element Array{Any,1}:
+ SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
+```
+"""
+addcomponent(model::Model, comp::AbstractComponent) = push!(model.blocks, comp)
+
 ##### Model inspection.
 function adjacency_matrix(model::Model)
     blocks = model.blocks
@@ -65,6 +83,11 @@ function break_algebraic_loop!(model)
     nothing
 end
 
+"""
+    inspect(model::Model)
+
+Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and error is thrown.
+"""
 function inspect(model)
     # TODO : Complete the function.
     # if has_unterminated_bus(model)
@@ -81,6 +104,11 @@ function inspect(model)
 end
 
 ##### Model initialization
+"""
+    initialize(model::Model)
+
+Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref). The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
+"""
 function initialize(model::Model)
     pairs = model.taskmanager.pairs
     blocks = model.blocks
@@ -94,6 +122,15 @@ function initialize(model::Model)
 end
 
 ##### Model running
+"""
+    run(model::Model)
+
+Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clk`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. 
+
+!!! warning 
+    The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
+```
+"""
 function run(model::Model)
     taskmanager = model.taskmanager
     components = model.blocks
@@ -107,8 +144,18 @@ function run(model::Model)
 end
 
 ##### Model termination
+""" 
+    release(model::Model)
+
+Releaes the each component of `model`, i.e., the input and output bus of each component is released.
+"""
 release(model::Model) = foreach(release, model.blocks)
 
+"""
+    terminate(model::Model)
+
+Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref).
+"""
 function terminate(model::Model)
     isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
     isrunning(model.clk) && stop!(model.clk)
@@ -173,11 +220,30 @@ function simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, r
     return sim
 end
 
+""" 
+    simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
+
+Simulates the `model` starting from the initial time `t0` until the final time `tf` with the sampling interval of `tf`. For `kwargs` are 
+
+* `logtofile::Bool`: If `true`, a log file is contructed logging each step of the simulation. 
+* `reportsim::Bool`: If `true`, `model` components are written files after the simulation. When this file is read back, the model components can be consructed back with their status at the end of the simulation.
+* `simdir::String`: The path of the directory in which simulation file are recorded. 
+"""
 function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
     set!(model.clk, t0, dt, tf)
     simulate(model; kwargs...)
 end
 
 
+""" 
+    findin(model::Model, id::UUID)
+
+Returns the component of the `model` corresponding whose id is `id`.
+
+    findin(model::Model, comp::AbstractComponent)
+
+Returns the compeonent whose variable name is `comp`.
+"""
+function findin end
 findin(model::Model, id::UUID) = model.blocks[findfirst(block -> block.id == id, model.blocks)]
 findin(model::Model, comp::AbstractComponent) = model.blocks[findfirst(block -> block.id == comp.id, model.blocks)]

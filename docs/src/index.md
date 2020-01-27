@@ -125,6 +125,13 @@ Pages = [
 
 ```@contents
 Pages = [
+    "manual/components/componentsbase/evolution.md",
+    "manual/components/componentsbase/generic_fields.md",
+    ]
+```
+
+```@contents
+Pages = [
     "manual/components/sources/clock.md",
     "manual/components/sources/generators.md",
     ]
@@ -156,6 +163,14 @@ Pages = [
     "manual/components/systems/dynamicsystems/rodesystem.md",
     "manual/components/systems/dynamicsystems/sdesystem.md",
     "manual/components/systems/dynamicsystems/ddesystem.md",
+    ]
+```
+
+```@contents
+Pages = [
+    "manual/models/taskmanager.md",
+    "manual/models/simulation.md",
+    "manual/models/model.md",
     ]
 ```
 

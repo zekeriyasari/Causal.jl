@@ -17,6 +17,10 @@ makedocs(
             "manual/connections/bus.md",
             ],
         "Components" => [
+            "ComponentsBase" => [
+                "manual/components/componentsbase/evolution.md",
+                "manual/components/componentsbase/generic_fields.md",
+                ],
             "Sources" => [
                 "manual/components/sources/clock.md",
                 "manual/components/sources/generators.md",

@@ -7,21 +7,52 @@ using Sundials
 import DifferentialEquations.solve
 
 ##### Input-Output reading and writing.
+"""
+    readtime(comp::AbstractComponent)
 
+Returns current time of `comp` from its `trigger` link.
+
+!!! note 
+    To read time of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref).
+"""
 readtime(comp::AbstractComponent) = take!(comp.trigger)
 
+"""
+    readstate(comp::AbstractComponent)
+
+Returns the state of `comp` if `comp` is `AbstractDynamicSystem`. Otherwise, returns `nothing`. 
+"""
 readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? comp.state : nothing
 
+"""
+    readinput(comp::AbstractComponent)
+
+Returne the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, returns `nothing`.
+
+!!! note 
+    To read input value of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref)
+"""
 function readinput(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
     typeof(comp.input) <: Bus ? take!(comp.input) : nothing
 end
 
+"""
+    writeoutput(comp::AbstractComponent, out)
+
+Writes `out` to the output of `comp` if the `output` of `comp` is `Bus`. Otherwise, does `nothing`.
+"""
 function writeoutput(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
     typeof(comp.output) <: Bus ? put!(comp.output, out) : nothing
 end
 
+"""
+    computeoutput(comp, x, u, t)
+
+Computes the output of `comp` according to its `outputfunc` if `outputfunc` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
+"""
+computeoutput
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
@@ -32,6 +63,24 @@ end
     # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
+"""
+    evolve!(comp::AbstractSource, x, u, t)
+
+Does nothing. `x` is the state, `u` is the value of `input` and `t` is time.
+
+    evolve!(comp::AbstractSink, x, u, t) 
+
+Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `x` is the state, `u` is the value of `input` and `t` is time.
+
+    evolve!(comp::AbstractStaticSystem, x, u, t)
+
+Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of `input` and `t` is time. 
+    
+    evolve!(comp::AbstractDynamicSystem, x, u, t)
+
+Solves the differential equaition of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x`. `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. See also: [`update!(comp::AbstractDynamicSystem, sol, u)`](@ref)
+"""
+evolve!
 evolve!(comp::AbstractSource, x, u, t) = nothing
 evolve!(comp::AbstractSink, x, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
 evolve!(comp::AbstractStaticSystem, x, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
@@ -70,6 +119,11 @@ constructprob(comp::AbstractDDESystem, x, u, t) =
 
 solve(comp::AbstractDynamicSystem, x, u,t) = solve(constructprob(comp, x, u, t), comp.solver.alg; comp.solver.params...)
 
+"""
+    update!(comp::AbstractDynamicSystem, sol, u)
+
+Updates `comp` with the differential equation solution `sol` and the input value `u`. The time `t`, state `state` and `inputval` is updated. Furthermore, `stateder` is also updated if `comp` isa `AbstractDAESystem` and `noise` is update if `comp` is `AbstractSDESystem` or `AbstractRODESystem`.
+"""
 function update!(comp::AbstractDynamicSystem, sol, u)
     update_time!(comp, sol.t[end])
     update_state!(comp, sol.u[end])
@@ -90,6 +144,11 @@ function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, n
 end
 
 ##### Task management
+"""
+    takestep(comp::AbstractComponent)
+
+Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractMemory`, a backward step is taken. Otherwise, a forward step is taken. See also: [`forwardstep`](@ref), [`backwardstep`](@ref).
+"""
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
     # t === missing && return t
@@ -97,6 +156,11 @@ function takestep(comp::AbstractComponent)
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
 
+"""
+    forwardstep(comp, t)
+
+Makes `comp` takes a forward step.  The input value `u` and state `x` of `comp` are read. Using `x`, `u` and time `t`,  `comp` is evolved. The output `y` of `comp` is computed and written into the output bus of `comp`. 
+"""
 function forwardstep(comp, t)
     u = readinput(comp)
     x = readstate(comp)
@@ -107,6 +171,12 @@ function forwardstep(comp, t)
     return t
 end
 
+
+"""
+    backwardstep(comp, t)
+
+Reads the state `x`. Using the time `t` and `x`, computes and writes the ouput value `y` of `comp`. Then, the input value `u` is read and `comp` is evolved.  
+"""
 function backwardstep(comp, t)
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)

@@ -15,7 +15,7 @@ julia&gt; output = Bus(1)
 Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false)</code></pre><p>At this point, we are ready to construct the system <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; ds = SDESystem(input, output, statefunc, g, [1.], 0.)
 SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
 u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))</code></pre><h2 id="Basic-Operation-of-SDESystems-1"><a class="docs-heading-anchor" href="#Basic-Operation-of-SDESystems-1">Basic Operation of SDESystems</a><a class="docs-heading-anchor-permalink" href="#Basic-Operation-of-SDESystems-1" title="Permalink"></a></h2><p>The basic operation of a <code>SDESystem</code> is the same as those of other dynamical systems. When triggered from its <code>trigger</code> link, a <code>SDESystem</code> reads its time <code>t</code> from its <code>trigger</code> link, reads its input value from its <code>input</code>, solves its state equation, which is a stochastic differential equation, computes its output and writes its computed output to its <code>output</code> bus. </p><p>In this section, we continue with the system <code>ds</code> constructed in the previous section. To make <code>ds</code> drivable, we need to <code>launch</code> it.</p><pre><code class="language-julia-repl">julia&gt; task = launch(ds)
-(Task (runnable) @0x00007f2c7363ba90, Task (runnable) @0x00007f2c7363b5b0)</code></pre><p>When launched, <code>ds</code> can be driven. For this, either of the syntax <code>put!(ds.trigger, t)</code> or <code>drive(ds, t)</code> can be used. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
+(Task (runnable) @0x00007f94e7ab4eb0, Task (runnable) @0x00007f94e7ab4c40)</code></pre><p>When launched, <code>ds</code> can be driven. For this, either of the syntax <code>put!(ds.trigger, t)</code> or <code>drive(ds, t)</code> can be used. </p><pre><code class="language-julia-repl">julia&gt; drive(ds, 1.)
 1.0</code></pre><p>After this command, <code>ds</code> reads its time <code>t</code> from its <code>trigger</code> link, solves its state function and computes its output. The calculated output value is written to the buffer of <code>output</code>. To signal that, the step is takes with success, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link. To further drive <code>ds</code>, this <code>handshake</code> link must be read. For this either of the syntax, <code>take!(ds.handshake)</code> or <code>approve(ds)</code> can be used</p><pre><code class="language-julia-repl">julia&gt; ds.handshake
 Link(state:open, eltype:Bool, hasmaster:false, numslaves:0, isreadable:true, iswritable:false)
 
@@ -25,27 +25,27 @@ true</code></pre><p>At this point, we can further drive <code>ds</code>. </p><pr
            approve(ds)
        end</code></pre><p>Note that during the evolution, the output of <code>ds</code> is written into the buffers of <code>output</code> bus.</p><pre><code class="language-julia-repl">julia&gt; ds.output[1].buffer.data
 64-element Array{Float64,1}:
- 0.698513349530766
- 0.28454869901739976
- 0.08184646883953373
- 0.03249082414036436
- 0.06663634873040779
- 0.06617574596652762
- 0.16210606859505983
- 0.0077194461256650995
- 0.003196258352278312
- 0.0006371429736434926
+ 0.012917864589224686
+ 0.0020960060895196097
+ 0.0008296915240866241
+ 0.00014772910377526505
+ 4.2319110824701385e-5
+ 1.2799891778405904e-5
+ 6.669646369998996e-7
+ 1.7687203641749837e-8
+ 2.6931981043686485e-8
+ 2.094562267732997e-9
  ⋮
- 6.90857742006044e-310
- 6.9085774395693e-310
- 6.9085774886652e-310
- 6.9085773989757e-310
- 6.90857749015176e-310
- 6.9085774890308e-310
- 6.90857748975255e-310
- 6.90857748804546e-310
- 6.90857743393657e-310</code></pre><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The values of the output is written into buffers if the <code>output</code> of the systems is not <code>nothing</code>.</p></div></div><p>When we launched <code>ds</code>, we constructed a <code>task</code> whose state is <code>running</code> which implies that the <code>ds</code> can be drivable. As long as this <code>task</code> is running, <code>ds</code> can be drivable. </p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The state of the <code>task</code> is different from <code>running</code> in case an exception is thwown. </p></div></div><p>To terminate the <code>task</code> securely, we need to terminate <code>ds</code> securely. To do that, can use <code>terminate(ds)</code>.</p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>Note that the <code>task</code> is terminated without a hassle. </p><pre><code class="language-julia-repl">julia&gt; task
-(Task (done) @0x00007f2c7363ba90, Task (done) @0x00007f2c7363b5b0)</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.SDESystem" href="#Jusdl.Components.Systems.DynamicSystems.SDESystem"><code>Jusdl.Components.Systems.DynamicSystems.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)</code></pre><p>Constructs a <code>SDESystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function of <code>SDESystem</code>. The <code>SDESystem</code> is represented by the state equation</p><div>\[    \begin{array}{l}
+ 6.93073790106215e-310
+ 6.9307379017471e-310
+ 6.9307379018894e-310
+ 6.9307379020317e-310
+ 6.9307379020669e-310
+ 6.93073790082856e-310
+ 6.9307378999594e-310
+ 6.93073790081393e-310
+ 6.93073790148705e-310</code></pre><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The values of the output is written into buffers if the <code>output</code> of the systems is not <code>nothing</code>.</p></div></div><p>When we launched <code>ds</code>, we constructed a <code>task</code> whose state is <code>running</code> which implies that the <code>ds</code> can be drivable. As long as this <code>task</code> is running, <code>ds</code> can be drivable. </p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The state of the <code>task</code> is different from <code>running</code> in case an exception is thwown. </p></div></div><p>To terminate the <code>task</code> securely, we need to terminate <code>ds</code> securely. To do that, can use <code>terminate(ds)</code>.</p><pre><code class="language-julia-repl">julia&gt; terminate(ds)</code></pre><p>Note that the <code>task</code> is terminated without a hassle. </p><pre><code class="language-julia-repl">julia&gt; task
+(Task (done) @0x00007f94e7ab4eb0, Task (done) @0x00007f94e7ab4c40)</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Components.Systems.DynamicSystems.SDESystem" href="#Jusdl.Components.Systems.DynamicSystems.SDESystem"><code>Jusdl.Components.Systems.DynamicSystems.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)</code></pre><p>Constructs a <code>SDESystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function of <code>SDESystem</code>. The <code>SDESystem</code> is represented by the state equation</p><div>\[    \begin{array}{l}
         dx = f(x, u, t) dt + h(x, u, t)dW \\
         y = g(x, u, t)
     \end{array}\]</div><p>where <span>$f$</span> is the drift equation and <span>$h$</span> is the diffusion equation.  The <code>statefunc</code> is the tuple of drift function <span>$f$</span> and diffusion function <span>$h$</span> i.e. <code>statefunc = (f, h)</code>. <span>$g$</span> is <code>outputfunc</code>. <span>$t$</span> is the time <code>t</code>, <span>$x$</span> is the <code>state</code>, <span>$u$</span> is the value of <code>input</code> and <span>$y$</span> is the value of the <code>output</code>. <span>$W$</span> is the Wiever process. <code>noise</code> is the noise of the system and <code>solver</code> is used to solve the above differential equation.</p><p>The syntax of the drift and diffusion function of <code>statefunc</code> must be of the form</p><pre><code class="language-julia">function f(dx, x, u, t)
@@ -67,4 +67,4 @@ g (generic function with 1 method)
 
 julia&gt; ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
 SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
-u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 24 January 2020 23:39">Friday 24 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))</code></pre></div></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 27 January 2020 16:24">Monday 27 January 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

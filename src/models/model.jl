@@ -206,7 +206,7 @@ end
 
 Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. If `logtofile` is `true`, a log file for the simulation is constructed. If `reportsim` is `true`, model components are saved into files.
 """
-function simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
+function simulate(model::Model;  simdir::String=tempdir(), logtofile::Bool=false, reportsim::Bool=false)
     sim = Simulation(model, simdir)
     if logtofile
         sim.logger = setlogger(sim.path, "log.txt", setglobal=false)

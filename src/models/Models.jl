@@ -16,6 +16,9 @@ export TaskManager, checktaskmanager, istaskfailed, istaskrunning
 export Model, adjacency_matrix, inspect, initialize, run, terminate, simulate
 export findin, addcomponent
 
+export Simulation, SimulationError
+export setlogger, closelogger, report
+
 include("utils.jl")
 include("taskmanager.jl")
 include("simulation.jl")

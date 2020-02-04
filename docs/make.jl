@@ -8,19 +8,24 @@ makedocs(
     sitename = "Jusdl",
     pages = [
         "Home" => "index.md",
-        "Utilities" => [
-            "manual/utilities/callback.md",
-            "manual/utilities/buffers.md"
+        "Modeling and Simulation in Jusdl" => [
+            "modeling_and_simulation/modeling.md",
+            "modeling_and_simulation/simulation.md",
+        ],
+        "Manual" => [
+            "Utilities" => [
+                "manual/utilities/callback.md",
+                "manual/utilities/buffers.md"
             ], 
-        "Connections" => [
-            "manual/connections/link.md",
-            "manual/connections/bus.md",
-            ],
-        "Components" => [
-            "ComponentsBase" => [
-                "manual/components/componentsbase/evolution.md",
-                "manual/components/componentsbase/generic_fields.md",
+            "Connections" => [
+                "manual/connections/link.md",
+                "manual/connections/bus.md",
                 ],
+            "Components" => [
+                "ComponentsBase" => [
+                    "manual/components/componentsbase/evolution.md",
+                    "manual/components/componentsbase/generic_fields.md",
+                    ],
             "Sources" => [
                 "manual/components/sources/clock.md",
                 "manual/components/sources/generators.md",
@@ -53,6 +58,10 @@ makedocs(
             "manual/models/simulation.md",
             "manual/models/model.md",
             ],
+        ],
+        "Tutorials" => [
+            "Simple Model Simulation" => "tutorials/simple_model.md",
+        ],
     ],
     # format=DocumenterLaTeX.LaTeX()  # Uncomment this option to generate pdf output.
 )  # end makedocs

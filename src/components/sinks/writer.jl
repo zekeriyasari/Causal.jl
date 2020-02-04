@@ -72,14 +72,14 @@ fwrite(file, td, xd) = file[string(td)] = xd
 Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is also flattened.
 """
 function read(writer::Writer; flatten=false) 
-    content = fread(writer.file.path)
-    if flatten
-        t = vcat(collect(keys(content))...)
-        x = collect(hcat(vcat(collect(values(content))...)...)')
-        return t, x
-    else
-        return content
-    end
+    content = fread(writer.file.path, flatten=flatten)
+    # if flatten
+    #     t = vcat(collect(keys(content))...)
+    #     x = collect(hcat(vcat(collect(values(content))...)...)')
+    #     return t, x
+    # else
+    #     return content
+    # end
 end
 
 """
@@ -87,9 +87,16 @@ end
 
 Reads the content of `jld2` file and returns the sorted file content. 
 """
-function fread(path::String)
+function fread(path::String; flatten=false)
     content = load(path)
-    SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
+    data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
+    if flatten
+        t = vcat(collect(keys(data))...)
+        x = collect(hcat(vcat(collect(values(data))...)...)')
+        return t, x
+    else
+        return data
+    end
 end
 
 """

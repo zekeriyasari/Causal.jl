@@ -238,6 +238,11 @@ function release(comp::AbstractComponent)
 end
 
 
+"""
+    terminate(comp::AbstractComponent)
+
+Closes the `trigger` link and `output` bus of `comp`.
+"""
 function terminate(comp::AbstractComponent)
     typeof(comp) <: AbstractSink || close(comp.output)
     close(comp.trigger)
@@ -245,7 +250,18 @@ function terminate(comp::AbstractComponent)
 end
 
 ##### SubSystem interface
+"""
+    launch(comp::AbstractSubSystem)
+
+Launches all subcomponents of `comp`. See also: [`launch(comp::AbstractComponent)`](@ref)
+"""
 launch(comp::AbstractSubSystem) = launch.(comp.components)
+
+"""
+    takestep(comp::AbstractSubSystem)
+
+Makes `comp` to take a step by making each subcomponent of `comp` take a step. See also: [`takestep(comp::AbstractComponent)`](@ref)
+"""
 function takestep(comp::AbstractSubSystem)
     t = readtime(comp)
     # t === missing && return t
@@ -255,14 +271,35 @@ function takestep(comp::AbstractSubSystem)
     put!(comp.handshake, true)
 end
 
+"""
+    drive(comp::AbstractSubSystem, t)
+
+Drives `comp` by driving each subcomponent of `comp`. See also: [`drive(comp::AbstractComponent, t)`](@ref)
+"""
 drive(comp::AbstractSubSystem, t) = foreach(component -> drive(component, t), comp.components)
+
+"""
+    approve(comp::AbstractSubSystem)
+
+Approves `comp` by approving each subcomponent of `comp`. See also: [`approve(comp::AbstractComponent)`](@ref)
+"""
 approve(comp::AbstractSubSystem) = all(approve.(comp.components))
 
 
+""" 
+    release(comp::AbstractSubSystem)
+
+Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(comp::AbstractComponent)`](@ref)
+"""
 function release(comp::AbstractSubSystem)
     foreach(release, comp.components)
     typeof(comp.input) <: Bus && release(comp.input)
     typeof(comp.output) <: Bus && release(comp.output)
 end
 
+"""
+    terminate(comp::AbstractSubSystem)
+
+Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate(comp::AbstractComponent)`](@ref)
+"""
 terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)

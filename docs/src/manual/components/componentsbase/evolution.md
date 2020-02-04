@@ -37,5 +37,12 @@ update!
 takestep
 Jusdl.Components.ComponentsBase.forwardstep
 Jusdl.Components.ComponentsBase.backwardstep
+launch(comp::AbstractComponent)
+launch(comp::AbstractSubSystem)
+drive
+approve
+release(comp::AbstractComponent)
+release(comp::AbstractSubSystem)
+terminate
 ```
 

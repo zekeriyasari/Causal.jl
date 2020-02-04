@@ -35,7 +35,7 @@ update!
 ## Taking Steps 
 ```@docs 
 takestep
-forwardstep
-backwardstep
+Jusdl.Components.ComponentsBase.forwardstep
+Jusdl.Components.ComponentsBase.backwardstep
 ```
 

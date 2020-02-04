@@ -188,6 +188,11 @@ function backwardstep(comp, t)
 end
 
 
+"""
+    launch(comp::AbstractComponent)
+
+Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
+"""
 function launch(comp::AbstractComponent)
     outputtask = if !(typeof(comp) <: AbstractSink)  
         @async while true 
@@ -207,14 +212,31 @@ function launch(comp::AbstractComponent)
     return triggertask, outputtask
 end
 
+"""
+    drive(comp::AbstractComponent, t)
+
+Writes `t` to the `trigger` link of `comp`. When driven, `comp` takes a step. See also: [`takestep(comp::AbstractComponent)`](@ref)
+"""
 drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
+
+"""
+    approve(comp::AbstractComponent)
+
+Read `handshake` link of `comp`. When not approved or `false` is read from the `handshake` link, the task launched for the `trigger` link of `comp` gets stuck during `comp` is taking step.
+"""
 approve(comp::AbstractComponent) = take!(comp.handshake)
 
+"""
+    release(comp::AbstractComponent)
+
+Releases the `input` and `output` bus of `comp`.
+""" 
 function release(comp::AbstractComponent)
     typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
     typeof(comp) <: AbstractSink    || typeof(comp.output) <: Nothing   || release(comp.output)
     return 
 end
+
 
 function terminate(comp::AbstractComponent)
     typeof(comp) <: AbstractSink || close(comp.output)

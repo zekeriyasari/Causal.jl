@@ -175,7 +175,8 @@ struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
     function Memory(input::Bus{T}, numdelay::Int; initial=[Vector{T}(undef, length(input)) for i=1:numdelay]) where T 
         buffer = Buffer{Fifo}(Vector{T}, numdelay)
         fill!(buffer, initial)
-        outputfunc(u, t) = buffer()
+        # outputfunc(u, t) = buffer()
+        outputfunc(u, t) = read(buffer)
         output = similar(input, length(input))
         trigger = Link()
         handshake = Link{Bool}()

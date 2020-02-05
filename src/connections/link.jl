@@ -131,6 +131,7 @@ function close(link::Link)
     isempty(channel.cond_take.waitq) || put!(link, NaN)   # Terminate taker task 
     isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
     # isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
+    isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
     return 
 end 
 

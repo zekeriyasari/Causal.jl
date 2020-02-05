@@ -1,5 +1,4 @@
 # This file includes the buffer test set 
-# TODO: Complete Buffer testset.
 
 @testset "BufferTestSet" begin
     # Simple Buffer construction

@@ -182,8 +182,11 @@ function write!(buf::Buffer, val)
     buf.callbacks(buf)
     val
 end
-writeitem(buf::AbstractVector, val) = (buf[buf.index] = val; buf.index += 1)
-writeitem(buf::AbstractMatrix, val) = (buf[:, buf.index] = val; buf.index += 1)
+
+write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M} = foreach(val -> write!(buf, val), vals)
+
+writeitem(buf::Buffer{M, T, 1}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1)
+writeitem(buf::Buffer{M, T, 2}, val) where {M, T} = (buf[:, buf.index] = val; buf.index += 1)
 checkstate(buf::Buffer) = mode(buf) != Cyclic && isfull(buf) && error("Buffer is full")
 
 """
@@ -207,7 +210,7 @@ function read(buf::Buffer)
 end
 function _read(buf::Buffer{Fifo, T, N}) where {T, N}
     val = readitem(buf, 1)
-    buf .= circshift(buf, -1)
+    buf .= rotate(buf)
     buf.index -= 1
     buf[end] = zero(eltype(buf))
     val
@@ -221,8 +224,10 @@ end
 function _read(buf::Buffer{<:Union{Cyclic, Normal}, T, N}) where {T, N}
     isfull(buf) ? readitem(buf, 1) : readitem(buf, buf.index - 1)
 end
-readitem(buf::AbstractVector, idx::Int) = buf[idx]
-readitem(buf::AbstractMatrix, idx::Int) = buf[:, idx]
+readitem(buf::Buffer{M, T, 1}, idx::Int) where {M, T} = buf[idx]
+readitem(buf::Buffer{M, T, 2}, idx::Int) where {M, T} = buf[:, idx]
+rotate(buf::Buffer{M, T, 1}) where {M, T} = circshift(buf, -1)
+rotate(buf::Buffer{M, T, 2}) where {M, T} = circshift(buf, (0, -1))
 
 ##### Accessing buffer data
 """

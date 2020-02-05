@@ -67,7 +67,7 @@ struct Adder{IB, OB, T, H, OF, S} <: AbstractStaticSystem
     signs::S
     function Adder(input::Bus, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...))
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-        output = similar(input)
+        output = Bus()
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(signs)}(input,
@@ -172,18 +172,19 @@ Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `i
 struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{<:Link{T}}, numdelay::Int; initial=zeros(T, length(input))) where T 
-        buffer = Buffer{Fifo}(T, length(input), numdelay)
+    function Memory(input::Bus{<:Link{T}}, numdelay::Int; initial=nothing) where T 
+        numinput = length(input)
+        buffer = numinput == 1 ? Buffer{Fifo}(T, numdelay) : Buffer{Fifo}(T, numinput, numdelay)
+        initial === nothing && (initial = numinput == 1 ? zero(T) : zeros(T, numinput))
         fill!(buffer, initial)
         outputfunc(u, t) = read(buffer)
-        output = similar(input, length(input))
+        output = similar(input, numinput)
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), 
             typeof(buffer)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc, buffer)
     end
 end
-
 
 @doc raw"""
     Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)

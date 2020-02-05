@@ -54,7 +54,7 @@ show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat
 
 ##### Network auxilary components construction
 construct_coupler(conmat, cplmat) = Coupler(conmat, cplmat)
-construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=[node.state]) for node in nodes]
+construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=node.state) for node in nodes]
 construct_adders(inputnodes) = [construct_an_adder(length(node.input), 2, fill(+, 2)) for node in inputnodes]
 function construct_an_adder(dim, n, ops)
     K = hcat([op(diagm(ones(dim))) for op in ops]...)

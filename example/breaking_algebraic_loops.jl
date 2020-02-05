@@ -9,7 +9,7 @@ t0, dt, tf = 0, 0.01, 1.
 # Construct model blocks 
 gen = FunctionGenerator(identity)
 adder = Adder(Bus(2), (+, -))
-mem = Memory(Bus(1), 1, initial=[zeros(1)])    # Initial condition is very important for accurate solutions. 
+mem = Memory(Bus(1), 1, initial=0.)    # Initial condition is very important for accurate solutions. 
 writerout = Writer(Bus(length(adder.output)))
 writerin = Writer(Bus(length(gen.output)))
 

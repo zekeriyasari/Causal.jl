@@ -13,7 +13,7 @@ numnodes = 2
 nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
 conmat = [-1 1; 1 -1] * 600
 cplmat = [1 0 0; 0 0 0; 0 0 0]
-net = Network(nodes, conmat, cplmat, [], 1:numnodes)
+net = Network(nodes, conmat, cplmat, inputnodeidx=[], outputnodeidx=1:numnodes)
 writer = Writer(Bus(length(net.output)))
 
 # Connect the blocks

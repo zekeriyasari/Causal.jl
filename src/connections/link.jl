@@ -22,7 +22,7 @@ Constructs a `Link` with element type `T` and buffer length `ln`. The buffer ele
 Constructs a `Link` with element type `Float64` and buffer length `ln`. The buffer element type is `Float64` and mode is `Cyclic`.
 """
 mutable struct Link{T}
-    buffer::Buffer{Cyclic, T}
+    buffer::Buffer{Cyclic, T, 1}
     channel::Channel{T}
     leftpin::Pin
     rightpin::Pin
@@ -30,10 +30,10 @@ mutable struct Link{T}
     id::UUID
     master::RefValue{Link{T}}
     slaves::Vector{RefValue{Link{T}}}
-    Link{T}(ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), Pin(), Pin(),
+    Link(dtype::Type{T}, ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), Pin(), Pin(),
         Callback[], uuid4(), RefValue{Link{T}}(), Vector{RefValue{Link{T}}}()) 
 end
-Link(ln::Int=64) = Link{Float64}(ln)
+Link(ln::Int=64) = Link(Float64, ln)
 
 show(io::IO, link::Link) = print(io, 
     "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), hasmaster:$(isassigned(link.master)), ", 
@@ -120,6 +120,7 @@ end
 
 """
     close(link)
+
 
 Closes `link`. All the task bound the `link` is also terminated safely. When closed, it is not possible to take and put element from the `link`. See also: [`take!(link::Link)`](@ref), [`put!(link::Link, val)`](@ref)
 ```

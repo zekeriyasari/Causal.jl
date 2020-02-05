@@ -15,7 +15,7 @@ mutable struct Printer{IB, DB, TB, P, T, H} <: AbstractSink
         timebuf = Buffer(buflen)
         databuf = Buffer(Vector{T}, buflen)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         addplugin(
             new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger),
             typeof(handshake)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4()), print)

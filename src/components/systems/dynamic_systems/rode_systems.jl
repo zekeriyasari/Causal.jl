@@ -53,7 +53,7 @@ mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractRODESys
     noise::N
     function RODESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=RODESolver)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, handshake, Callback[], uuid4(),

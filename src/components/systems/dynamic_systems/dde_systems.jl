@@ -66,7 +66,7 @@ mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, IV, S, HST} <: AbstractDDESys
     history::HST
     function DDESystem(input, output, statefunc, outputfunc, state, history, t; solver=DDESolver)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver), typeof(history)}(input, output, trigger, handshake, Callback[], 

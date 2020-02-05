@@ -47,7 +47,7 @@ mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractDiscre
     @generic_dynamic_system_fields
     function DiscreteSystem(input, output, statefunc, outputfunc, state, t;  solver=DiscreteSolver)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state),  typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 

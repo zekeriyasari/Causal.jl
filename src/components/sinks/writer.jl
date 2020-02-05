@@ -15,7 +15,7 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
     @generic_sink_fields
     file::F
-    function Writer(input::Bus{T}; buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4()))) where T 
+    function Writer(input::Bus{<:Link{T}}; buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4()))) where T 
         # Construct the file
         endswith(path, ".jld2") || (path *= ".jld2")
         file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
@@ -23,9 +23,9 @@ mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
 
         # Construct the buffers
         timebuf = Buffer(buflen)
-        databuf = Buffer(Vector{T}, buflen)
+        databuf = Buffer(T, length(input), buflen)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         addplugin(
             new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
             typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), file), write!)
@@ -92,7 +92,8 @@ function fread(path::String; flatten=false)
     data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
     if flatten
         t = vcat(collect(keys(data))...)
-        x = collect(hcat(vcat(collect(values(data))...)...)')
+        x = collect(hcat(collect(values(data))...)')
+        # x = collect(hcat(vcat(collect(values(data))...)...)')
         return t, x
     else
         return data

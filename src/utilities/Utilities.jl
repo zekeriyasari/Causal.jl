@@ -7,7 +7,7 @@ import Base.show
 
 # Utility types 
 export Callback, enable!, disable!, addcallback, deletecallback, isenabled
-export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, content, mode, snapshot
+export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, content, mode, snapshot, datalength
 
 include("callbacks.jl")
 include("buffers.jl")

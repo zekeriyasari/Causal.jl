@@ -40,9 +40,6 @@ julia> process(plg, x)
 ```
 """
 function process(plg::Lyapunov, x)
-    if !(eltype(x) <: Real)
-        x = vcat(x...)
-    end
     ntype = FixedMassNeighborhood(5)
     ks = 1 : 4 : plg.ni
     R = reconstruct(x, plg.m, plg.J)

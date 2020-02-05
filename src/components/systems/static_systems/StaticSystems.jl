@@ -39,7 +39,7 @@ struct StaticSystem{IB, OB, T, H, OF} <: AbstractStaticSystem
     @generic_static_system_fields
     function StaticSystem(input, output, outputfunc)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc)
     end
 end
@@ -69,7 +69,7 @@ struct Adder{IB, OB, T, H, OF, S} <: AbstractStaticSystem
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
         output = similar(input)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(signs)}(input,
         output, trigger, handshake, Callback[], uuid4(), outputfunc, signs)
     end
@@ -106,7 +106,7 @@ struct Multiplier{IB, OB, T, H, OF, S} <: AbstractStaticSystem
         end
         output = similar(input)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(ops)}(input, 
         output, trigger, handshake, Callback[], uuid4(), outputfunc, ops)
     end
@@ -139,7 +139,7 @@ struct Gain{IB, OB, T, H, OF, G} <: AbstractStaticSystem
         outputfunc(u, t) =  gain * u
         output = similar(input, length(input))
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(gain)}(input, 
             output, trigger, handshake, Callback[], uuid4(), outputfunc, gain)
     end
@@ -157,7 +157,7 @@ struct Terminator{IB, OB, T, H, OF} <: AbstractStaticSystem
         outputfunc = nothing
         output = nothing
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc)}(input, output, 
             trigger, handshake, Callback[], uuid4(), outputfunc) 
     end
@@ -172,14 +172,13 @@ Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `i
 struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{T}, numdelay::Int; initial=[Vector{T}(undef, length(input)) for i=1:numdelay]) where T 
-        buffer = Buffer{Fifo}(Vector{T}, numdelay)
+    function Memory(input::Bus{<:Link{T}}, numdelay::Int; initial=zeros(T, length(input))) where T 
+        buffer = Buffer{Fifo}(T, length(input), numdelay)
         fill!(buffer, initial)
-        # outputfunc(u, t) = buffer()
         outputfunc(u, t) = read(buffer)
         output = similar(input, length(input))
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), 
             typeof(buffer)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc, buffer)
     end
@@ -210,7 +209,7 @@ struct Coupler{IB, OB, T, H, OF, C1, C2} <: AbstractStaticSystem
             outputfunc = (u, t) -> kron(map(f->f(t), conmat), cplmat) * u  # Time varying coupling 
         end
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(conmat), 
             typeof(cplmat)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc, conmat, cplmat)
     end

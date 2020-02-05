@@ -47,7 +47,7 @@ mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
     @generic_dynamic_system_fields
     function ODESystem(input, output, statefunc, outputfunc, state, t; solver=ODESolver)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         # inputval = typeof(input) <: Bus ? Vector{eltype(input)}(undef, length(input)) : nothing
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
@@ -79,7 +79,7 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyste
     function LinearSystem(input, output; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
         state=rand(size(A,1)), t=0., solver=ODESolver)
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
@@ -151,7 +151,7 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyste
             end
         end
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
@@ -211,7 +211,7 @@ mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem
             end
         end
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
@@ -306,7 +306,7 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, IV, S, DT} <: AbstractODESys
             end
         end
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver), typeof(diode)}(input, output, trigger, handshake,
@@ -367,7 +367,7 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyst
             end
         end
         trigger = Link() 
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 
@@ -422,7 +422,7 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESy
             end
         end
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), 

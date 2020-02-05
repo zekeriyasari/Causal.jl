@@ -37,7 +37,7 @@ mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
         
         # Construct network
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         net = new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components), 
             typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
             conmat, cplmat, clusters)

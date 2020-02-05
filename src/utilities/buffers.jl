@@ -1,6 +1,6 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype, firstindex, lastindex, IndexStyle
+import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype, firstindex, lastindex, IndexStyle, display
 
 ##### Buffer modes
 """
@@ -55,9 +55,9 @@ struct Fifo <: LinearMode end
 
 ##### Buffer
 """
-    Buffer{M}(::Type{T}, ln::Int) where {M, T} 
+    Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T}
 
-Constructs a `Buffer` of length `ln` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to read from and written into the `Buffer`.  There exists for different buffer modes: 
+Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to read from and written into the `Buffer`.  There exists for different buffer modes: 
 
 * `Normal`: See [`Normal`](@ref)
 
@@ -69,33 +69,34 @@ Constructs a `Buffer` of length `ln` with element type of `T`. `M` is the mode o
 
 The default mode for `Buffer` is `Cyclic` and default element type is `Float64`.
 
-    Buffer(::Type{T}, ln::Int) where T 
+    Buffer{M}(sz::Int...) where {M, T}
 
-Constructs a `Buffer` of length `ln` and with element type of `T`. The mode of the buffer is `Cyclic`.
+Constructs a `Buffer` of size `sz` and with element type of `T` and mode `M`.
 
-    Buffer{M}(ln::Int) where M
+    Buffer(dtype::Type{T}, sz::Int...) where T
 
-Constructs a `Buffer` of length of `ln` and with mode `M`. `M` can be `Normal`, `Cyclic`, `Fifo` and `Lifo`. The element type of the `Buffer` is `Float64`.
+Constructs a `Buffer` of size `sz` and element type `T`. The mode of buffer is `Cyclic`.
 
-    Buffer(ln::Int) 
+    Buffer(sz::Int...)  
 
-Constructs a `Buffer` of length `ln` with mode `Cyclic` and element type of `Float64`.
+Constructs a `Buffer` of size `sz` with mode `Cyclic` and element type of `Float64`.
 """
-mutable struct Buffer{M<:BufferMode, T}
-    data::Vector{T}
+mutable struct Buffer{M<:BufferMode, T, N} <: AbstractArray{T, N}
+    data::Array{T, N}
     index::Int 
     state::Symbol 
     callbacks::Vector{Callback}
     id::UUID
-    Buffer{M}(::Type{T}, ln::Int) where {M, T} = new{M, T}(Vector{T}(undef, ln), 1, :empty, Callback[], uuid4())
+    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = new{M, T, ndims(data)}(data, 1, :empty, Callback[], uuid4())
 end
-Buffer(::Type{T}, ln::Int) where T = Buffer{Cyclic}(T, ln)
-Buffer{M}(ln::Int) where M = Buffer{M}(Float64, ln)
-Buffer(ln::Int) = Buffer(Float64, ln)
+Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T} = Buffer{M}(zeros(T, sz...)) 
+Buffer{M}(sz::Int...) where {M, T} = Buffer{M}(zeros(Float64, sz...)) 
+Buffer(dtype::Type{T}, sz::Int...) where T  = Buffer{Cyclic}(dtype, sz...)
+Buffer(sz::Int...) = Buffer(Float64, sz...)
 
 show(io::IO, buf::Buffer)= print(io, 
-    "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), length:$(length(buf)), index:$(buf.index), state:$(buf.state))")
-
+    "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
+display(buf::Buffer) = show(buf)
 
 ##### Buffer info.
 """
@@ -103,100 +104,37 @@ show(io::IO, buf::Buffer)= print(io,
 
 Returns buffer mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 """
-mode(buf::Buffer{M, T}) where {M, T} = M
-
-"""
-    eltype(buf::Buffer)
-
-Returns element type of `buf`.
-"""
-eltype(buf::Buffer{M, T}) where {M, T} = T
+mode(buf::Buffer{M, T, N}) where {M, T, N} = M
 
 ##### AbstractArray interface.
-#
-# `Buffer` type has linear index style. That means, it can only be indexed by single index. 
-# For more information, see (https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-array-1) 
-#
-IndexStyle(::Type{<:Buffer}) = IndexLinear()
+"""
+    datalength(buf::Buffer)
+
+Returns the data length of `buf`.
+"""
+datalength(buf::Buffer) = isa(buf, AbstractVector) ? size(buf, 1) : size(buf, 2)
 
 """
-    length(buf::Buffer)
+    size(buf::Buffer)
 
-Returns maximum number of elements that can be hold in `buf`.
+Returns the size of `buf`.
 """
-length(buf::Buffer) = length(buf.data)
 size(buf::Buffer) = size(buf.data)
 
 """
-    getindex(buf::Buffer, idx)
+    getindex(buf::Buffer, idx::Vararg{Int, N})
 
 Returns an element from `buf` at index `idx`. Same as `buf[idx]`
-
-# Example
-```jldoctest
-julia> buf = fill!(Buffer(5), 1:5)
-Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:full)
-
-julia> buf[1]
-1.0
-
-julia> buf[2:3]
-2-element Array{Float64,1}:
- 2.0
- 3.0
-
-julia> buf[[3, 5]]
-2-element Array{Float64,1}:
- 3.0
- 5.0
-
-julia> buf[end]
-5.0
 ```
 """
-getindex(buf::Buffer, idx::Int) where N = buf.data[idx]
-getindex(buf::Buffer, idx::UnitRange) = buf.data[idx]
-getindex(buf::Buffer, idx::Vector{Int}) =  buf.data[idx]
-getindex(buf::Buffer, idx::UnitRange{Int}) = buf.data[idx]
-getindex(buf::Buffer, ::Colon) = buf.data[:]
+getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.data[idx...]
 
 """
     setindex!(buf::Buffer, val, idx)
 
 Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`.
-
-# Example
-```jldoctest
-julia> buf = Buffer(5)
-Buffer(mode:Cyclic, eltype:Float64, length:5, index:1, state:empty)
-
-julia> buf[1] = 1
-1
-
-julia> buf[2:3] = 4:5
-4:5
-
-julia> buf[[4, 5]] = [10, 20]
-2-element Array{Int64,1}:
- 10
- 20
-
-julia> buf.data
-5-element Array{Float64,1}:
-  1.0
-  4.0
-  5.0
- 10.0
- 20.0
-```
 """
-setindex!(buf::Buffer, val, inds::Int) where N = (buf.data[inds] = val)
-setindex!(buf::Buffer, val, idx::Vector{Int}) = buf.data[idx] = val
-setindex!(buf::Buffer, val, idx::UnitRange{Int}) = buf.data[idx] = val
-setindex!(buf::Buffer, val, ::Colon) = buf.data[:] = val
-
-firstindex(buf::Buffer) = 1
-lastindex(buf::Buffer) = length(buf)  # For indexing like bus[end]
+setindex!(buf::Buffer, item, idx::Vararg{Int, N}) where N = buf.data[idx...] = item
 
 ##### Buffer state control and check.
 """
@@ -223,8 +161,9 @@ function setproperty!(buf::Buffer, name::Symbol, val::Int)
         setfield!(buf, name, val)
         if val == 1
             buf.state = :empty
-        elseif val > size(buf.data, 1)
+        elseif val > datalength(buf)
             buf.state = :full
+            mode(buf) == Cyclic && setfield!(buf, :index, %(buf.index, datalength(buf)))
         else
             buf.state = :nonempty
         end
@@ -236,147 +175,54 @@ end
     write!(buf::Buffer{M, T}, val) where {M, T}
 
 Writes `val` into `buf`. Writing is carried occurding the mode `M` of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
-
-# Example 
-```jldoctest 
-julia> buf = Buffer(Vector{Float64}, 3)
-Buffer(mode:Cyclic, eltype:Array{Float64,1}, length:3, index:1, state:empty)
-
-julia> buf.data
-3-element Array{Array{Float64,1},1}:
- #undef
- #undef
- #undef
-
-julia> write!(buf, ones(4))
-4-element Array{Float64,1}:
- 1.0
- 1.0
- 1.0
- 1.0
-
-julia> buf.data
-3-element Array{Array{Float64,1},1}:
-    [1.0, 1.0, 1.0, 1.0]
- #undef                 
- #undef                 
-```
 """
 function write!(buf::Buffer, val)
-    _write!(buf, val)
+    checkstate(buf)
+    writeitem(buf, val)
     buf.callbacks(buf)
     val
 end
-function _write!(buf::Buffer{M, T}, val) where {M <: LinearMode, T}
-    if isfull(buf) 
-        @warn "Buffer is full."
-    else 
-        buf[buf.index] = val 
-        buf.index +=1
-    end
-end
-function _write!(buf::Buffer{M, T}, val) where {M <: CyclicMode, T}
-    buf[buf.index] = val
-    buf.index += 1
-    if isfull(buf)
-        setfield!(buf, :index, %(buf.index, length(buf)))
-    end
-end
+writeitem(buf::AbstractVector, val) = (buf[buf.index] = val; buf.index += 1)
+writeitem(buf::AbstractMatrix, val) = (buf[:, buf.index] = val; buf.index += 1)
+checkstate(buf::Buffer) = mode(buf) != Cyclic && isfull(buf) && error("Buffer is full")
 
 """
-    fill!(buf::Buffer{M, T}, val::T)
+    fill!(buf::Buffer, val)
 
-Writes `val` into `buf` until `buf` is full. If `val` is a vector
-
-    fill!(buf::Buffer{M, T}, val::AbstractVector{T}) where {M, T}
-
-Writes all items in `val` into `buf`. 
-
-# Example 
-```jldoctest
-julia> buf = Buffer(3)
-Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
-
-julia> fill!(buf, 1.)
-Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
-
-julia> all(buf.data .== ones(3))
-true
-
-julia> buf = Buffer(3)
-Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:empty)
-
-julia> fill!(buf, 1:3)
-Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
-
-julia> all(buf.data .== 1. : 3.)
-true
-```
+Writes `val` to `buf` until `bus` is full.
 """
-fill!(buf::Buffer{M, T}, val::T) where {M, T} = (foreach(i -> write!(buf, val), 1 : length(buf)); buf)
-fill!(buf::Buffer{M, T}, val::S) where {M, T, S} = fill!(buf, convert(T, val))
-fill!(buf::Buffer{M, T}, val::AbstractVector{T}) where {M, T} = (foreach(i -> write!(buf, i), val); buf)
-fill!(buf::Buffer{M, T}, val::AbstractVector{S}) where {M, T, S} = fill!(buf, convert(Vector{T}, val))
+fill!(buf::Buffer, val) = (foreach(i -> write!(buf, val), 1 : datalength(buf)); buf)
 
 ##### Reading from buffers
 """
     read(buf::Buffer)
 
 Reads an element from `buf`. Reading is performed according to the mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
-
-# Example
-```jldoctest
-julia> buf = fill!(Buffer{Fifo}(3), 1. : 3.)
-Buffer(mode:Fifo, eltype:Float64, length:3, index:4, state:full)
-
-julia> for i in 1 : 3 
-       @show read(buf)
-       end
-read(buf) = 1.0
-read(buf) = 2.0
-read(buf) = 3.0
-
-julia> buf = fill!(Buffer{Lifo}(3), 1. : 3.)
-Buffer(mode:Lifo, eltype:Float64, length:3, index:4, state:full)
-
-julia> for i in 1 : 3 
-       @show read(buf)
-       end
-read(buf) = 3.0
-read(buf) = 2.0
-read(buf) = 1.0
-
-julia> buf = fill!(Buffer{Cyclic}(3), 1. : 3.)
-Buffer(mode:Cyclic, eltype:Float64, length:3, index:1, state:full)
-
-julia> for i in 1 : 3 
-       @show read(buf)
-       end
-read(buf) = 3.0
-read(buf) = 3.0
-read(buf) = 3.0
-```
 """
-function read(buf::Buffer) 
-    isempty(buf) && error("Buffer is empty")
+function read(buf::Buffer)
+    isempty(buf) && error("Buffer is empty.")
     val = _read(buf)
     buf.callbacks(buf)
     val
 end
-_read(buf::Buffer{M, T}) where {M<:Union{Normal, Cyclic}, T} = isfull(buf) ? buf[end] :  buf[buf.index - 1]
-function _read(buf::Buffer{M, T}) where {M<:Fifo, T}
-    val = buf[1]
-    buf.data .= circshift(buf.data, -1)
-    buf[end] = Vector{T}(undef, 1)[1]
+function _read(buf::Buffer{Fifo, T, N}) where {T, N}
+    val = readitem(buf, 1)
+    buf .= circshift(buf, -1)
     buf.index -= 1
+    buf[end] = zero(eltype(buf))
     val
 end
-function _read(buf::Buffer{M, T}) where {M<:Lifo, T}
+function _read(buf::Buffer{Lifo, T, N}) where {T, N}
     buf.index -= 1
-    val = buf[buf.index]
-    buf[buf.index] = Vector{T}(undef, 1)[1]
+    val = readitem(buf, buf.index)
+    buf[buf.index] = zero(eltype(buf))
     val
 end
+function _read(buf::Buffer{<:Union{Cyclic, Normal}, T, N}) where {T, N}
+    isfull(buf) ? readitem(buf, 1) : readitem(buf, buf.index - 1)
+end
+readitem(buf::AbstractVector, idx::Int) = buf[idx]
+readitem(buf::AbstractMatrix, idx::Int) = buf[:, idx]
 
 ##### Accessing buffer data
 """

@@ -12,7 +12,7 @@ mutable struct SubSystem{IB, OB, T, H, C} <: AbstractSubSystem
     function SubSystem(components, input::Union{Nothing, <:Bus, <:AbstractVector{<:Link}}, 
         output::Union{Nothing, <:Bus, <:AbstractVector{<:Link}})
         trigger = Link()
-        handshake = Link{Bool}()
+        handshake = Link(Bool)
         if typeof(input) <: AbstractVector{<:Link}
             # inputbus = Bus(length(input))
             # for (i, link) in enumerate(input)

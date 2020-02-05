@@ -1,7 +1,7 @@
 # This file contains the Bus tool for connecting the tools of DsSimulator
 
 import Base: put!, wait, take!
-import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close, eltype, similar
+import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, close, eltype, similar, display
 
 
 """
@@ -9,113 +9,40 @@ import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, 
 
 Constructs a `Bus` consisting of `nlinks` links. `ln` is the buffer length and `T` is element type of the links.
 """
-struct Bus{T}
-    links::Vector{Link{T}}
+struct Bus{L<:Link} <: AbstractVector{L}
+    links::Vector{L}
     callbacks::Vector{Callback}
     id::UUID
+    Bus(links::AbstractVector{L}) where L<:Link = new{L}(links, Callback[], uuid4())
 end
-Bus{T}(nlinks::Int=1, ln::Int=64) where T = Bus{T}([Link{T}(ln) for i = 1 : nlinks], Callback[], uuid4())
-Bus(links::AbstractVector{L}) where {L<:Link{T}} where {T} = Bus{T}(links, Callback[], uuid4())
+Bus(dtype::Type{T}, nlinks::Int, ln::Int=64) where T = Bus([Link(T, ln) for i = 1 : nlinks])
+Bus(nlinks::Int=1, ln::Int=64) = Bus(Float64, nlinks, ln)
 
-
-"""
-    Bus([nlinks::Int=1, [ln::Int=64]])
-
-Constructs a `Bus` consisting of `nlinks` links with element type `T`. `ln` is the buffer length of the links.
-"""
-Bus(nlinks::Int=1, ln::Int=64) = Bus{Float64}(nlinks, ln)
-
-show(io::IO, bus::Bus{T}) where T = print(io, "Bus(nlinks:$(length(bus)), eltype:$(T), ",
+show(io::IO, bus::Bus) = print(io, "Bus(nlinks:$(length(bus)), eltype:$(eltype(bus)), ",
     "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
+display(bus::Bus) = show(bus)
 
-##### Make bus indexable.
+##### AbstractVector interface
 """
-    eltype(bus::Bus)
+    size(bus::Bus)
 
-Returns the element type of `bus`. Element type of `bus` is a subtype of `Link`.
-
-# Example 
-```jldoctest
-julia> b = Bus{Matrix{Float64}}(5)
-Bus(nlinks:5, eltype:Array{Float64,2}, isreadable:false, iswritable:false)
-
-julia> eltype(b)
-Link{Array{Float64,2}}
-```
+Retruns size of `bus`.
 """
-eltype(bus::Bus{T}) where {T} = Link{T}
-
-"""
-    length(bus::Bus)
-
-Returns the number of links in `bus`.
-
-# Example
-```jldoctest
-julia> b = Bus(5)
-Bus(nlinks:5, eltype:Float64, isreadable:false, iswritable:false)
-
-julia> length(b)
-5
-```
-"""
-length(bus::Bus) = length(bus.links)
 size(bus::Bus) = size(bus.links)
 
 """
-    getindex(bus::Bus, I)
+    getindex(bus::Bus, idx::Vararg{Int, N}) where N 
 
-Returns the links of `bus` corresponding to `I`. The syntax `bus[I]` is the same as `getindex(bus, I)`.
-
-# Example
-```jldoctest 
-julia> b = Bus(3);
-
-julia> b[1]
-Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-
-julia> b[1:2]
-2-element Array{Link{Float64},1}:
- Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
- Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-
-julia> b[end]
-Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-```
+Returns elements from `bus` at index `idx`.
 """
-getindex
-getindex(bus::Bus, I::Int) =  bus.links[I]
-getindex(bus::Bus, I::Vector{Int}) =  bus.links[I]
-getindex(bus::Bus, I::UnitRange{Int}) = bus.links[I]
-getindex(bus::Bus, ::Colon) = bus.links[:]
-
+getindex(bus::Bus, idx::Vararg{Int, N}) where N = bus.links[idx...]
 
 """
-    setindex!(bus::Bus, val, I::Int) 
+    setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N 
 
-Sets `val` to the links of `bus` corresponding to index `I`. The syntax `bus[I] = val` is the same as `setindex!(bus, val, I)`.
-
-# Example 
-```jldoctest
-julia> b = Bus(5);
-
-julia> b[2:3] .= [Link() for i = 1 : 2]
-2-element Array{Link{Float64},1}:
- Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
- Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-
-julia> b[end] = Link() 
-Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-```
+Sets `item` to `bus` at index `idx`.
 """
-setindex!
-setindex!(bus::Bus, val, I::Int) = bus.links[I] = val
-setindex!(bus::Bus, val::AbstractVector, I::Vector{Int}) = bus.links[I] = val
-setindex!(bus::Bus, val::AbstractVector, I::UnitRange{Int}) = bus.links[I] = val
-setindex!(bus::Bus, val::AbstractVector, ::Colon) = bus.links[:] = val
-
-firstindex(bus::Bus) = 1
-lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
+setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N = bus.links[idx...] = item
 
 ##### Reading from and writing into from buses
 """
@@ -124,29 +51,10 @@ lastindex(bus::Bus) = length(bus)  # For indexing like bus[end]
 Takes an element from `bus`. Each link of the `bus` is a read and a vector containing the results is returned.
 
 !!! warning 
-    The `bus` must be readable to be read. That is, there must be a runnable tasks bound to links of the `bus` that writes data to `bus`. See [`launch`](@ref)
-
-# Example 
-```julia 
-julia> b = Bus(2);
-
-julia> t = @async for i in 1. : 5. 
-       put!(b, [i, i + 1])
-       end;
-
-julia> take!(b)
-2-element Array{Float64,1}:
- 1.0
- 2.0
-
-julia> take!(b)
-2-element Array{Float64,1}:
- 2.0
- 3.0
-```
+    The `bus` must be readable to be read. That is, there must be a runnable tasks bound to links of the `bus` that writes data to `bus`.
 """
 function take!(bus::Bus) 
-    out = take!.(bus.links)
+    out = take!.(bus[:])
     bus.callbacks(bus)
     out
 end
@@ -157,70 +65,21 @@ end
 Puts `vals` to `bus`. Each item in `vals` is putted to the `links` of the `bus`.
 
 !!! warning 
-    The `bus` must be writable to be read. That is, there must be a runnable tasks bound to links of the `bus` that reads data from `bus`. See [`launch`](@ref)
-
-# Example 
-```julia
-julia> b = Bus(2);
-
-julia> t = @async while true
-       item = take!(b)
-       all(item .=== [NaN, NaN]) && break
-       println("Took" * string(item))
-       end
-Task (runnable) @0x00007fdabfc3bd00
-
-julia> put!(b, [1., 2.])
-Took[1.0, 2.0]
-2-element Array{Float64,1}:
- 1.0
- 2.0
-
-julia> put!(b, [4., 5.])
-Took[4.0, 5.0]
-2-element Array{Float64,1}:
- 4.0
- 5.0
-
-julia> put!(b, [NaN, NaN])
-2-element Array{Float64,1}:
- NaN
- NaN
-```
+    The `bus` must be writable to be read. That is, there must be a runnable tasks bound to links of the `bus` that reads data from `bus`.
 """
 function put!(bus::Bus, vals)
-    put!.(bus.links, vals)
+    put!.(bus[:], vals)
     bus.callbacks(bus)
     vals
 end
 
-##### Iterating bus
-"""
-    iterate(bus::Bus[, i=1])
-
-İteration interface so that `bus` can be iterated in a loop. The links of `bus` are iterated.
-
-# Example 
-```jldoctest
-julia> b = Bus(3);
-
-julia> for l in b 
-       @show l 
-       end
-l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-l = Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-```
-"""
-iterate(bus::Bus, i=1) = i > length(bus.links) ? nothing : (bus.links[i], i + 1)   # When iterated, return links
-
 ##### Interconnection of busses.
-connect(master::Bus, slave::Bus) = connect(master[:], slave[:])
-disconnect(bus1::Bus, bus2::Bus) = disconnect(bus1[:], bus2[:])
-isconnected(bus1::Bus, bus2::Bus) = isconnected(bus1[:], bus2[:])
-release(bus::Bus) = release(bus[:])
+"""
+    similar(bus::Bus{L}, nlinks::Int=length(bus), ln::Int=64)
 
-similar(bus::Bus{T}, nlinks::Int=1, ln::Int=64) where {T} = Bus{T}(nlinks, ln)
+Returns a new bus that is similar to `bus` with the same element type. The number of links in the new bus is `nlinks` and data buffer length is `ln`.
+"""
+similar(bus::Bus{L}, nlinks::Int=length(bus), ln::Int=64) where {L<:Link{T}} where {T} = Bus(T, nlinks, ln)
 
 
 """
@@ -228,14 +87,14 @@ similar(bus::Bus{T}, nlinks::Int=1, ln::Int=64) where {T} = Bus{T}(nlinks, ln)
 
 Returns `true` is all the links of `bus` has slaves. See also [`hasslaves(link::Link)`](@ref)
 """
-hasslaves(bus::Bus) = all(hasslaves.(bus.links))
+hasslaves(bus::Bus) = all(hasslaves.(bus[:]))
 
 """
    hasmaster(bus::Bus) 
 
 Returns `true` is all the links of `bus` has master. See alsos [`hasmaster(link::Link)`](@ref)
 """
-hasmaster(bus::Bus) = all(hasmaster.(bus.links))
+hasmaster(bus::Bus) = all(hasmaster.(bus[:]))
 
 ##### Closing bus
 """
@@ -251,24 +110,24 @@ close(bus::Bus) = foreach(close, bus)
 
 Returns `true` when the links of `bus` are full.
 """
-isfull(bus::Bus) = all(isfull.(bus.links))
+isfull(bus::Bus) = all(isfull.(bus[:]))
 
 """
     isreadable(bus::Bus)
 
 Returns `true` if all the links of `bus` is readable.
 """
-isreadable(bus::Bus) = all(isreadable.(bus.links))
+isreadable(bus::Bus) = all(isreadable.(bus[:]))
 
 """
     iswritable(bus::Bus)
 
 Returns `true` if all the links of `bus` is writable.
 """
-iswritable(bus::Bus) = all(iswritable.(bus.links))
+iswritable(bus::Bus) = all(iswritable.(bus[:]))
 
-##### Methods on busses.
-# clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)
+# ##### Methods on busses.
+# # clean!(bus::Bus) = foreach(link -> clean!(link.buffer), bus.links)
 
 """
     snapshot(bus::Bus)
@@ -288,11 +147,11 @@ end
 
 Launches every link of `bus`. See [`launch(link::Link)`](@ref)
 """
-launch(bus::Bus) = launch.(bus.links)
+launch(bus::Bus) = launch.(bus[:])
 
 """
     launch(bus::Bus, valrange::AbstractVector)
 
 Launches every links of `bus` with every item of `valrange`. See [`launch(link:Link, valrange)`(@ref)]
 """
-launch(bus::Bus, valrange::AbstractVector) = launch.(bus.links, valrange)
+launch(bus::Bus, valrange::AbstractVector) = launch.(bus[:], valrange)

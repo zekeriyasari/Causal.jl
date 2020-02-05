@@ -221,9 +221,8 @@ function _read(buf::Buffer{Lifo, T, N}) where {T, N}
     buf[buf.index] = zero(eltype(buf))
     val
 end
-function _read(buf::Buffer{<:Union{Cyclic, Normal}, T, N}) where {T, N}
-    isfull(buf) ? readitem(buf, 1) : readitem(buf, buf.index - 1)
-end
+_read(buf::Buffer{Normal, T, N}) where {T, N} = readitem(buf, buf.index - 1)
+_read(buf::Buffer{Cyclic, T, N}) where {T, N} = isfull(buf) ? readitem(buf, datalength(buf)) : readitem(buf, buf.index - 1)
 readitem(buf::Buffer{M, T, 1}, idx::Int) where {M, T} = buf[idx]
 readitem(buf::Buffer{M, T, 2}, idx::Int) where {M, T} = buf[:, idx]
 rotate(buf::Buffer{M, T, 1}) where {M, T} = circshift(buf, -1)

@@ -62,10 +62,11 @@ function take!(clk::Clock)
         @warn "Clock is out of time."
         return clk.t
     end
-    if !isrunning(clk)
-        @warn "Clock is not running."
-        return clk.t
-    end
+    # NOTE: If this code block is uncommented, a bug occurs. The same clock times is sent multiple time.
+    # if !isrunning(clk)   
+    #     @warn "Clock is not running."
+    #     return clk.t
+    # end
     clk.t = take!(clk.generator)
     clk.callbacks(clk)
     clk.t

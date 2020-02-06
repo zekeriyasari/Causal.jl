@@ -62,7 +62,10 @@ function take!(clk::Clock)
         @warn "Clock is out of time."
         return clk.t
     end
-    # NOTE: If this code block is uncommented, a bug occurs. The same clock times is sent multiple time.
+    ## 
+    ##  NOTE: If this code block is uncommented, a bug occurs
+    ##  The same clock times is sent multiple time.
+    ## 
     # if !isrunning(clk)   
     #     @warn "Clock is not running."
     #     return clk.t
@@ -134,26 +137,6 @@ end
     stop!(clk::Clock)
 
 Unsets `clk`. After the stpp, it is possible to take clock ticks from `clk`. See also [`take!(clk::Clock)`](@ref)
-
-# Example
-```jldocstest
-julia> clk
-Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
-
-julia> set!(clk)
-Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:true)
-
-julia> take!(clk)
-0.0
-
-julia> stop!(clk)
-Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
-
-julia> take!(clk)
-┌ Warning: Clock is not running.
-└ @ Jusdl.Components.Sources ~/.julia/dev/Jusdl/src/components/sources/clock.jl:47
-0.0
-```
 """
 function stop!(clk::Clock)
     set!(clk, Channel{typeof(clk.t)}(0)) 

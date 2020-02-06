@@ -11,6 +11,7 @@
     @test isempty(buf)
     @test buf.state == :empty
     @test size(buf) == (5,)
+    @test isa(buf, AbstractArray)
 
     # Buffer data length 
     buf = Buffer(5)

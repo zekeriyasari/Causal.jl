@@ -104,7 +104,7 @@ struct Multiplier{IB, OB, T, H, OF, S} <: AbstractStaticSystem
             end
             val
         end
-        output = similar(input)
+        output = Bus()
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(ops)}(input, 

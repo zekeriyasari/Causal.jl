@@ -194,11 +194,13 @@ end
 Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
 """
 function launch(comp::AbstractComponent)
-    outputtask = if !(typeof(comp) <: AbstractSink)  
-        @async while true 
-            val = take!(comp.output)
-            # all(val .=== missing) && break
-            all(val .=== NaN) && break
+    outputtask = if !(typeof(comp) <: AbstractSink)  # Check for `AbstractSink`.
+        if !(typeof(comp.output) <: Nothing)  # Check for `Terminator`.
+            @async while true 
+                val = take!(comp.output)
+                # all(val .=== missing) && break
+                all(val .=== NaN) && break
+            end
         end
     end
     triggertask = @async begin 
@@ -244,7 +246,7 @@ end
 Closes the `trigger` link and `output` bus of `comp`.
 """
 function terminate(comp::AbstractComponent)
-    typeof(comp) <: AbstractSink || close(comp.output)
+    typeof(comp) <: AbstractSink || typeof(comp.output) <: Nothing || close(comp.output)
     close(comp.trigger)
     return 
 end

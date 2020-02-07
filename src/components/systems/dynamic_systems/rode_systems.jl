@@ -52,6 +52,7 @@ mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractRODESys
     @generic_dynamic_system_fields
     noise::N
     function RODESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=RODESolver)
+        haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
         trigger = Link()
         handshake = Link(Bool)
         inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing

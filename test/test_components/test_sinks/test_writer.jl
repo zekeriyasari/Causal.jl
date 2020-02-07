@@ -11,7 +11,7 @@
     @test length(writer.input) == 3
     @test size(writer.timebuf) == (64,)
     @test size(writer.databuf) == (3, 64)
-    @test writer.file.path == joinpath(tempdir(), "myfile2.jld2")
+    @test writer.file.path == joinpath(tempdir(), "myfile3.jld2")
     @test writer.plugin === nothing
     @test !isempty(printer.callbacks)
 

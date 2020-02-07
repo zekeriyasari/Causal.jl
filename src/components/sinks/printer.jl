@@ -10,10 +10,10 @@ Constructs a `Printer` with input bus `input`. `buflen` is the length of its int
 """
 mutable struct Printer{IB, DB, TB, P, T, H} <: AbstractSink
     @generic_sink_fields
-    function Printer(input::Bus{T}, buflen=64, plugin=nothing) where T
+    function Printer(input::Bus{<:Link{T}}; buflen=64, plugin=nothing) where T
         # Construct the buffers
         timebuf = Buffer(buflen)
-        databuf = Buffer(Vector{T}, buflen)
+        databuf = Buffer(T, length(input), buflen)
         trigger = Link()
         handshake = Link(Bool)
         addplugin(

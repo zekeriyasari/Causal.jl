@@ -19,7 +19,6 @@
     @test isa(ds.output, Bus)
     @test length(ds.output) == 2
     @test ds.state == ones(2)
-    @test typeof(ds.noise) <: Noise
 
     # Driving RODESystem
     ds.solver.params[:dt] = 0.01

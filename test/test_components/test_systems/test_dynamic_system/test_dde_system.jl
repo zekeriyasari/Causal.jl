@@ -2,7 +2,7 @@
 
 @testset "DDESystemTestSet" begin 
     # DDESystem construction 
-    const out = zeros(1)
+    out = zeros(1)
     tau = 1 
     conslags = [tau]
     histfunc(out, u, t) = (out .= 1.)

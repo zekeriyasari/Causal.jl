@@ -121,18 +121,16 @@ julia> mkdir(joinpath(tempdir(), "testdir1"))
 julia> mkdir(joinpath(tempdir(), "testdir2"))
 "/tmp/testdir2"
 
-julia> w = Writer(Bus(), path="/tmp/testdir1")
-Writer(path:/tmp/testdir1.jld2, nin:1)
+julia> w = Writer(Bus(), path="/tmp/testdir1/myfile.jld2")
+Writer(path:/tmp/testdir1/myfile.jld2, nin:1)
 
 julia> mv(w, "/tmp/testdir2")
-Writer(path:/tmp/testdir2/1e72bad1-9800-4ca0-bccd-702afe75e555, nin:1)
-
-julia> w.file.path
-"/tmp/testdir2/1e72bad1-9800-4ca0-bccd-702afe75e555"
+Writer(path:/tmp/testdir2/myfile.jld2, nin:1)
 ```
 """
 function mv(writer::Writer, dst; force::Bool=false)
-    id = writer.id
+    # id = writer.id
+    id = basename(writer.file.path)
     dstpath = joinpath(dst, string(id))
     srcpath = writer.file.path
     mv(srcpath, dstpath, force=force)
@@ -161,7 +159,8 @@ Writer(path:/tmp/testdir2/1e72bad1-9800-4ca0-bccd-702afe75e555, nin:1)
 ```
 """
 function cp(writer::Writer, dst; force=false, follow_symlinks=false)
-    id = writer.id
+    # id = writer.id
+    id = basename(writer.file.path)
     dstpath = joinpath(dst, string(id))
     cp(writer.file.path, dstpath, force=force, follow_symlinks=follow_symlinks)
     writer

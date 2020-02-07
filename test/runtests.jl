@@ -4,6 +4,8 @@
 using Test
 using Jusdl
 
+using DifferentialEquations
+
 # Construct the file tree in `test` directory.
 filetree = walkdir(@__DIR__)
 take!(filetree) # Pop the root directory `test` in which `runtests.jl` is.

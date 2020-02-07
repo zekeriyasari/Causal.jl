@@ -359,9 +359,9 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESyst
             end
         else
             statefunc = (dx, x, u, t) -> begin
-                dx[1] = -x[2] - x[3] + u[1]
-                dx[2] = x[1] + a * x[2] + u[2]
-                dx[3] = b + x[3] * (x[1] - c) + u[3]
+                dx[1] = -x[2] - x[3]
+                dx[2] = x[1] + a * x[2]
+                dx[3] = b + x[3] * (x[1] - c)
                 dx .+= cplmat * map(ui -> ui(t), u)
                 dx .*= gamma
             end

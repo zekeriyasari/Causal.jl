@@ -88,7 +88,7 @@
         RosslerSystem => Dict(:a => 0.38, :b => 0.3, :c => 4.82, :gamma => 1.)
         )
     for (DSystem, defaults) in DSystems
-        ds = DSystem(nothing, Bus(3); defaults...)  # System with key-value pairs with no input and output of type of Bus.
+        ds = DSystem(nothing, Bus(3); defaults...)  # System with key-value pairs with no input and bus output.
         ds = DSystem(nothing, Bus(3))  # System with no input
         @test ds.input === nothing
         @test isa(ds.output, Bus)

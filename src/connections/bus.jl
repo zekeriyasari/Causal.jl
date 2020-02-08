@@ -20,7 +20,8 @@ Bus(nlinks::Int=1, ln::Int=64) = Bus(Float64, nlinks, ln)
 
 show(io::IO, bus::Bus) = print(io, "Bus(nlinks:$(length(bus)), eltype:$(eltype(bus)), ",
     "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
-display(bus::Bus) = show(bus)
+display(bus::Bus) = println("Bus(nlinks:$(length(bus)), eltype:$(eltype(bus)), ",
+    "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
 
 ##### AbstractVector interface
 """

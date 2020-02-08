@@ -96,7 +96,8 @@ Buffer(sz::Int...) = Buffer(Float64, sz...)
 
 show(io::IO, buf::Buffer)= print(io, 
     "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
-display(buf::Buffer) = show(buf)
+display(buf::Buffer) = println( 
+    "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
 
 ##### Buffer info.
 """

@@ -21,8 +21,16 @@ connect(b1, b2)
 ```
 Here, `b1` is the master bus and `b2` is the slave bus. That is, data written to `b1` is also written into `b2`.
 ```@repl connection_of_busses 1
-t1 = launch(b1);
-t2 = launch(b2);
+t1 = @async while true
+    val = take!(b1)
+    all(val .=== NaN) && break
+    println("Took " * string(val))
+end
+t2 = @async while true
+    val = take!(b2)
+    all(val .=== NaN) && break
+    println("Took " * string(val))
+end
 put!(b1, [5., 10.]);
 [b1[i].buffer.data for i = 1 : 2]
 [b2[i].buffer.data for i = 1 : 2]
@@ -35,19 +43,22 @@ disconnect(b1, b2)
 isconnected(b1, b2)
 ```
 
-
 ## Data Flow through Busses
 Data flow through the `Bus`ses is very similar to the case in `Link`s. See [Data Flow through Links](@ref) for information about data flow through `Link`s. Runnable tasks must be bound to the links of the busses for data flow through the `Bus`. Again, `put!` and `take!` functions are used to write data from a `Bus` and read from data from a `Bus`.
 ```@docs 
-Connections.put!(bus::Bus, vals)
-Connections.take!(bus::Bus)
+put!(bus::Bus, vals)
+take!(bus::Bus)
 ```
 Any data written to a `Bus` is recorded into the buffers of its links.
 ```
 @repl writing_to_busses
 using Jusdl # hide
 b = Bus(2, 5);
-launch(b);
+t = @async while true
+    val = take!(b)
+    all(val .=== NaN) && break
+    println("Took " * string(val))
+end
 put!(b, 1.);
 b[1].buffer.data
 ```
@@ -76,9 +87,6 @@ end
 ## Full API 
 
 ```@docs 
-Connections.eltype
-Connections.length
-Connections.iterate
 Connections.hasslaves(bus::Bus)
 Connections.hasmaster(bus::Bus)
 Connections.close(bus::Bus)
@@ -88,6 +96,7 @@ Connections.iswritable(bus::Bus)
 Connections.snapshot(bus::Bus)
 Connections.launch(bus::Bus)
 Connections.launch(bus::Bus, valrange::AbstractVector)
-Connections.getindex
-Connections.setindex!
+size(bus::Bus)
+getindex(bus::Bus, idx::Vararg{Int, N}) where N
+setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N
 ```

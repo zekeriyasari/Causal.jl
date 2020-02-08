@@ -6,29 +6,12 @@ DocTestSetup  = quote
 end
 ```
 
-Links are built on top of  [`Channel`s](https://docs.julialang.org/en/v1/manual/parallel-computing/#Channels-1) of Julia. They are used as communication primitives for [`Task`s](https://docs.julialang.org/en/v1/manual/control-flow/#man-tasks-1) of Julia. A `Link` basically includes a `Channel` and a `Buffer`. The mode of the buffer is `Cyclic`.(see [Buffer Modes](@ref) for information on buffer modes). Every item sent through a `Link` is sent through the channel of the `Link` and written to the `Buffer` so that all the data flowing through a `Link` is recorded. The data transmitted through a `Link` can be of any Julia type, even if user-defined types. 
-
+Links are built on top of  [`Channel`s](https://docs.julialang.org/en/v1/manual/parallel-computing/#Channels-1) of Julia. They are used as communication primitives for [`Task`s](https://docs.julialang.org/en/v1/manual/control-flow/#man-tasks-1) of Julia. A `Link` basically includes a `Channel` and a `Buffer`. The mode of the buffer is `Cyclic`.(see [Buffer Modes](@ref) for information on buffer modes). Every item sent through a `Link` is sent through the channel of the `Link` and written to the `Buffer` so that all the data flowing through a `Link` is recorded.
 
 ## Construction of Links 
 The construction of a `Link` is very simple: just specify its buffer length and element type.
 ```@docs 
 Link
-```
-Here, are some examples.
-
-```@repl
-using Jusdl # hide 
-l1 = Link{Int}(5)
-l2 = Link{Matrix{Float64}}(10)
-```
-
-Similar to the case of `Buffer`s, the data type that can flow the `Link` can be any Julia type, even a user-defined type. 
-```@repl 
-using Jusdl # hide
-struct Object
-    x::Int 
-end 
-l = Link{Object}(3)     # A `Link` that with element type `Object` with buffer size `3`.
 ```
 
 ## Connection and Disconnection of Links 
@@ -53,26 +36,26 @@ The data can be read from and written into `Link`s if active tasks are bound to 
 Let us first construct a `Link`,
 ```@repl link_writing_ex_1
 using Jusdl # hide
-l = Link{Float64}(5)
+l = Link(5)
 ```
 `l` is a `Link` with a buffer length of `5` and element type of `Float64`. Not that the `l` is open, but it is not ready for data reading or writing. To write data, we must bound a task that reads the written data.
 ```@repl link_writing_ex_1
 function reader(link::Link)  # Define job.
     while true
         val = take!(link)
-        val === missing && break  # Poison-pill the tasks to terminate safely.
+        val === NaN && break  # Poison-pill the tasks to terminate safely.
     end
 end
 t = @async reader(l)
 ```
-The `reader` is defined such that the data written from one end of `l` is read until the data is `missing`. Now, we have runnable task `t`. This means the `l` is ready for data writing. 
+The `reader` is defined such that the data written from one end of `l` is read until the data is `NaN`. Now, we have runnable task `t`. This means the `l` is ready for data writing. 
 ```@repl link_writing_ex_1
 put!(l, 1.)
 put!(l, 2.)
 ```
-To terminate the task, we must write `missing` to `l`.
+To terminate the task, we must write `NaN` to `l`.
 ```@repl link_writing_ex_1
-put!(l, missing)  # Terminate the task 
+put!(l, NaN)  # Terminate the task 
 t   # Show that the `t` is terminated.
 ```
 Note that the data flown through the `l` is written to its `buffer`. 
@@ -113,26 +96,25 @@ t  # Show that `t` is terminated.
 ## Full API 
 
 ```@docs  
-Connections.put!(link::Link, val)
-Connections.take!(link::Link)
-Connections.close(link::Link)
-Connections.isopen(link::Link)
-Connections.isreadable(link::Link)
-Connections.iswritable(link::Link)
-Connections.isfull(link::Link)
-Connections.isconnected
+put!(link::Link, val)
+take!(link::Link)
+close(link::Link)
+isopen(link::Link)
+isreadable(link::Link)
+iswritable(link::Link)
+isfull(link::Link)
+isconnected
 Connections.hasslaves(link::Link) 
 Connections.hasmaster(link::Link)
 Connections.getmaster(link::Link) 
 Connections.getslaves(link::Link)
-Connections.snapshot(link::Link) 
-Connections.Connections.UnconnectedLinkError
-Connections.Connections.Pin
-Connections.findflow(link1::Link, link2::Link) 
-Connections.insert
-Connections.release
-Connections.bind
-Connections.collect(link::Link)
-Connections.launch(link::Link) 
-Connections.launch(link::Link, valrange) 
+Connections.UnconnectedLinkError
+Pin
+findflow(link1::Link, link2::Link) 
+insert(master::Link, slave::Link, new::Link)
+release(link::Link)
+bind(link::Link, task::Task)
+collect(link::Link)
+launch(link::Link) 
+launch(link::Link, valrange) 
 ```

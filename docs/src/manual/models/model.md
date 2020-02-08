@@ -68,7 +68,7 @@ run(model::Model)
 After the run stage, the tasks opened in the initialization stage are closed and the simulation is terminated. `terminate` function is used to terminate the model 
 
 ```@docs
-terminate
+terminate(model::Model)
 ```
 
 `Model`s are constructed to [`simulate`](@ref) them. During the simulation, components of the `Model` process data and the data is transferred between the components via connection. Thus, to simulate the `Model`s, the components **must be connected**. Hence, we connect the components. 

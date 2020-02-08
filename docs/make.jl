@@ -61,6 +61,7 @@ makedocs(
             ],
         "Tutorials" => [
             "Simple Model Simulation" => "tutorials/simple_model.md",
+            "Breaking Algebraic Loops" => "tutorials/breaking_algebraic_loops.md",
         ],
     ],
     # format=DocumenterLaTeX.LaTeX()  # Uncomment this option to generate pdf output.

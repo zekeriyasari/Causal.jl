@@ -6,7 +6,7 @@ DocTestSetup  = quote
 end
 ```
 
-`Callback`s are used to monitor the existence of a specific events and if that specific event occurs, some other special jobs are invoked. `Callback`s are intended to provide additional monitoring capability to any user-defined composite types. As such, `Callback`s are *generaly* fields of user defined composite types objects. When a `Callback` is called, if the `Callback` is enabled and its `condition` function returns true, then its `action` function is invoked. 
+`Callback`s are used to monitor the existence of a specific event and if that specific event occurs, some other special jobs are invoked. `Callback`s are intended to provide additional monitoring capability to any user-defined composite types. As such, `Callback`s are *generaly* fields of user defined composite types. When a `Callback` is called, if the `Callback` is enabled and its `condition` function returns true, then its `action` function is invoked. 
 
 ## A Simple Example 
 

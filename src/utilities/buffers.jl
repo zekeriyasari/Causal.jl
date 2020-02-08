@@ -230,9 +230,24 @@ end
 
 ##### Writing into buffers
 """
-    write!(buf::Buffer{M, T}, val) where {M, T}
+    write!(buf::Buffer{M, <:Real, 1}, val::Real) where {M}
 
-Writes `val` into `buf`. Writing is carried occurding the mode `M` of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+Writes `val` into `buf`.
+
+    write!(buf::Buffer{M, <:Real, 2}, val::AbstractVector{<:Real}) where {M}
+
+Writes `val` into `buf`.
+
+    write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M}
+
+Writes each element of `vals` into `buf`.
+
+    write!(buf::Buffer{M, <:Real, 2}, vals::AbstractMatrix{<:Real}) where {M}
+
+Writes each column of `vals` into `buf`.
+
+!!! warning
+    Buffer mode determines how data is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
 ```jldoctest
@@ -268,6 +283,7 @@ julia> buf.data
  1.0  2.0  3.0  0.0  0.0
 ```
 """
+function write!(buf::Buffer, val) end 
 write!(buf::Buffer{M, <:Real, 1}, val::Real) where {M} = _write!(buf, val)
 write!(buf::Buffer{M, <:Real, 2}, val::AbstractVector{<:Real}) where {M} = _write!(buf, val)
 write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M} = foreach(val -> _write!(buf, val), vals)

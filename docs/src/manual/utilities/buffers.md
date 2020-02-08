@@ -7,11 +7,11 @@ DocTestSetup  = quote
 end
 ```
 
-`Buffer` is a primitive to *buffer* the data. Data can be of any Julia type. Data can be read from and written into a buffer, and the mode of the buffer determines the way to read from and write into the buffers. 
+`Buffer` is a primitive to *buffer* the data. Data can be read from and written into a buffer. The mode of the buffer determines the way to read from and write into the buffers. 
 
 ## Buffer Modes 
 
-Buffer mode determines the way the data is read from and written into a `Buffer`. 
+Buffer mode determines the way the data is read from and written into a `Buffer`. Basically, there are four buffer modes: `Normal`, `Cyclic`, `Fifo` and `Lifo`. `Normal`, `Fifo` and `Lifo` are  subtypes of `LinearMode` and `Cyclic` is subtype of `CyclicMode`.
 
 ```@docs 
 Utilities.BufferMode 
@@ -34,35 +34,13 @@ The `Buffer` construction is very similar to the construction of arrays in Julia
 
 ```@docs 
 Buffer
-```
-
-!!! warning 
-    Note that `Buffer` is one dimensional. That is, the length of the data must be specified when constructing a `Buffer`. 
-
-!!! warning 
-    Note that when a `Buffer` is initialized, the internal data of the `Buffer` is of `missing`. 
-
-Let us try some examples. Here are some simple buffer construction.
-```@repl
-using Jusdl # hide
-buf1 = Buffer{Normal}(Float64, 5)   # Buffer of length `5` with mode `Normal` and element type of `Float64`. 
-buf2 = Buffer{Fifo}(Int, 3)       # Buffer of length `5` with mode `Fifo` and element type of `Int`. 
-buf3 = Buffer(Vector{Int}, 3)       # Buffer of length `5` with mode `Cyclic` and element type of `Vector{Int}`. 
-buf4 = Buffer(Matrix{Float64}, 5)    # Buffer of length `5` with mode `Cyclic` and element type of `Matrix{Float64}`. 
-buf5 = Buffer(5)                    # Buffer of length `5` with mode `Cyclic` and element type of `Float64`.
-```
-Note that the element type of `Buffer` can be any Julia type, even any user-defined type. Note the following example, 
-```@repl 
-using Jusdl #hide 
-struct Object end       # Define a dummy type. 
-buf = Buffer{Normal}(Object, 4)  # Buffer of length `4` with element type `Object`.
-```
+``` 
 
 ## Writing Data into Buffers 
 Writing data into a `Buffer` is done with `write!` function.
 
 ```@docs
-write!
+write!(buf::Buffer, val)
 ```
 
 Recall that when the buffer is full, no more data can be written into the buffer if the buffer mode is of type `LinearMode`. 
@@ -84,14 +62,11 @@ write!(normalbuf, 3.)
 write!(normalbuf, 4.)
 ```
 
-!!! warning 
-    Since when a `Buffer` is constructed, it is empty, no data is written to it. But it is initialized with `missing` data. Thus, the element type of buffer of type `Buffer{M, T} where {M, T}` is `Union{Missing, T} where T`. Benchmarks that has been carried out shows that there is no performance bottle neck is such design since Julia's compiler can compile optimized code for such a small unions. Therefore it is possible to write `missing` into a buffer of type `Buffer{M,T} where {M,T}`.
-
 ## Reading Data from Buffers 
 Reading data from a `Buffer` is done with `read` function.
 
 ```@docs 
-read
+read(buf::Buffer)
 ```
 
 ## AbstractArray Interface of Buffers

@@ -16,6 +16,18 @@ Constructs a `Bus` consisting of links of length `nlinks`. `T` is element type o
     Bus(nlinks::Int=1, ln::Int=64) 
 
 Constructs a `Bus` consisting of links of length `nlinks`. `Float64` is element type of links. `ln` is the buffer length of links. 
+
+# Example
+```jldoctest
+julia> Bus([Link() for i = 1 : 3])
+Bus(nlinks:3, eltype:Link{Float64}, isreadable:false, iswritable:false)
+
+julia> Bus(Int, 5, 10)
+Bus(nlinks:5, eltype:Link{Int64}, isreadable:false, iswritable:false)
+
+julia> Bus()
+Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false)
+```
 """
 struct Bus{L<:Link} <: AbstractVector{L}
     links::Vector{L}
@@ -42,14 +54,47 @@ size(bus::Bus) = size(bus.links)
 """
     getindex(bus::Bus, idx::Vararg{Int, N}) where N 
 
-Returns elements from `bus` at index `idx`.
+Returns elements from `bus` at index `idx`. Same as `bus[idx]`.
+
+# Example
+```jldoctest
+julia> bus = Bus(3);
+
+julia> bus[1]
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> bus[end]
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> bus[:]
+3-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+```
 """
 getindex(bus::Bus, idx::Vararg{Int, N}) where N = bus.links[idx...]
 
 """
     setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N 
 
-Sets `item` to `bus` at index `idx`.
+Sets `item` to `bus` at index `idx`. Same as `bus[idx] = item`.
+
+# Example
+```jldoctest
+julia> bus = Bus(3);
+
+julia> bus[1] = Link()
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> bus[end] = Link(5)
+Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> bus[1:2] = [Link(), Link()]
+2-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+```
 """
 setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N = bus.links[idx...] = item
 

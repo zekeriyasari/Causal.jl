@@ -12,8 +12,8 @@ mutable struct Simulation{M, L}
     state::Symbol
     retcode::Symbol
     name::String
-    function Simulation(model, simdir=tempdir(), logger=SimpleLogger())
-        name = join(["Simulation-", string(uuid4())], "")  # `get_instant()` may be used for time-based paths names.
+    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), logger=SimpleLogger())
+        name = "Simulation-" * simname  # `get_instant()` may be used for time-based paths names.
         path = joinpath(simdir, name)
         isdir(path) || mkpath(path)
         check_writer_files(model, path, force=true)

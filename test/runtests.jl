@@ -5,6 +5,7 @@ using Test
 using Jusdl
 
 using DifferentialEquations
+using Random
 
 # Construct the file tree in `test` directory.
 filetree = walkdir(@__DIR__)

@@ -58,7 +58,7 @@ julia> hist = History(histfunc, conslags, ())
 History(func:histfunc, conslags:[1], seed:(), neutral:false
 
 julia> ds = DDESystem(nothing, Bus(), statefunc, outputfunc, [1.], hist, 0.)
-DDESystem(state:[1.0], history:History(func:histfunc, conslags:[1], seed:(), neutral:false, t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), history:History(func:histfunc, conslags:[1], seed:(), neutral:false)
+DDESystem(state:[1.0], history:History(func:histfunc, conslags:[1], seed:(), neutral:false, t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), history:History(func:histfunc, conslags:[1], seed:(), neutral:false)
 ```
 """
 mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, IV, S, HST} <: AbstractDDESystem

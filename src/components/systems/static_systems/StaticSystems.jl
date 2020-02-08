@@ -25,14 +25,13 @@ julia> g(u, t) = [u[1] + u[2], sin(u[2]), cos([1])]  # The system has 2 inputs a
 g (generic function with 1 method)
 
 julia> ss = StaticSystem(Bus(2), Bus(3), g)
-StaticSystem(outputfunc:g, input:Bus(nlinks:2, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:3, eltype:Float64, isreadable:false, iswritable:false))
+StaticSystem(outputfunc:g, input:Bus(nlinks:2, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:3, eltype:Link{Float64}, isreadable:false, iswritable:false))
 
 julia> g2(u, t) = t  # The system does not have any input.
 g2 (generic function with 1 method)
 
 julia> ss2 = StaticSystem(nothing, Bus(), g2)
-StaticSystem(outputfunc:g2, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))
-
+StaticSystem(outputfunc:g2, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 """
 struct StaticSystem{IB, OB, T, H, OF} <: AbstractStaticSystem

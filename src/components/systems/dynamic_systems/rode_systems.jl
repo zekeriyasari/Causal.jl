@@ -32,7 +32,7 @@ end
 ```
 
 # Example 
-```j
+```jldoctest
 julia> function statefunc(dx, x, u, t, W)
          dx[1] = 2x[1]*sin(W[1] - W[2])
          dx[2] = -2x[2]*cos(W[1] + W[2])
@@ -43,8 +43,10 @@ julia> outputfunc(x, u, t) = x
 outputfunc (generic function with 1 method)
 
 julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.)
-RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t
-: [0.0]
+┌ Warning: `solver` must have `:dt` initialized in its `params` for the systems to evolve.
+└ @ Jusdl.Components.Systems.DynamicSystems ~/.julia/dev/Jusdl/src/components/systems/dynamic_systems/rode_systems.jl:55
+RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Link{Float64}, isreadable:false, iswritable:false), noise:Noise(process:t: [0
+.0]
 u: Array{Float64,1}[[0.0, 0.0]], prototype:nothing, seed:0))
 ```
 """

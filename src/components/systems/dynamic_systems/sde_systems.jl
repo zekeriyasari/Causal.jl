@@ -47,7 +47,7 @@ julia> g(x, u, t) = x
 g (generic function with 1 method)
 
 julia> ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
 u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
 ```
 """

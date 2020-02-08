@@ -35,12 +35,11 @@ end
 ```jldoctest 
 julia> sfunc(dx,x,u,t) = (dx .= 0.5x)
 sfunc (generic function with 1 method)
-
 julia> ofunc(x, u, t) = x
 ofunc (generic function with 1 method)
 
 julia> ds = DiscreteSystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
-DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))
+DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 """
 mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractDiscreteSystem

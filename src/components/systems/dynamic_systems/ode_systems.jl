@@ -40,7 +40,7 @@ julia> ofunc(x, u, t) = x
 ofunc (generic function with 1 method)
 
 julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
-ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Float64, isreadable:false, iswritable:false))
+ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 """
 mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractODESystem

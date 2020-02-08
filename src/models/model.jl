@@ -47,7 +47,7 @@ julia> addcomponent(m, SinewaveGenerator())
  SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
 ```
 """
-addcomponent(model::Model, comp::AbstractComponent) = push!(model.blocks, comp)
+addcomponent(model::Model, comp::AbstractComponent...) = foreach(cmp -> push!(model.blocks, cmp), comp)
 
 ##### Model inspection.
 function adjacency_matrix(model::Model)

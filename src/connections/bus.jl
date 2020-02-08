@@ -5,9 +5,17 @@ import Base: size, getindex, setindex!, length, iterate, firstindex, lastindex, 
 
 
 """
-    Bus{T}([nlinks::Int=1, [ln::Int=64]]) where T
+    Bus(links::AbstractVector{L}) where L<:Link 
 
-Constructs a `Bus` consisting of `nlinks` links. `ln` is the buffer length and `T` is element type of the links.
+Constructs a `Bus` consisting of `links` links.
+
+    Bus(dtype::Type{T}, nlinks::Int, ln::Int=64) where T
+
+Constructs a `Bus` consisting of links of length `nlinks`. `T` is element type of links. `ln` is the buffer length of links. 
+
+    Bus(nlinks::Int=1, ln::Int=64) 
+
+Constructs a `Bus` consisting of links of length `nlinks`. `Float64` is element type of links. `ln` is the buffer length of links. 
 """
 struct Bus{L<:Link} <: AbstractVector{L}
     links::Vector{L}
@@ -53,6 +61,24 @@ Takes an element from `bus`. Each link of the `bus` is a read and a vector conta
 
 !!! warning 
     The `bus` must be readable to be read. That is, there must be a runnable tasks bound to links of the `bus` that writes data to `bus`.
+
+# Example 
+```jldoctest 
+julia> b = Bus()
+Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false)
+
+julia> t = @async for val in 1 : 5 
+       put!(b, [val])
+       end;
+
+julia> take!(b)
+1-element Array{Float64,1}:
+ 1.0
+
+julia> take!(b)
+1-element Array{Float64,1}:
+ 2.0
+```
 """
 function take!(bus::Bus) 
     out = take!.(bus[:])
@@ -67,6 +93,26 @@ Puts `vals` to `bus`. Each item in `vals` is putted to the `links` of the `bus`.
 
 !!! warning 
     The `bus` must be writable to be read. That is, there must be a runnable tasks bound to links of the `bus` that reads data from `bus`.
+
+# Example
+```jldoctest
+julia> bus = Bus();
+
+julia> t = @async while true 
+       val = take!(bus)
+       all(val .=== NaN) && break 
+       println("Took " * string(val))
+       end;
+
+julia> put!(bus, [1.])
+Took [1.0]
+1-element Array{Float64,1}:
+ 1.0
+
+julia> put!(bus, [NaN])
+1-element Array{Float64,1}:
+ NaN
+```
 """
 function put!(bus::Bus, vals)
     put!.(bus[:], vals)

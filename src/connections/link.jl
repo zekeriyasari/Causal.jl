@@ -13,7 +13,7 @@ struct Pin
 end
 
 """
-    Link{T}(ln::Int=64) where T 
+    Link(dtype::Type{T}, ln::Int=64) where {T}
 
 Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type is `T` and mode is `Cyclic`.
 
@@ -397,6 +397,32 @@ bind(link::Link, task::Task) = bind(link.channel, task)
     collect(link::Link)
 
 Collects all the available data on the `link`.
+
+!!! warning 
+    To collect all available data from `link`, a task must be bounded to it.
+
+# Example
+```jldoctest
+julia> l = Link();  # Construct a link.
+
+julia> t = @async for item in 1 : 5  # Construct a task
+       put!(l, item)
+       end;
+
+julia> bind(l, t);  # Bind it to the link.
+
+julia> take!(l)  # Take element from link.
+1.0
+
+julia> take!(l)  # Take again ...
+2.0
+
+julia> collect(l)  # Collect remaining data.
+3-element Array{Float64,1}:
+ 3.0
+ 4.0
+ 5.0
+```
 """
 collect(link::Link) = collect(link.channel)
 

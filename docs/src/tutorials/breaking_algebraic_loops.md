@@ -43,9 +43,13 @@ model.taskmanager.pairs
 Next, we read the data from the writers and plot them,
 ```@example breaking_algebraic_loops_ex
 using Plots
+t, y = read(writerout, flatten=true)
+t, u = read(writerin, flatten=true)
 plot(t, u, label=:u, marker=(:circle, 1)) 
 plot!(t, y, label=:y, marker=(:circle, 1)) 
+savefig("breaking_algebraic_loops_plot1.svg"); nothing # hide
 ```
+![](breaking_algebraic_loops_plot1.svg)
 
 ### Simulation When Memory is Initialized Incorrectly
 We know that when the relation is 
@@ -91,4 +95,7 @@ t, u = read(writerin, flatten=true)
 # Plot the results
 plot(t, u, label=:u, marker=(:circle, 1)) 
 plot!(t, y, label=:y, marker=(:circle, 1)) 
+savefig("breaking_algebraic_loops_plot2.svg"); nothing # hide
 ```
+![](breaking_algebraic_loops_plot2.svg)
+

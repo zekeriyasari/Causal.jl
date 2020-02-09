@@ -40,6 +40,7 @@ julia> process(plg, x)
 ```
 """
 function process(plg::Lyapunov, x)
+    ndims(x) == 1 || (x = x[:])
     ntype = FixedMassNeighborhood(5)
     ks = 1 : 4 : plg.ni
     R = reconstruct(x, plg.m, plg.J)

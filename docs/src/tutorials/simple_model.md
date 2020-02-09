@@ -92,8 +92,9 @@ t, x = read(writer, flatten=true)
 using Plots 
 theme(:default)
 plot(t, x, xlabel="t", ylabel="x", label="")
+savefig("simple_model_plot.svg"); nothing # hide
 ```
-
+![](simple_model_plot.svg)
 
 
 

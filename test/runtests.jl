@@ -8,6 +8,7 @@ using DifferentialEquations
 using Logging
 using Random
 using JLD2, FileIO
+using UUIDs
 
 # Construct the file tree in `test` directory.
 filetree = walkdir(@__DIR__)

@@ -90,7 +90,6 @@ t, x = read(writer, flatten=true)
 
 # Plot the data
 using Plots 
-theme(:default)
 plot(t, x, xlabel="t", ylabel="x", label="")
 savefig("simple_model_plot.svg"); nothing # hide
 ```

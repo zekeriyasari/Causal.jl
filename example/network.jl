@@ -5,13 +5,13 @@ using Plots
 
 # Simulation settings 
 t0 = 0
-dt = 0.001
+dt = 0.01
 tf = 100.
 
 # Define the network parameters 
 numnodes = 2
 nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : numnodes]
-conmat = [-1 1; 1 -1] * 600
+conmat = [-1 1; 1 -1] * 10
 cplmat = [1 0 0; 0 0 0; 0 0 0]
 net = Network(nodes, conmat, cplmat, inputnodeidx=[], outputnodeidx=1:numnodes)
 writer = Writer(Bus(length(net.output)))
@@ -23,7 +23,7 @@ connect(net.output, writer.input)
 model = Model(net, writer)
 
 # Simulate the model 
-sim = simulate(model, t0, dt, tf)
+sim = simulate(model, t0, dt, tf, logtofile=true)
 
 # Check the model taskmanager
 @info "Checking model taskmanager"

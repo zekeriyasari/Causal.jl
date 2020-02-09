@@ -4,7 +4,7 @@ A model to be simulated consists of components connected to each other and a tim
 
 ```@raw html
 <center>
-    <img src="../assets/FlowChart/flowchart.png" alt="model" width="75%"/>
+    <img src="../../assets/FlowChart/flowchart.png" alt="model" width="75%"/>
 </center>
 ```
 

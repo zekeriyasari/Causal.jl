@@ -85,7 +85,7 @@ model = Model(gen, adder, mem, writerout, writerin)
 # Simulate the model 
 sim = simulate(model, t0, dt, tf)
 
-# Diplay model taskmanager
+# Display model taskmanager
 display(model.taskmanager.pairs)
 
 # Read the simulation data 

@@ -8,7 +8,7 @@ Model simulation is performed by evolving the components individually. To make t
 
 ```@raw html
 <center>
-    <img src="../assets/Model/model.png" alt="model" width="50%"/>
+    <img src="../../assets/Model/model.png" alt="model" width="50%"/>
 </center>
 ```
 
@@ -18,7 +18,7 @@ The component types in JuSDL are shown in Figure 2.2 together with output and st
 
 ```@raw html
 <center>
-    <img src="../assets/Components/components.png" alt="model" width="100%"/>
+    <img src="../../assets/Components/components.png" alt="model" width="100%"/>
 </center>
 ```
 
@@ -60,13 +60,13 @@ Busses consist of bunches of links. Links are built upon channels that are defin
 <body>
     <div class="row">
         <div class="column">
-            <img src="../assets/Tasks/reader_task.png" alt="reader_task" style="width:60%">
+            <img src="../../assets/Tasks/reader_task.png" alt="reader_task" style="width:60%">
         </div>
         <div class="column">
-            <img src="../assets/Tasks/writer_task.png" alt="writer_task" style="width:60%">
+            <img src="../../assets/Tasks/writer_task.png" alt="writer_task" style="width:60%">
         </div>
         <div class="column">
-            <img src="../assets/Tasks/reader_writer_task.png" alt="reader_writer_task" style="width:100%">
+            <img src="../../assets/Tasks/reader_writer_task.png" alt="reader_writer_task" style="width:100%">
         </div>
     </div>
 </body>

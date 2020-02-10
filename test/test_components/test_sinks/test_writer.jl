@@ -3,7 +3,7 @@
 @testset "WriterTestSet" begin
     # Preliminaries 
     randdirname() = randstring()
-    randfilename() = randstring() * ".jld2"
+    randfilename() = join([randstring(), ".jld2"], "")
 
     # Writer construction 
     writer = Writer(Bus(3), buflen=10)

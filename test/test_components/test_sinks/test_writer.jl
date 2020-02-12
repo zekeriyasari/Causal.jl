@@ -2,25 +2,22 @@
 
 @testset "WriterTestSet" begin
     # Preliminaries 
-    randdirname() = randstring()
-    randfilename() = join([randstring(), ".jld2"], "")
+    randdirname() = string(uuid4())
+    randfilename() = join([string(uuid4()), ".jld2"], "")
+    testdir = tempdir()
 
     # Writer construction 
     writer = Writer(Bus(3), buflen=10)
-    writer = Writer(Bus(3), buflen=10, path=joinpath(tempdir(), randfilename()))
-    fname = randfilename()
-    writer = Writer(Bus(3), path=joinpath(tempdir(), fname))
+    writer = Writer(Bus(3), buflen=10, path=joinpath(testdir, randfilename()))
+    path = joinpath(testdir, randfilename())
+    writer = Writer(Bus(3), path=path)
     @test typeof(writer.trigger) == Link{Float64}
     @test typeof(writer.handshake) == Link{Bool}
     @test isa(writer.input, Bus)
     @test length(writer.input) == 3
     @test size(writer.timebuf) == (64,)
     @test size(writer.databuf) == (3, 64)
-    if Sys.isapple()
-        @test_broken writer.file.path == joinpath("/private", tempdir(), fname)
-    else
-        @test writer.file.path == joinpath(tempdir(), fname)
-    end
+    @test writer.file.path == path
     @test writer.plugin === nothing
     @test !isempty(writer.callbacks)
 
@@ -38,23 +35,13 @@
 
     # Moving/Copying Writer file.
     filename = randfilename()
-    dirnames = [randdirname() for i = 1 : 3]
-    mkdir(joinpath(tempdir(), dirnames[1]))
-    mkdir(joinpath(tempdir(), dirnames[2]))
-    mkdir(joinpath(tempdir(), dirnames[3]))
-    w = Writer(Bus(), path=joinpath(tempdir(), dirnames[1], filename))
-    mv(w, joinpath(tempdir(), dirnames[2]))
-    if Sys.isapple()
-        @test_broken w.file.path == joinpath("/private", tempdir(), dirnames[2], filename)
-    else
-        @test w.file.path == joinpath(tempdir(), dirnames[2], filename)
-    end
-    cp(w, joinpath(tempdir(), dirnames[3]))
-    if Sys.isapple()
-        @test_broken isfile(joinpath("/private", tempdir(), dirnames[3], filename))
-    else
-        @test isfile(joinpath(tempdir(), dirnames[3], filename))
-    end
+    dirnames = map(i -> mkdir(joinpath(testdir, randdirname())), 1 : 3)
+    paths = map(dname -> joinpath(dname, filename), dirnames)
+    w = Writer(Bus(), path=paths[1])
+    mv(w, dirnames[2])
+    @test w.file.path == paths[2]
+    cp(w, dirnames[3])
+    @test isfile(paths[3])
 
     # Driving Writer 
     writer = Writer(Bus(3), buflen=10)

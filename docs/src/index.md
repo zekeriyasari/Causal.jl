@@ -8,5 +8,5 @@ Installation of `Jusdl` is the similar to any Julia package. Just add from the r
 
 ```julia
 using Pkg 
-Pkg.add(PackageSpec(url="https://imel.eee.deu.edu.tr/git/JuSDL.jl.git"))
+Pkg.add(PackageSpec(url="https://github.com/zekeriyasari/Jusdl.jl.git"))
 ```

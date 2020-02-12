@@ -6,15 +6,6 @@ import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, 
     Pin() 
 
 Constructs a `Pin`. A `Pin` is the auxilary type to monitor connection status of `Links`. See [`Link`](@ref)
-
-# Example
-```jldoctest
-julia> l = Link(Int, 5)
-Link(state:open, eltype:Int64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-
-julia> l = Link(Bool)
-Link(state:open, eltype:Bool, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
-```
 """
 struct Pin
     id::UUID
@@ -29,6 +20,15 @@ Constructs a `Link` with element type `T` and buffer length `ln`. The buffer ele
     Link(ln::Int=64)
 
 Constructs a `Link` with element type `Float64` and buffer length `ln`. The buffer element type is `Float64` and mode is `Cyclic`.
+
+# Example
+```jldoctest
+julia> l = Link(Int, 5)
+Link(state:open, eltype:Int64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+
+julia> l = Link(Bool)
+Link(state:open, eltype:Bool, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+```
 """
 mutable struct Link{T}
     buffer::Buffer{Cyclic, T, 1}

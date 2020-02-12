@@ -18,7 +18,7 @@ Jusdl (Julia-Based System Description Language) focusses on effective systems si
 * Simulation of models consisting of components that are represented by different type mathematical equations.
 * Individual construction of components, no need to construct a unique equation representing the whole model.
 * Online data analysis through plugins 
-* Flexibility to enrich the data analysis scope through used defined plugins.
+* Flexibility to enrich the data analysis scope through user-defined plugins.
 
 [1] : [DifferentialEquations.jl](https://docs.juliadiffeq.org/) package is used for differential equation solving.
 

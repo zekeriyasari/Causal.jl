@@ -17,7 +17,6 @@
     @test length(writer.input) == 3
     @test size(writer.timebuf) == (64,)
     @test size(writer.databuf) == (3, 64)
-    @test writer.file.path == path
     @test writer.plugin === nothing
     @test !isempty(writer.callbacks)
 

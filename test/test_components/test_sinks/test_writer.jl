@@ -17,7 +17,7 @@
     @test size(writer.timebuf) == (64,)
     @test size(writer.databuf) == (3, 64)
     if Sys.isapple()
-        @test writer.file.path == joinpath("/private", tempdir(), fname)
+        @test_broken writer.file.path == joinpath("/private", tempdir(), fname)
     else
         @test writer.file.path == joinpath(tempdir(), fname)
     end
@@ -45,13 +45,13 @@
     w = Writer(Bus(), path=joinpath(tempdir(), dirnames[1], filename))
     mv(w, joinpath(tempdir(), dirnames[2]))
     if Sys.isapple()
-        @test w.file.path == joinpath("/private", tempdir(), dirnames[2], filename)
+        @test_broken w.file.path == joinpath("/private", tempdir(), dirnames[2], filename)
     else
         @test w.file.path == joinpath(tempdir(), dirnames[2], filename)
     end
     cp(w, joinpath(tempdir(), dirnames[3]))
     if Sys.isapple()
-        @test isfile(joinpath("/private", tempdir(), dirnames[3], filename))
+        @test_broken isfile(joinpath("/private", tempdir(), dirnames[3], filename))
     else
         @test isfile(joinpath(tempdir(), dirnames[3], filename))
     end

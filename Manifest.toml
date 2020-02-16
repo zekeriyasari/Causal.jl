@@ -423,12 +423,6 @@ git-tree-sha1 = "789f2b93fe8d6546a5700eb62aba979857528048"
 uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
 version = "2.2.0"
 
-[[Measurements]]
-deps = ["Calculus", "LinearAlgebra", "RecipesBase", "Requires"]
-git-tree-sha1 = "789f2b93fe8d6546a5700eb62aba979857528048"
-uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-version = "2.2.0"
-
 [[Measures]]
 git-tree-sha1 = "e498ddeee6f9fdb4551ce855a46f54dbd900245f"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"

@@ -40,6 +40,7 @@ Consider the following simple model.
 Note that the model consists of connected components. In this example, the components are the sinusoidal wave generator, an adder, a dynamical system and a memory. The writer is included in the model to save simulation data. By using Jusdl, the model is simulated as follows:
 
 ```julia
+using Jusdl
 # Construct a Model 
 gen = FunctionGenerator(sin)
 adder = Adder(Bus(2), (+, -))

@@ -23,7 +23,7 @@ Jusdl (Julia-Based System Description Language) focusses on effective systems si
 [1] : [DifferentialEquations.jl](https://docs.juliadiffeq.org/) package is used for differential equation solving.
 
 ## Installation
-Installation of Jusdl is like any other registered Julia package. Jusdl type the following.
+Installation of Jusdl is like any other registered Julia package.  Enter the Pkg REPL by pressing ] from the Julia REPL and then add Jusdl:
 ```julia
 ] add Jusdl
 ```

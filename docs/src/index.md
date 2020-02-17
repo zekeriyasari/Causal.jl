@@ -4,9 +4,7 @@ This is the official documentation of Jusdl that enables fast and effective syst
 
 ## Installation 
 
-Installation of `Jusdl` is the similar to any Julia package. Just add from the repository [https://imel.eee.deu.edu.tr/git/JuSDL.jl.git]. Start a Julia session and type,
-
+Installation of `Jusdl` is the similar to any other registered Julia package. Start a Julia session and type 
 ```julia
-using Pkg 
-Pkg.add(PackageSpec(url="https://imel.eee.deu.edu.tr/git/JuSDL.jl.git"))
+] add Jusdl
 ```

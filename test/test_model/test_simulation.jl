@@ -26,7 +26,7 @@
     @test dname1 != sim.path
 
     # Report Simulation 
-    sim = simulate(model)
+    sim = simulate(model, 0., 0.01, 10.)
     report(sim)
     filename = joinpath(sim.path, "report.jld2")
     @test isfile(filename)

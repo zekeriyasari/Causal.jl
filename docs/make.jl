@@ -68,3 +68,5 @@ makedocs(
     ],
     # format=DocumenterLaTeX.LaTeX()  # Uncomment this option to generate pdf output.
 )  # end makedocs
+
+deploydocs(repo = "github.com/zekeriyasari/Jusdl.jl.git")

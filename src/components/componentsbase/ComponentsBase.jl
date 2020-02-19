@@ -19,7 +19,8 @@ abstract type AbstractDAESystem <: AbstractDynamicSystem end
 abstract type AbstractSDESystem <: AbstractDynamicSystem end
 abstract type AbstractDDESystem <: AbstractDynamicSystem end
 
-include("utils.jl")
+include("interpolant.jl")
+include("macros.jl")
 include("genericfields.jl")
 include("takestep.jl")
 

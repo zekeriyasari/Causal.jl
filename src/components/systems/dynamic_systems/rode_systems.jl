@@ -2,8 +2,8 @@
 
 import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractRODESystem
 
-const RODESolver = Solver(RandomEM())
-const RODENoise = Noise(WienerProcess(0.,0.))
+const RODEAlg = RandomEM()
+# const RODENoise = Noise(WienerProcess(0.,0.))
 
 @doc raw"""
     RODESystem(input, output, statefunc, outputfunc, state, t, noise, solver=RODESolver)
@@ -45,20 +45,20 @@ outputfunc (generic function with 1 method)
 julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.);
 ```
 """
-mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractRODESystem
+mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractRODESystem
     @generic_dynamic_system_fields
-    noise::N
-    function RODESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=RODESolver)
-        haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
+    # noise::N
+    function RODESystem(input, output, statefunc, outputfunc, state, t, args...; alg=RODEAlg, kwargs...)
+        # haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
         trigger = Link()
         handshake = Link(Bool)
-        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
+        integrator = construct_integrator(RODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, handshake, Callback[], uuid4(),
-            statefunc, outputfunc, state, inputval, t, solver, noise)
+            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
+            statefunc, outputfunc, state, t, integrator)
     end
 end
 
 show(io::IO, ds::RODESystem) = print(io, "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",  
-    "output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
+    "output:$(checkandshow(ds.output)))")
 

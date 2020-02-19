@@ -7,7 +7,7 @@ import ..Jusdl.Utilities: Callback, Buffer, Cyclic, write!
 import Base.show
 
 # Data transfer types
-export Link, isconnected, connect, disconnect, launch, Pin, release, insert, findflow
+export Link, isconnected, connect, disconnect, launch, Pin, release, insert, findflow, datatype
 export Bus
 
 include("link.jl")

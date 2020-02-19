@@ -2,7 +2,7 @@
 
 import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDDESystem
 
-const DDESolver = Solver(MethodOfSteps(Tsit5()))
+const DDEAlg = MethodOfSteps(Tsit5())
 
 @doc raw"""
     DDESystem(input, output, statefunc, outputfunc, state, history, t; solver=DDESolver)
@@ -61,19 +61,18 @@ julia> ds = DDESystem(nothing, Bus(), statefunc, outputfunc, [1.], hist, 0.)
 DDESystem(state:[1.0], history:History(func:histfunc, conslags:[1], seed:(), neutral:false, t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), history:History(func:histfunc, conslags:[1], seed:(), neutral:false)
 ```
 """
-mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, IV, S, HST} <: AbstractDDESystem
+mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDDESystem
     @generic_dynamic_system_fields
-    history::HST
-    function DDESystem(input, output, statefunc, outputfunc, state, history, t; solver=DDESolver)
+    function DDESystem(input, output, statefunc, outputfunc, state, t, args...; alg=DDEAlg, kwargs...)
         trigger = Link()
         handshake = Link(Bool)
-        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
+        integrator = construct_integrator(DDEProblem, input, statefunc, state, t, alg, args...; kwargs...)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(inputval), typeof(solver), typeof(history)}(input, output, trigger, handshake, Callback[], 
-            uuid4(), statefunc, outputfunc, state, inputval, t, solver, history)
+            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], 
+            uuid4(), statefunc, outputfunc, state, t, integrator)
     end
 end
 
-show(io::IO, ds::DDESystem) = print(io, "DDESystem(state:$(ds.state), history:$(ds.history), t:$(ds.t), ", 
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)), history:$(checkandshow(ds.history)))")
+show(io::IO, ds::DDESystem) = print(io, "DDESystem(state:$(ds.state), t:$(ds.t), ", 
+    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 

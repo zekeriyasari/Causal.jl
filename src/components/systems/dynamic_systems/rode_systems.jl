@@ -48,11 +48,13 @@ julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.);
 mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractRODESystem
     @generic_dynamic_system_fields
     # noise::N
-    function RODESystem(input, output, statefunc, outputfunc, state, t, args...; alg=RODEAlg, kwargs...)
+    function RODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         # haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(RODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(RODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
             statefunc, outputfunc, state, t, integrator)

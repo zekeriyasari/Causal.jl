@@ -33,10 +33,12 @@ end
 """
 mutable struct DAESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDAESystem
     @generic_dynamic_system_fields
-    function DAESystem(input, output, statefunc, outputfunc, state, t, args...; alg=DAEAlg, kwargs...)
+    function DAESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple() )
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(DAEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(DAEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], 
             uuid4(), statefunc, outputfunc, state, t, integrator)

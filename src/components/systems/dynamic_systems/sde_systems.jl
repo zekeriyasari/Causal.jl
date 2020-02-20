@@ -3,8 +3,6 @@
 import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractSDESystem
 
 const SDEAlg = LambaEM{true}()
-# const SDENoise = Noise(WienerProcess(0.,0.))
-
 
 @doc raw"""
     SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
@@ -53,10 +51,12 @@ u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
 """
 mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
     @generic_dynamic_system_fields
-    function SDESystem(input, output, statefunc, outputfunc, state, t, args...; alg=SDEAlg, kwargs...)
+    function SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(SDEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(SDEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
             statefunc, outputfunc, state, t, integrator)

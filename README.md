@@ -1,5 +1,12 @@
 # Jusdl
 
+<center>
+    <img src="docs/src/assets/logo2.png"
+        alt="Readme Plot"
+        style="float: center; margin-right: 10px;"
+        width="40%"/>
+</center>
+
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://zekeriyasari.github.io/Jusdl.jl/)
 [![Build Status](https://travis-ci.com/zekeriyasari/Jusdl.jl.svg?branch=master)](https://travis-ci.com/zekeriyasari/Jusdl.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/zekeriyasari/Jusdl.jl?svg=true)](https://ci.appveyor.com/project/zekeriyasari/Jusdl-jl)

@@ -45,10 +45,12 @@ ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadab
 """
 mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     @generic_dynamic_system_fields
-    function ODESystem(input, output, statefunc, outputfunc, state, t, args...; alg=ODEAlg, kwargs...)
+    function ODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state),  typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator)
@@ -75,8 +77,9 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     B::Matrix{Float64}
     C::Matrix{Float64}
     D::Matrix{Float64}
-    function LinearSystem(input, output, args...; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
-        state=rand(size(A,1)), t=0., alg=ODEAlg, kwargs...)
+    function LinearSystem(input, output, modelargs=(), solverargs=(); 
+        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
         if input === nothing
@@ -90,7 +93,8 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
                 outputfunc = (x, u, t) -> (C * x + D * map(ui -> ui(t), u))
             end
         end
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator, A, B, C, D)
@@ -131,8 +135,9 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     beta::Float64
     rho::Float64
     gamma::Float64
-    function LorenzSystem(input, output, args...; sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), kwargs...)
+    function LorenzSystem(input, output, modelargs=(), solverargs=(); 
+        sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = sigma * (x[2] - x[1])
@@ -151,7 +156,8 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
         end
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator, sigma, beta, rho, gamma)
@@ -191,8 +197,9 @@ mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     b::Float64
     c::Float64
     gamma::Float64
-    function ChenSystem(input, output, args...; a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), kwargs...)
+    function ChenSystem(input, output, modelargs=(), solverargs=(); 
+        a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = a * (x[2] - x[1])
@@ -211,7 +218,8 @@ mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
         end
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator, a, b, c, gamma)
@@ -286,8 +294,9 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, I, DT} <: AbstractODESystem
     alpha::Float64
     beta::Float64
     gamma::Float64
-    function ChuaSystem(input, output, args...; diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., 
-        outputfunc=allstates, state=rand(3), t=0., alg=ODEAlg, cplmat=diagm([1., 1., 1.]), kwargs...)
+    function ChuaSystem(input, output, modelargs=(), solverargs=(); 
+        diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
@@ -306,7 +315,8 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, I, DT} <: AbstractODESystem
         end
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator), typeof(diode)}(input, output, trigger, handshake,
             Callback[], uuid4(), statefunc, outputfunc, state, t, integrator, diode, alpha, beta, gamma)
@@ -347,8 +357,9 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     b::Float64
     c::Float64
     gamma::Float64
-    function RosslerSystem(input, output, args...; a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), kwargs...)
+    function RosslerSystem(input, output, modelargs=(), solverargs=(); 
+        a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3]
@@ -367,7 +378,8 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
         end
         trigger = Link() 
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator, a, b, c, gamma)
@@ -404,8 +416,9 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
-    function VanderpolSystem(input, output, args...; mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1]), kwargs...)
+    function VanderpolSystem(input, output, modelargs=(), solverargs=(); 
+        mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = x[2]
@@ -422,7 +435,8 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
         end
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
             statefunc, outputfunc, state, t, integrator, mu, gamma)
@@ -430,7 +444,7 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
 end
   
 
-##### Pretty-printing 
+# ##### Pretty-printing 
 show(io::IO, ds::ODESystem) = println(io, 
     "ODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 show(io::IO, ds::LinearSystem) = print(io, 

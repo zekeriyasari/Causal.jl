@@ -44,10 +44,12 @@ DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isr
 """
 mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDiscreteSystem
     @generic_dynamic_system_fields
-    function DiscreteSystem(input, output, statefunc, outputfunc, state, t, args...; alg=DiscreteAlg, kwargs...)
+    function DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
-        integrator = construct_integrator(DiscreteProblem, input, statefunc, state, t, alg, args...; kwargs...)
+        integrator = construct_integrator(DiscreteProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state),  typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
             outputfunc, state, t, integrator)

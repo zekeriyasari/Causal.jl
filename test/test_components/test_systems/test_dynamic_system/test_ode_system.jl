@@ -4,6 +4,8 @@
     # ODESystem construction 
     sfunc1(dx, x, u, t) = (dx .= -x)
     ofunc1(x, u, t) = x
+    ds = ODESystem(nothing, Bus(), sfunc1, ofunc1, [1.], 0., solverkwargs=(dt=0.1,))
+    ds = ODESystem(nothing, Bus(), sfunc1, ofunc1, [1.], 0., solverkwargs=(dt=0.1, dense=true))
     ds = ODESystem(nothing, Bus(), sfunc1, ofunc1, [1.], 0.)
     @test typeof(ds.trigger) == Link{Float64}
     @test typeof(ds.handshake) == Link{Bool}

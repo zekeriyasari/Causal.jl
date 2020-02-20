@@ -14,15 +14,16 @@ function construct_interpolant(input, t)
     interpolant
 end
 
-function construct_integrator(deproblem, input, statefunc, state, t, alg, args...; kwargs...) 
+function construct_integrator(deproblem, input, statefunc, state, t, modelargs=(), solverargs=(); alg=nothing, 
+    modelkwargs=NamedTuple(), solverkwargs=NamedTuple()) 
     if deproblem == SDEProblem 
-        problem = deproblem(statefunc[1], statefunc[2], state, (t, Inf), construct_interpolant(input, t))
+        problem = deproblem(statefunc[1], statefunc[2], state, (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     elseif deproblem == DDEProblem
-        problem = deproblem(statefunc[1], state, statefunc[2], (t, Inf), construct_interpolant(input, t))
+        problem = deproblem(statefunc[1], state, statefunc[2], (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     else
-        problem = deproblem(statefunc, state, (t, Inf), construct_interpolant(input, t))
+        problem = deproblem(statefunc, state, (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     end
-    init(problem, alg, args...; save_everystep=false, dense=true, kwargs...)
+    init(problem, alg, solverargs...; save_everystep=false, dense=true, solverkwargs...)
 end
 
 # struct SignatureError <: Exception

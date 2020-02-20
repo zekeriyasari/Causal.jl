@@ -43,6 +43,13 @@ show(io::IO, bus::Bus) = print(io, "Bus(nlinks:$(length(bus)), eltype:$(eltype(b
 display(bus::Bus) = println("Bus(nlinks:$(length(bus)), eltype:$(eltype(bus)), ",
     "isreadable:$(isreadable(bus)), iswritable:$(iswritable(bus)))")
 
+"""
+    datatype(bus::Bus)
+
+Returns the data type of `bus`.
+"""
+datatype(bus::Bus{<:Link{T}}) where T = T
+
 ##### AbstractVector interface
 """
     size(bus::Bus)

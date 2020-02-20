@@ -2,7 +2,7 @@
 
 import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDiscreteSystem
 
-const DiscreteSolver = Solver(FunctionMap())
+const DiscreteAlg = FunctionMap()
 
 
 @doc raw"""
@@ -42,15 +42,17 @@ julia> ds = DiscreteSystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
 DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 """
-mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, IV, S} <: AbstractDiscreteSystem
+mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDiscreteSystem
     @generic_dynamic_system_fields
-    function DiscreteSystem(input, output, statefunc, outputfunc, state, t;  solver=DiscreteSolver)
+    function DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
-        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
+        integrator = construct_integrator(DiscreteProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state),  typeof(inputval), typeof(solver)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
-            outputfunc, state, inputval, t, solver)
+            typeof(state),  typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
+            outputfunc, state, t, integrator)
     end
 end
 

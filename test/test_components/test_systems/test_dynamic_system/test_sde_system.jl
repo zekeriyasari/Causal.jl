@@ -5,7 +5,7 @@
     f(dx, x, u, t) = (dx[1] = -x[1])
     h(dx, x, u, t) = (dx[1] = -x[1])
     g(x, u, t) = x
-    ds = SDESystem(nothing, Bus(1), (f,h), g, [1.], 0., solver=Solver(LambaEM{true}()), noise=Noise(WienerProcess(0., zeros(1))))
+    ds = SDESystem(nothing, Bus(1), (f,h), g, [1.], 0., alg=LambaEM{true}())
     ds = SDESystem(nothing, Bus(1), (f,h), g, [1.], 0)
     @test isa(ds.statefunc, Tuple{<:Function, <:Function})
     @test typeof(ds.trigger) == Link{Float64}
@@ -38,7 +38,7 @@
         dx[3] = -x[3] + cos(u[2](t))
     end
     g2(x, u, t) = x 
-    ds = SDESystem(Bus(2), Bus(3), (f2, h2), g2, ones(3), 0)
+    ds = SDESystem(Bus(2), Bus(3), (f2, h2), g2, ones(3), 0.)
     tsk = launch(ds)
     for t in 1 : 10 
         drive(ds, t)

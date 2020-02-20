@@ -2,9 +2,9 @@
 
 import ....Jusdl.Connections: launch, Bus, release, isreadable
 import ....Jusdl.Utilities: write!
+
 using DifferentialEquations
 using Sundials
-import DifferentialEquations.solve
 
 ##### Input-Output reading and writing.
 """
@@ -52,7 +52,7 @@ end
 
 Computes the output of `comp` according to its `outputfunc` if `outputfunc` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
 """
-computeoutput
+function computeoutput end
 computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
@@ -64,84 +64,53 @@ end
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 """
-    evolve!(comp::AbstractSource, x, u, t)
+    evolve!(comp::AbstractSource, u, t)
 
-Does nothing. `x` is the state, `u` is the value of `input` and `t` is time.
+Does nothing. `u` is the value of `input` and `t` is time.
 
-    evolve!(comp::AbstractSink, x, u, t) 
+    evolve!(comp::AbstractSink, u, t) 
 
-Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `x` is the state, `u` is the value of `input` and `t` is time.
+Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `u` is the value of `input` and `t` is time.
 
-    evolve!(comp::AbstractStaticSystem, x, u, t)
+    evolve!(comp::AbstractStaticSystem, u, t)
 
-Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of `input` and `t` is time. 
+Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `u` is the value of `input` and `t` is time. 
     
-    evolve!(comp::AbstractDynamicSystem, x, u, t)
+    evolve!(comp::AbstractDynamicSystem, u, t)
 
-Solves the differential equaition of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x`. `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. See also: [`update!(comp::AbstractDynamicSystem, sol, u)`](@ref)
+Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. See also: [`update!(comp::AbstractDynamicSystem, sol, u)`](@ref)
 """
-evolve!
-evolve!(comp::AbstractSource, x, u, t) = nothing
-evolve!(comp::AbstractSink, x, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
-evolve!(comp::AbstractStaticSystem, x, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
-function evolve!(comp::AbstractDynamicSystem, x, u, t)
+function evolve! end
+evolve!(comp::AbstractSource, u, t) = nothing
+evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
+evolve!(comp::AbstractStaticSystem, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
+function evolve!(comp::AbstractDynamicSystem, u, t)
     # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
     # Thus, there will be no evolution in such a case.
     comp.t == t && return comp.state  
-    sol = solve(comp, x, u, t)
-    update!(comp, sol, u)
+
+    # Advance the system and update the system.
+    advance!(comp, u, t)
+    updatetime!(comp)
+    updatestate!(comp)
+
+    # Return comp state
     comp.state
 end
 
-interpolate(t0::Real, t1::Real, u0::Real, u1::Real) = 
-    t -> t0 <= t <= t1 ? u0 + (t - t0) / (t1 - t0) * (u1 - u0) : error("Extrapolation is not allowed.")
-interpolate(t0::Real, t1::Real, u0::AbstractVector{<:Real}, u1::AbstractVector{<:Real}) = 
-    map(items -> interpolate(t0, t1, items[1], items[2]), zip(u0, u1))
-
-constructinput(comp, u, t) = typeof(u) <: Nothing ? u : interpolate(comp.t, t, comp.inputval, u)
-
-constructprob(comp::AbstractDiscreteSystem, x, u, t) = 
-    DiscreteProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t))
-constructprob(comp::AbstractODESystem, x, u, t) = 
-    ODEProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t))
-constructprob(comp::AbstractDAESystem, x, u, t) = 
-    DAEProblem(comp.statefunc, x, comp.stateder, (comp.t, t), constructinput(comp, u, t),
-    differential_vars=comp.diffvars)
-constructprob(comp::AbstractRODESystem, x, u, t) = 
-    RODEProblem(comp.statefunc, x, (comp.t, t), constructinput(comp, u, t), 
-    noise=comp.noise.process, rand_prototype=comp.noise.prototype, seed=comp.noise.seed)
-constructprob(comp::AbstractSDESystem, x, u, t) = 
-    SDEProblem(comp.statefunc..., x, (comp.t, t), constructinput(comp, u, t), noise=comp.noise.process, 
-    noise_rate_prototype=comp.noise.prototype, seed=comp.noise.seed)
-constructprob(comp::AbstractDDESystem, x, u, t) = 
-    DDEProblem(comp.statefunc, x, comp.history.func, (comp.t, t), constructinput(comp, u, t), 
-    constant_lags=comp.history.conslags, dependent_lags=comp.history.depslags, neutral=comp.history.neutral)
-
-solve(comp::AbstractDynamicSystem, x, u,t) = solve(constructprob(comp, x, u, t), comp.solver.alg; comp.solver.params...)
-
-"""
-    update!(comp::AbstractDynamicSystem, sol, u)
-
-Updates `comp` with the differential equation solution `sol` and the input value `u`. The time `t`, state `state` and `inputval` is updated. Furthermore, `stateder` is also updated if `comp` isa `AbstractDAESystem` and `noise` is update if `comp` is `AbstractSDESystem` or `AbstractRODESystem`.
-"""
-function update!(comp::AbstractDynamicSystem, sol, u)
-    update_time!(comp, sol.t[end])
-    update_state!(comp, sol.u[end])
-    update_inputval!(comp, u)
-    typeof(comp) <: Union{<:AbstractSDESystem, <:AbstractRODESystem} && update_noise!(comp, sol.W)
-    typeof(comp) <: AbstractDAESystem && update_stateder!(comp, sol.du[end])
-    comp
+function advance!(comp::AbstractDynamicSystem, u, t)
+    interpolator = comp.integrator.sol.prob.p
+    update_interpolator!(interpolator, u, t)
+    step!(comp.integrator, t - comp.t, true)
+    update_interpolator!(interpolator)
 end
-update_time!(comp::AbstractDynamicSystem, t) = (comp.t = t; comp)
-update_state!(comp::AbstractDynamicSystem, state) = (comp.state = state; comp)
-update_inputval!(comp::AbstractDynamicSystem, u) = (comp.inputval = u; comp)
-update_stateder!(comp::AbstractDAESystem, stateder) = (comp.stateder = stateder; comp)
-function update_noise!(comp::Union{<:AbstractSDESystem, <:AbstractRODESystem}, noise)
-    Z = typeof(noise.Z) <: Nothing ? noise.Z : noise.Z[end]
-    comp.noise.process = NoiseProcess(noise.t[end], noise.u[end], Z, noise.dist, noise.bridge, rng=noise.rng, 
-    reseed=false)
-    comp
-end
+update_interpolator!(interp::Nothing) = nothing
+update_interpolator!(interp::Nothing, u, t) = nothing
+update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
+update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
+
+updatetime!(comp) = (comp.t = comp.integrator.t)
+updatestate!(comp) = (comp.state = comp.integrator.u)
 
 ##### Task management
 """
@@ -163,9 +132,8 @@ Makes `comp` takes a forward step.  The input value `u` and state `x` of `comp` 
 """
 function forwardstep(comp, t)
     u = readinput(comp)
-    x = readstate(comp)
-    xn = evolve!(comp, x, u, t)
-    y = computeoutput(comp, xn, u, t)
+    x = evolve!(comp, u, t)
+    y = computeoutput(comp, x, u, t)
     writeoutput(comp, y)
     comp.callbacks(comp)
     return t
@@ -182,7 +150,7 @@ function backwardstep(comp, t)
     y = computeoutput(comp, x, nothing, t)
     writeoutput(comp, y)
     u = readinput(comp)
-    xn = evolve!(comp, x, u, t)
+    xn = evolve!(comp, u, t)
     comp.callbacks(comp)
     return t
 end

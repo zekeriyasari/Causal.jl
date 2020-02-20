@@ -2,9 +2,7 @@
 
 import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractSDESystem
 
-const SDESolver = Solver(LambaEM{true}())
-const SDENoise = Noise(WienerProcess(0.,0.))
-
+const SDEAlg = LambaEM{true}()
 
 @doc raw"""
     SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
@@ -51,23 +49,23 @@ SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Fl
 u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
 ```
 """
-mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, IV, S, N} <: AbstractSDESystem
+mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
     @generic_dynamic_system_fields
-    noise::N
-    function SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
+    function SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
-        inputval = typeof(input) <: Bus ? rand(eltype(state), length(input)) : nothing
+        integrator = construct_integrator(SDEProblem, input, statefunc, state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(inputval), typeof(solver), typeof(noise)}(input, output, trigger, handshake, 
-            Callback[], uuid4(),
-            statefunc, outputfunc, state, inputval, t, solver, noise)
+            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
+            statefunc, outputfunc, state, t, integrator)
     end
 end
 
 show(io::IO, ds::SDESystem) = print(io, 
     "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",
-    "output:$(checkandshow(ds.output)), noise:$(checkandshow(ds.noise)))")
+    "output:$(checkandshow(ds.output)))")
 
 ##### Noisy Linear System
 

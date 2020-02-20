@@ -8,11 +8,10 @@
     end
     outputfunc(x, u, t) = x
     ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, ones(2), 0., 
-        solver=Solver(RandomEM(), Dict(:dt=>0.01)))
+        alg=RandomEM(), solverkwargs=(dt=0.01,))
     ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, ones(2), 0., 
-        solver=Solver(RandomEM(), Dict(:dt=>0.01)), 
-        noise=Noise(WienerProcess(0., rand(2))))
-    ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, ones(2), 0.)
+        alg=RandomEM(), solverkwargs=(dt=0.01,), modelkwargs=(rand_prototype=zeros(2),))
+    # ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, ones(2), 0.)
     @test typeof(ds.trigger) == Link{Float64}
     @test typeof(ds.handshake) == Link{Bool}
     @test ds.input === nothing
@@ -21,7 +20,6 @@
     @test ds.state == ones(2)
 
     # Driving RODESystem
-    ds.solver.params[:dt] = 0.01
     tsk = launch(ds)
     for t in 1 : 10
         drive(ds, t)
@@ -39,8 +37,7 @@
         dx[2] = -2x[2]*cos(W[1] + W[2]) - sin(u[1](t))
     end
     ofunc(x, u, t) = x
-    ds = RODESystem(Bus(2), Bus(2), sfunc, ofunc, ones(2), 0.)
-    ds.solver.params[:dt] = 0.01
+    ds = RODESystem(Bus(2), Bus(2), sfunc, ofunc, ones(2), 0., solverkwargs=(dt=0.01,), modelkwargs=(rand_prototype=zeros(2),))
     tsk = launch(ds)
     for t in 1 : 10
         drive(ds, t)

@@ -1,10 +1,8 @@
-# Jusdl
-
 <center>
     <img src="docs/src/assets/logo2.png"
         alt="Readme Plot"
         style="float: center; margin-right: 10px;"
-        width="40%"/>
+        width="25%"/>
 </center>
 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://zekeriyasari.github.io/Jusdl.jl/)
@@ -37,7 +35,7 @@ Installation of Jusdl is like any other registered Julia package.  Enter the Pkg
 
 ## A First Look
 
-Consider the following simple model.
+Consider following simple model.
 <center>
     <img src="docs/src/assets/AlgebraicLoop/brokenloop.svg"
         alt="Closed Loop System"

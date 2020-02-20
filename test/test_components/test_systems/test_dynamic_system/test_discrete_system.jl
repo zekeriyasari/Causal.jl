@@ -12,7 +12,7 @@
     @test length(ds.output) == 1
     @test ds.state == [1.]
     @test ds.t == 0.
-    @test ds.inputval == nothing
+    @test ds.integrator.sol.prob.p === nothing
 
     function sfunc2(dx, x, u, t)
         dx[1] = x[1] + u[1](t)

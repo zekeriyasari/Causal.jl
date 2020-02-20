@@ -12,7 +12,7 @@
     @test length(ds.output) == 1
     @test ds.state == [1.]
     @test ds.t == 0.
-    @test ds.inputval == nothing
+    @test ds.integrator.sol.prob.p === nothing
 
     function sfunc2(dx, x, u, t)
         dx[1] = x[1] + u[1](t)
@@ -58,9 +58,9 @@
     @test ds.input === nothing
     @test isa(ds.output, Bus)
     @test length(ds.output) == 2
-    ds = LinearSystem(Bus(2), Bus(3), A=ones(4,4), B=ones(4,2), C=ones(3,4), D=ones(3, 2), state=zeros(4,4))
+    ds = LinearSystem(Bus(2), Bus(3), A=ones(4,4), B=ones(4,2), C=ones(3,4), D=ones(3, 2), state=zeros(4,1))
     @test ds.t == 0.
-    @test ds.state == zeros(4,4)
+    @test ds.state == zeros(4,1)
     ds = LinearSystem(Bus(2), Bus(3), A=ones(4,4), B=ones(4,2), C=ones(3,4), D=ones(3, 2))
     @test isa(ds.output, Bus)
     @test isa(ds.output, Bus)

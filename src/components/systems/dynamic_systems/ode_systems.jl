@@ -76,7 +76,7 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     C::Matrix{Float64}
     D::Matrix{Float64}
     function LinearSystem(input, output, args...; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
-        state=rand(size(A,1)), t=0, alg=ODEAlg, kwargs...)
+        state=rand(size(A,1)), t=0., alg=ODEAlg, kwargs...)
         trigger = Link()
         handshake = Link(Bool)
         if input === nothing
@@ -87,7 +87,7 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
             if C === nothing || D === nothing
                 outputfunc = nothing
             else
-                outputfunc = (x, u, t) -> (C * x + D * map(ui -> ui(t), u.funcs))
+                outputfunc = (x, u, t) -> (C * x + D * map(ui -> ui(t), u))
             end
         end
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, alg, args...; kwargs...)

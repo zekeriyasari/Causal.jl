@@ -14,12 +14,14 @@ function construct_interpolant(input, t)
     interpolant
 end
 
-function construct_integrator(deproblem, input, statefunc, state, t, modelargs=(), solverargs=(); alg=nothing, 
+function construct_integrator(deproblem, input, statefunc, state, t, modelargs=(), solverargs=(); alg=nothing, stateder=state,
     modelkwargs=NamedTuple(), solverkwargs=NamedTuple()) 
     if deproblem == SDEProblem 
         problem = deproblem(statefunc[1], statefunc[2], state, (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     elseif deproblem == DDEProblem
         problem = deproblem(statefunc[1], state, statefunc[2], (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
+    elseif deproblem == DAEProblem
+        problem = deproblem(statefunc, stateder, state, (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     else
         problem = deproblem(statefunc, state, (t, Inf), construct_interpolant(input, t), modelargs...; modelkwargs...)
     end

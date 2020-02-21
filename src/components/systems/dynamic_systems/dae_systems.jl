@@ -6,9 +6,12 @@ const DAEAlg = IDA()
 
 
 @doc raw"""
-    DAESystem(input, output, statefunc, outputfunc, state, stateder, t, diffvars; solver=DAESolver)
+    DAESystem(input, output, statefunc, outputfunc, state, stateder, t, modelargs=(), solverargs=(); 
+        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Construsts a `DAESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `DAESystem` is represented by the following equations. 
+Construsts a `DAESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `state` is the initial state, `stateder` is the initial state derivative  and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+`DAESystem` is represented by the following equations. 
 ```math 
     \begin{array}{l}
         0 = f(out, dx, x, u, t) \\
@@ -30,15 +33,18 @@ function outputfunc(x, u, t)
     return y
 end
 ```
+
+!!! info 
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
 mutable struct DAESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDAESystem
     @generic_dynamic_system_fields
-    function DAESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple() )
+    function DAESystem(input, output, statefunc, outputfunc, state, stateder, t, modelargs=(), solverargs=(); 
+        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
         trigger = Link()
         handshake = Link(Bool)
         integrator = construct_integrator(DAEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+            alg=alg, stateder=stateder, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
         new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
             typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], 
             uuid4(), statefunc, outputfunc, state, t, integrator)

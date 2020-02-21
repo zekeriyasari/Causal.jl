@@ -6,9 +6,12 @@ const ODEAlg = Tsit5()
 
 
 @doc raw"""
-    ODESystem(input, output, statefunc, outputfunc, state, t,; solver=ODESolver)
+    ODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs an `ODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `ODESystem` is represented by the equations.
+Constructs an `ODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function, `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+`ODESystem` is represented by the equations.
 ```math 
     \begin{array}{l}
         \dot{x} = f(x, u, t) \\[0.25cm]
@@ -41,7 +44,14 @@ ofunc (generic function with 1 method)
 
 julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
 ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+
+
+julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0., solverkwargs=(dt=0.1, reltol=1e-6))
+ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
+
+!!! info 
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs`, `solverkwargs` and `alg`.
 """
 mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     @generic_dynamic_system_fields

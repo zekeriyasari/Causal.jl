@@ -6,9 +6,12 @@ const RODEAlg = RandomEM()
 # const RODENoise = Noise(WienerProcess(0.,0.))
 
 @doc raw"""
-    RODESystem(input, output, statefunc, outputfunc, state, t, noise, solver=RODESolver)
+    RODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `RODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function.  The `RODESystem` is represented by the equations,
+Constructs a `RODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+The `RODESystem` is represented by the equations,
 ```math 
     \begin{array}{l}
         dx = f(x, u, t, W)dt \\[0.25]
@@ -44,6 +47,9 @@ outputfunc (generic function with 1 method)
 
 julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.);
 ```
+
+!!! info 
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
 mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractRODESystem
     @generic_dynamic_system_fields

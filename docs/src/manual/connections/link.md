@@ -15,7 +15,7 @@ Link
 ```
 
 ## Connection and Disconnection of Links 
-`Link`s can be connected to each other so that data can flow from one link to another. The flows from link `l1` to `l2`, then `l1` is said to *drive* `l2` and `l1` is called as *master* and `l2` is called as `slave`. A `Link` can have more than one slave but can have just one master. When a `Link`s is initialized, it has no `master` and `slaves`.
+`Link`s can be connected to each other so that data can flow from one link to another. The flows from link `l1` to `l2`, then `l1` is said to *drive* `l2` and `l1` is called as *master* and `l2` is called as `slave`. A `Link` can have more than one slave but can have just one master. When a `Link` is initialized, it has no `master` and `slaves`.
 
 ```@docs 
 connect 
@@ -28,10 +28,10 @@ disconnect
 ```
 
 !!! warning 
-    Note that the order or arguments is **important** when the links are connected. `connect(l1, l2)` connects `l1` and `l2` such that `l1` drives `l2`, i.e., data flows from `l1` to `l2`. In other words, `l1` is the master link and `l2` is the slave link. However, the order of arguments is not important when the links are disconnected. `disconnect(l1, l2)` does the same thing with `disconnect(l2, l1)`, i.e., it justs breaks the connection between `l2` and `l1`.
+    Note that the order of arguments is **important** when the links are connected. `connect(l1, l2)` connects `l1` and `l2` such that `l1` drives `l2`, i.e., data flows from `l1` to `l2`. In other words, `l1` is the master link and `l2` is the slave link. However, the order of arguments is not important when the links are disconnected. `disconnect(l1, l2)` does the same thing with `disconnect(l2, l1)`, i.e., it justs breaks the connection between `l2` and `l1`.
 
 ## Data Flow through Links
-The data can be read from and written into `Link`s if active tasks are bound to them. Links can be thought of a pipe. In order to write data to a `Link` from one of its ends, a task that reads written data from the other end must be bounded to the `Link`. Similarly, in order to read data from one of the `Link` from one of its end, a task that writes the read data must be bound to the `Link`. Reading from and writing to `Link` is carried out with [`take!`](@ref) and [`put!`](@ref) functions. For more clarity, let us see some example. 
+The data can be read from and written into `Link`s if active tasks are bound to them. Links can be thought of like a pipe. In order to write data to a `Link` from one of its ends, a task that reads written data from the other end must be bounded to the `Link`. Similarly, in order to read data from one of the `Link` from one of its end, a task that writes the read data must be bound to the `Link`. Reading from and writing to `Link` is carried out with [`take!`](@ref) and [`put!`](@ref) functions. For more clarity, let us see some examples. 
 
 Let us first construct a `Link`,
 ```@repl link_writing_ex_1
@@ -48,7 +48,7 @@ function reader(link::Link)  # Define job.
 end
 t = @async reader(l)
 ```
-The `reader` is defined such that the data written from one end of `l` is read until the data is `NaN`. Now, we have runnable task `t`. This means the `l` is ready for data writing. 
+The `reader` is defined such that the data written from one end of `l` is read until the data is `NaN`. Now, we have runnable a task `t`. This means the `l` is ready for data writing. 
 ```@repl link_writing_ex_1
 put!(l, 1.)
 put!(l, 2.)
@@ -62,7 +62,7 @@ Note that the data flown through the `l` is written to its `buffer`.
 ```@repl link_writing_ex_1
 l.buffer.data
 ```
-When ever the bound task to the `l` is runnable, the data can be written to `l`. That is, the data length that can be written to `l` is not limited by the buffer length of `l`. But, beware that the `buffer` of `Links`s are `Cyclic`. That means, when the `buffer` is full, its data is overwritten.
+Whenever the bound task to the `l` is runnable, the data can be written to `l`. That is, the data length that can be written to `l` is not limited by the buffer length of `l`. But, beware that the `buffer` of `Link`s is `Cyclic`. That means, when the `buffer` is full, its data is overwritten.
 ```@repl link_writing_ex_1
 l = Link(5)
 t = @async reader(l)

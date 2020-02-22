@@ -39,13 +39,12 @@ end
 julia> function statefunc(dx, x, u, t, W)
          dx[1] = 2x[1]*sin(W[1] - W[2])
          dx[2] = -2x[2]*cos(W[1] + W[2])
-       end
-statefunc (generic function with 1 method)
+       end;
 
-julia> outputfunc(x, u, t) = x
-outputfunc (generic function with 1 method)
+julia> outputfunc(x, u, t) = x;
 
-julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0.);
+julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0., solverkwargs=(dt=0.01,))
+RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 
 !!! info 
@@ -67,6 +66,6 @@ mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractRODESystem
     end
 end
 
-show(io::IO, ds::RODESystem) = print(io, "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",  
-    "output:$(checkandshow(ds.output)))")
+show(io::IO, ds::RODESystem) = print(io, 
+    "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 

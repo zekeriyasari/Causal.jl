@@ -3,7 +3,7 @@
 """
     Callback(condition, action)
 
-Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument functions. `condition` returns `true` if the condition it checks occurs, otherwise ite returns `false`. `action` is performs the specific action for which the `Callback` the callback is contructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
+Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument function. The `condition` returns `true` if the condition it checks occurs, otherwise, it returns `false`. `action` performs the specific action for which the `Callback` is constructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
 
 # Example 
 

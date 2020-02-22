@@ -3,14 +3,14 @@
 A `Bus` is actually is a bunch of links. Reading from and writing into  data is performed as in the case of [Links](@ref).
 
 ## Construction of Bus
-A `Bus` is constructed by specifying its element type `T`, number of links `nlinks` and the buffer length of its links.
+A `Bus` is constructed by specifying its element type `T`, the number of links `nlinks` and the buffer length of its links.
 
 ```@docs 
 Bus
 ```
 
 ## Connection and Disconnection of Busses
-The `Bus`ses can be connected and disconnected to each other. When connected any data written to the master bus is also written all slave busses. See the following example.
+The `Bus`ses can be connected to and disconnected from each other. When connected any data written to the master bus is also written all slave busses. See the following example.
 
 Let us connect two busses and connect them together.
 ```@repl connection_of_busses 1
@@ -65,7 +65,7 @@ b[1].buffer.data
 
 ## Indexing and Iteration of Busses 
 
-Busses can be indexed similarly to the arrays in Julia. When indexed, corresponding link of the bus is returned.
+Busses can be indexed similarly to the arrays in Julia. When indexed, the corresponding link of the bus is returned.
 ```@repl bus_indexing_ex_1
 using Jusdl # hide 
 b = Bus(3) 

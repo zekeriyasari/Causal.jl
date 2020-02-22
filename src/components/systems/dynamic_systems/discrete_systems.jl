@@ -38,6 +38,7 @@ end
 ```jldoctest 
 julia> sfunc(dx,x,u,t) = (dx .= 0.5x)
 sfunc (generic function with 1 method)
+
 julia> ofunc(x, u, t) = x
 ofunc (generic function with 1 method)
 
@@ -62,5 +63,5 @@ mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDiscreteSy
     end
 end
 
-show(io::IO, ds::DiscreteSystem) = print(io, "DiscreteSystem(state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::DiscreteSystem) = print(io, 
+    "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")

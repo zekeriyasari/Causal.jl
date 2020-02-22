@@ -34,6 +34,23 @@ function outputfunc(x, u, t)
 end
 ```
 
+# Example 
+```jldoctest 
+julia> function sfunc(out, dx, x, u, t)
+           out[1] = x[1] + 1 - dx[1]
+           out[2] = (x[1] + 1) * x[2] + 2
+       end;
+
+julia> ofunc(x, u, t) = x;
+
+julia> x0 = [1., -1];
+
+julia> dx0 = [2., 0.];
+
+julia> ds = DAESystem(nothing, Bus(1), sfunc, ofunc, x0, dx0, 0., modelkwargs=(differential_vars=[true, false],))
+DAESystem(state:[1.0, -1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+```
+
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
@@ -51,5 +68,5 @@ mutable struct DAESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDAESystem
     end
 end
 
-show(io::IO, ds::DAESystem) = print(io, "DAESystem(state:$(ds.state), t:$(ds.t), ", 
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::DAESystem) = print(io, 
+    "DAESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")

@@ -45,7 +45,6 @@ ofunc (generic function with 1 method)
 julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
 ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 
-
 julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0., solverkwargs=(dt=0.1, reltol=1e-6))
 ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
@@ -455,7 +454,7 @@ end
   
 
 # ##### Pretty-printing 
-show(io::IO, ds::ODESystem) = println(io, 
+show(io::IO, ds::ODESystem) = print(io, 
     "ODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 show(io::IO, ds::LinearSystem) = print(io, 
     "Linearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",

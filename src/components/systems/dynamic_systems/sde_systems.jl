@@ -38,18 +38,14 @@ end
 
 # Example 
 ```jldoctest
-julia> f(dx, x, u, t) = (dx[1] = -x[1])
-f (generic function with 1 method)
+julia> f(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> h(dx, x, u, t) = (dx[1] = -x[1])
-h (generic function with 1 method)
+julia> h(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> g(x, u, t) = x
-g (generic function with 1 method)
+julia> g(x, u, t) = x;
 
 julia> ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
-u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 
 !!! info 
@@ -70,8 +66,7 @@ mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
 end
 
 show(io::IO, ds::SDESystem) = print(io, 
-    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",
-    "output:$(checkandshow(ds.output)))")
+    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 
 ##### Noisy Linear System
 

@@ -10,7 +10,7 @@ using Sundials
 """
     readtime(comp::AbstractComponent)
 
-Returns current time of `comp` from its `trigger` link.
+Returns current time of `comp` read from its `trigger` link.
 
 !!! note 
     To read time of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref).
@@ -27,7 +27,7 @@ readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? com
 """
     readinput(comp::AbstractComponent)
 
-Returne the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, returns `nothing`.
+Returns the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, returns `nothing`.
 
 !!! note 
     To read input value of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref)
@@ -78,7 +78,7 @@ Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `n
     
     evolve!(comp::AbstractDynamicSystem, u, t)
 
-Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. See also: [`update!(comp::AbstractDynamicSystem, sol, u)`](@ref)
+Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. 
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing

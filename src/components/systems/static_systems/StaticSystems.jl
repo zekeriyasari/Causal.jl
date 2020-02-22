@@ -190,7 +190,7 @@ end
 
 Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and coupling matrix `cplmat` of size ``d \times d``. The output function `g` of `Coupler` is of the form 
 ```math 
-    y = g(u, t) = (E \otimmes P) u
+    y = g(u, t) = (E \otimes P) u
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """

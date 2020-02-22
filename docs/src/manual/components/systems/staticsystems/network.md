@@ -1,6 +1,6 @@
 # Network
 
-A `Network` is a system consisting of connected systems. That is, a `Network` is actually modelled as a `SubSystem`.
+A `Network` is a system consisting of connected systems. That is, a `Network` is actually modeled as a `SubSystem`.
 
 ## Construction of Networks
 To construct a `Network` we have to specify the components, the outer connectivity matrix and the inner coupling matrix. Inputs and outputs can be assigned to the `Network`. See the main constructor.

@@ -4,8 +4,9 @@ In this tutorial, we will simulate a network. A network is actually a subsystem.
 
 ### Construction of Networks 
 In this example, we will simulate a small network consisting of rwo dynamical systems. The network in this example consists of identical dynamical systems whose dynamics is given by
+
 ```math 
-    \dot{x}_i = f(x_i) + \sum_\limits_{j = 1}^{N} \epsilon_{ij} P x_j, \quad i = 1, \ldots, N
+    \dot{x}_i = f(x_i) + \sum\limits_{j = 1}^{N} \epsilon_{ij} P x_j, \quad i = 1, \ldots, N
 ```
 where ``N`` is the number of node,  ``f`` is the vector function corresponding to the individual node dynamics, ``\epsilon_{ij}`` is the coupling strength between the nodes ``i`` and ``j``. The diagonal matrix ``P`` determines the way the nodes are connected to each other. In this simulation, we construct a network consisting of two nodes with Lorenz dynamics. The matrix ``E = [\epsilon_{ij}]`` determines the coupling strength and topology of the network: ``\epsilon_{ij} = 0`` if there is no connection between nodes ``i`` and ``j``, otherwise ``\epsilon_{ij} = 0``.
 ```@example network_tutorial
@@ -44,4 +45,4 @@ savefig(p3, "network_simulation_plot.svg"); nothing # hide
 ```
 ![](network_simulation_plot.svg)
 
-Note the system are synchronized, i.e., the error between the outputs of the nodes goes to zero as time goes to zero. This synchronization phenomenon depends on the coupling strength between the nodes. The synchronization is not achieved when he coupling strength between the nodes are is large enough.
+Note the systems are synchronized, i.e., the error between the outputs of the nodes goes to zero as time goes to zero. This synchronization phenomenon depends on the coupling strength between the nodes. The synchronization is not achieved when he coupling strength between the nodes are is large enough.

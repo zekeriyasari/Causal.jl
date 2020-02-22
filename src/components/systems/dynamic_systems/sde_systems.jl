@@ -5,16 +5,19 @@ import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_s
 const SDEAlg = LambaEM{true}()
 
 @doc raw"""
-    SDESystem(input, output, statefunc, outputfunc, state, t; noise=Noise(WienerProcess(0., zeros(length(state)))), solver=SDESolver)
+    SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `SDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `SDESystem`. The `SDESystem` is represented by the state equation
+Constructs a `SDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `SDESystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+The `SDESystem` is represented by the state equation
 ```math 
     \begin{array}{l}
         dx = f(x, u, t) dt + h(x, u, t)dW \\
         y = g(x, u, t)
     \end{array}
 ```
-where ``f`` is the drift equation and ``h`` is the diffusion equation.  The `statefunc` is the tuple of drift function ``f`` and diffusion function ``h`` i.e. `statefunc = (f, h)`. ``g`` is `outputfunc`. ``t`` is the time `t`, ``x`` is the `state`, ``u`` is the value of `input` and ``y`` is the value of the `output`. ``W`` is the Wiever process. `noise` is the noise of the system and `solver` is used to solve the above differential equation.
+where ``f`` is the drift equation and ``h`` is the diffusion equation.  The `statefunc` is the tuple of drift function ``f`` and diffusion function ``h`` i.e. `statefunc = (f, h)`. ``g`` is `outputfunc`. ``t`` is the time `t`, ``x`` is the `state`, ``u`` is the value of `input` and ``y`` is the value of the `output`. ``W`` is the Wiever process. `noise` is the noise of the system and `solver` is used to solve the above differential equation. 
 
 The syntax of the drift and diffusion function of `statefunc` must be of the form
 ```julia
@@ -35,19 +38,18 @@ end
 
 # Example 
 ```jldoctest
-julia> f(dx, x, u, t) = (dx[1] = -x[1])
-f (generic function with 1 method)
+julia> f(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> h(dx, x, u, t) = (dx[1] = -x[1])
-h (generic function with 1 method)
+julia> h(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> g(x, u, t) = x
-g (generic function with 1 method)
+julia> g(x, u, t) = x;
 
 julia> ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), noise:Noise(process:t: [0.0]
-u: Array{Float64,1}[[0.0]], prototype:nothing, seed:0))
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
+
+!!! info 
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
 mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
     @generic_dynamic_system_fields
@@ -64,8 +66,7 @@ mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
 end
 
 show(io::IO, ds::SDESystem) = print(io, 
-    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), ",
-    "output:$(checkandshow(ds.output)))")
+    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 
 ##### Noisy Linear System
 

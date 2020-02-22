@@ -7,11 +7,11 @@ DocTestSetup  = quote
 end
 ```
 
-`Buffer` is a primitive to *buffer* the data. Data can be read from and written into a buffer. The mode of the buffer determines the way to read from and write into the buffers. 
+`Buffer` is a used to *buffer* the data. Data can be read from and written into a buffer. The mode of the buffer determines the way to read from and write into the buffers. 
 
 ## Buffer Modes 
 
-Buffer mode determines the way the data is read from and written into a `Buffer`. Basically, there are four buffer modes: `Normal`, `Cyclic`, `Fifo` and `Lifo`. `Normal`, `Fifo` and `Lifo` are  subtypes of `LinearMode` and `Cyclic` is subtype of `CyclicMode`.
+Buffer mode determines the way the data is read from and written into a `Buffer`. Basically, there are four buffer modes: `Normal`, `Cyclic`, `Fifo` and `Lifo`. `Normal`, `Fifo` and `Lifo` are  subtypes of `LinearMode` and `Cyclic` is a subtype of `CyclicMode`.
 
 ```@docs 
 Utilities.BufferMode 

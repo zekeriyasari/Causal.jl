@@ -1,6 +1,6 @@
 # This file includes interpolant for interplation of sampled inputs. 
 
-import Base: size, getindex, setproperty!
+import Base: size, getindex, setproperty!, show
 
 
 """
@@ -44,7 +44,7 @@ Returns the interpolation function of `u` at index `idx`.
 # Example 
 ```jldoctest 
 julia> u = Interpolant(0., 1., [1., 2.], [3., 4.])
-Interpolant(0.0, 1.0, [1.0, 2.0], [3.0, 4.0])
+Interpolant(tinit:0.0, tfinal:1.0, coefinit:[1.0, 2.0], coeffinal:[3.0, 4.0])
 
 julia> u[1](0.5)
 2.0

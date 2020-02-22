@@ -5,9 +5,12 @@ import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_s
 const DDEAlg = MethodOfSteps(Tsit5())
 
 @doc raw"""
-    DDESystem(input, output, statefunc, outputfunc, state, history, t; solver=DDESolver)
+    DDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+        alg=DDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `DDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DDESystem`. The `DDESystem` is represented by
+Constructs a `DDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DDESystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+The `DDESystem` is represented by
 ```math 
     \begin{array}{l}
         \dot{x} = f(x, h, u, t) \\
@@ -31,35 +34,27 @@ end
 ```
 # Example 
 ```jldoctest
-julia> const out = zeros(1)
-1-element Array{Float64,1}:
- 0.0
+julia> const out = zeros(1);
 
-julia> histfunc(out, u, t) = (out .= 1.)
-histfunc (generic function with 1 method)
+julia> histfunc(out, u, t) = (out .= 1.);
 
 julia> function statefunc(dx, x, h, u, t)
            h(out, u, t - tau) # Update out vector
            dx[1] = out[1] + x[1]
-       end
-statefunc (generic function with 1 method)
+       end;
 
-julia> outputfunc(x, u, t) = x
-outputfunc (generic function with 1 method)
+julia> outputfunc(x, u, t) = x;
 
-julia> tau = 1
-1
+julia> tau = 1;
 
-julia> conslags = [tau]
-1-element Array{Int64,1}:
- 1
+julia> conslags = [tau];
 
-julia> hist = History(histfunc, conslags, ())
-History(func:histfunc, conslags:[1], seed:(), neutral:false
-
-julia> ds = DDESystem(nothing, Bus(), statefunc, outputfunc, [1.], hist, 0.)
-DDESystem(state:[1.0], history:History(func:histfunc, conslags:[1], seed:(), neutral:false, t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), history:History(func:histfunc, conslags:[1], seed:(), neutral:false)
+julia> ds = DDESystem(nothing, Bus(), (statefunc, histfunc), outputfunc, [1.],  0.)
+DDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
+
+!!! info 
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
 mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDDESystem
     @generic_dynamic_system_fields
@@ -75,6 +70,6 @@ mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDDESystem
     end
 end
 
-show(io::IO, ds::DDESystem) = print(io, "DDESystem(state:$(ds.state), t:$(ds.t), ", 
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+show(io::IO, ds::DDESystem) = print(io, 
+    "DDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
 

@@ -6,7 +6,7 @@ DocTestSetup  = quote
 end
 ```
 
-`Callback`s are used to monitor the existence of a specific event and if that specific event occurs, some other special jobs are invoked. `Callback`s are intended to provide additional monitoring capability to any user-defined composite types. As such, `Callback`s are *generaly* fields of user defined composite types. When a `Callback` is called, if the `Callback` is enabled and its `condition` function returns true, then its `action` function is invoked. 
+`Callback`s are used to monitor the existence of a specific event and if that specific event occurs, some other special jobs are invoked. `Callback`s are intended to provide additional monitoring capability to any user-defined composite types. As such, `Callback`s are *generally* fields of user defined composite types. When a `Callback` is called, if the `Callback` is enabled and its `condition` function returns true, then its `action` function is invoked. 
 
 ## A Simple Example 
 
@@ -17,7 +17,7 @@ julia> mutable struct TestObject
        callback::Callback
        end
 ```
-To construct an instance of `TestObject`, we need to construct a `Callback`. For that purpose, `condition` and `action` function must be defined. For this example, `condition` checks whether the `x` field is positive, and `action` prints a simple message saying that the `x` field is positive.
+To construct an instance of `TestObject`, we need to construct a `Callback`. For that purpose, the `condition` and `action` function must be defined. For this example, `condition` checks whether the `x` field is positive, and `action` prints a simple message saying that the `x` field is positive.
 ```julia
 julia> condition(testobject) = testobject.x > 0 
 condition (generic function with 1 method)
@@ -30,7 +30,7 @@ Now a test object can be constructed
 julia> testobject = TestObject(-1, Callback(condition, action))  
 TestObject(-1, Callback{typeof(condition),typeof(action)}(condition, action, true, "dac6f9eb-6daa-4622-a8fa-623f0f88780c"))
 ```
-If the callback is called, no action is performed since the `condition` function returns false. Note the argument sent to the callback. The instance of the `TestObject` to which the callback is a bound.
+If the callback is called, no action is performed since the `condition` function returns false. Note the argument sent to the callback. The instance of the `TestObject` to which the callback is bound.
 ```julia
 julia> testobject.callback(testobject) 
 ```

@@ -29,7 +29,6 @@ computeoutput
 ## Evolve
 ```@docs 
 evolve!
-update! 
 ```
 
 ## Taking Steps 

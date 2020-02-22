@@ -8,7 +8,7 @@ SubSystem
 
 ## Basic Operation of SubSystems
 
-The operation of a `SubSystem` is very similar to that of a `StaticSystem`. The only difference is that when a `SubSystem` is triggered from its `trigger` link, it distributes the trigger to the trigger links of its components. Then, each of the components of the `SubSystem` takes steps individually.
+The operation of a `SubSystem` is very similar to that of a `StaticSystem`. The only difference is that when a `SubSystem` is triggered through its `trigger` link, it distributes the trigger to the trigger links of its components. Then, each of the components of the `SubSystem` takes steps individually.
 
 Let us construct a subsystem consisting of a generator and an adder. 
 ```@repl subsystem_ex

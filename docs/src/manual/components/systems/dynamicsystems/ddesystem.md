@@ -18,8 +18,8 @@ where ``y`` is the value of the `output`.
 As an example, consider a system with the state equation 
 ```math 
     \begin{array}{l}
-    \dot{x} = -x(t - \tau) \quad t \geq 0
-    x(t) = 1. -\tau \leq t \leq 0
+    \dot{x} = -x(t - \tau) \quad t \geq 0 \\
+    x(t) = 1. -\tau \leq t \leq 0 \\
     \end{array}
 ```
 First, we define the history function `histfunc`,

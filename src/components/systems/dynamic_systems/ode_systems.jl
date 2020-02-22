@@ -9,7 +9,7 @@ const ODEAlg = Tsit5()
     ODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
         alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs an `ODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function, `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+Constructs an `ODESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 `ODESystem` is represented by the equations.
 ```math 
@@ -68,10 +68,13 @@ end
 
 ##### LinearSystem
 @doc raw"""
-    LinearSystem(input, output; A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), 
-        state=rand(size(A,1)), t=0., solver=ODESolver)
+    LinearSystem(input, output, modelargs=(), solverargs=(); 
+        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `LinearSystem` with `input` and `output`. The `LinearSystem` is represented by the following state and output equations.
+Constructs a `LinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+The `LinearSystem` is represented by the following state and output equations.
 ```math
 \begin{array}{l}
     \dot{x} = A x + B u \\[0.25cm]
@@ -113,10 +116,13 @@ end
 
 ##### Lorenz System
 @doc raw"""
-    LorenzSystem(input, output; sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+    LorenzSystem(input, output, modelargs=(), solverargs=(); 
+        sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `LorenzSystem` with `input` and `output`. `sigma`, `beta`, `rho` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+Constructs a `LorenzSystem` with `input` and `output`. `sigma`, `beta`, `rho` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+If `input` is `nothing`, the state equation of `LorenzSystem` is 
 ```math
 \begin{array}{l}
     \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) \\[0.25cm]
@@ -175,10 +181,13 @@ end
 
 ##### Chen System 
 @doc raw"""
-    ChenSystem(input, output; a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+    ChenSystem(input, output, modelargs=(), solverargs=(); 
+        a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `ChenSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+Constructs a `ChenSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+If `input` is `nothing`, the state equation of `ChenSystem` is 
 ```math
 \begin{array}{l}
     \dot{x}_1 = \gamma (a (x_2 - x_1)) \\[0.25cm]
@@ -272,10 +281,13 @@ PolynomialDiode() = PolynomialDiode(1/16, -1/6)
 
 
 @doc raw"""
-    ChuaSystem(input, output; diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., 
-        outputfunc=allstates, state=rand(3), t=0., solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+    ChuaSystem(input, output, modelargs=(), solverargs=(); 
+        diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `ChuaSystem` with `input` and `output`. `diode`, `alpha`, `beta` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+Constructs a `ChuaSystem` with `input` and `output`. `diode`, `alpha`, `beta` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+If `input` is `nothing`, the state equation of `ChuaSystem` is 
 ```math
 \begin{array}{l}
     \dot{x}_1 = \gamma (\alpha (x_2 - x_1 - h(x_1))) \\[0.25cm]
@@ -335,10 +347,13 @@ end
 
 ##### Rossler System
 @doc raw"""
-    RosslerSystem(input, output; a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        solver=ODESolver, cplmat=diagm([1., 1., 1.]))
+    RosslerSystem(input, output, modelargs=(), solverargs=(); 
+        a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `RosllerSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+Constructs a `RosllerSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+If `input` is `nothing`, the state equation of `RosslerSystem` is 
 ```math
 \begin{array}{l}
     \dot{x}_1 = \gamma (-x_2 - x_3) \\[0.25cm]
@@ -398,10 +413,13 @@ end
 
 ##### Vanderpol System
 @doc raw"""
-    VanderpolSystem(input, output; mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
-        solver=ODESolver, cplmat=diagm([1., 1]))
+    VanderpolSystem(input, output, modelargs=(), solverargs=(); 
+        mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
+        alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `VanderpolSystem` with `input` and `output`. `mu` and `gamma` is the system parameters. If `input` is `nothing`, the state equation of `LorenzSystem` is 
+Constructs a `VanderpolSystem` with `input` and `output`. `mu` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+
+If `input` is `nothing`, the state equation of `VanderpolSystem` is 
 ```math
 \begin{array}{l}
     \dot{x}_1 = \gamma (x_2) \\[0.25cm]

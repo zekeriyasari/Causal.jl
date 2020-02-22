@@ -5,7 +5,7 @@ Static systems are the systems whose output `y` at time `t` depends on the curre
 ```math 
     y = g(u, t)
 ```
-where `g` is the output function `outputfunc`. Note that `outputfunc` is expected to have two inputs, the value `u` of the `input` and the current time `t`. The simulation in `Jusdl` is a clocked-simulation, that is the data flowing through the input and output connections of components is actually sampled at time `t`. Therefore, for example, the system modelled by
+where `g` is the output function `outputfunc`. Note that `outputfunc` is expected to have two inputs, the value `u` of the `input` and the current time `t`. The simulation in `Jusdl` is a clocked-simulation, that is the data flowing through the input and output connections of components is actually sampled at time `t`. Therefore, for example, the system modeled by
 ```math 
 y(t) = g(u(t),t)
 ```
@@ -35,13 +35,13 @@ Note that the number of inputs is 2 and the number of outputs of is 3. To define
 using Jusdl # hide
 g(u, t) = [t * u[1], sin(u[1]), cos(u[2])]
 ```
-Note that the function `g` is defined such a way that the input value `u` is sampled, which implies `u` is not vector of function but is a vector of real. Having defined output function `outputfunc`, the system can be constructed. 
+Note that the function `g` is defined in such a way that the input value `u` is sampled, which implies `u` is not a vector of function but is a vector of real. Having defined output function `outputfunc`, the system can be constructed. 
 ```@repl static_system_ex
 ss = StaticSystem(Bus(2), Bus(3), g)
 ```
 Note the construction of input bus `Bus(2)` and output bus `Bus(3)` by recalling that the number of input is 2 and the number of output is 3.
 
-A `StaticSystem` operates by being triggered from its `trigger` link. When triggered from its `trigger` link, a `StaticSystem` read the current time `t` from its `trigger` link and computes its output `y` according to its output function `outputfunc` and writes its output `t` to its `output` bus (If `output` bus exists since `output` bus may not have depending on the relation defined by `outputfunc`. When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` link is not writeable. 
+A `StaticSystem` operates by being triggered through its `trigger` link. When triggered from its `trigger` link, a `StaticSystem` read the current time `t` from its `trigger` link and computes its output `y` according to its output function `outputfunc` and writes its output `t` to its `output` bus (if `output` bus exists since `output` bus may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` link is not writeable. 
 ```@repl static_system_ex
 ss.trigger
 ```

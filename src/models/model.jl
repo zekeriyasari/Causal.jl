@@ -47,7 +47,7 @@ julia> addcomponent(m, SinewaveGenerator(), RampGenerator())
 julia> m.blocks
 2-element Array{Any,1}:
  SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
- RampGenerator(scale:1.0)
+ RampGenerator(scale:1.0, delay:0.0) 
 ```
 """
 addcomponent(model::Model, comp::AbstractComponent...) = foreach(cmp -> push!(model.blocks, cmp), comp)

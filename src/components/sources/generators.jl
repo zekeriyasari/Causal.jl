@@ -55,7 +55,7 @@ end
 
 Constructs a `DampedSinewaveGenerator` which generates outputs of the form 
 ```math 
-    x(t) = A e^{\alpha t} * sin(2 \pi f (t - \tau) + \phi) + B
+    x(t) = A e^{\alpha t} sin(2 \pi f (t - \tau) + \phi) + B
 ```
 where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`` is `phase`, ``\tau`` is `delay` and ``B`` is `offset`.
 """
@@ -179,24 +179,25 @@ end
 
 
 @doc raw"""
-    RampGenerator(;scale=1)
+    RampGenerator(;scale=1, delay=0.)
 
 Constructs a `RampGenerator` with output of the form
 ```math 
-    x(t) = \alpha t
+    x(t) = \alpha (t - \tau)
 ```
-where ``\alpha`` is the `scale`.
+where ``\alpha`` is the `scale` and ``\tau`` is `delay`.
 """
 mutable struct RampGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
-    function RampGenerator(;scale=1)
-        outputfunc(t) = scale * t
+    delay::Float64
+    function RampGenerator(;scale=1, delay=0.)
+        outputfunc(t) = scale * (t - delay)
         output = Bus()
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
-        handshake, Callback[], uuid4(), scale)
+        handshake, Callback[], uuid4(), scale, delay)
     end
 end
 
@@ -207,10 +208,11 @@ end
 Constructs a `StepGenerator` with output of the form 
 ```math
     x(t) = \left\{\begin{array}{lr}
-	B, &  t \leq 0  \\
-	A + B,  &  t > 0
+	B, &  t \leq \tau  \\
+	A + B,  &  t > \tau
 	\end{array} \right.
 ```
+where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau` is the `delay`.
 """
 mutable struct StepGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
@@ -229,49 +231,51 @@ end
 
 
 @doc raw"""
-    ExponentialGenerator(;scale=1, decay=-1)
+    ExponentialGenerator(;scale=1, decay=-1, delay=0.)
 
 Constructs an `ExponentialGenerator` with output of the form
 ```math 
-    x(t) = A e^{\alpha t}
+    x(t) = A e^{\alpha (t - \tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay`.
+where ``A`` is `scale`, ``\alpha`` is `decay` and ``tau`` is `delay`.
 """
 mutable struct ExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
-    function ExponentialGenerator(;scale=1, decay=-1)
-        outputfunc(t) = scale * exp(decay * t)
+    delay::Float64
+    function ExponentialGenerator(;scale=1, decay=-1, delay=0.)
+        outputfunc(t) = scale * exp(decay * (t - delay))
         output = Bus()
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(outputfunc), typeof(output), typeof(trigger),typeof(handshake)}(outputfunc, output, trigger, 
-            handshake, Callback[], uuid4(), scale, decay)
+            handshake, Callback[], uuid4(), scale, decay, delay)
     end
 end
 
 
 @doc raw"""
-    DampedExponentialGenerator(;scale=1, decay=-1)
+    DampedExponentialGenerator(;scale=1, decay=-1, delay=0.)
 
 Constructs an `DampedExponentialGenerator` with outpsuts of the form 
 ```math 
-    x(t) = A t e^{\alpha t}
+    x(t) = A (t - \tau) e^{\alpha (t - \tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay`.
+where ``A`` is `scale`, ``\alpha`` is `decay`, ``tau`` is `delay`.
 """
 mutable struct DampedExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
     scale::Float64
     decay::Float64
-    function DampedExponentialGenerator(;scale=1, decay=-1)
-        outputfunc(t) = scale * t * exp(decay * t)
+    delay::Float64
+    function DampedExponentialGenerator(;scale=1, decay=-1, delay=0.)
+        outputfunc(t) = scale * (t - delay) * exp(decay * (t - delay))
         output = Bus()
         trigger = Link()
         handshake = Link(Bool)
         new{typeof(outputfunc), typeof(output), typeof(trigger), typeof(handshake)}(outputfunc, output, trigger, 
-            handshake, Callback[], uuid4(), scale, decay)
+            handshake, Callback[], uuid4(), scale, decay, delay)
     end
 end
 
@@ -293,10 +297,10 @@ show(io::IO, gen::TriangularwaveGenerator) = print(io,
     "delay:$(gen.delay), offset:$(gen.offset))")
 show(io::IO, gen::ConstantGenerator) = print(io, 
     "ConstantGenerator(amp:$(gen.amplitude))")
-show(io::IO, gen::RampGenerator) = print(io, "RampGenerator(scale:$(gen.scale))")
+show(io::IO, gen::RampGenerator) = print(io, "RampGenerator(scale:$(gen.scale), delay:$(gen.delay))")
 show(io::IO, gen::StepGenerator) = print(io, 
     "StepGenerator(amp:$(gen.amplitude), delay:$(gen.delay), offset:$(gen.offset))")
 show(io::IO, gen::ExponentialGenerator) = print(io, 
-    "ExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")
+    "ExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay), delay:$(gen.delay))")
 show(io::IO, gen::DampedExponentialGenerator) = print(io, 
-    "DampedExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay))")
+    "DampedExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay), delay:$(gen.delay))")

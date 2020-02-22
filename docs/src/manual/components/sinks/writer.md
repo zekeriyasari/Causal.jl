@@ -1,7 +1,7 @@
 # Writer 
 
 ## Basic Operation of Writers
-Haiving `launch`ed, a `Writer` is triggered from its `trigger` link. When triggered, a `Writer` reads its input an writes to its internal buffer `databuf`. When `databuf`  is full, the data in `databuf` is processed. Thus, the length of the data that is to be processed by the `Writer` is determined by the length of their internal buffer `databuf`. 
+Having `launch`ed, a `Writer` is triggered through its `trigger` link. When triggered, a `Writer` reads its input and then writes it to its internal buffer `databuf`. When `databuf`  is full, the data in `databuf` is processed. Thus, the length of the data that is to be processed by the `Writer` is determined by the length of their internal buffer `databuf`. 
 
 Let us construct a `Writer`. 
 ```@repl writer_ex
@@ -27,7 +27,7 @@ Let us now trigger `w`.
 ```@repl writer_ex
 put!(w.trigger, 1.)
 ```
-The `input` of `w` is now readable and `handshake` link is not readable since `w` have not signalled that its triggering is succeeded yet. To do that, we need to put a value to the `input` of `w`
+The `input` of `w` is now readable and `handshake` link is not readable since `w` have not signaled that its triggering is succeeded yet. To do that, we need to put a value to the `input` of `w`
 ```@repl writer_ex
 put!(w. input, [10.])
 ```
@@ -64,7 +64,7 @@ w.file
 
 
 !!! note 
-    In this example, `w` does not have a `plugin` so the nothing has been derived or computed from the data in `databuf`. The data in `databuf` is just written to `file` of `w`. To further data processing, see [Plugins](@ref)
+    In this example, `w` does not have a `plugin` so nothing has been derived or computed from the data in `databuf`. The data in `databuf` is just written to `file` of `w`. To further data processing, see [Plugins](@ref)
 
 ## Full API 
 ```@docs 

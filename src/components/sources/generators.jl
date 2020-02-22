@@ -212,7 +212,7 @@ Constructs a `StepGenerator` with output of the form
 	A + B,  &  t > \tau
 	\end{array} \right.
 ```
-where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau` is the `delay`.
+where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
 """
 mutable struct StepGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
@@ -237,7 +237,7 @@ Constructs an `ExponentialGenerator` with output of the form
 ```math 
     x(t) = A e^{\alpha (t - \tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay` and ``tau`` is `delay`.
+where ``A`` is `scale`, ``\alpha`` is `decay` and ``\tau`` is `delay`.
 """
 mutable struct ExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields
@@ -262,7 +262,7 @@ Constructs an `DampedExponentialGenerator` with outpsuts of the form
 ```math 
     x(t) = A (t - \tau) e^{\alpha (t - \tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay`, ``tau`` is `delay`.
+where ``A`` is `scale`, ``\alpha`` is `decay`, ``\tau`` is `delay`.
 """
 mutable struct DampedExponentialGenerator{OF, OB, T, H} <: AbstractSource
     @generic_source_fields

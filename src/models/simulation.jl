@@ -1,9 +1,9 @@
 # This file is for Simulation object.
 
 """
-    Simulation(model, simdir=DEFAULTS[:WRITER_PATHS], logger=SimpleLogger())
+    Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", logger=SimpleLogger())
 
-Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
+Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `simname` is the name of the `Simulation` and `simprefix` is the prefix of the name of the `Simulation`. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
 """
 mutable struct Simulation{M}
     model::M

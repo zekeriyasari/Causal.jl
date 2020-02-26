@@ -134,9 +134,9 @@ end
 end
 
 """
-    run(model::Model)
+    run(model::Model, withbar::Bool=true)
 
-Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clk`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. 
+Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clk`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar indicating the simulation status is displayed on the console.
 
 !!! warning 
     The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
@@ -208,13 +208,12 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool)
 end
 
 """
-    simulate(model::Model;  simdir::String=tempdir(), simname=string(uuid4()), logtofile::Bool=false, 
-    loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
+    simulate(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
+        logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
 
-Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar is printed on console displaying simulation status.
+Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar indicating the simualation status is displayed on the console.
 """
-function simulate(model::Model;  
-    simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
+function simulate(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
     logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
     
     # Construct a Simulation

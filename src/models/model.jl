@@ -125,6 +125,14 @@ function initialize(model::Model)
 end
 
 ##### Model running
+
+@def loopbody begin 
+    foreach(component -> drive(component, t), components)
+    all(approve.(components)) || @warn "Could not be approved"
+    checktaskmanager(taskmanager)          
+    model.callbacks(model)   
+end
+
 """
     run(model::Model)
 
@@ -134,16 +142,11 @@ Runs the `model` by triggering the components of the `model`. This triggering is
     The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
 ```
 """
-function run(model::Model)
+function run(model::Model, withbar::Bool=true)
     taskmanager = model.taskmanager
     components = model.blocks
     clk = model.clk
-    @showprogress clk.dt for t in clk
-        foreach(component -> drive(component, t), components)
-        all(approve.(components)) || @warn "Could not be approved"
-        checktaskmanager(taskmanager)          
-        model.callbacks(model)                           
-    end
+    withbar ? (@showprogress clk.dt for t in clk @loopbody end) : (for t in clk @loopbody end)
 end
 
 ##### Model termination
@@ -166,7 +169,7 @@ function terminate(model::Model)
 end
 
 
-function _simulate!(sim::Simulation, reportsim::Bool)
+function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool)
     model = sim.model
     try
         @siminfo "Started simulation..."
@@ -181,7 +184,7 @@ function _simulate!(sim::Simulation, reportsim::Bool)
         @siminfo "Done..."
 
         @siminfo "Running the simulation..."
-        run(model)
+        run(model, withbar)
         sim.state = :done
         sim.retcode = :success
         @siminfo "Done..."
@@ -205,21 +208,24 @@ function _simulate!(sim::Simulation, reportsim::Bool)
 end
 
 """
-    simulate(model::Model;  simdir::String="/tmp", logtofile::Bool=false, reportsim::Bool=false)
+    simulate(model::Model;  simdir::String=tempdir(), simname=string(uuid4()), logtofile::Bool=false, 
+    loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
 
-Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. If `logtofile` is `true`, a log file for the simulation is constructed. If `reportsim` is `true`, model components are saved into files.
+Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar is printed on console displaying simulation status.
 """
-function simulate(model::Model;  simdir::String=tempdir(), simname=string(uuid4()), logtofile::Bool=false, reportsim::Bool=false)
-    sim = Simulation(model, simdir=simdir, simname=simname)
-    if logtofile
-        sim.logger = setlogger(sim.path, "log.txt", setglobal=false)
-        with_logger(sim.logger) do
-            _simulate!(sim, reportsim)
-        end
-        flush(sim.logger.stream)  # Close logger file stream.
-    else
-        _simulate!(sim, reportsim)
+function simulate(model::Model;  
+    simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
+    logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
+    
+    # Construct a Simulation
+    sim = Simulation(model, simdir=simdir, simprefix=simprefix, simname=simname)
+    sim.logger = logtofile ? SimpleLogger(open(joinpath(sim.path, "simlog.log"), "w+"), loglevel) : ConsoleLogger(stderr, loglevel)
+
+    # Simualate the modoel
+    with_logger(sim.logger) do
+        _simulate(sim, reportsim, withbar)
     end
+    logtofile && flush(sim.logger.stream)  # Close logger file stream.
     return sim
 end
 

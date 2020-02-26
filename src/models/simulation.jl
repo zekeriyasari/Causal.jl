@@ -5,19 +5,19 @@
 
 Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
 """
-mutable struct Simulation{M, L}
+mutable struct Simulation{M}
     model::M
     path::String
-    logger::L
+    logger::Union{SimpleLogger, ConsoleLogger}
     state::Symbol
     retcode::Symbol
     name::String
-    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), logger=SimpleLogger())
-        name = "Simulation-" * simname  # `get_instant()` may be used for time-based paths names.
+    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", logger=SimpleLogger())
+        name = simprefix * simname  # `get_instant()` may be used for time-based paths names.
         path = joinpath(simdir, name)
-        isdir(path) || mkpath(path)
+        ispath(path) || mkpath(path)
         check_writer_files(model, path, force=true)
-        new{typeof(model), typeof(logger)}(model, path, logger, :idle, :unknown, name)
+        new{typeof(model)}(model, path, logger, :idle, :unknown, name)
     end
 end
 
@@ -43,9 +43,9 @@ julia> logger = setlogger(tempdir(), "mylogger", setglobal=true)
 Base.CoreLogging.SimpleLogger(IOStream(<file /tmp/mylogger>), Info, Dict{Any,Int64}())
 ```
 """
-function setlogger(path::AbstractString, name::AbstractString; setglobal::Bool=true)
+function setlogger(path::AbstractString, name::AbstractString; setglobal::Bool=true, loglevel::LogLevel=Logging.Info)
     io = open(joinpath(path, name), "w+")
-    logger = SimpleLogger(io)
+    logger = SimpleLogger(io, loglevel)
     if setglobal
         global_logger(logger)
     end

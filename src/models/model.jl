@@ -126,6 +126,7 @@ end
 
 ##### Model running
 
+# Copy-paste loop body. See `run(model, withbar)`.
 @def loopbody begin 
     foreach(component -> drive(component, t), components)
     all(approve.(components)) || @warn "Could not be approved"

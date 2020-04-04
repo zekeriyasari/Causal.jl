@@ -26,12 +26,12 @@ julia> obj.clb(obj)  # Call the callback bound `obj`.
 Printing the object Object(1, Callback(condition:cond, action:action))
 ```
 """
-mutable struct Callback{C, A}
-    condition::C       
-    action::A     
+mutable struct Callback{CN, AC}
+    condition::CN       
+    action::AC     
     enabled::Bool
     id::UUID
-    Callback(condition::C, action::A) where {C, A} = new{C, A}(condition, action, true, uuid4()) 
+    Callback(condition::CN, action::AC) where {CN, AC} = new{CN, AC}(condition, action, true, uuid4()) 
 end
 
 show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), action:$(clb.action))")
@@ -60,61 +60,5 @@ isenabled(clb::Callback) = clb.enabled
 
 ##### Callback calls
 (clb::Callback)(obj) = clb.enabled && clb.condition(obj) ?  clb.action(obj) : nothing
-@inbounds (clbs::Vector{Callback})(obj) = foreach(clb -> clb(obj), clbs)
-
-##### Adding callbacks
-"""
-    addcallback(obj, clb::Callback, priority::Int)
-
-Adds `clb` to callback vector of `obj` which is assumed the have a callback list which is a vector of callback.
-
-# Example
-```jldoctest
-julia> mutable struct Object 
-       x::Int 
-       callbacks::Vector{Callback}
-       Object(x::Int) = new(x, Callback[])
-       end 
-
-julia> obj = Object(5)
-Object(5, Callback[])
-
-julia> condition(val) = val.x == 5
-condition (generic function with 1 method)
-
-julia> action(val) = @show val.x 
-action (generic function with 1 method)
-
-julia> addcallback(obj, Callback(condition, action))
-Object(5, Callback[Callback(condition:condition, action:action)])
-
-julia> obj.callbacks(obj)
-val.x = 5
-```
-"""
-addcallback(obj, callback::Callback, priority::Int=1) = (insert!(obj.callbacks, priority, callback); obj)
-
-"""
-    deletecallback(obj, idx::Int)
-
-Deletes the one of the callbacks of `obj` at index `idx`.
-
-```jldoctest
-julia> struct Object 
-       x::Int 
-       callbacks::Vector{Callback}
-       end
-
-julia> clb1 = Callback(val -> true, val -> nothing);
-
-julia> clb2 = Callback(val -> false, val -> nothing);
-
-julia> obj = Object(5, [clb1, clb2]);
-
-julia> deletecallback(obj, 2);
-
-julia> length(obj.callbacks) == 1
-true
-```
-"""
-deletecallback(obj, idx::Int) = (deleteat!(obj.callbacks, idx); obj)
+(clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
+applycallbacks(obj) = typeof(obj.callbacks) <: Nothing || obj.callbacks(obj)

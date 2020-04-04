@@ -1,6 +1,6 @@
 # This file includes interpolant for interplation of sampled inputs. 
 
-import Base: size, getindex, setproperty!, show
+import Base: size, getindex, setproperty!
 
 
 """

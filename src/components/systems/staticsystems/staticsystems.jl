@@ -1,15 +1,5 @@
 # This file contains the static systems of Jusdl.
 
-@reexport module StaticSystems
-
-using UUIDs
-import ..Systems: infer_number_of_outputs, checkandshow, hasargs
-import ....Components.ComponentsBase: @generic_system_fields, @generic_static_system_fields, AbstractStaticSystem, AbstractMemory
-import ......Jusdl.Utilities: Callback, Buffer, Fifo
-import ......Jusdl.Connections: Link, Bus, Bus
-import Base.show
-
-
 @doc raw"""
     StaticSystem(input, output, outputfunc)
 
@@ -34,12 +24,13 @@ julia> ss2 = StaticSystem(nothing, Bus(), g2)
 StaticSystem(outputfunc:g2, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
 ```
 """
-struct StaticSystem{IB, OB, T, H, OF} <: AbstractStaticSystem
+struct StaticSystem{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
     @generic_static_system_fields
-    function StaticSystem(input, output, outputfunc)
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc)
+    function StaticSystem(outputfunc, input, output; callbacks=nothing, name=Symbol())
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
+            typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
@@ -61,16 +52,17 @@ julia> adder.outputfunc([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-struct Adder{IB, OB, T, H, OF, S} <: AbstractStaticSystem
+struct Adder{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     signs::S
-    function Adder(input::Bus, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...))
+    function Adder(input::Inport, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...); 
+        callbacks=nothing, name=Symbol())
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
-        output = Bus()
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(signs)}(input,
-        output, trigger, handshake, Callback[], uuid4(), outputfunc, signs)
+        output = Outport()
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(signs)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), signs)
     end
 end
 
@@ -92,10 +84,11 @@ julia> mlt.outputfunc([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-struct Multiplier{IB, OB, T, H, OF, S} <: AbstractStaticSystem
+struct Multiplier{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     ops::S
-    function Multiplier(input::Bus, ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=tuple(fill(*, length(input))...))
+    function Multiplier(input::Inport, ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=tuple(fill(*, length(input))...);
+        callbacks=nothing, name=Symbol())
         function outputfunc(u, t)
             val = 1
             for i = 1 : length(ops)
@@ -103,11 +96,11 @@ struct Multiplier{IB, OB, T, H, OF, S} <: AbstractStaticSystem
             end
             val
         end
-        output = Bus()
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(ops)}(input, 
-        output, trigger, handshake, Callback[], uuid4(), outputfunc, ops)
+        output = Outport()
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(ops)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), ops)
     end
 end
 
@@ -131,16 +124,16 @@ julia> g.outputfunc([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-struct Gain{IB, OB, T, H, OF, G} <: AbstractStaticSystem
+struct Gain{OF, IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::G
-    function Gain(input::Bus; gain=1.)
+    function Gain(input::Inport{<:Inpin{T}}; gain=1., callbacks=nothing, name=Symbol()) where T 
         outputfunc(u, t) =  gain * u
-        output = similar(input, length(input))
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(gain)}(input, 
-            output, trigger, handshake, Callback[], uuid4(), outputfunc, gain)
+        output = Outport{T}(length(input))
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(gain)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), gain)
     end
 end
 
@@ -150,15 +143,15 @@ end
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-struct Terminator{IB, OB, T, H, OF} <: AbstractStaticSystem
+struct Terminator{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
     @generic_static_system_fields
-    function Terminator(input::Bus)
+    function Terminator(input::Inport; callbacks=nothing, name=Symbol())
         outputfunc = nothing
         output = nothing
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc)}(input, output, 
-            trigger, handshake, Callback[], uuid4(), outputfunc) 
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
+            typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4()) 
     end
 end 
 
@@ -168,20 +161,20 @@ end
 
 Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, the values from `initial` is returned.
 """
-struct Memory{IB, OB, T, H, OF, B} <: AbstractMemory
+struct Memory{OF, IB, OB, TR, HS, CB, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Bus{<:Link{T}}, numdelay::Int; initial=nothing) where T 
+    function Memory(input::Inport{<:Inpin{T}}, numdelay::Int;initial=nothing, callbacks=nothing, name=Symbol()) where T 
         numinput = length(input)
         buffer = numinput == 1 ? Buffer{Fifo}(T, numdelay) : Buffer{Fifo}(T, numinput, numdelay)
         initial === nothing && (initial = numinput == 1 ? zero(T) : zeros(T, numinput))
         fill!(buffer, initial)
         outputfunc(u, t) = read(buffer)
-        output = similar(input, numinput)
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), 
-            typeof(buffer)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc, buffer)
+        output = Outport{T}(numinput)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(buffer)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), buffer)
     end
 end
 
@@ -194,42 +187,38 @@ Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and 
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-struct Coupler{IB, OB, T, H, OF, C1, C2} <: AbstractStaticSystem
+struct Coupler{OF, IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
     @generic_static_system_fields
     conmat::C1
     cplmat::C2
-    function Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
+    function Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix; callbacks=nothing, name=Symbol())
         n = size(conmat, 1)
         d = size(cplmat, 1)
-        input = Bus(n * d)
-        output = Bus(n * d)
+        input = Inport(n * d)
+        output = Outport(n * d)
         if eltype(conmat) <: Real 
             outputfunc = (u, t) -> kron(conmat, cplmat) * u     # Time invariant coupling
         else
             outputfunc = (u, t) -> kron(map(f->f(t), conmat), cplmat) * u  # Time varying coupling 
         end
-        trigger = Link()
-        handshake = Link(Bool)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(outputfunc), typeof(conmat), 
-            typeof(cplmat)}(input, output, trigger, handshake, Callback[], uuid4(), outputfunc, conmat, cplmat)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(conmat), typeof(cplmat)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), conmat, 
+            cplmat)
     end
 end
 
 # ##### Pretty-printing
 show(io::IO, ss::StaticSystem) = print(io, 
-    "StaticSystem(outputfunc:$(ss.outputfunc), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+    "StaticSystem(outputfunc:$(ss.outputfunc), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Adder) = print(io, 
-    "Adder(signs:$(ss.signs), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+    "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Multiplier) = print(io, 
-    "Multiplier(ops:$(ss.ops), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+    "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Gain) = print(io, 
-    "Gain(gain:$(ss.gain), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
-show(io::IO, ss::Terminator) = print(io, "Gain(input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+    "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Terminator) = print(io, "Gain(input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Memory) = print(io, 
-    "Memory(ndelay:$(length(ss.buffer)), input:$(checkandshow(ss.input)), output:$(checkandshow(ss.output)))")
+    "Memory(ndelay:$(length(ss.buffer)), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Coupler) = print(io, "Coupler(conmat:$(ss.conmat), cplmat:$(ss.cplmat))")
-
-
-export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler
-
-end  # module

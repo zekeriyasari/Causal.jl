@@ -9,32 +9,34 @@ Constructs a `Scope` with input bus `input`. `buflen` is the length of the inter
 !!! warning 
     When initialized, the `plot` of `Scope` is closed. See [`open(sink::Scope)`](@ref) and [`close(sink::Scope)`](@ref).
 """
-mutable struct Scope{IB, DB, TB, P, T, H, PLT} <: AbstractSink
+mutable struct Scope{IB, DB, TB, PL, TR, HS, CB, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
-    function Scope(input::Bus{<:Link{T}}, args...; buflen::Int=64, plugin=nothing, kwargs...) where T
+    function Scope(input::Inport{<:Inpin{T}}, args...; buflen::Int=64, plugin=nothing, callbacks=nothing, 
+        name=Symbol(), kwargs...) where T
         # Construct the plot 
         plt = plot(args...; kwargs...)
         foreach(sp -> plot!(sp, zeros(1)), plt.subplots)  # Plot initialization 
-        # Construct the buffers
         timebuf = Buffer(buflen)
         databuf = Buffer(T, length(input), buflen)
-        trigger = Link()
-        handshake = Link(Bool)
-        addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
-            typeof(plt)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), plt), update!)
+        id = uuid4()
+        callbacks = fasten(plugin, update, timebuf, databuf, callbacks, id)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
+            typeof(callbacks), typeof(plt)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id, 
+            plt)
     end
 end
 
 show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
 
 """
-    update!(s::Scope, x, yi)
+    update(s::Scope, x, yi)
 
 Updates the series of the plot windows of `s` with `x` and `yi`.
 """
-function update!(s::Scope, x, yi)
+function update(s::Scope, x, yi)
     y = collect(hcat(yi...)')
     plt = s.plt
     subplots = plt.subplots

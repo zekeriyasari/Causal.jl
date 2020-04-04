@@ -8,17 +8,18 @@ import Base.print
 
 Constructs a `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
 """
-mutable struct Printer{IB, DB, TB, P, T, H} <: AbstractSink
+mutable struct Printer{IB, DB, TB, PL, TR, HS, CB} <: AbstractSink
     @generic_sink_fields
-    function Printer(input::Bus{<:Link{T}}; buflen=64, plugin=nothing) where T
+    function Printer(input::Inport{<:Inpin{T}}; buflen=64, plugin=nothing, callbacks=nothing, name=Symbol()) where T
         # Construct the buffers
         timebuf = Buffer(buflen)
         databuf = Buffer(T, length(input), buflen)
-        trigger = Link()
-        handshake = Link(Bool)
-        addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger),
-            typeof(handshake)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4()), print)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        id = uuid4()
+        callbacks = fasten(plugin, print, timebuf, databuf, callbacks, id)
+        new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake),
+            typeof(callbacks)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id)
     end
 end
 

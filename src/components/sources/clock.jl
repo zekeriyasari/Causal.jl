@@ -2,8 +2,8 @@
 
 import Base: iterate, take!, length
 
-Generator(t0::Real, dt::Real, tf::Real) = 
-    Channel(channel -> foreach(t -> put!(channel, t), t0:dt:tf), ctype=promote_type(typeof(t0), typeof(dt), typeof(tf)))
+Generator(t0, dt, tf) = 
+    Channel{promote_type(typeof(t0),typeof(dt),typeof(tf))}(channel -> foreach(t -> put!(channel, t), t0:dt:tf))
 
 """
     Clock(t::Real, dt::Real, tf::Real)
@@ -13,17 +13,20 @@ Constructs a `Clock` with starting time `t`, final time `tf` and sampling inteva
 !!! warning 
     When constructed, `Clock` is not running. To take clock ticks from `Clock`, the `Clock` must be setted. See [`take!(clk::Clock)`](@ref) and [`set!`](@ref) 
 """
-mutable struct Clock{T<:Real}
+mutable struct Clock{T, CB}
     t::T
     dt::T
     tf::T
     generator::Channel{T}
     paused::Bool
-    callbacks::Vector{Callback}
-    id::UUID
+    callbacks::CB
+    name::Symbol
+    uuid::UUID
+    Clock{T}(t::T, dt::T, tf::T; callbacks::CB=nothing, name=Symbol()) where {T, CB} = 
+        new{T, CB}(t, dt, tf, Channel{T}(0), false, callbacks, name, uuid4())
 end
-Clock(t::Real, dt::Real, tf::Real) = 
-    Clock(promote(t, dt, tf)..., Channel{promote_type(typeof(t),typeof(dt),typeof(tf))}(0), false, Callback[], uuid4())
+Clock(t::T, dt::T, tf::T; kwargs...) where T = Clock{T}(t, dt, tf; kwargs...)
+Clock(t, dt, tf; kwargs...) = Clock(promote(t, dt, tf)...; kwargs...)
 
 show(io::IO, clk::Clock) = print(io, 
     "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")
@@ -71,7 +74,7 @@ function take!(clk::Clock)
     #     return clk.t
     # end
     clk.t = take!(clk.generator)
-    clk.callbacks(clk)
+    applycallbacks(clk)
     clk.t
 end
 
@@ -129,7 +132,7 @@ function set!(clk::Clock, t::Real, dt::Real, tf::Real)
 end
 function set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) 
     clk.generator = generator
-    clk.paused=false
+    clk.paused = false
     clk
 end
 

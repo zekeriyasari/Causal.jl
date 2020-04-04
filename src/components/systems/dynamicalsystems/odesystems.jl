@@ -1,6 +1,5 @@
 # This file contains ODESystem prototypes
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractODESystem
 
 const ODEAlg = Tsit5()
 
@@ -52,17 +51,17 @@ ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadab
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs`, `solverkwargs` and `alg`.
 """
-mutable struct ODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct ODESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
-    function ODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
+    function ODESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state),  typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
@@ -83,7 +82,7 @@ The `LinearSystem` is represented by the following state and output equations.
 ```
 where ``x`` is `state`. `solver` is used to solve the above differential equation.
 """
-mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct LinearSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
     A::Matrix{Float64}
     B::Matrix{Float64}
@@ -91,9 +90,9 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     D::Matrix{Float64}
     function LinearSystem(input, output, modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         if input === nothing
             statefunc = (dx, x, u, t) -> (dx .= A * x)
             outputfunc = (x, u, t) -> (C * x)
@@ -107,9 +106,9 @@ mutable struct LinearSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
         end
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator, A, B, C, D)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), A, B, C, D)
     end
 end
 
@@ -144,7 +143,7 @@ where ``A = [\alpha_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the 
 ```
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
-mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct LorenzSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
     sigma::Float64
     beta::Float64
@@ -152,7 +151,7 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     gamma::Float64
     function LorenzSystem(input, output, modelargs=(), solverargs=(); 
         sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = sigma * (x[2] - x[1])
@@ -169,13 +168,13 @@ mutable struct LorenzSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
                 dx .+= cplmat * map(ui -> ui(t), u.funcs)   # Couple inputs
             end
         end
-        trigger = Link()
-        handshake = Link(Bool)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator, sigma, beta, rho, gamma)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), sigma, beta, rho, gamma)
     end
 end
 
@@ -209,7 +208,7 @@ where ``A = [\alpha_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the 
 ```
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
-mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct ChenSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
     b::Float64
@@ -217,7 +216,8 @@ mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     gamma::Float64
     function ChenSystem(input, output, modelargs=(), solverargs=(); 
         a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
+        name=Symbol())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = a * (x[2] - x[1])
@@ -234,13 +234,13 @@ mutable struct ChenSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
                 dx .+= cplmat * map(ui -> ui(t), u.funcs)   # Couple inputs
             end
         end
-        trigger = Link()
-        handshake = Link(Bool)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator, a, b, c, gamma)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), a, b, c, gamma)
     end
 end
 
@@ -309,7 +309,7 @@ where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of
 ```
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
-mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, I, DT} <: AbstractODESystem
+mutable struct ChuaSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB, DT} <: AbstractODESystem
     @generic_dynamic_system_fields
     diode::DT
     alpha::Float64
@@ -317,7 +317,7 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, I, DT} <: AbstractODESystem
     gamma::Float64
     function ChuaSystem(input, output, modelargs=(), solverargs=(); 
         diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = alpha * (x[2] - x[1] - diode(x[1]))
@@ -334,13 +334,14 @@ mutable struct ChuaSystem{IB, OB, T, H, SF, OF, ST, I, DT} <: AbstractODESystem
             dx .+= cplmat * map(ui -> ui(t), u.funcs)
             end
         end
-        trigger = Link()
-        handshake = Link(Bool)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator), typeof(diode)}(input, output, trigger, handshake,
-            Callback[], uuid4(), statefunc, outputfunc, state, t, integrator, diode, alpha, beta, gamma)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), typeof(diode)}(statefunc, 
+            outputfunc, state, t, integrator, input, output, trigger, handshake, callbacks, name, uuid4(), diode, alpha, beta, 
+            gamma)
     end
 end
 
@@ -375,7 +376,7 @@ where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of
 ```
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
-mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct RosslerSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
     a::Float64
     b::Float64
@@ -383,7 +384,8 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
     gamma::Float64
     function RosslerSystem(input, output, modelargs=(), solverargs=(); 
         a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
+        name=Symbol())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = -x[2] - x[3]
@@ -400,13 +402,13 @@ mutable struct RosslerSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
                 dx .*= gamma
             end
         end
-        trigger = Link() 
-        handshake = Link(Bool)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator, a, b, c, gamma)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), a, b, c, gamma)
     end
 end
 
@@ -439,13 +441,14 @@ where ``\Theta = [\theta_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of
 ```
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
-mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
+mutable struct VanderpolSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
     function VanderpolSystem(input, output, modelargs=(), solverargs=(); 
         mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+        alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
+        name=Symbol())
         if input === nothing
             statefunc = (dx, x, u, t) -> begin
                 dx[1] = x[2]
@@ -460,38 +463,38 @@ mutable struct VanderpolSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractODESystem
                 dx .+= cplmat * map(ui -> ui(t), u.funcs)
             end
         end
-        trigger = Link()
-        handshake = Link(Bool)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(ODEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), 
-            statefunc, outputfunc, state, t, integrator, mu, gamma)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), mu, gamma)
     end
 end
   
 
 # ##### Pretty-printing 
 show(io::IO, ds::ODESystem) = print(io, 
-    "ODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "ODESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::LinearSystem) = print(io, 
     "Linearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::LorenzSystem) = print(io, 
     "LorenzSystem(sigma:$(ds.sigma), beta:$(ds.beta), rho:$(ds.rho), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::ChenSystem) = print(io, 
     "ChenSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, d::PiecewiseLinearDiode) = print(io, 
     "PiecewiseLinearDiode(m0:$(d.m0), m1:$(d.m1), m2:$(d.m2), bp1:$(d.bp1), bp2:$(d.bp2))")
 show(io::IO, d::PolynomialDiode) = print(io, "PolynomialDiode(a:$(d.a), b:$(d.b))")
 show(io::IO, ds::ChuaSystem) = print(io, 
     "ChuaSystem(diode:$(ds.diode), alpha:$(ds.alpha), beta:$(ds.beta), gamma:$(ds.gamma), state:$(ds.state), ",
-    "t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::RosslerSystem) = print(io, 
     "RosslerSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::VanderpolSystem) = print(io, 
     "VanderpolSystem(mu:$(ds.mu), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
-    "input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "input:$(ds.input), output:$(ds.output))")

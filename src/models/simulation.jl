@@ -5,14 +5,15 @@
 
 Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `simname` is the name of the `Simulation` and `simprefix` is the prefix of the name of the `Simulation`. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
 """
-mutable struct Simulation{M}
-    model::M
+mutable struct Simulation{MD}
+    model::MD
     path::String
     logger::Union{SimpleLogger, ConsoleLogger}
     state::Symbol
     retcode::Symbol
     name::String
-    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", logger=SimpleLogger())
+    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", 
+        logger=SimpleLogger())
         name = simprefix * simname  # `get_instant()` may be used for time-based paths names.
         path = joinpath(simdir, name)
         ispath(path) || mkpath(path)
@@ -26,7 +27,7 @@ show(io::IO, sim::Simulation) = print(io, "Simulation(state:$(sim.state), retcod
 ##### Simulation checks
 
 function check_writer_files(model, path; force=true)
-    for writer in filter(block -> isa(block, Writer), model.blocks)
+    for writer in filter(component -> isa(component, Writer), getcomponents(model))
         dirname(writer.file.path) == path || mv(writer, path, force=true)
     end
 end
@@ -77,16 +78,16 @@ function report(simulation::Simulation)
         simreport["state"] = simulation.state
         simreport["retcode"] = simulation.retcode
         
-        # Save simulation model blocks.
-        foreach(deleteplugin, filter(block->isa(block, AbstractSink), simulation.model.blocks))
-        # foreach(delete_sink_callback, filter(block->isa(block, AbstractSink), simulation.model.blocks))
+        # Save simulation model components.
+        foreach(unfasten, filter(component->isa(component, AbstractSink), getcomponents(simulation.model)))
         model_group = JLD2.Group(simreport, "model")
-        model_group["name"] = string(simulation.model.id)
-        model_group["clk"] = simulation.model.clk
+        model_group["id"] = string(simulation.model.id)
+        model_group["name"] = string(simulation.model.name)
+        model_group["clock"] = simulation.model.clock
         model_group["callbacks"] = simulation.model.callbacks
-        model_blocks_group = JLD2.Group(simreport, "blocks")
-        for block in filter(block->!isa(block, Writer), simulation.model.blocks)
-            model_blocks_group[string(block.id)] = block
+        model_blocks_group = JLD2.Group(simreport, "components")
+        for component in filter(component->!isa(component, Writer), getcomponents(simulation.model))
+            model_blocks_group[string(component.name)] = component
         end
     end
     # close(simreport)

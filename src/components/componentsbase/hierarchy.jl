@@ -1,7 +1,5 @@
 # This file contains the Base module of Plugins module.
 
-@reexport module ComponentsBase
-
 # Type hierarhcy
 abstract type AbstractComponent end
 abstract type AbstractSource <: AbstractComponent end
@@ -18,21 +16,3 @@ abstract type AbstractRODESystem <: AbstractDynamicSystem end
 abstract type AbstractDAESystem <: AbstractDynamicSystem end
 abstract type AbstractSDESystem <: AbstractDynamicSystem end
 abstract type AbstractDDESystem <: AbstractDynamicSystem end
-
-include("interpolant.jl")
-include("macros.jl")
-include("genericfields.jl")
-include("takestep.jl")
-
-
-export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink,
-    AbstractStaticSystem, AbstractDynamicSystem, AbstractSubSystem, AbstractMemory, 
-    AbstractDiscreteSystem, AbstractODESystem, AbstractRODESystem, AbstractDAESystem,
-    AbstractSDESystem, AbstractDDESystem
-
-export @generic_source_fields, @generic_system_fields, @generic_sink_fields, @generic_system_fields, 
-    @generic_static_system_fields, @generic_dynamic_system_fields
-
-export readtime, readstate, readinput, writeoutput, computeoutput, evolve!, update!, takestep, drive, approve
-
-end # module

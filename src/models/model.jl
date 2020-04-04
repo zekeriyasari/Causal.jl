@@ -1,11 +1,10 @@
 # This file includes the Model object
-
-using ProgressMeter
+import Base: getindex
 
 """
-    Model(blocks::AbstractVector)
+    Model(components::AbstractVector)
 
-Constructs a `Model` whose with components `blocks` which are of type `AbstractComponent`.
+Constructs a `Model` whose with components `components` which are of type `AbstractComponent`.
 
     Model()
 
@@ -14,77 +13,80 @@ Constructs a `Model` with empty components. After the construction, components c
 !!! warning
     `Model`s are units that can be simulated. As the data flows through the connections i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
 """
-mutable struct Model{BL<:AbstractVector, CLK, TM}
-    blocks::BL
-    clk::CLK
+mutable struct Model{GR, CK, TM, CB}
+    graph::GR
+    clock::CK
     taskmanager::TM
-    callbacks::Vector{Callback}
+    callbacks::CB
+    name::Symbol
     id::UUID
-    function Model(blocks::AbstractVector)
+    function Model(components::AbstractVector; clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
+        graph = MetaDiGraph(SimpleDiGraph())
         taskmanager = TaskManager()
-        clk = Clock(NaN, NaN, NaN)
-        new{typeof(blocks), typeof(clk), typeof(taskmanager)}(blocks, clk, taskmanager, Callback[], uuid4())
+        model = new{typeof(graph), typeof(clock), typeof(taskmanager), typeof(callbacks)}(graph, clock, taskmanager, 
+            callbacks, name, uuid4())
+        set_indexing_prop!(graph, :name)
+        addcomponent(model, components...)
+        model
     end
 end
-Model(blocks::AbstractComponent...) = Model([blocks...])
-Model() = Model([])
+Model(components::AbstractComponent...; kwargs...) = Model([components...]; kwargs...)
+Model(;kwargs...) = Model([]; kwargs...)
 
-show(io::IO, model::Model) = print(io, "Model(blocks:$(model.blocks))")
+show(io::IO, model::Model) = print(io, 
+    "Model(numcomponents:$(numcomponents(model)), numconnections:$(numconnections(model)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
 
-##### Adding components to model 
-"""
-    addcomponent(model::Model, comp::AbstractComponent)
+gplot(model::Model) = gplot(model.graph, nodelabel=map(i -> getname(model, i),  vertices(model.graph)))
 
-Adds `comp` to `model` components.
+numcomponents(model::Model) = nv(model.graph)
+numconnections(model::Model) = ne(model.graph)
 
-# Example
-```jldoctest 
-julia> m = Model()
-Model(blocks:Any[])
+##### Modifying model 
+getindex(model::Model, name::Symbol) = model.graph[name, :name]
+getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
+getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
+getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
+getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
+getconnection(model::Model, srcname::Symbol, dstname::Symbol) = get_prop(model.graph, model[srcname], model[dstname], :connection)
 
-julia> addcomponent(m, SinewaveGenerator(), RampGenerator())
+function addcomponent(model::Model, components::AbstractComponent...)
+    taskmanager = model.taskmanager
+    graph = model.graph 
+    n = nv(graph)
+    for (k, component) in enumerate(components)
+        add_vertex!(graph, :component, component)
+        set_indexing_prop!(graph, n + k, :name, component.name)
+        record(taskmanager, component) 
+    end 
+end
 
-julia> m.blocks
-2-element Array{Any,1}:
- SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
- RampGenerator(scale:1.0, delay:0.0) 
-```
-"""
-addcomponent(model::Model, comp::AbstractComponent...) = foreach(cmp -> push!(model.blocks, cmp), comp)
+function addconnection(model::Model, srcname, dstname, srcidx=nothing, dstidx=nothing)
+    src, dst = model[srcname], model[dstname]
+    srccomp, dstcomp = getcomponent(model, src), getcomponent(model, dst)
+    outport = srcidx === nothing ? srccomp.output : srccomp.output[srcidx]
+    inport = dstidx === nothing ? dstcomp.input : dstcomp.input[dstidx]
+    add_edge!(model.graph, src, dst, :connection, connect(outport, inport))
+end
+
+function record(taskmanager, component)
+    triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
+    triggerpin, handshakepin = Outpin(), Inpin{Bool}()
+    connect(triggerpin, component.trigger)
+    connect(component.handshake, handshakepin)
+    push!(triggerport.pins, triggerpin)
+    push!(handshakeport.pins, handshakepin)
+    taskmanager.pairs[component] = nothing
+end
 
 ##### Model inspection.
-function adjacency_matrix(model::Model)
-    blocks = model.blocks
-    n = length(model.blocks) 
-    mat = zeros(Int, n, n)
-    for i = 1 : n 
-        for j = 1 : n 
-            if isconnected(blocks[i].output, blocks[j].input)
-                mat[i, j] = 1
-            end
-        end
-    end
-    mat
+getloops(model::Model) = simplecycles(model.graph)
+hasmemory(model, loop) = any(isa.(map(idx -> getcomponent(model, idx), loop), AbstractMemory))
+function hasloops(model::Model)
+    loops = getloops(model)
+    isempty(loops) && return false
+    return any(map(loop -> !hasmemory(model, loop), loops))
 end
-
-isterminated(output) = isa(output, Nothing) ? true : hasslaves(output)
-has_unterminated_bus(model::Model) = 
-    any([!isterminated(block.output) for block in model.blocks if !isa(block, AbstractSink)])
-
-function terminate_securely!(model::Model)
-    # TODO: Complete the function.
-    nothing
-end
-
-function has_algeraic_loop(model::Model)
-    # TODO: Complete the function
-    false
-end
-
-function break_algebraic_loop!(model)
-    # TODO: Complete the function
-    nothing
-end
+breakloop(model::Model, loops) = nothing
 
 """
     inspect(model::Model)
@@ -92,16 +94,19 @@ end
 Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and error is thrown.
 """
 function inspect(model)
-    # TODO : Complete the function.
-    # if has_unterminated_bus(model)
-    #     msg = "Model has unterminated busses. Please check the model carefully for unterminated busses."
-    #     throw(SimulationError(msg))
-    # end
-    if has_algeraic_loop(model)
-        try
-            break_algebraic_loop!(model)
-        catch
-            error("Algebric loop cannot be broken.")
+    if hasloops(model)
+        loops = getloops(model)
+        names = map(loop -> map(comp -> getname(model, comp), loop), loops)
+        msg = "Simulation aborted. The model has algrebraic loops: $names."
+        msg *= "For the simulation to continue, break these loops"
+        @error msg
+        while !isempty(loops)
+            loop = pop!(loops)
+            try 
+                breakloop(model, loop)
+            catch
+                error("Algebric loops:$loop could not be broken.")
+            end
         end
     end
 end
@@ -114,30 +119,29 @@ Initializes `model` by launching component task for each of the component of `mo
 """
 function initialize(model::Model)
     pairs = model.taskmanager.pairs
-    blocks = model.blocks
-    for block in blocks
-        pairs[block] = typeof(block) <: AbstractSubSystem ? ComponentTask.(launch(block)) : ComponentTask(launch(block))
+    components = getcomponents(model)
+    for component in components
+        pairs[component] = launch(component)
     end
-    isrunning(model.clk) || set!(model.clk)  # Turnon clock internal generator.
-    for writer in filter(block->isa(block, Writer), model.blocks)  # Open writer files.
+    isrunning(model.clock) || set!(model.clock)  # Turnon clock internal generator.
+    for writer in filter(block->isa(block, Writer), components)  # Open writer files.
         writer.file = jldopen(writer.file.path, "a")
     end
 end
 
 ##### Model running
-
 # Copy-paste loop body. See `run(model, withbar)`.
 @def loopbody begin 
-    foreach(component -> drive(component, t), components)
-    all(approve.(components)) || @warn "Could not be approved"
+    put!(triggerport, fill(t, ncomponents))
+    all(take!(handshakeport)) || @warn "Could not be approved"
     checktaskmanager(taskmanager)          
-    model.callbacks(model)   
+    applycallbacks(model)
 end
 
 """
     run(model::Model, withbar::Bool=true)
 
-Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clk`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar indicating the simulation status is displayed on the console.
+Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clock`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar indicating the simulation status is displayed on the console.
 
 !!! warning 
     The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
@@ -145,18 +149,20 @@ Runs the `model` by triggering the components of the `model`. This triggering is
 """
 function run(model::Model, withbar::Bool=true)
     taskmanager = model.taskmanager
-    components = model.blocks
-    clk = model.clk
-    withbar ? (@showprogress clk.dt for t in clk @loopbody end) : (for t in clk @loopbody end)
+    triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
+    components = getcomponents(model)
+    ncomponents = length(components)
+    clock = model.clock
+    withbar ? (@showprogress clock.dt for t in clock @loopbody end) : (for t in clock @loopbody end)
 end
 
-##### Model termination
-""" 
-    release(model::Model)
+# ##### Model termination
+# """ 
+#     release(model::Model)
 
-Releaes the each component of `model`, i.e., the input and output bus of each component is released.
-"""
-release(model::Model) = foreach(release, model.blocks)
+# Releaes the each component of `model`, i.e., the input and output bus of each component is released.
+# """
+# release(model::Model) = foreach(release, model.components)
 
 """
     terminate(model::Model)
@@ -164,8 +170,10 @@ release(model::Model) = foreach(release, model.blocks)
 Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref).
 """
 function terminate(model::Model)
-    isempty(model.taskmanager.pairs) || foreach(terminate, model.blocks)
-    isrunning(model.clk) && stop!(model.clk)
+    taskmanager = model.taskmanager
+    tasks = collect(values(taskmanager.pairs))
+    any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, numcomponents(model)))
+    isrunning(model.clock) && stop!(model.clock)
     return
 end
 
@@ -189,22 +197,16 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool)
         sim.state = :done
         sim.retcode = :success
         @siminfo "Done..."
+        
+        @siminfo "Terminating the simulation..."
+        terminate(model)
+        @siminfo "Done."
     catch e
         sim.state = :halted
         sim.retcode = :fail
-        @info e
+        throw(e)
     end
-
-    @siminfo "Releasing model components..."
-    release(model)
-    @siminfo "Done."
-   
-    @siminfo "Terminating the simulation..."
-    terminate(model)
-    @siminfo "Done."
-
     reportsim && report(sim)
-
     return sim
 end
 
@@ -239,20 +241,20 @@ Simulates the `model` starting from the initial time `t0` until the final time `
 * `simdir::String`: The path of the directory in which simulation file are recorded. 
 """
 function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
-    set!(model.clk, t0, dt, tf)
+    set!(model.clock, t0, dt, tf)
     simulate(model; kwargs...)
 end
 
 
-""" 
-    findin(model::Model, id::UUID)
+# """ 
+#     findin(model::Model, id::UUID)
 
-Returns the component of the `model` corresponding whose id is `id`.
+# Returns the component of the `model` corresponding whose id is `id`.
 
-    findin(model::Model, comp::AbstractComponent)
+#     findin(model::Model, comp::AbstractComponent)
 
-Returns the compeonent whose variable name is `comp`.
-"""
-function findin end
-findin(model::Model, id::UUID) = model.blocks[findfirst(block -> block.id == id, model.blocks)]
-findin(model::Model, comp::AbstractComponent) = model.blocks[findfirst(block -> block.id == comp.id, model.blocks)]
+# Returns the compeonent whose variable name is `comp`.
+# """
+# function findin end
+# findin(model::Model, id::UUID) = model.components[findfirst(block -> block.id == id, model.components)]
+# findin(model::Model, comp::AbstractComponent) = model.components[findfirst(block -> block.id == comp.id, model.components)]

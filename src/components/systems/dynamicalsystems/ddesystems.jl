@@ -1,6 +1,5 @@
 # This file includes DDESystems
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDDESystem
 
 const DDEAlg = MethodOfSteps(Tsit5())
 
@@ -56,20 +55,20 @@ DDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Fl
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
-mutable struct DDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDDESystem
+mutable struct DDESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDDESystem
     @generic_dynamic_system_fields
-    function DDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=DDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
+    function DDESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=DDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
         integrator = construct_integrator(DDEProblem, input, statefunc, state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], 
-            uuid4(), statefunc, outputfunc, state, t, integrator)
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
 show(io::IO, ds::DDESystem) = print(io, 
-    "DDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "DDESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

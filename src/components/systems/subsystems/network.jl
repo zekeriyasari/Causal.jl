@@ -15,15 +15,14 @@ where ``n`` is the number of nodes, ``f`` is the function corresponding to indiv
 
 `inputnodeidx` and `outputnodeidx` is the input and output node indices for the input and output, respectively. `clusters` is the set of indices of node groups in the same cluster. `inputnodeidx` and `outputnodeidx` may be of type `Nothing`, `Bus` or `Vector{<:Link}`.
 """
-mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
+mutable struct Network{IB, OB, TR, HS, CB, CMP, CNM, CPM} <: AbstractSubSystem
     @generic_system_fields
     components::CMP
     conmat::CNM 
     cplmat::CPM
     clusters::Vector{UnitRange{Int}}
-    function Network(nodes::AbstractArray, conmat::AbstractMatrix, 
-        cplmat::AbstractMatrix=coupling(length(nodes[1].output)); inputnodeidx=[], outputnodeidx=1:length(nodes), 
-        clusters=[1:length(nodes)])
+    function Network(nodes, conmat, cplmat=coupling(length(nodes[1].output)); inputnodeidx=[], 
+        outputnodeidx=1:length(nodes), clusters=[1:length(nodes)], callbacks=nothing, name=Symbol())
 
         # Construct network components
         coupler = construct_coupler(conmat, cplmat)
@@ -32,15 +31,15 @@ mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
         components = [nodes..., coupler, memories..., adders...]
 
         # Construct input and output
-        inputbus = construct_inputbus(adders)
-        outputbus = construct_outputbus(nodes[outputnodeidx])
+        inputport = construct_inputbus(adders)
+        outputport = construct_outputbus(nodes[outputnodeidx])
         
         # Construct network
-        trigger = Link()
-        handshake = Link(Bool)
-        net = new{typeof(inputbus), typeof(outputbus), typeof(trigger), typeof(handshake), typeof(components), 
-            typeof(conmat), typeof(cplmat)}(inputbus, outputbus, trigger, handshake, Callback[], uuid4(), components,
-            conmat, cplmat, clusters)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        net = new{typeof(inputport), typeof(outputport), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(components), typeof(conmat), typeof(cplmat)}(inputport, outputport, trigger, handshake, callbacks, 
+            name, uuid4(), components, conmat, cplmat, clusters)
         
             # Connect network internally.
         connect_internally(net, inputnodeidx)
@@ -48,47 +47,39 @@ mutable struct Network{IB, OB, T, H, CMP, CNM, CPM} <: AbstractSubSystem
 end
 
 
-show(io::IO, net::Network) = print(io, "Network(conmat:$(checkandshow(net.conmat)), cplmat:$(checkandshow(net.cplmat))",
-    "input:$(checkandshow(net.input)), output:$(checkandshow(net.output)))")
+show(io::IO, net::Network) = print(io, "Network(conmat:$(net.conmat), cplmat:$(net.cplmat)",
+    "input:$(net.input), output:$(net.output))")
 
 
 ##### Network auxilary components construction
 construct_coupler(conmat, cplmat) = Coupler(conmat, cplmat)
-construct_memories(nodes) = [Memory(Bus(length(node.output)), 1, initial=node.state) for node in nodes]
+construct_memories(nodes) = [Memory(Inport(length(node.output)), 1, initial=node.state) for node in nodes]
 construct_adders(inputnodes) = [construct_an_adder(length(node.input), 2, fill(+, 2)) for node in inputnodes]
 function construct_an_adder(dim, n, ops)
     K = hcat([op(diagm(ones(dim))) for op in ops]...)
-    StaticSystem(Bus(n * dim), Bus(dim), (u, t) -> K * u)
+    StaticSystem((u, t) -> K * u, Inport(n * dim), Outport(dim))
 end
 
 
 ##### Network input-output bus construction
 function construct_inputbus(adders=[])
     if isempty(adders)
-        inputbus = nothing
+        inputport = nothing
     else
-        links = vcat([adder.input[Int(end / 2) + 1 : end] for adder in adders]...)
-        inputbus = Bus(links)
-        # inputbus = Bus(length(links))
-        # for (i, link) in enumerate(links)
-        #     inputbus[i] = link
-        # end
+        inpins = vcat([adder.input[Int(end / 2) + 1 : end] for adder in adders]...)
+        inputport = Inport(inpins)
     end
-    return inputbus
+    return inputport
 end
 
 function construct_outputbus(outputnodes)
     if isempty(outputnodes)
-        outputbus = nothing
+        outputport = nothing
     else
-        links = vcat([node.output.links for node in outputnodes]...)
-        outputbus = Bus(links)
-        # outputbus = Bus(length(links))
-        # for (i, link) in enumerate(links)
-        #     outputbus[i] = link
-        # end
+        outpins = vcat([node.output.pins for node in outputnodes]...)
+        outputport = Outport(outpins)
     end
-    return outputbus
+    return outputport
 end
 
 
@@ -170,22 +161,22 @@ Returns the dimension of nodes in `net`.
 """
 dimnodes(net::Network) = size(net.cplmat, 1)
 
-#
-# Opens the input by of `net` corresponding to node whose index is `idx`.
-#
-function openinputbus(net::Network, idx::Int)
-    netnodes = nodes(net)
-    nodes = netnodes[idx]
-    inputbus = node.input
-    dimnode = length(inputbus)
-    masterlinks = getmaster(inputbus)
-    adder = construct_an_adder(dimnode, 2, (+, -))
-    disconnect(masterlinks, inputbus)
-    connect(masterlinks, adder.input[1:dimnode])
-    connect(adder.output, inputbus)
-    push!(net.components, adder)
-    # TODO: Complete function 
-end
+# #
+# # Opens the input by of `net` corresponding to node whose index is `idx`.
+# #
+# function openinputbus(net::Network, idx::Int)
+#     netnodes = nodes(net)
+#     nodes = netnodes[idx]
+#     inputport = node.input
+#     dimnode = length(inputport)
+#     masterlinks = getmaster(inputport)
+#     adder = construct_an_adder(dimnode, 2, (+, -))
+#     disconnect(masterlinks, inputport)
+#     connect(masterlinks, adder.input[1:dimnode])
+#     connect(adder.output, inputport)
+#     push!(net.components, adder)
+#     # TODO: Complete function 
+# end
 
 ##### Plotting networks
 """
@@ -226,8 +217,6 @@ coupling(n, idx::Int) = coupling(n, [idx])
 
 ##### Construction of connection matrices of different network toplogies.
 
-@deprecate uniformconnectivty(args...; kwargs...) topology(args...; kwargs...)
-
 """
     topology(name::Symbol, args...; weight::Real=1., timevarying::Bool=false)
 
@@ -253,6 +242,7 @@ function topology(name::Symbol, args...; weight::Real=1., timevarying::Bool=fals
     timevarying ? maketimevarying(conmat) : conmat 
 end
 
+@deprecate uniformconnectivty(args...; kwargs...) topology(args...; kwargs...)
 
 """
     cgsconnectivity(graph::AbstractGraph; weight::Real=1., timevarying::Bool=false)

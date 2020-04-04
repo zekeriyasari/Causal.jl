@@ -12,23 +12,23 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 !!! warning 
     When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
 """
-mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
+mutable struct Writer{IB, DB, TB, PL, TR, HS, CB, FL} <: AbstractSink
     @generic_sink_fields
-    file::F
-    function Writer(input::Bus{<:Link{T}}; buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4()))) where T 
-        # Construct the file
+    file::FL
+    function Writer(input::Inport{<:Inpin{T}}; buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
+        path=joinpath(tempdir(), string(name))) where T 
         endswith(path, ".jld2") || (path *= ".jld2")
-        file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
+        file = jldopen(path, "w")
         close(file)     # Close file so that the file can be sent to remote Julia processes
-
-        # Construct the buffers
         timebuf = Buffer(buflen)
         databuf = Buffer(T, length(input), buflen)
-        trigger = Link()
-        handshake = Link(Bool)
-        addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
-            typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), file), write!)
+        id = uuid4() 
+        callbacks = fasten(plugin, write!, timebuf, databuf, callbacks, id)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
+            typeof(callbacks), typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id, 
+            file)
     end
 end
 

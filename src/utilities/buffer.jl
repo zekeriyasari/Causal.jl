@@ -1,6 +1,5 @@
 # This file constains the Buffer for data buffering.
 
-import Base: getindex, setindex!, size, read, isempty, setproperty!, fill!, length, eltype, firstindex, lastindex, IndexStyle, display
 
 ##### Buffer modes
 """
@@ -101,9 +100,8 @@ mutable struct Buffer{M<:BufferMode, T, N} <: AbstractArray{T, N}
     data::Array{T, N}
     index::Int 
     state::Symbol 
-    callbacks::Vector{Callback}
     id::UUID
-    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = new{M, T, ndims(data)}(data, 1, :empty, Callback[], uuid4())
+    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = new{M, T, ndims(data)}(data, 1, :empty, uuid4())
 end
 Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T} = Buffer{M}(zeros(T, sz...)) 
 Buffer{M}(sz::Int...) where {M, T} = Buffer{M}(zeros(Float64, sz...)) 
@@ -291,7 +289,6 @@ write!(buf::Buffer{M, <:Real, 2}, vals::AbstractMatrix{<:Real}) where {M} = fore
 function _write!(buf::Buffer, val)
     checkstate(buf)
     writeitem(buf, val)
-    buf.callbacks(buf)
     val
 end
 writeitem(buf::Buffer{M, T, 1}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1)
@@ -355,7 +352,6 @@ julia> for i = 1 : 3
 function read(buf::Buffer)
     isempty(buf) && error("Buffer is empty.")
     val = _read(buf)
-    buf.callbacks(buf)
     val
 end
 function _read(buf::Buffer{Fifo, T, N}) where {T, N}

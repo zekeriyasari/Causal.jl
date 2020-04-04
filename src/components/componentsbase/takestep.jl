@@ -1,11 +1,5 @@
 # This file includes stepping of abstract types.
 
-import ....Jusdl.Connections: launch, Bus, release, isreadable
-import ....Jusdl.Utilities: write!
-
-using DifferentialEquations
-using Sundials
-
 ##### Input-Output reading and writing.
 """
     readtime(comp::AbstractComponent)
@@ -34,7 +28,7 @@ Returns the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, 
 """
 function readinput(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
-    typeof(comp.input) <: Bus ? take!(comp.input) : nothing
+    typeof(comp.input) <: Inport ? take!(comp.input) : nothing
 end
 
 """
@@ -44,7 +38,7 @@ Writes `out` to the output of `comp` if the `output` of `comp` is `Bus`. Otherwi
 """
 function writeoutput(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    typeof(comp.output) <: Bus ? put!(comp.output, out) : nothing
+    typeof(comp.output) <: Outport ? put!(comp.output, out) : nothing
 end
 
 """
@@ -77,7 +71,7 @@ Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `u` is the v
 Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `u` is the value of `input` and `t` is time. 
     
     evolve!(comp::AbstractDynamicSystem, u, t)
-
+    
 Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. 
 """
 function evolve! end
@@ -135,7 +129,7 @@ function forwardstep(comp, t)
     x = evolve!(comp, u, t)
     y = computeoutput(comp, x, u, t)
     writeoutput(comp, y)
-    comp.callbacks(comp)
+    applycallbacks(comp)
     return t
 end
 
@@ -151,10 +145,9 @@ function backwardstep(comp, t)
     writeoutput(comp, y)
     u = readinput(comp)
     xn = evolve!(comp, u, t)
-    comp.callbacks(comp)
+    applycallbacks(comp)
     return t
 end
-
 
 """
     launch(comp::AbstractComponent)
@@ -162,15 +155,15 @@ end
 Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
 """
 function launch(comp::AbstractComponent)
-    outputtask = if !(typeof(comp) <: AbstractSink)  # Check for `AbstractSink`.
-        if !(typeof(comp.output) <: Nothing)  # Check for `Terminator`.
-            @async while true 
-                val = take!(comp.output)
-                # all(val .=== missing) && break
-                all(val .=== NaN) && break
-            end
-        end
-    end
+    # outputtask = if !(typeof(comp) <: AbstractSink)  # Check for `AbstractSink`.
+    #     if !(typeof(comp.output) <: Nothing)  # Check for `Terminator`.
+    #         @async while true 
+    #             val = take!(comp.output)
+    #             # all(val .=== missing) && break
+    #             all(val .=== NaN) && break
+    #         end
+    #     end
+    # end
     triggertask = @async begin 
         while true
             # takestep(comp) === missing && break
@@ -179,7 +172,8 @@ function launch(comp::AbstractComponent)
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
-    return triggertask, outputtask
+    # return triggertask, outputtask
+    triggertask
 end
 
 """
@@ -263,8 +257,8 @@ Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(co
 """
 function release(comp::AbstractSubSystem)
     foreach(release, comp.components)
-    typeof(comp.input) <: Bus && release(comp.input)
-    typeof(comp.output) <: Bus && release(comp.output)
+    typeof(comp.input) <: Inport && release(comp.input)
+    typeof(comp.output) <: Outport && release(comp.output)
 end
 
 """
@@ -273,3 +267,4 @@ end
 Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate(comp::AbstractComponent)`](@ref)
 """
 terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
+

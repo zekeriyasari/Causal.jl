@@ -19,6 +19,14 @@ hasargs(func, n) = n + 1 in [method.nargs for method in methods(func)]
 
 allstates(x, u, t) = x
 
+function unwrap(container, etype; depth=10)
+    for i in 1 : depth
+        container = vcat(container...)
+        eltype(container) == etype && break
+    end
+    container
+end
+
 function construct_interpolant(input, t)
     if typeof(input) <: Inport
             inputval = rand(datatype(input), length(input))

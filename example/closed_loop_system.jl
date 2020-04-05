@@ -2,26 +2,24 @@
 
 using Jusdl 
 
-# Construct a model 
-gen = FunctionGenerator(sin)
-adder = Adder(Bus(2), (+, -))
-ds = ODESystem(Bus(1), Bus(1), (dx,x,u,t) -> (dx[1] = -x[1] + u[1](t)), (x,u,t) -> x, [1.], 0.)
-mem = Memory(Bus(1), 1)
-writer = Writer(Bus(2)) 
-connect(gen.output, adder.input[1])
-connect(adder.output, ds.input)
-connect(ds.output, mem.input)
-connect(mem.output, adder.input[2])
-connect(gen.output, writer.input[1])
-connect(ds.output, writer.input[2])
-model = Model(gen, mem, adder, ds, writer)
+model = Model(clock=Clock(0, 0.01, 10.))
+addcomponent(model, FunctionGenerator(sin, name=:gen))
+addcomponent(model, Adder(Inport(2), (+,-), name=:adder))
+addcomponent(model, ODESystem((dx,x,u,t)->(dx[1]=-x[1]+u[1](t)), (x,u,t) -> x, [1.], 0., Inport(), Outport(), name=:ds))
+addcomponent(model, Memory(Inport(), 1, name=:mem))
+addcomponent(model, Writer(Inport(2), name=:writer))
+addconnection(model, :gen, :adder, 1, 1)
+addconnection(model, :adder, :ds)
+addconnection(model, :ds, :mem)
+addconnection(model, :mem, :adder, 1, 2)
+addconnection(model, :gen, :writer, 1, 1)
+addconnection(model, :ds, :writer, 1, 2)
 
 # Simualate the model 
-tinit, tsample, tfinal = 0, 0.01, 10.
-sim = simulate(model, tinit, tsample, tfinal)
+sim = simulate(model)
 
 # Read and plot data 
-t, x = read(writer, flatten=true)
+t, x = read(getcomponent(model, :writer), flatten=true)
 using Plots 
 plot(t, x[:, 1], label="r(t)", xlabel="t")
 plot!(t, x[:, 2], label="y(t)", xlabel="t")

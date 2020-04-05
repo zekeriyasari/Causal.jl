@@ -171,7 +171,7 @@ Terminates `model` by terminating all the components of the `model`, i.e., the c
 """
 function terminate(model::Model)
     taskmanager = model.taskmanager
-    tasks = collect(values(taskmanager.pairs))
+    tasks = unwrap(collect(values(taskmanager.pairs)), Task, depth=length(taskmanager.pairs))
     any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, numcomponents(model)))
     isrunning(model.clock) && stop!(model.clock)
     return

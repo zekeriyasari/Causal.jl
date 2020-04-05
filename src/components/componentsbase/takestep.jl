@@ -114,7 +114,6 @@ Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractM
 """
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
-    # t === missing && return t
     t === NaN && return t
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
@@ -154,26 +153,14 @@ end
 
 Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
 """
-function launch(comp::AbstractComponent)
-    # outputtask = if !(typeof(comp) <: AbstractSink)  # Check for `AbstractSink`.
-    #     if !(typeof(comp.output) <: Nothing)  # Check for `Terminator`.
-    #         @async while true 
-    #             val = take!(comp.output)
-    #             # all(val .=== missing) && break
-    #             all(val .=== NaN) && break
-    #         end
-    #     end
-    # end
-    triggertask = @async begin 
+function launch(comp::AbstractComponent) 
+    @async begin 
         while true
-            # takestep(comp) === missing && break
             takestep(comp) === NaN && break
             put!(comp.handshake, true)
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
-    # return triggertask, outputtask
-    triggertask
 end
 
 """
@@ -219,7 +206,18 @@ end
 
 Launches all subcomponents of `comp`. See also: [`launch(comp::AbstractComponent)`](@ref)
 """
-launch(comp::AbstractSubSystem) = launch.(comp.components)
+function launch(comp::AbstractSubSystem)
+    comptask = @async begin 
+        while true
+            if takestep(comp) === NaN 
+                put!(comp.triggerport, fill(NaN, length(comp.components)))
+                break   
+            end
+            put!(comp.handshake, true)
+        end
+    end
+    [launch.(comp.components)..., comptask]
+end
 
 """
     takestep(comp::AbstractSubSystem)
@@ -228,11 +226,12 @@ Makes `comp` to take a step by making each subcomponent of `comp` take a step. S
 """
 function takestep(comp::AbstractSubSystem)
     t = readtime(comp)
-    # t === missing && return t
     t === NaN && return t
-    foreach(takestep, comp.components)
-    approve(comp) ||  @warn "Could not be approved in the subsystem"
-    put!(comp.handshake, true)
+    put!(comp.triggerport, fill(t, length(comp.components)))
+    all(take!(comp.handshakeport)) || @warn "Could not be approved in the subsystem"
+    # foreach(takestep, comp.components)
+    # approve(comp) ||  @warn "Could not be approved in the subsystem"
+    # put!(comp.handshake, true)
 end
 
 """

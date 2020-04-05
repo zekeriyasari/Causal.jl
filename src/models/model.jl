@@ -47,7 +47,8 @@ getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
 getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
 getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
 getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
-getconnection(model::Model, srcname::Symbol, dstname::Symbol) = get_prop(model.graph, model[srcname], model[dstname], :connection)
+getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = get_prop(model.graph, model[srcname], model[dstname], prop)
+getconnection(model::Model, srcidx::Int, dstidx::Int, prop=:connection) = get_prop(model.graph, srcidx, dstidx, prop)
 
 function addcomponent(model::Model, components::AbstractComponent...)
     taskmanager = model.taskmanager
@@ -63,9 +64,12 @@ end
 function addconnection(model::Model, srcname, dstname, srcidx=nothing, dstidx=nothing)
     src, dst = model[srcname], model[dstname]
     srccomp, dstcomp = getcomponent(model, src), getcomponent(model, dst)
-    outport = srcidx === nothing ? srccomp.output : srccomp.output[srcidx]
-    inport = dstidx === nothing ? dstcomp.input : dstcomp.input[dstidx]
-    add_edge!(model.graph, src, dst, :connection, connect(outport, inport))
+    outport = srccomp.output
+    inport = dstcomp.input
+    srcidx === nothing && (srcidx = 1 : length(outport))
+    dstidx === nothing && (dstidx = 1 : length(inport))
+    connection = connect(outport[srcidx], inport[dstidx])
+    add_edge!(model.graph, src, dst, Dict(:connection => connection, :srcidx => srcidx, :dstidx => dstidx))
 end
 
 function record(taskmanager, component)

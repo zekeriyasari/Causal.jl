@@ -1,6 +1,78 @@
 using Jusdl 
 using LightGraphs, MetaGraphs
 
+
+function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
+    nin = length(component.input)
+    outputfunc = component.outputfunc
+    x = component.state 
+    function gf(u)
+        uu = zeros(nin) 
+        uu[inidxs] .= inval 
+        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+        out = outputfunc(x, uu, 0.)
+        out[outidxs]
+    end
+end
+
+function wrap(component::AbstractSource, inval, inidxs, outidxs)
+    nin = length(component.input)
+    outputfunc = component.outputfunc
+    function gf(u)
+        uu = zeros(nin) 
+        uu[inidxs] .= inval 
+        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+        out = outputfunc(uu, 0.)
+        typeof(out) <: Real ? [out] : out
+    end
+end
+
+
+function neighborsinside(loop, innbrs, outnbrs)
+    isempty(filter(v -> v ∉ loop, innbrs)) && isempty(filter(v -> v ∉ loop, outnbrs))
+end
+
+
+function loopvertexfuncs(model, loop)
+    vertexfuncs = Vector{Function}(undef, length(loop))
+    for (k, vertex) in enumerate(loop)
+        vertexcomponent = getcomponent(model, vertex)
+        innbrs, outnbrs = inneighbors(graph, vertex), outneighbors(graph, vertex)
+        if neighborsinside(loop, innbrs, outnbrs)
+            vertexfunc = vertexcomponent.outputfunc
+        else 
+            vertexinvals = Float64[]
+            vertexinidxs = Int[]
+            for innbr in filter(vertex -> vertex ∉ loop, innbrs)
+                innbroutidx = getconnection(model, innbr, vertex, :srcidx)
+                vertexinidx = getconnection(model, innbr, vertex, :dstidx)
+                innbrcomponent = getcomponent(model, innbr)
+                if innbrcomponent isa AbstractSource
+                    vertexinval = [innbrcomponent.outputfunc(0.)...][innbroutidx]
+                elseif innbrcomponent isa AbstractDynamicSystem 
+                    out  = innbrcomponent.input === nothing ? 
+                        innbrcomponent.outputfunc(nothing, innbrcomponent.state, 0.) : error("One step further")
+                    vertexinval = out[innbroutidx...]
+                else 
+                    error("One step futher")
+                end
+                append!(vertexinvals, vertexinval)
+                append!(vertexinidxs, vertexinidx)
+            end
+            outnbr = filter(vertex -> vertex ∈ loop, outnbrs)[1]
+            vertexoutidxs = getconnection(model, vertex, outnbr, :srcidx)
+            vertexnuminput = length(vertexcomponent.input)
+            vertexfunc = wrap(vertexcomponent, vertexinvals, vertexoutidxs, vertexoutidxs)    
+        end
+        vertexfuncs[k] = vertexfunc
+    end
+    vertexfuncs
+end
+
+# Construct feedforward function from vertex loop functions 
+feedforward(vertexfuncs, breakpoint=0) = x -> ∘(vertexfuncs...) - x
+
+###################################### 
 model = Model()
 addcomponent(model, FunctionGenerator(sin, name=:gen))
 addcomponent(model, Adder(Inport(2), (+, -), name=:adder))
@@ -10,58 +82,8 @@ addconnection(model, :adder, :gain)
 addconnection(model, :gain, :adder, 1, 2)
 graph = model.graph
 
-# Find loops
-loops = getloops(model)
-
-# Get one the loop
+# Detect algrebraic loops
+loops = simplecycles(graph)
 loop = loops[1]
-
-# Find nodes having outside neighbors.
-probnodeidx = falses(length(loop))
-for (idx, node) in enumerate(loop)
-    node_inneighbors = inneighbors(graph, node)
-    node_outneighbors = outneighbors(graph, node)
-    node_inneighbors_inside_loop_idx = [idx in loop for idx in node_inneighbors]
-    node_outneighbors_inside_loop_idx = [idx in loop for idx in node_outneighbors]
-    node_inneighbors_inside_loop = node_inneighbors[node_inneighbors_inside_loop_idx]
-    node_inneighbors_outside_loop = node_inneighbors[.!node_inneighbors_inside_loop_idx]
-    node_outneighbors_inside_loop = node_outneighbors[node_outneighbors_inside_loop_idx]
-    node_outneighbors_outside_loop = node_outneighbors[.!node_outneighbors_inside_loop_idx]
-    @show node, node_inneighbors, node_inneighbors_inside_loop, node_inneighbors_outside_loop, node_outneighbors, node_outneighbors_inside_loop, node_outneighbors_outside_loop
-    has_out_of_loop_neighbor = !isempty(node_inneighbors_outside_loop) || !isempty(node_outneighbors_outside_loop)
-    has_out_of_loop_neighbor && (probnodeidx[idx] = true)
-end
-
-# Conctruct partial functions
-for node in loop[probnodeidx]
-    component = getcomponent(model, node)
-    numinput = length(comp.input)
-    numoutput = length(comp.output)
-    for nbr in filter(nbr -> nbr ∉ loop, inneighbors(graph, node))
-        srcidx = getconnection(model, nbr, node, :srcidx) 
-        dstidx = getconnection(model, nbr, node, :dstidx) 
-        neighbor = getcomponent(model, nbr)
-        if neighbor isa AbstractSource
-            val = [neighbor.outputfunc(0.)...]
-        else neighbor isa DynamicSystem 
-            out = neighbor.input === nothing ? neighbor.outputfunc(neighbor.x, nothing, 0.) : error("One step further")
-            val = [out...]
-        end
-        @show val, srcidx, dstidx, val[srcidx]
-    end
-end
-
-f(u, t) = u[1] + u[2] + u[3] + u[4]
-val = [10, 12]
-dstidx = [1, 3]
-function partial(f, val, dstidx, n)
-    n = 4
-    function gf(u, t)
-        uu = zeros(n) 
-        uu[dstidx] = val 
-        uu[filter(i -> i ∉ dstidx, 1 : n)] = u
-        f(uu, t)
-    end
-end
-myfunc = partial(f, val, dstidx, 4)
+vertexfuncs = loopvertexfuncs(model, loop)
 

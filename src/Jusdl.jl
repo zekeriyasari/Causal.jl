@@ -103,9 +103,10 @@ export TaskManager, checktaskmanager
 include("models/simulation.jl")
 export Simulation, SimulationError, setlogger, closelogger, report
 
+include("models/algebraicloop.jl")
+
 include("models/model.jl")
-export Model, addcomponent, addconnection, getcomponent, getcomponents, getconnection, getname, getloops, hasloops, breakloop
-export numcomponents, numconnections, inspect, initialize, run, terminate, simulate
-# export Model, inspect, initialize, run, terminate, simulate, findin, addcomponent
+export Model, addcomponent, addconnection, getcomponent, getcomponents, getconnection, getname, getloops, hasloops, 
+    breakloop, numcomponents, numconnections, inspect, initialize, run, terminate, simulate
 
 end  # module

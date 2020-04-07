@@ -41,15 +41,18 @@ gplot(model::Model) = gplot(model.graph, nodelabel=map(i -> getname(model, i),  
 numcomponents(model::Model) = nv(model.graph)
 numconnections(model::Model) = ne(model.graph)
 
-##### Modifying model 
+##### Accessing model components or connections
 getindex(model::Model, name::Symbol) = model.graph[name, :name]
 getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
 getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
 getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
 getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
-getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = get_prop(model.graph, model[srcname], model[dstname], prop)
 getconnection(model::Model, srcidx::Int, dstidx::Int, prop=:connection) = get_prop(model.graph, srcidx, dstidx, prop)
+getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = 
+    get_prop(model.graph, model[srcname], model[dstname], prop)
 
+
+##### Modifying models
 function addcomponent(model::Model, components::AbstractComponent...)
     taskmanager = model.taskmanager
     graph = model.graph 
@@ -83,15 +86,6 @@ function record(taskmanager, component)
 end
 
 ##### Model inspection.
-getloops(model::Model) = simplecycles(model.graph)
-hasmemory(model, loop) = any(isa.(map(idx -> getcomponent(model, idx), loop), AbstractMemory))
-function hasloops(model::Model)
-    loops = getloops(model)
-    isempty(loops) && return false
-    return any(map(loop -> !hasmemory(model, loop), loops))
-end
-breakloop(model::Model, loops) = nothing
-
 """
     inspect(model::Model)
 
@@ -114,6 +108,86 @@ function inspect(model)
         end
     end
 end
+
+function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
+    nin = length(component.input)
+    outputfunc = component.outputfunc
+    x = component.state 
+    function gf(u)
+        uu = zeros(nin) 
+        uu[inidxs] .= inval 
+        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+        out = outputfunc(x, uu, 0.)
+        out[outidxs]
+    end
+end
+
+function wrap(component::AbstractSource, inval, inidxs, outidxs)
+    nin = length(component.input)
+    outputfunc = component.outputfunc
+    function gf(u)
+        uu = zeros(nin) 
+        uu[inidxs] .= inval 
+        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+        out = outputfunc(uu, 0.)
+        typeof(out) <: Real ? [out] : out
+    end
+end
+
+
+function neighborsinside(loop, innbrs, outnbrs)
+    isempty(filter(v -> v ∉ loop, innbrs)) && isempty(filter(v -> v ∉ loop, outnbrs))
+end
+
+
+function loopvertexfuncs(model, loop)
+    vertexfuncs = Vector{Function}(undef, length(loop))
+    for (k, vertex) in enumerate(loop)
+        vertexcomponent = getcomponent(model, vertex)
+        innbrs, outnbrs = inneighbors(graph, vertex), outneighbors(graph, vertex)
+        if neighborsinside(loop, innbrs, outnbrs)
+            vertexfunc = vertexcomponent.outputfunc
+        else 
+            vertexinvals = Float64[]
+            vertexinidxs = Int[]
+            for innbr in filter(vertex -> vertex ∉ loop, innbrs)
+                innbroutidx = getconnection(model, innbr, vertex, :srcidx)
+                vertexinidx = getconnection(model, innbr, vertex, :dstidx)
+                innbrcomponent = getcomponent(model, innbr)
+                if innbrcomponent isa AbstractSource
+                    vertexinval = [innbrcomponent.outputfunc(0.)...][innbroutidx]
+                elseif innbrcomponent isa AbstractDynamicSystem 
+                    out  = innbrcomponent.input === nothing ? 
+                        innbrcomponent.outputfunc(nothing, innbrcomponent.state, 0.) : error("One step further")
+                    vertexinval = out[innbroutidx...]
+                else 
+                    error("One step futher")
+                end
+                append!(vertexinvals, vertexinval)
+                append!(vertexinidxs, vertexinidx)
+            end
+            outnbr = filter(vertex -> vertex ∈ loop, outnbrs)[1]
+            vertexoutidxs = getconnection(model, vertex, outnbr, :srcidx)
+            vertexnuminput = length(vertexcomponent.input)
+            vertexfunc = wrap(vertexcomponent, vertexinvals, vertexoutidxs, vertexoutidxs)    
+        end
+        vertexfuncs[k] = vertexfunc
+    end
+    vertexfuncs
+end
+
+feedforward(vertexfuncs, breakpoint=0) = x -> ∘(vertexfuncs...) - x
+
+
+getloops(model::Model) = simplecycles(model.graph)
+hasmemory(model, loop) = any(isa.(map(idx -> getcomponent(model, idx), loop), AbstractMemory))
+function hasloops(model::Model)
+    loops = getloops(model)
+    isempty(loops) && return false
+    return any(map(loop -> !hasmemory(model, loop), loops))
+end
+breakloop(model::Model, loops) = nothing
+
 
 ##### Model initialization
 """

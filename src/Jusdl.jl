@@ -11,6 +11,7 @@ using MetaGraphs
 using DataStructures
 using JLD2
 using Plots
+using Roots
 using ProgressMeter 
 using Logging
 using LinearAlgebra
@@ -103,10 +104,8 @@ export TaskManager, checktaskmanager
 include("models/simulation.jl")
 export Simulation, SimulationError, setlogger, closelogger, report
 
-include("models/algebraicloop.jl")
-
 include("models/model.jl")
-export Model, addcomponent, addconnection, getcomponent, getcomponents, getconnection, getname, getloops, hasloops, 
-    breakloop, numcomponents, numconnections, inspect, initialize, run, terminate, simulate
+export Model, getloops, hasloops, breakloop, inspect, initialize, run, terminate, simulate
+export Node, Edge, addnode, addedge
 
 end  # module

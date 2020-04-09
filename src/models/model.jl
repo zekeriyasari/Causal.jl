@@ -1,5 +1,31 @@
 # This file includes the Model object
 import Base: getindex
+import LightGraphs: SimpleDiGraph, add_edge!, add_vertex!, simplecycles
+
+mutable struct Node{CP}
+    component::CP 
+    idx::Int 
+    label::Symbol 
+end 
+
+mutable struct Edge{SI<:AbstractVector{<:Int}, DI<:AbstractVector{<:Int}, LN<:AbstractVector{<:Link}}
+    src::Int  
+    dst::Int  
+    srcidx::SI
+    dstidx::DI
+    links::LN
+end
+function Edge(src, dst, srcidx, dstidx, links)
+    srcidx = [srcidx...]
+    dstidx = [dstidx...]
+    Edge{typeof(srcidx), typeof(dstidx), typeof(links)}(src, dst, srcidx, dstidx, links)
+end
+function Edge(src, dst, srcidx, dstidx)
+    n = length(srcidx)
+    n == length(dstidx) || error("srcidx and dstidx must have same length.")
+    links = [Link() for i = 1 : n]
+    Edge(src, dst, srcidx, dstidx, links)
+end
 
 """
     Model(components::AbstractVector)
@@ -11,71 +37,111 @@ Constructs a `Model` whose with components `components` which are of type `Abstr
 Constructs a `Model` with empty components. After the construction, components can be added to `Model`.
 
 !!! warning
-    `Model`s are units that can be simulated. As the data flows through the connections i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
+    `Model`s are units that can be simulated. As the data flows through the edges i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
 """
-mutable struct Model{GR, CK, TM, CB}
+mutable struct Model{GR, ND, ED, CK, TM, CB}
     graph::GR
+    nodes::ND
+    edges::ED 
     clock::CK
     taskmanager::TM
     callbacks::CB
     name::Symbol
     id::UUID
-    function Model(components::AbstractVector; clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
-        graph = MetaDiGraph(SimpleDiGraph())
+    function Model(nodes::AbstractVector=[], edges::AbstractVector=[]; 
+        clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
+        graph = SimpleDiGraph()
         taskmanager = TaskManager()
-        model = new{typeof(graph), typeof(clock), typeof(taskmanager), typeof(callbacks)}(graph, clock, taskmanager, 
-            callbacks, name, uuid4())
-        set_indexing_prop!(graph, :name)
-        addcomponent(model, components...)
+        model = new{typeof(graph), typeof(nodes), typeof(edges), typeof(clock), typeof(taskmanager),
+            typeof(callbacks)}(graph, nodes, edges, clock, taskmanager, callbacks, name, uuid4())
+        foreach(node -> addnode(model, node), nodes)
+        foreach(edge -> edges(model, edge), edges)
         model
     end
 end
-Model(components::AbstractComponent...; kwargs...) = Model([components...]; kwargs...)
-Model(;kwargs...) = Model([]; kwargs...)
 
-show(io::IO, model::Model) = print(io, 
-    "Model(numcomponents:$(numcomponents(model)), numconnections:$(numconnections(model)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
+show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), ",
+    "numedges:$(length(model.edges)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
 
 gplot(model::Model) = gplot(model.graph, nodelabel=map(i -> getname(model, i),  vertices(model.graph)))
 
-numcomponents(model::Model) = nv(model.graph)
-numconnections(model::Model) = ne(model.graph)
+function getindex(model::Model, idx::Int) 
+    nodes = filter(node -> node.idx == idx, model.nodes)
+    length(nodes) == 1 ? nodes[1] : error("Multiple index")
+end
+function getindex(model::Model, label::Symbol) 
+    nodes = filter(node -> node.label == label, model.nodes)
+    length(nodes) == 1 ? nodes[1] : error("Multiple labels")
+end
+function getindex(model::Model, src::Int, dst::Int) 
+    edges = filter(edge -> edge.src==src && edge.dst == dst, model.edges)
+    length(edges) == 1 ? edges[1] : error("Multiple indexes")
+end
+function getindex(model::Model, src::Symbol, dst::Symbol) 
+    model[model[src].idx, model[dst].idx]
+end
 
-##### Accessing model components or connections
-getindex(model::Model, name::Symbol) = model.graph[name, :name]
-getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
-getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
-getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
-getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
-getconnection(model::Model, srcidx::Int, dstidx::Int, prop=:connection) = get_prop(model.graph, srcidx, dstidx, prop)
-getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = 
-    get_prop(model.graph, model[srcname], model[dstname], prop)
+##### Accessing model components or edges
+# getindex(model::Model, name::Symbol) = model.graph[name, :name]
+# getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
+# getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
+# getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
+# getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
+# getconnection(model::Model, srcidx::Int, dstidx::Int, prop=:connection) = get_prop(model.graph, srcidx, dstidx, prop)
+# getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = 
+#     get_prop(model.graph, model[srcname], model[dstname], prop)
 
+
+# function addcomponent(model::Model, components::AbstractComponent...)
+#     taskmanager = model.taskmanager
+#     graph = model.graph 
+#     n = nv(graph)
+#     for (k, component) in enumerate(components)
+#         add_vertex!(graph, :component, component)
+#         set_indexing_prop!(graph, n + k, :name, component.name)
+#         register(taskmanager, component) 
+#     end 
+# end
+
+# function addedge(model::Model, srcname, dstname, srcidx=nothing, dstidx=nothing)
+#     src, dst = model[srcname], model[dstname]
+#     srccomp, dstcomp = getcomponent(model, src), getcomponent(model, dst)
+#     outport = srccomp.output
+#     inport = dstcomp.input
+#     srcidx === nothing && (srcidx = 1 : length(outport))
+#     dstidx === nothing && (dstidx = 1 : length(inport))
+#     connection = connect(outport[srcidx], inport[dstidx])
+#     add_edge!(model.graph, src, dst, Dict(:connection => connection, :srcidx => srcidx, :dstidx => dstidx))
+# end
 
 ##### Modifying models
-function addcomponent(model::Model, components::AbstractComponent...)
-    taskmanager = model.taskmanager
-    graph = model.graph 
-    n = nv(graph)
-    for (k, component) in enumerate(components)
-        add_vertex!(graph, :component, component)
-        set_indexing_prop!(graph, n + k, :name, component.name)
-        record(taskmanager, component) 
-    end 
+function addnode(model::Model, node::Node)
+    push!(model.nodes, node)
+    register(model.taskmanager, node.component)
+    add_vertex!(model.graph)
 end
 
-function addconnection(model::Model, srcname, dstname, srcidx=nothing, dstidx=nothing)
-    src, dst = model[srcname], model[dstname]
-    srccomp, dstcomp = getcomponent(model, src), getcomponent(model, dst)
-    outport = srccomp.output
-    inport = dstcomp.input
-    srcidx === nothing && (srcidx = 1 : length(outport))
-    dstidx === nothing && (dstidx = 1 : length(inport))
-    connection = connect(outport[srcidx], inport[dstidx])
-    add_edge!(model.graph, src, dst, Dict(:connection => connection, :srcidx => srcidx, :dstidx => dstidx))
+function addnode(model::Model, component::AbstractComponent; label::Symbol=Symbol()) 
+    n = length(model.nodes) + 1
+    addnode(model, Node(component, n, label))
 end
 
-function record(taskmanager, component)
+
+function addedge(model::Model, edge::Edge)
+    push!(model.edges, edge)
+    add_edge!(model.graph, edge.src, edge.dst)
+end
+
+function addedge(model::Model, src::Node, dst::Node, srcidx=nothing, dstidx=nothing) 
+    srcidx = srcidx === nothing ? (srcidx = 1 : length(src.component.output)) : [srcidx...]
+    dstidx = dstidx === nothing ? (dstidx = 1 : length(dst.component.input)) : [dstidx...]
+    links = connect(src.component.output[srcidx], dst.component.input[dstidx])
+    addedge(model, Edge(src.idx, dst.idx, srcidx, dstidx, links))
+end
+
+addedge(model::Model, src, dst, srcidx=nothing, dstidx=nothing) = addedge(model, model[src], model[dst], srcidx, dstidx)
+
+function register(taskmanager, component)
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
     triggerpin, handshakepin = Outpin(), Inpin{Bool}()
     connect(triggerpin, component.trigger)
@@ -94,8 +160,8 @@ Inspects the `model`. If `model` has some inconsistencies such as including alge
 function inspect(model)
     if hasloops(model)
         loops = getloops(model)
-        names = map(loop -> map(comp -> getname(model, comp), loop), loops)
-        msg = "Simulation aborted. The model has algrebraic loops: $names."
+        components = map(loop -> map(idx -> model[idx].component, loop), loops)
+        msg = "Simulation aborted. The model has algrebraic loops: $components"
         msg *= "For the simulation to continue, break these loops"
         @error msg
         while !isempty(loops)
@@ -107,6 +173,31 @@ function inspect(model)
             end
         end
     end
+end
+
+
+getloops(model::Model) = simplecycles(model.graph)
+
+hasmemory(model, loop) = any(isa.(map(idx -> model[idx].component, loop), AbstractMemory))
+
+function hasloops(model::Model)
+    loops = getloops(model)
+    isempty(loops) && return false
+    return any(map(loop -> !hasmemory(model, loop), loops))
+end
+
+function breakloop(model::Model, loop, breakpoint=length(loop)) 
+    nodefuncs = loopnodefuncs(model, loop)
+    ff = feedforward(nodefuncs, breakpoint)
+    funcs = [u -> ff(u)[i] for i in 1 : length(ff)]
+    x0 = map(fi -> find_zero(fi, rand()), funcs)
+    memory = Memory(Inport(length(x0), initial=x0))
+    srcnode = model[breakpoint].component 
+    dstnode = model[(breakpoint + 1) % length(loop)].component 
+    disconnect(srcnode.output, dstnode.input)
+    addnode(model, memory)
+    addedge(model, srcnode.idx, model.nodes[end].idx)
+    addedge(model, model.node[end].idx, dstnode.idx)
 end
 
 function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
@@ -140,54 +231,42 @@ function neighborsinside(loop, innbrs, outnbrs)
 end
 
 
-function loopvertexfuncs(model, loop)
-    vertexfuncs = Vector{Function}(undef, length(loop))
-    for (k, vertex) in enumerate(loop)
-        vertexcomponent = getcomponent(model, vertex)
-        innbrs, outnbrs = inneighbors(graph, vertex), outneighbors(graph, vertex)
+function loopnodefuncs(model, loop)
+    graph = model.graph
+    nodefuncs = Vector{Function}(undef, length(loop))
+    for (k, idx) in enumerate(loop)
+        loopcomponent = model[idx].component
+        innbrs, outnbrs = inneighbors(graph, idx), outneighbors(graph, idx)
         if neighborsinside(loop, innbrs, outnbrs)
-            vertexfunc = vertexcomponent.outputfunc
+            nodefunc = loopcomponent.outputfunc
         else 
-            vertexinvals = Float64[]
-            vertexinidxs = Int[]
-            for innbr in filter(vertex -> vertex ∉ loop, innbrs)
-                innbroutidx = getconnection(model, innbr, vertex, :srcidx)
-                vertexinidx = getconnection(model, innbr, vertex, :dstidx)
-                innbrcomponent = getcomponent(model, innbr)
+            nodeinvals = Float64[]
+            nodeinidxs = Int[]
+            for innbr in filter(idx -> idx ∉ loop, innbrs)
+                inedge = model[innbr,idx]
+                innbrcomponent = model[innbr].component
                 if innbrcomponent isa AbstractSource
-                    vertexinval = [innbrcomponent.outputfunc(0.)...][innbroutidx]
+                    nodeinval = [innbrcomponent.outputfunc(0.)...][inedge.srcidx]
                 elseif innbrcomponent isa AbstractDynamicSystem 
                     out  = innbrcomponent.input === nothing ? 
                         innbrcomponent.outputfunc(nothing, innbrcomponent.state, 0.) : error("One step further")
-                    vertexinval = out[innbroutidx...]
+                    nodeinval = out[inedge.srcidx...]
                 else 
                     error("One step futher")
                 end
-                append!(vertexinvals, vertexinval)
-                append!(vertexinidxs, vertexinidx)
+                append!(nodeinvals, nodeinval)
+                append!(nodeinidxs, inedge.dstidx)
             end
-            outnbr = filter(vertex -> vertex ∈ loop, outnbrs)[1]
-            vertexoutidxs = getconnection(model, vertex, outnbr, :srcidx)
-            vertexnuminput = length(vertexcomponent.input)
-            vertexfunc = wrap(vertexcomponent, vertexinvals, vertexoutidxs, vertexoutidxs)    
+            outnbr = filter(idx -> idx ∈ loop, outnbrs)[1]
+            outedge = model[idx, outnbr]
+            nodefunc = wrap(loopcomponent, nodeinvals, nodeinidxs, outedge.srcidx)    
         end
-        vertexfuncs[k] = vertexfunc
+        nodefuncs[k] = nodefunc
     end
-    vertexfuncs
+    nodefuncs
 end
 
-feedforward(vertexfuncs, breakpoint=0) = x -> ∘(vertexfuncs...) - x
-
-
-getloops(model::Model) = simplecycles(model.graph)
-hasmemory(model, loop) = any(isa.(map(idx -> getcomponent(model, idx), loop), AbstractMemory))
-function hasloops(model::Model)
-    loops = getloops(model)
-    isempty(loops) && return false
-    return any(map(loop -> !hasmemory(model, loop), loops))
-end
-breakloop(model::Model, loops) = nothing
-
+feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> ∘(circshift(nodefuncs, -breakpoint)...) - x
 
 ##### Model initialization
 """
@@ -197,13 +276,14 @@ Initializes `model` by launching component task for each of the component of `mo
 """
 function initialize(model::Model)
     pairs = model.taskmanager.pairs
-    components = getcomponents(model)
-    for component in components
+    nodes = model.nodes
+    for node in nodes
+        component = node.component
         pairs[component] = launch(component)
     end
     isrunning(model.clock) || set!(model.clock)  # Turnon clock internal generator.
-    for writer in filter(block->isa(block, Writer), components)  # Open writer files.
-        writer.file = jldopen(writer.file.path, "a")
+    for node in filter(node->isa(node.component, Writer), model.nodes)
+        node.component.file = jldopen(node.component.file.path, "a")
     end
 end
 
@@ -228,8 +308,7 @@ Runs the `model` by triggering the components of the `model`. This triggering is
 function run(model::Model, withbar::Bool=true)
     taskmanager = model.taskmanager
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
-    components = getcomponents(model)
-    ncomponents = length(components)
+    ncomponents = length(model.nodes)
     clock = model.clock
     withbar ? (@showprogress clock.dt for t in clock @loopbody end) : (for t in clock @loopbody end)
 end
@@ -240,7 +319,7 @@ end
 
 # Releaes the each component of `model`, i.e., the input and output bus of each component is released.
 # """
-# release(model::Model) = foreach(release, model.components)
+# release(model::Model) = foreach(release, model.nodes)
 
 """
     terminate(model::Model)
@@ -250,7 +329,7 @@ Terminates `model` by terminating all the components of the `model`, i.e., the c
 function terminate(model::Model)
     taskmanager = model.taskmanager
     tasks = unwrap(collect(values(taskmanager.pairs)), Task, depth=length(taskmanager.pairs))
-    any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, numcomponents(model)))
+    any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, length(model.nodes)))
     isrunning(model.clock) && stop!(model.clock)
     return
 end
@@ -334,5 +413,5 @@ end
 # Returns the compeonent whose variable name is `comp`.
 # """
 # function findin end
-# findin(model::Model, id::UUID) = model.components[findfirst(block -> block.id == id, model.components)]
-# findin(model::Model, comp::AbstractComponent) = model.components[findfirst(block -> block.id == comp.id, model.components)]
+# findin(model::Model, id::UUID) = model.nodes[findfirst(block -> block.id == id, model.nodes)]
+# findin(model::Model, comp::AbstractComponent) = model.nodes[findfirst(block -> block.id == comp.id, model.nodes)]

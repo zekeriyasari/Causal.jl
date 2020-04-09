@@ -27,8 +27,8 @@ show(io::IO, sim::Simulation) = print(io, "Simulation(state:$(sim.state), retcod
 ##### Simulation checks
 
 function check_writer_files(model, path; force=true)
-    for writer in filter(component -> isa(component, Writer), getcomponents(model))
-        dirname(writer.file.path) == path || mv(writer, path, force=true)
+    for node in filter(node-> isa(node.component, Writer), model.nodes)
+        dirname(node.component.file.path) == path || mv(node.component, path, force=true)
     end
 end
 

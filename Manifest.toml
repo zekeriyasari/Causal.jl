@@ -75,6 +75,11 @@ git-tree-sha1 = "3663bfffede2ef41358b6fc2e1d8a6d50b3c3904"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.6+2"
 
+[[CEnum]]
+git-tree-sha1 = "62847acab40e6855a9b5905ccb99c2b5cf6b3ebb"
+uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+version = "0.2.0"
+
 [[Calculus]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
@@ -510,6 +515,12 @@ git-tree-sha1 = "f6a384394c4ba737a24aa71b6c902406f9e88377"
 uuid = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
 version = "0.5.0"
 
+[[METIS_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "2cff4099e6ade7b62b5c32d0c29393d3d4848980"
+uuid = "d00139f3-1899-568f-a2f0-47f597d42d70"
+version = "5.1.0+2"
+
 [[MKL_jll]]
 deps = ["IntelOpenMP_jll", "Libdl", "Pkg"]
 git-tree-sha1 = "720629cc8cbd12c146ca01b661fd1a6cf66e2ff4"
@@ -882,11 +893,23 @@ version = "6.19.2"
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
+[[SuiteSparse_jll]]
+deps = ["Libdl", "METIS_jll", "OpenBLAS_jll", "Pkg"]
+git-tree-sha1 = "dad9c6f67fa143b7b1935ef3c6231d88e6dcdec2"
+uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+version = "5.4.0+8"
+
 [[Sundials]]
-deps = ["BinaryProvider", "DataStructures", "DiffEqBase", "Libdl", "LinearAlgebra", "Logging", "Reexport", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "d6e23d712b0ec7161174acbc82fd224cde3e3103"
+deps = ["CEnum", "DataStructures", "DiffEqBase", "Libdl", "LinearAlgebra", "Logging", "Reexport", "SparseArrays", "Sundials_jll"]
+git-tree-sha1 = "4f51f54cae8609fff66dce746a7ab1c46d151f5d"
 uuid = "c3572dad-4567-51f8-b174-8c6c989267f4"
-version = "3.9.0"
+version = "4.0.0"
+
+[[Sundials_jll]]
+deps = ["Libdl", "OpenBLAS_jll", "Pkg", "SuiteSparse_jll"]
+git-tree-sha1 = "4a4ae2ebefa34779552dbe87683c70c856624ec8"
+uuid = "fb77eaff-e24c-56d4-86b1-d163f2edb164"
+version = "5.2.0+0"
 
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions"]

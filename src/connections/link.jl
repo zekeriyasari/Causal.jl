@@ -119,7 +119,7 @@ Closes `link`. All the task bound the `link` is also terminated safely. When clo
 function close(link::Link)
     channel = link.channel
     iswritable(link) && put!(link, NaN)   # Terminate taker task 
-    iswritable(link) || collect(link.channel)   # Terminater putter task 
+    isreadable(link) && collect(link.channel)   # Terminater putter task 
     isopen(link) && close(link.channel)  # Close link channel if it is open.
     return 
 end 

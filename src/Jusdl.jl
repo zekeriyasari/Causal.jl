@@ -7,7 +7,6 @@ using UUIDs
 using DifferentialEquations
 using Sundials
 using LightGraphs
-using MetaGraphs
 using DataStructures
 using JLD2
 using Plots
@@ -16,7 +15,7 @@ using ProgressMeter
 using Logging
 using LinearAlgebra
 using Dates
-using IntervalArithmetic, IntervalRootFinding, StaticArrays
+using NLsolve
 import GraphPlot.gplot
 import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 

@@ -122,11 +122,11 @@ connect(outpins, inpins) = connect([outpins...], [inpins...])
 Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect`](@ref)
 """
 function disconnect(outpin::Outpin, inpin::Inpin)
-    deleteat!(outpin.links, inpin.link .== [link for link in outpin.links])
-    inpin.link = Link{eltype(inpin)}
+    deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
+    inpin.link = Link{eltype(inpin)}()
 end
-disconnect(link1::AbstractVector{<:Link}, link2::AbstractVector{<:Link}) = (disconnect.(link1, link2); nothing)
-disconnect(link1, link2) = disconnect([link1...], [link2...])
+disconnect(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect.(outpins, inpins); nothing)
+disconnect(outpins, inpins) = disconnect([outpins...], [inpins...])
 
 
 """

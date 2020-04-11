@@ -10,7 +10,8 @@ Constructs a `Printer` with input bus `input`. `buflen` is the length of its int
 """
 mutable struct Printer{IB, DB, TB, PL, TR, HS, CB} <: AbstractSink
     @generic_sink_fields
-    function Printer(input::Inport{<:Inpin{T}}; buflen=64, plugin=nothing, callbacks=nothing, name=Symbol()) where T
+    function Printer(input::Inport{<:Inpin{T}}=Inport(); buflen=64, plugin=nothing, callbacks=nothing, 
+        name=Symbol()) where T
         # Construct the buffers
         timebuf = Buffer(buflen)
         databuf = Buffer(T, length(input), buflen)

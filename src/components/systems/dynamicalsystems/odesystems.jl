@@ -49,7 +49,8 @@ ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadab
 ```
 
 !!! info 
-    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs`, `solverkwargs` and `alg`.
+    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, 
+    `solverargs`, `solverkwargs` and `alg`.
 """
 mutable struct ODESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
     @generic_dynamic_system_fields
@@ -88,7 +89,7 @@ mutable struct LinearSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractOD
     B::Matrix{Float64}
     C::Matrix{Float64}
     D::Matrix{Float64}
-    function LinearSystem(input, output, modelargs=(), solverargs=(); 
+    function LinearSystem(input=Inport(), output=Outport(), modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
         alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
         trigger = Inpin()
@@ -149,7 +150,7 @@ mutable struct LorenzSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractOD
     beta::Float64
     rho::Float64
     gamma::Float64
-    function LorenzSystem(input, output, modelargs=(), solverargs=(); 
+    function LorenzSystem(input=nothing, output=Outport(3), modelargs=(), solverargs=(); 
         sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
         alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
         if input === nothing
@@ -214,7 +215,7 @@ mutable struct ChenSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODES
     b::Float64
     c::Float64
     gamma::Float64
-    function ChenSystem(input, output, modelargs=(), solverargs=(); 
+    function ChenSystem(input=nothing, output=Outport(3), modelargs=(), solverargs=(); 
         a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
         alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
         name=Symbol())
@@ -315,7 +316,7 @@ mutable struct ChuaSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB, DT} <: Abstract
     alpha::Float64
     beta::Float64
     gamma::Float64
-    function ChuaSystem(input, output, modelargs=(), solverargs=(); 
+    function ChuaSystem(input=nothing, output=Outport(3), modelargs=(), solverargs=(); 
         diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0., 
         alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
         if input === nothing
@@ -382,7 +383,7 @@ mutable struct RosslerSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractO
     b::Float64
     c::Float64
     gamma::Float64
-    function RosslerSystem(input, output, modelargs=(), solverargs=(); 
+    function RosslerSystem(input=nothing, output=Outport(3), modelargs=(), solverargs=(); 
         a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
         alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
         name=Symbol())
@@ -445,7 +446,7 @@ mutable struct VanderpolSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: Abstrac
     @generic_dynamic_system_fields
     mu::Float64
     gamma::Float64
-    function VanderpolSystem(input, output, modelargs=(), solverargs=(); 
+    function VanderpolSystem(input=nothing, output=Outport(2), modelargs=(), solverargs=(); 
         mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
         alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, 
         name=Symbol())

@@ -40,7 +40,7 @@ struct Branch{NP, EP, LN}
 end
 
 show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), edgepair:$(branch.edgepair), ",
-    "links=$(branch.links))")
+    "links:$(branch.links))")
 
 """
     Model(components::AbstractVector)
@@ -232,16 +232,15 @@ error is thrown.
 function inspect(model)
     if hasloops(model)
         loops = getloops(model)
-        components = map(loop -> map(idx -> model[idx].component, loop), loops)
-        msg = "Simulation aborted. The model has algrebraic loops: $components"
-        msg *= "For the simulation to continue, break these loops"
-        @error msg
+        msg = "The model has algrebraic loops:$(loops)"
+        msg *= "\n\tTrying to break these loops..."
+        @info msg
         while !isempty(loops)
             loop = pop!(loops)
             try 
                 breakloop(model, loop)
             catch
-                error("Algebric loops:$loop could not be broken.")
+                error("Algebric loop:$loop could not be broken.")
             end
         end
     end
@@ -275,17 +274,20 @@ Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by i
 of loop.
 """
 function breakloop(model::Model, loop, breakpoint=length(loop)) 
-    srcnode = model[breakpoint]
-    dstnode = model[(breakpoint + 1) % length(loop)]
+    srcnode = model[loop[breakpoint]]
+    dstnode = model[loop[(breakpoint + 1) % length(loop)]]
     nodefuncs = loopnodefuncs(model, loop)
     ff = feedforward(nodefuncs, breakpoint)
     x0 = findroot(ff, length(srcnode.component.output))
-    memory = Memory(Inport(length(x0), initial=x0))
-    disconnect(srcnode.component.output, dstnode.component.input)
+    @show x0
+    memory = Memory(Inport(length(x0)), initial=x0)
+    edgepair = model[srcnode.idx => dstnode.idx].edgepair.pair
+    disconnect(srcnode.component.output[edgepair.first], dstnode.component.input[edgepair.second])
     newidx = length(model.nodes) + 1 
     model[newidx] = memory
-    model[srcnode.idx => newidx] = Edge()
-    model[newidx => dstnode.idxs] = Edge()
+    model[srcnode.idx => newidx] = Edge(edgepair.first => edgepair.first)
+    model[newidx => dstnode.idx] = Edge(edgepair.first => edgepair.second)
+    return true 
 end
 
 #
@@ -357,12 +359,11 @@ function loopnodefuncs(model, loop)
     nodefuncs
 end
 
-feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> SVector((∘(circshift(nodefuncs, -breakpoint)...)(x) - x)...)
+feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)(x) - x
 
 function findroot(ff, n)
-    X = -Inf..Inf
-    rts = roots(ff, IntervalBox(fill(X, n)))
-    mid(interval(rts[findfirst(rt -> rt.status == :unique, rts)]))
+    sol = nlsolve((dx, x) -> (dx .= ff(x)), zeros(n))
+    sol.zero
 end
 
 ##### Model initialization

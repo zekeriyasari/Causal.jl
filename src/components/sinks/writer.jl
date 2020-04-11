@@ -15,8 +15,8 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 mutable struct Writer{IB, DB, TB, PL, TR, HS, CB, FL} <: AbstractSink
     @generic_sink_fields
     file::FL
-    function Writer(input::Inport{<:Inpin{T}}; buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
-        path=joinpath(tempdir(), string(name))) where T 
+    function Writer(input::Inport{<:Inpin{T}}=Inport(); buflen=64, plugin=nothing, callbacks=nothing, 
+        name=Symbol(uuid4()), path=joinpath(tempdir(), string(name))) where T 
         endswith(path, ".jld2") || (path *= ".jld2")
         file = jldopen(path, "w")
         close(file)     # Close file so that the file can be sent to remote Julia processes

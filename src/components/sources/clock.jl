@@ -26,7 +26,7 @@ mutable struct Clock{T, CB}
         new{T, CB}(t, dt, tf, Channel{T}(0), false, callbacks, name, uuid4())
 end
 Clock(t::T, dt::T, tf::T; kwargs...) where T = Clock{T}(t, dt, tf; kwargs...)
-Clock(t, dt, tf; kwargs...) = Clock(promote(t, dt, tf)...; kwargs...)
+Clock(t=0., dt=0.01, tf=1.; kwargs...) = Clock(promote(t, dt, tf)...; kwargs...)
 
 show(io::IO, clk::Clock) = print(io, 
     "Clock(t:$(clk.t), dt:$(clk.dt), tf:$(clk.tf), paused:$(clk.paused), isrunning:$(isrunning(clk)))")

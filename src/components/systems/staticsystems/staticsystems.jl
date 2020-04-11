@@ -55,9 +55,10 @@ true
 struct Adder{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     signs::S
-    function Adder(input::Inport, signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=tuple(fill(+, length(input))...); 
+    function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=(+,+); 
         callbacks=nothing, name=Symbol())
         outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
+        input = Inport(length(signs))
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()
@@ -87,7 +88,7 @@ true
 struct Multiplier{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     ops::S
-    function Multiplier(input::Inport, ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=tuple(fill(*, length(input))...);
+    function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=(*,*);
         callbacks=nothing, name=Symbol())
         function outputfunc(u, t)
             val = 1
@@ -96,6 +97,7 @@ struct Multiplier{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
             end
             val
         end
+        input = Inport(length(ops))
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()
@@ -127,7 +129,7 @@ true
 struct Gain{OF, IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::G
-    function Gain(input::Inport{<:Inpin{T}}; gain=1., callbacks=nothing, name=Symbol()) where T 
+    function Gain(input::Inport{<:Inpin{T}}=Inport(); gain=1., callbacks=nothing, name=Symbol()) where T 
         outputfunc(u, t) =  gain * u
         output = Outport{T}(length(input))
         trigger = Inpin()
@@ -145,7 +147,7 @@ Constructs a `Terminator` with input bus `input`. The output function `g` is eqa
 """
 struct Terminator{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
     @generic_static_system_fields
-    function Terminator(input::Inport; callbacks=nothing, name=Symbol())
+    function Terminator(input::Inport=Inport(); callbacks=nothing, name=Symbol())
         outputfunc = nothing
         output = nothing
         trigger = Inpin()
@@ -164,7 +166,8 @@ Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `i
 struct Memory{OF, IB, OB, TR, HS, CB, B} <: AbstractMemory
     @generic_static_system_fields
     buffer::B 
-    function Memory(input::Inport{<:Inpin{T}}, numdelay::Int;initial=nothing, callbacks=nothing, name=Symbol()) where T 
+    function Memory(input::Inport{<:Inpin{T}}=Inport(), numdelay::Int=1; 
+        initial=nothing, callbacks=nothing, name=Symbol()) where T 
         numinput = length(input)
         buffer = numinput == 1 ? Buffer{Fifo}(T, numdelay) : Buffer{Fifo}(T, numinput, numdelay)
         initial === nothing && (initial = numinput == 1 ? zero(T) : zeros(T, numinput))

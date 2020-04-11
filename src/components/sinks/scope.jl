@@ -12,7 +12,7 @@ Constructs a `Scope` with input bus `input`. `buflen` is the length of the inter
 mutable struct Scope{IB, DB, TB, PL, TR, HS, CB, PLT} <: AbstractSink
     @generic_sink_fields
     plt::PLT
-    function Scope(input::Inport{<:Inpin{T}}, args...; buflen::Int=64, plugin=nothing, callbacks=nothing, 
+    function Scope(input::Inport{<:Inpin{T}}=Inport(), args...; buflen::Int=64, plugin=nothing, callbacks=nothing, 
         name=Symbol(), kwargs...) where T
         # Construct the plot 
         plt = plot(args...; kwargs...)

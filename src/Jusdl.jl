@@ -16,6 +16,7 @@ using ProgressMeter
 using Logging
 using LinearAlgebra
 using Dates
+using IntervalArithmetic, IntervalRootFinding, StaticArrays
 import GraphPlot.gplot
 import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 
@@ -106,6 +107,6 @@ export Simulation, SimulationError, setlogger, closelogger, report
 
 include("models/model.jl")
 export Model, getloops, hasloops, breakloop, inspect, initialize, run, terminate, simulate
-export Node, Edge, addnode, addedge
+export Node, Edge, addnode, addbranch, Branch
 
 end  # module

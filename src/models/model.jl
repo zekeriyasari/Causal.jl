@@ -1,31 +1,46 @@
 # This file includes the Model object
-import Base: getindex
+import Base: getindex, setindex!, push!
 import LightGraphs: SimpleDiGraph, add_edge!, add_vertex!, simplecycles
 
-mutable struct Node{CP}
+"""
+    Node(component, idx, label)
+
+Constructs a model `Node` with `component`. `idx` is the index and `label` is label of `Node`.
+"""
+struct Node{CP}
     component::CP 
     idx::Int 
     label::Symbol 
 end 
 
-mutable struct Edge{SI<:AbstractVector{<:Int}, DI<:AbstractVector{<:Int}, LN<:AbstractVector{<:Link}}
-    src::Int  
-    dst::Int  
-    srcidx::SI
-    dstidx::DI
+show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(node.idx), label:$(node.label))")
+
+
+"""
+    Edge(pair)
+
+Constructs an a branch `Edge` with `pair`. `pair` determines the subindices of the port of node components of a model.
+"""
+struct Edge{P<:Pair} 
+    pair::P 
+end 
+Edge() = Edge((:) => (:))
+
+show(io::IO, edge::Edge) = print(io, "Edge($(edge.pair))")
+
+""" 
+    Branch(nodepair, edgepair, links)
+
+Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `edgepair` determines the subindices by which the elements of `nodepair` are connected.
+"""
+struct Branch{NP, EP, LN}
+    nodepair::NP 
+    edgepair::EP 
     links::LN
 end
-function Edge(src, dst, srcidx, dstidx, links)
-    srcidx = [srcidx...]
-    dstidx = [dstidx...]
-    Edge{typeof(srcidx), typeof(dstidx), typeof(links)}(src, dst, srcidx, dstidx, links)
-end
-function Edge(src, dst, srcidx, dstidx)
-    n = length(srcidx)
-    n == length(dstidx) || error("srcidx and dstidx must have same length.")
-    links = [Link() for i = 1 : n]
-    Edge(src, dst, srcidx, dstidx, links)
-end
+
+show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), edgepair:$(branch.edgepair), ",
+    "links=$(branch.links))")
 
 """
     Model(components::AbstractVector)
@@ -37,109 +52,165 @@ Constructs a `Model` whose with components `components` which are of type `Abstr
 Constructs a `Model` with empty components. After the construction, components can be added to `Model`.
 
 !!! warning
-    `Model`s are units that can be simulated. As the data flows through the edges i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
+    `Model`s are units that can be simulated. As the data flows through the branches i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate`](@ref)
 """
-mutable struct Model{GR, ND, ED, CK, TM, CB}
+struct Model{GR, ND, BR, CK, TM, CB}
     graph::GR
     nodes::ND
-    edges::ED 
+    branches::BR 
     clock::CK
     taskmanager::TM
     callbacks::CB
     name::Symbol
     id::UUID
-    function Model(nodes::AbstractVector=[], edges::AbstractVector=[]; 
+    function Model(nodes::AbstractVector=[], branches::AbstractVector=[]; 
         clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
         graph = SimpleDiGraph()
         taskmanager = TaskManager()
-        model = new{typeof(graph), typeof(nodes), typeof(edges), typeof(clock), typeof(taskmanager),
-            typeof(callbacks)}(graph, nodes, edges, clock, taskmanager, callbacks, name, uuid4())
+        model = new{typeof(graph), typeof(nodes), typeof(branches), typeof(clock), typeof(taskmanager),
+            typeof(callbacks)}(graph, nodes, branches, clock, taskmanager, callbacks, name, uuid4())
         foreach(node -> addnode(model, node), nodes)
-        foreach(edge -> edges(model, edge), edges)
+        foreach(edge -> branches(model, edge), branches)
         model
     end
 end
 
 show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), ",
-    "numedges:$(length(model.edges)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
-
-gplot(model::Model) = gplot(model.graph, nodelabel=map(i -> getname(model, i),  vertices(model.graph)))
-
-function getindex(model::Model, idx::Int) 
-    nodes = filter(node -> node.idx == idx, model.nodes)
-    length(nodes) == 1 ? nodes[1] : error("Multiple index")
-end
-function getindex(model::Model, label::Symbol) 
-    nodes = filter(node -> node.label == label, model.nodes)
-    length(nodes) == 1 ? nodes[1] : error("Multiple labels")
-end
-function getindex(model::Model, src::Int, dst::Int) 
-    edges = filter(edge -> edge.src==src && edge.dst == dst, model.edges)
-    length(edges) == 1 ? edges[1] : error("Multiple indexes")
-end
-function getindex(model::Model, src::Symbol, dst::Symbol) 
-    model[model[src].idx, model[dst].idx]
-end
-
-##### Accessing model components or edges
-# getindex(model::Model, name::Symbol) = model.graph[name, :name]
-# getname(model, idx::Int) = getfield(getcomponent(model, idx), :name)
-# getcomponent(model::Model, name::Symbol) = get_prop(model.graph, model[name], :component)
-# getcomponent(model::Model, idx::Int) = get_prop(model.graph, idx, :component)
-# getcomponents(model) = map(idx -> getcomponent(model, idx), vertices(model.graph))
-# getconnection(model::Model, srcidx::Int, dstidx::Int, prop=:connection) = get_prop(model.graph, srcidx, dstidx, prop)
-# getconnection(model::Model, srcname::Symbol, dstname::Symbol, prop=:connection) = 
-#     get_prop(model.graph, model[srcname], model[dstname], prop)
+    "numedges:$(length(model.branches)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
 
 
-# function addcomponent(model::Model, components::AbstractComponent...)
-#     taskmanager = model.taskmanager
-#     graph = model.graph 
-#     n = nv(graph)
-#     for (k, component) in enumerate(components)
-#         add_vertex!(graph, :component, component)
-#         set_indexing_prop!(graph, n + k, :name, component.name)
-#         register(taskmanager, component) 
-#     end 
-# end
-
-# function addedge(model::Model, srcname, dstname, srcidx=nothing, dstidx=nothing)
-#     src, dst = model[srcname], model[dstname]
-#     srccomp, dstcomp = getcomponent(model, src), getcomponent(model, dst)
-#     outport = srccomp.output
-#     inport = dstcomp.input
-#     srcidx === nothing && (srcidx = 1 : length(outport))
-#     dstidx === nothing && (dstidx = 1 : length(inport))
-#     connection = connect(outport[srcidx], inport[dstidx])
-#     add_edge!(model.graph, src, dst, Dict(:connection => connection, :srcidx => srcidx, :dstidx => dstidx))
-# end
-
-##### Modifying models
+##### Addinng nodes and branches.
 function addnode(model::Model, node::Node)
     push!(model.nodes, node)
     register(model.taskmanager, node.component)
     add_vertex!(model.graph)
 end
 
-function addnode(model::Model, component::AbstractComponent; label::Symbol=Symbol()) 
-    n = length(model.nodes) + 1
-    addnode(model, Node(component, n, label))
+function addbranch(model::Model, branch::Branch)
+    push!(model.branches, branch)
+    add_edge!(model.graph, branch.nodepair.first, branch.nodepair.second)
+end
+
+"""
+    setindex!(model, component, idx)
+
+Adds a node to `model` whose component is `component` and index is `idx`. `idx` can be of type `Int` or `Symbol`. The 
+syntax `model[idx] = component` is equal to `setindex!(model, component, idx)`. 
+
+# Example 
+```julia
+julia> model[1] = SinewaveGenerator() 
+SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
+
+julia> model[:adder] = Adder(Inport(2))
+Adder(signs:(+, +), input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
+```
+"""
+setindex!(model::Model, component::AbstractComponent, idx::Int) = addnode(model, Node(component, idx, Symbol()))
+setindex!(model::Model, component::AbstractComponent, label::Symbol) = 
+    addnode(model, Node(component, length(model.nodes) + 1, label))
+
+"""
+    setindex!(model, edgepair, nodepair)
+
+Adds a branch to `model` that connects the element of `nodepair` with subindices `edgepair`. The syntax 
+`model[nodepair] = edgepair` is equal to `setindex!(model, edgepair, nodepair)`.
+
+# Example 
+```jldoctest 
+julia> model = Model();
+
+julia> model[:gen] = SinewaveGenerator();
+
+julia> model[:gain] = Gain(Inport());
+
+julia> model[:gen => :gain] = Edge();
+
+julia> isconnected(model[:gen].component.output, model[:gain].component.input)
+true
+```
+"""
+function setindex!(model::Model, edgepair::Edge, nodepair::Pair{Int, Int}) 
+    src, dst = model[nodepair.first].component, model[nodepair.second].component
+    links = connect(src.output[edgepair.pair.first], dst.input[edgepair.pair.second])
+    addbranch(model, Branch(nodepair, edgepair, links))
+end
+function setindex!(model::Model, edgepair::Edge, nodepair::Pair{Symbol, Symbol}) 
+    src, dst = model[nodepair.first], model[nodepair.second]
+    setindex!(model, edgepair, src.idx => dst.idx)
 end
 
 
-function addedge(model::Model, edge::Edge)
-    push!(model.edges, edge)
-    add_edge!(model.graph, edge.src, edge.dst)
+"""
+    getindex(model, idx) 
+
+Returns the node of whose index is `idx`. The syntax `model[idx]` equals to `getindex(model, idx)`.
+
+# Example 
+```jldoctest
+julia> model = Model();
+
+julia> model[:gen] = SinewaveGenerator();
+
+julia> model[:gain] = Gain(Inport());
+
+julia> model[1]
+Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
+
+julia> model[:gen]
+Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
+
+julia> model[:gain]
+Node(component:Gain(gain:1.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64})), idx:2, label:gain)
+
+julia> model[2] 
+Node(component:Gain(gain:1.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64})), idx:2, label:gain)
+```
+"""
+function getindex(model::Model, idx::Int) 
+    nodes = filter(node -> node.idx == idx, model.nodes)
+    checklengh(length(nodes))
+    nodes[1]
+end
+function getindex(model::Model, label::Symbol) 
+    nodes = filter(node -> node.label == label, model.nodes)
+    checklengh(length(nodes))
+    nodes[1]
 end
 
-function addedge(model::Model, src::Node, dst::Node, srcidx=nothing, dstidx=nothing) 
-    srcidx = srcidx === nothing ? (srcidx = 1 : length(src.component.output)) : [srcidx...]
-    dstidx = dstidx === nothing ? (dstidx = 1 : length(dst.component.input)) : [dstidx...]
-    links = connect(src.component.output[srcidx], dst.component.input[dstidx])
-    addedge(model, Edge(src.idx, dst.idx, srcidx, dstidx, links))
+
+"""
+    getindex(model, nodepair)
+
+Returns `model` branch between `nodepair`. The syntax `model[nodepair]` is equal to `getindex(model, nodepair)`.
+
+# Example 
+```jldoctest
+julia> model = Model(); 
+
+julia> model[:gen] = SinewaveGenerator(); 
+
+julia> model[:gain] = Gain(Inport());
+
+julia> model[:gen => :gain] = Edge();
+
+julia> model[:gen => :gain]
+Branch(nodepair:1 => 2, edgepair:Edge(Colon() => Colon()), links=Link{Float64}[Link(state:open, eltype:Float64, isreadable:false, iswritable:false)])
+```
+"""
+function getindex(model::Model, nodepair::Pair{Int, Int}) 
+    branches = filter(branch -> branch.nodepair == nodepair, model.branches)
+    checklengh(length(branches))
+    branches[1]
+end
+function getindex(model::Model, nodepair::Pair{Symbol, Symbol}) 
+    getindex(model, model[nodepair.first].idx => model[nodepair.second].idx)
 end
 
-addedge(model::Model, src, dst, srcidx=nothing, dstidx=nothing) = addedge(model, model[src], model[dst], srcidx, dstidx)
+function checklengh(n)
+    n == 0 &&  error("Node cannot be found")
+    n > 1 &&  error("Multiple nodes found.")
+end
 
 function register(taskmanager, component)
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
@@ -155,7 +226,8 @@ end
 """
     inspect(model::Model)
 
-Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and error is thrown.
+Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and 
+error is thrown.
 """
 function inspect(model)
     if hasloops(model)
@@ -176,30 +248,49 @@ function inspect(model)
 end
 
 
+"""
+    getloops(model)
+
+Returns idx of nodes that constructs algrebraic loops.
+"""
 getloops(model::Model) = simplecycles(model.graph)
 
 hasmemory(model, loop) = any(isa.(map(idx -> model[idx].component, loop), AbstractMemory))
 
+"""
+    hasloops(model)
+
+Return `true` is `model` has algrebraic loops.
+"""
 function hasloops(model::Model)
     loops = getloops(model)
     isempty(loops) && return false
     return any(map(loop -> !hasmemory(model, loop), loops))
 end
 
+"""
+    breakloop(model, loop, breakpoint=length(loop))
+
+Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by inserting a `Memory` at the `breakpoint` 
+of loop.
+"""
 function breakloop(model::Model, loop, breakpoint=length(loop)) 
+    srcnode = model[breakpoint]
+    dstnode = model[(breakpoint + 1) % length(loop)]
     nodefuncs = loopnodefuncs(model, loop)
     ff = feedforward(nodefuncs, breakpoint)
-    funcs = [u -> ff(u)[i] for i in 1 : length(ff)]
-    x0 = map(fi -> find_zero(fi, rand()), funcs)
+    x0 = findroot(ff, length(srcnode.component.output))
     memory = Memory(Inport(length(x0), initial=x0))
-    srcnode = model[breakpoint].component 
-    dstnode = model[(breakpoint + 1) % length(loop)].component 
-    disconnect(srcnode.output, dstnode.input)
-    addnode(model, memory)
-    addedge(model, srcnode.idx, model.nodes[end].idx)
-    addedge(model, model.node[end].idx, dstnode.idx)
+    disconnect(srcnode.component.output, dstnode.component.input)
+    newidx = length(model.nodes) + 1 
+    model[newidx] = memory
+    model[srcnode.idx => newidx] = Edge()
+    model[newidx => dstnode.idxs] = Edge()
 end
 
+#
+# `wrap` function wraps component output function with inval to construct loop node input-output function.
+#
 function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
     nin = length(component.input)
     outputfunc = component.outputfunc
@@ -213,7 +304,7 @@ function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
     end
 end
 
-function wrap(component::AbstractSource, inval, inidxs, outidxs)
+function wrap(component::AbstractStaticSystem, inval, inidxs, outidxs)
     nin = length(component.input)
     outputfunc = component.outputfunc
     function gf(u)
@@ -225,48 +316,54 @@ function wrap(component::AbstractSource, inval, inidxs, outidxs)
     end
 end
 
-
-function neighborsinside(loop, innbrs, outnbrs)
+# Returns `true` if `innbrs` and `outnbrs` are inside loop. 
+function areinside(innbrs, outnbrs, loop)
     isempty(filter(v -> v ∉ loop, innbrs)) && isempty(filter(v -> v ∉ loop, outnbrs))
 end
 
-
+# Returns loop functions of nodes of `loop`. 
 function loopnodefuncs(model, loop)
     graph = model.graph
     nodefuncs = Vector{Function}(undef, length(loop))
     for (k, idx) in enumerate(loop)
         loopcomponent = model[idx].component
         innbrs, outnbrs = inneighbors(graph, idx), outneighbors(graph, idx)
-        if neighborsinside(loop, innbrs, outnbrs)
-            nodefunc = loopcomponent.outputfunc
+        if areinside(innbrs, outnbrs, loop)
+            nodefunc = u -> loopcomponent.outputfunc(u, 0.)
         else 
             nodeinvals = Float64[]
             nodeinidxs = Int[]
             for innbr in filter(idx -> idx ∉ loop, innbrs)
-                inedge = model[innbr,idx]
+                inbranch = model[innbr => idx]
                 innbrcomponent = model[innbr].component
                 if innbrcomponent isa AbstractSource
-                    nodeinval = [innbrcomponent.outputfunc(0.)...][inedge.srcidx]
+                    nodeinval = [innbrcomponent.outputfunc(0.)...][inbranch.edgepair.pair.first]
                 elseif innbrcomponent isa AbstractDynamicSystem 
                     out  = innbrcomponent.input === nothing ? 
                         innbrcomponent.outputfunc(nothing, innbrcomponent.state, 0.) : error("One step further")
-                    nodeinval = out[inedge.srcidx...]
+                    nodeinval = out[inbranch.edgepair.pair.first]
                 else 
                     error("One step futher")
                 end
                 append!(nodeinvals, nodeinval)
-                append!(nodeinidxs, inedge.dstidx)
+                append!(nodeinidxs, inbranch.edgepair.pair.second)
             end
             outnbr = filter(idx -> idx ∈ loop, outnbrs)[1]
-            outedge = model[idx, outnbr]
-            nodefunc = wrap(loopcomponent, nodeinvals, nodeinidxs, outedge.srcidx)    
+            outbranch = model[idx => outnbr]
+            nodefunc = wrap(loopcomponent, nodeinvals, nodeinidxs, outbranch.edgepair.pair.first)    
         end
         nodefuncs[k] = nodefunc
     end
     nodefuncs
 end
 
-feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> ∘(circshift(nodefuncs, -breakpoint)...) - x
+feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> SVector((∘(circshift(nodefuncs, -breakpoint)...)(x) - x)...)
+
+function findroot(ff, n)
+    X = -Inf..Inf
+    rts = roots(ff, IntervalBox(fill(X, n)))
+    mid(interval(rts[findfirst(rt -> rt.status == :unique, rts)]))
+end
 
 ##### Model initialization
 """
@@ -402,16 +499,6 @@ function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
     simulate(model; kwargs...)
 end
 
-
-# """ 
-#     findin(model::Model, id::UUID)
-
-# Returns the component of the `model` corresponding whose id is `id`.
-
-#     findin(model::Model, comp::AbstractComponent)
-
-# Returns the compeonent whose variable name is `comp`.
-# """
-# function findin end
-# findin(model::Model, id::UUID) = model.nodes[findfirst(block -> block.id == id, model.nodes)]
-# findin(model::Model, comp::AbstractComponent) = model.nodes[findfirst(block -> block.id == comp.id, model.nodes)]
+##### Plotting model
+gplot(model::Model, args...; kwargs...) = 
+    gplot(model.graph, args...; nodelabel=[node.label for node in model.nodes], kwargs...)

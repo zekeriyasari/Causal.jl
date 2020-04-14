@@ -1,11 +1,12 @@
 # This file constains sink tools for the objects of Jusdl.
 
 function fasten(plugin, actionfunc, timebuf, databuf, callbacks, id)
-    condition(sink) = isfull(sink.databuf) 
+    condition(sink) = ishit(sink.databuf) 
+    # condition(sink) = isfull(sink.databuf) 
     if plugin === nothing
-        action = sink -> actionfunc(sink, snapshot(timebuf), snapshot(databuf))
+        action = sink -> actionfunc(sink, reverse(outbuf(timebuf)), reverse(outbuf(databuf)))
     else
-        action = sink -> actionfunc(sink, snapshot(timebuf), process(plugin, snapshot(databuf)))
+        action = sink -> actionfunc(sink, reverse(outbuf(timebuf)), process(plugin, reverse(outbuf(databuf))))
     end
     callback = Callback(condition, action)
     callback.id = id

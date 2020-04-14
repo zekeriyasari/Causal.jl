@@ -77,7 +77,12 @@ Solves the differential equation of the system of `comp` for the time interval `
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
 evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
-evolve!(comp::AbstractStaticSystem, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
+function evolve!(comp::AbstractStaticSystem, u, t)
+    if typeof(comp) <: AbstractMemory 
+        write!(comp.timebuf, t)
+        write!(comp.databuf, u)
+    end
+end
 function evolve!(comp::AbstractDynamicSystem, u, t)
     # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
     # Thus, there will be no evolution in such a case.

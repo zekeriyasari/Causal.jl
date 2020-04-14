@@ -10,12 +10,12 @@ using LightGraphs
 using DataStructures
 using JLD2
 using Plots
-using Roots
 using ProgressMeter 
 using Logging
 using LinearAlgebra
 using Dates
 using NLsolve
+using Interpolations
 import GraphPlot.gplot
 import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 
@@ -27,7 +27,7 @@ include("utilities/callback.jl")
 export Callback, enable!, disable!, isenabled, applycallbacks
 
 include("utilities/buffer.jl")
-export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, content, mode, snapshot, datalength
+export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
 
 include("connections/link.jl")
 export Link, launch
@@ -39,7 +39,7 @@ include("connections/port.jl")
 export AbstractPort, Inport, Outport, datatype
 
 include("components/componentsbase/interpolant.jl")
-export Interpolant, interpolate
+export Interpolant
 
 include("components/componentsbase/hierarchy.jl")
 export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink, AbstractStaticSystem, 

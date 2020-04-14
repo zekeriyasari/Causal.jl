@@ -48,6 +48,12 @@ git-tree-sha1 = "bc779df8d73be70e4e05a63727d3a4dfb4c52b1f"
 uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
 version = "0.1.5"
 
+[[AxisAlgorithms]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
+git-tree-sha1 = "a4d07a1c313392a77042855df46c5f534076fab9"
+uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
+version = "1.0.0"
+
 [[BandedMatrices]]
 deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra", "Random", "SparseArrays"]
 git-tree-sha1 = "03b21fb83f9e0b13f99c407810cd3b6cac293a1d"
@@ -411,6 +417,12 @@ version = "2018.0.3+0"
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
+[[Interpolations]]
+deps = ["AxisAlgorithms", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
+git-tree-sha1 = "3af735234d9b1ff9ff1af89875735cd9549c0c5f"
+uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+version = "0.12.9"
+
 [[IterTools]]
 git-tree-sha1 = "05110a2ab1fc5f932622ffea2a003221f4782c18"
 uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
@@ -598,6 +610,11 @@ git-tree-sha1 = "8bc6180f328f3c0ea2663935db880d34c57d6eae"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 version = "0.4.4"
 
+[[OffsetArrays]]
+git-tree-sha1 = "930db8ef90483570107f2396b1ffc6680f08e8b7"
+uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+version = "1.0.4"
+
 [[Ogg_jll]]
 deps = ["Libdl", "Pkg"]
 git-tree-sha1 = "f4d4d03c562f40652c0baabd3e4cb2e756e157b7"
@@ -738,6 +755,11 @@ deps = ["Random", "Requires"]
 git-tree-sha1 = "441e6fc35597524ada7f85e13df1f4e10137d16f"
 uuid = "e6cf234a-135c-5ec9-84dd-332b85af5143"
 version = "1.4.0"
+
+[[Ratios]]
+git-tree-sha1 = "37d210f612d70f3f7d57d488cb3b6eff56ad4e41"
+uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
+version = "0.4.0"
 
 [[RecipesBase]]
 git-tree-sha1 = "b4ed4a7f988ea2340017916f7c9e5d7560b52cae"
@@ -934,6 +956,12 @@ deps = ["LightGraphs"]
 git-tree-sha1 = "35060f8047a2b79bdc8e4961bbbd2b7e30e62709"
 uuid = "19fa3120-7c27-5ec5-8db8-b0b0aa330d6f"
 version = "0.1.1"
+
+[[WoodburyMatrices]]
+deps = ["LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "28ffe06d28b1ba8fdb2f36ec7bb079fac81bac0d"
+uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
+version = "0.5.2"
 
 [[Zlib_jll]]
 deps = ["Libdl", "Pkg"]

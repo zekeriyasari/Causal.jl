@@ -163,21 +163,33 @@ end
 
 Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, the values from `initial` is returned.
 """
-struct Memory{OF, IB, OB, TR, HS, CB, B} <: AbstractMemory
+mutable struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
     @generic_static_system_fields
-    buffer::B 
-    function Memory(input::Inport{<:Inpin{T}}=Inport(), numdelay::Int=1; 
-        initial=nothing, callbacks=nothing, name=Symbol()) where T 
-        numinput = length(input)
-        buffer = numinput == 1 ? Buffer{Fifo}(T, numdelay) : Buffer{Fifo}(T, numinput, numdelay)
-        initial === nothing && (initial = numinput == 1 ? zero(T) : zeros(T, numinput))
-        fill!(buffer, initial)
-        outputfunc(u, t) = read(buffer)
+    delay::D
+    timebuf::TB
+    databuf::DB 
+    function Memory(delay=1., initial::AbstractVector{T}=zeros(1), numtaps::Int=5; 
+        callbacks=nothing, name=Symbol()) where T 
+        numinput = length(initial)
+        databuf = numinput == 1 ? Buffer(T, numtaps) : Buffer(T, numinput, numtaps)
+        timebuf = Buffer(T, numtaps)
+        ti = content(timebuf)
+        function outputfunc(u, t)
+            ti = t - delay
+            if ti < 0 
+                initial
+            else
+                interpolant = LinearInterpolation(reverse(outbuf(timebuf)), reverse(outbuf(databuf)), extrapolation_bc=Line())
+                interpolant(ti)
+            end
+        end
+        input = Inport{T}(numinput)
         output = Outport{T}(numinput)
         trigger = Inpin()
         handshake = Outpin{Bool}()
         new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(buffer)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), buffer)
+            typeof(delay), typeof(timebuf), typeof(databuf)}(outputfunc, input, output, trigger, 
+            handshake, callbacks, name, uuid4(), delay, timebuf, databuf)
     end
 end
 
@@ -213,15 +225,12 @@ struct Coupler{OF, IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
 end
 
 # ##### Pretty-printing
-show(io::IO, ss::StaticSystem) = print(io, 
-    "StaticSystem(outputfunc:$(ss.outputfunc), input:$(ss.input), output:$(ss.output))")
-show(io::IO, ss::Adder) = print(io, 
-    "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
-show(io::IO, ss::Multiplier) = print(io, 
-    "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
-show(io::IO, ss::Gain) = print(io, 
-    "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")
-show(io::IO, ss::Terminator) = print(io, "Gain(input:$(ss.input), output:$(ss.output))")
-show(io::IO, ss::Memory) = print(io, 
-    "Memory(ndelay:$(length(ss.buffer)), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::StaticSystem) = 
+    print(io, "StaticSystem(outputfunc:$(ss.outputfunc), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Terminator) = print(io, "Terminator(input:$(ss.input), output:$(ss.output))")
+show(io::IO, ss::Memory) = 
+    print(io, "Memory(delay:$(ss.delay), numtaps:$(length(ss.timebuf)), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Coupler) = print(io, "Coupler(conmat:$(ss.conmat), cplmat:$(ss.cplmat))")

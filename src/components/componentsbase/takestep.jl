@@ -79,8 +79,10 @@ evolve!(comp::AbstractSource, u, t) = nothing
 evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
 function evolve!(comp::AbstractStaticSystem, u, t)
     if typeof(comp) <: AbstractMemory 
-        write!(comp.timebuf, t)
-        write!(comp.databuf, u)
+        timebuf = comp.timebuf 
+        databuf = comp.databuf
+        write!(timebuf, t)
+        write!(databuf, u)
     end
 end
 function evolve!(comp::AbstractDynamicSystem, u, t)

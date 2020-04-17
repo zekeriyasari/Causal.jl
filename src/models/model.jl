@@ -280,7 +280,7 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
     ff = feedforward(nodefuncs, breakpoint)
     x0 = findroot(ff, length(srcnode.component.output))
     @show x0
-    memory = Memory(Inport(length(x0)), initial=x0)
+    memory = Memory(model.clock.dt/10, initial=x0, numtaps=5, dt=model.clock.dt, t0=model.clock.t)
     edgepair = model[srcnode.idx => dstnode.idx].edgepair.pair
     disconnect(srcnode.component.output[edgepair.first], dstnode.component.input[edgepair.second])
     newidx = length(model.nodes) + 1 

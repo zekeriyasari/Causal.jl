@@ -1,34 +1,34 @@
 using Jusdl 
 using Plots; pyplot()
 
-model = Model(clock=Clock(0, 0.01, 5)) 
-model[:gen] = SinewaveGenerator() 
-model[:mem] = Memory(0.01)
-model[:writer] = Writer()
-model[:gen => :mem] = Edge(1 => 1) 
-model[:mem => :writer] = Edge(1 => 1) 
-simulate(model) 
+# Construct the model 
+α = 1
+ti, dt, tf = 0., 1., 100.
+model = Model(clock=Clock(ti, dt, tf)) 
+model[:gen] = RampGenerator(scale=1)
+model[:adder] = Adder((+,-))
+model[:gain] = Gain(gain=α) 
+model[:writer1] = Writer()
+model[:writer2] = Writer()
 
-t, x = read(model[:writer].component)
-plot(t, x)
+model[:gen => :adder] = Edge(1 => 1)
+model[:adder => :gain] = Edge(1 => 1)
+model[:gain => :adder] = Edge(1 => 2)
 
-# mem = Memory() 
-# op = Outport() 
-# tr = Outpin() 
-# hn = Inpin{Bool}() 
-# connect(op, mem.input)
-# connect(tr, mem.trigger) 
-# connect(mem.handshake, hn)
-# t = launch(mem)
-# put!(tr, 1.)
-# t
-# put!(op, [10.])
-# t
-# take!(hn)
-# t
-# put!(tr, 2.)
-# t
-# put!(op, [20.])
-# t
-# take!(hn)
-# t
+model[:gen => :writer1] = Edge(1 => 1)
+model[:adder => :writer2] = Edge(1 => 1)
+
+simulate(model)
+
+# Plot simulation data 
+t, r = read(model[:writer1].component)
+t, y = read(model[:writer2].component)
+
+yreal = α / (α + 1) * model[:gen].component.outputfunc.(t)
+
+marker = (:circle, 3)
+n1, n2 = 1, 5
+p = plot(t[n1:n2], r[n1:n2], label=:r, marker=marker)
+    plot!(t[n1:n2], y[n1:n2], label=:y, marker=marker)
+    plot!(t[n1:n2], yreal[n1:n2], label=:yreal, marker=marker, ls=:dot)
+display(p)

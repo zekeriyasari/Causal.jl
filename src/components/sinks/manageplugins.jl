@@ -4,9 +4,9 @@ function fasten(plugin, actionfunc, timebuf, databuf, callbacks, id)
     condition(sink) = ishit(sink.databuf) 
     # condition(sink) = isfull(sink.databuf) 
     if plugin === nothing
-        action = sink -> actionfunc(sink, reverse(outbuf(timebuf)), reverse(outbuf(databuf)))
+        action = sink -> actionfunc(sink, outbuf(timebuf), outbuf(databuf))
     else
-        action = sink -> actionfunc(sink, reverse(outbuf(timebuf)), process(plugin, reverse(outbuf(databuf))))
+        action = sink -> actionfunc(sink, outbuf(timebuf), process(plugin, outbuf(databuf)))
     end
     callback = Callback(condition, action)
     callback.id = id

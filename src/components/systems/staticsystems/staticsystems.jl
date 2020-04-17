@@ -168,19 +168,34 @@ mutable struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
     delay::D
     timebuf::TB
     databuf::DB 
-    function Memory(delay=1., initial::AbstractVector{T}=zeros(1), numtaps::Int=5; 
-        callbacks=nothing, name=Symbol()) where T 
+    function Memory(delay=1.; initial::AbstractVector{T}=zeros(1), numtaps::Int=5, 
+        t0=0., dt=0.01, callbacks=nothing, name=Symbol()) where T 
         numinput = length(initial)
         databuf = numinput == 1 ? Buffer(T, numtaps) : Buffer(T, numinput, numtaps)
         timebuf = Buffer(T, numtaps)
-        ti = content(timebuf)
+        trange = range(t0, length=numtaps, step=dt)
+        # foreach(t -> write!(timebuf, t), trange)
+        # foreach(t -> write!(databuf, initial), trange)
         function outputfunc(u, t)
-            ti = t - delay
-            if ti < 0 
-                initial
+            if t <= delay
+                return initial
             else
-                interpolant = LinearInterpolation(reverse(outbuf(timebuf)), reverse(outbuf(databuf)), extrapolation_bc=Line())
-                interpolant(ti)
+                # if !isfull(timebuf)
+                #     return initial
+                # else 
+                    tt = content(timebuf, flip=false)
+                    uu = content(databuf, flip=false)
+                    if length(tt) == 1
+                        return uu[1]
+                    end
+                    if ndims(databuf) == 1
+                        itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
+                        return itp(t - delay)
+                    else
+                        itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
+                        return map(f -> f(t - delay), itp)
+                    end
+                # end
             end
         end
         input = Inport{T}(numinput)

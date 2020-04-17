@@ -37,7 +37,7 @@ mutable struct SinewaveGenerator{OF, OB, TR, HS, CB} <: AbstractSource
     offset::Float64
     function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0., callbacks=nothing, 
         name=Symbol())
-        outputfunc(t) =  amplitude * sin(2 * pi * frequency * (t - delay)) + offset
+        outputfunc(t) =  amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()
@@ -189,8 +189,9 @@ mutable struct RampGenerator{OF, OB, TR, HS, CB} <: AbstractSource
     @generic_source_fields
     scale::Float64
     delay::Float64
-    function RampGenerator(;scale=1, delay=0., callbacks=nothing, name=Symbol())
-        outputfunc(t) = scale * (t - delay)
+    offset::Float64
+    function RampGenerator(;scale=1, delay=0., offset=0., callbacks=nothing, name=Symbol())
+        outputfunc(t) = scale * (t - delay) + offset
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()

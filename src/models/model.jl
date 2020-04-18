@@ -80,16 +80,47 @@ show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), "
 
 
 ##### Addinng nodes and branches.
+"""
+    addnode(model::Model, node::Node)
+
+Add `node` to nodes of `model`.
+"""
 function addnode(model::Model, node::Node)
+    checklabel(model, node)
     push!(model.nodes, node)
     register(model.taskmanager, node.component)
     add_vertex!(model.graph)
 end
 
+checklabel(model,node) = node.label in [node.label for node in model.nodes] && error(node.label," is already assigned.")
+
+"""
+    addbranch(model::Model, branch::Branch)
+
+Adds `branch` to branched of `model`.
+"""
 function addbranch(model::Model, branch::Branch)
     push!(model.branches, branch)
     add_edge!(model.graph, branch.nodepair.first, branch.nodepair.second)
 end
+
+"""
+    deletebranch(model::Model, branch::Branch)
+
+Deletes `branch` from branched of `model`.
+
+    deletebranch(model::Model, srcnode::Node, dstnode::Node) 
+
+Deletes branch between `srcnode` and `dstnode` of the `model`.
+"""
+function deletebranch(model::Model, branch::Branch)
+    nodepair = branch.nodepair
+    srcnode, dstnode = model[nodepair.first], model[nodepair.second]
+    srcidx, dstidx = branch.edgepair.pair
+    disconnect(srcnode.component.output[srcidx], dstnode.component.input[dstidx]) 
+    rem_edge!(model.graph, srcnode.idx, dstnode.idx)
+end
+deletebranch(model::Model, srcnode::Node, dstnode::Node) = deletebranch(model, model[srcnode.idx => dstnode.idx])
 
 """
     setindex!(model, component, idx)
@@ -106,7 +137,7 @@ julia> model[:adder] = Adder(Inport(2))
 Adder(signs:(+, +), input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-setindex!(model::Model, component::AbstractComponent, idx::Int) = addnode(model, Node(component, idx, Symbol()))
+setindex!(model::Model, component::AbstractComponent, idx::Int) = addnode(model, Node(component, idx, Symbol(uuid4())))
 setindex!(model::Model, component::AbstractComponent, label::Symbol) = 
     addnode(model, Node(component, length(model.nodes) + 1, label))
 
@@ -232,15 +263,15 @@ error is thrown.
 function inspect(model)
     if hasloops(model)
         loops = getloops(model)
-        msg = "The model has algrebraic loops:$(loops)"
-        msg *= "\n\tTrying to break these loops..."
+        msg = "\tThe model has algrebraic loops:$(loops)"
+        msg *= "\n\t\tTrying to break these loops..."
         @info msg
         while !isempty(loops)
             loop = pop!(loops)
             try 
                 breakloop(model, loop)
-            catch
-                error("Algebric loop:$loop could not be broken.")
+            catch ex
+                error(ex, " Algebric loop:$loop could not be broken.")
             end
         end
     end
@@ -274,19 +305,24 @@ Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by i
 of loop.
 """
 function breakloop(model::Model, loop, breakpoint=length(loop)) 
+    # Delete the branch at the breakpoint.
     srcnode = model[loop[breakpoint]]
     dstnode = model[loop[(breakpoint + 1) % length(loop)]]
+    branch = model[srcnode.idx => dstnode.idx]
+    
+    # Construct the loopbreaker.
     nodefuncs = loopnodefuncs(model, loop)
     ff = feedforward(nodefuncs, breakpoint)
-    x0 = findroot(ff, length(srcnode.component.output))
-    @show x0
-    memory = Memory(model.clock.dt/10, initial=x0, numtaps=5, dt=model.clock.dt, t0=model.clock.t)
-    edgepair = model[srcnode.idx => dstnode.idx].edgepair.pair
-    disconnect(srcnode.component.output[edgepair.first], dstnode.component.input[edgepair.second])
+    n = length(srcnode.component.output)
+    breaker = StaticSystem((u,t) -> findroot(ff, n, t), nothing, Outport(n))
     newidx = length(model.nodes) + 1 
-    model[newidx] = memory
-    model[srcnode.idx => newidx] = Edge(edgepair.first => edgepair.first)
-    model[newidx => dstnode.idx] = Edge(edgepair.first => edgepair.second)
+    model[newidx] = breaker
+    
+    deletebranch(model, branch)
+    
+    # Connect the loopbreker to the loop at the breakpoint.
+    srcidx, dstidx = branch.edgepair.pair
+    model[newidx => dstnode.idx] = Edge(srcidx => dstidx)
     return true 
 end
 
@@ -297,24 +333,27 @@ function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
     nin = length(component.input)
     outputfunc = component.outputfunc
     x = component.state 
-    function gf(u)
+    function gf(ut)
+        u, t = ut
         uu = zeros(nin) 
-        uu[inidxs] .= inval 
+        uu[inidxs] .= map(f -> f(t), inval) 
         uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
-        out = outputfunc(x, uu, 0.)
-        out[outidxs]
+        out = outputfunc(x, uu, t)
+        (out[outidxs], t)
     end
 end
 
 function wrap(component::AbstractStaticSystem, inval, inidxs, outidxs)
     nin = length(component.input)
     outputfunc = component.outputfunc
-    function gf(u)
+    function gf(ut)
+        u, t = ut
         uu = zeros(nin) 
-        uu[inidxs] .= inval 
+        val = map(f -> f(t), inval) 
+        uu[inidxs] .= val
         uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
-        out = outputfunc(uu, 0.)
-        typeof(out) <: Real ? [out] : out
+        out = outputfunc(uu, t)
+        typeof(out) <: Real ? ([out], t) : (out, t)
     end
 end
 
@@ -333,21 +372,23 @@ function loopnodefuncs(model, loop)
         if areinside(innbrs, outnbrs, loop)
             nodefunc = u -> loopcomponent.outputfunc(u, 0.)
         else 
-            nodeinvals = Float64[]
+            nodeinvals = []
             nodeinidxs = Int[]
             for innbr in filter(idx -> idx ∉ loop, innbrs)
                 inbranch = model[innbr => idx]
                 innbrcomponent = model[innbr].component
                 if innbrcomponent isa AbstractSource
-                    nodeinval = [innbrcomponent.outputfunc(0.)...][inbranch.edgepair.pair.first]
+                    nodeinval = t -> [innbrcomponent.outputfunc(t)...][inbranch.edgepair.pair.first]
                 elseif innbrcomponent isa AbstractDynamicSystem 
-                    out  = innbrcomponent.input === nothing ? 
-                        innbrcomponent.outputfunc(nothing, innbrcomponent.state, 0.) : error("One step further")
-                    nodeinval = out[inbranch.edgepair.pair.first]
+                    nodeinval = t -> begin 
+                        out = innbrcomponent.input === nothing ? 
+                        innbrcomponent.outputfunc(nothing, innbrcomponent.state, t) : error("One step further")
+                        out[inbranch.edgepair.pair.first]
+                    end
                 else 
                     error("One step futher")
                 end
-                append!(nodeinvals, nodeinval)
+                push!(nodeinvals, nodeinval)
                 append!(nodeinidxs, inbranch.edgepair.pair.second)
             end
             outnbr = filter(idx -> idx ∈ loop, outnbrs)[1]
@@ -359,10 +400,12 @@ function loopnodefuncs(model, loop)
     nodefuncs
 end
 
-feedforward(nodefuncs, breakpoint=length(nodefuncs)) = x -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)(x) - x
+function feedforward(nodefuncs, breakpoint=length(nodefuncs))
+    (u, t) -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)((u, t))[1] - u
+end
 
-function findroot(ff, n)
-    sol = nlsolve((dx, x) -> (dx .= ff(x)), zeros(n))
+function findroot(ff, n, t)
+    sol = nlsolve((dx, x) -> (dx .= ff(x, t)), zeros(n))
     sol.zero
 end
 

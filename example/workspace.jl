@@ -1,0 +1,17 @@
+using Jusdl 
+using Plots; pyplot() 
+
+model = Model() 
+model[:gen] = SinewaveGenerator(frequency=2)
+model[:adder] = Adder((+,-))
+model[:gain] = Gain(gain=0.1) 
+model[:writer] = Writer(Inport(2))
+model[:gen => :adder] = Indices(1 => 1)
+model[:adder => :gain] = Indices(1 => 1)
+model[:gain => :adder] = Indices(1 => 2)
+model[:gen => :writer] = Indices(1 => 1)
+model[:gain => :writer] = Indices(1 => 2)
+simulate(model)
+t, x = read(model[:writer].component)
+plot(t, x[:, 1], label=:gen)
+plot!(t, x[:, 2], label=:gain)

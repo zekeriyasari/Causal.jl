@@ -1,6 +1,5 @@
 # This file includes the Model object
 import Base: getindex, setindex!, push!
-import LightGraphs: SimpleDiGraph, add_edge!, add_vertex!, simplecycles
 
 """
     Node(component, idx, label)
@@ -9,7 +8,7 @@ Constructs a model `Node` with `component`. `idx` is the index and `label` is la
 """
 struct Node{CP}
     component::CP 
-    idx::Int 
+    idx::Int    
     label::Symbol 
 end 
 
@@ -17,16 +16,16 @@ show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(no
 
 
 """
-    Edge(pair)
+    Indices(pair)
 
-Constructs an a branch `Edge` with `pair`. `pair` determines the subindices of the port of node components of a model.
+Constructs an a branch `Indices` with `pair`. `pair` determines the subindices of the port of node components of a model.
 """
-struct Edge{P<:Pair} 
+struct Indices{P<:Pair} 
     pair::P 
 end 
-Edge() = Edge((:) => (:))
+Indices() = Indices((:) => (:))
 
-show(io::IO, edge::Edge) = print(io, "Edge($(edge.pair))")
+show(io::IO, edge::Indices) = print(io, "Indices($(edge.pair))")
 
 """ 
     Branch(nodepair, edgepair, links)
@@ -155,18 +154,18 @@ julia> model[:gen] = SinewaveGenerator();
 
 julia> model[:gain] = Gain(Inport());
 
-julia> model[:gen => :gain] = Edge();
+julia> model[:gen => :gain] = Indices();
 
 julia> isconnected(model[:gen].component.output, model[:gain].component.input)
 true
 ```
 """
-function setindex!(model::Model, edgepair::Edge, nodepair::Pair{Int, Int}) 
+function setindex!(model::Model, edgepair::Indices, nodepair::Pair{Int, Int}) 
     src, dst = model[nodepair.first].component, model[nodepair.second].component
     links = connect(src.output[edgepair.pair.first], dst.input[edgepair.pair.second])
     addbranch(model, Branch(nodepair, edgepair, links))
 end
-function setindex!(model::Model, edgepair::Edge, nodepair::Pair{Symbol, Symbol}) 
+function setindex!(model::Model, edgepair::Indices, nodepair::Pair{Symbol, Symbol}) 
     src, dst = model[nodepair.first], model[nodepair.second]
     setindex!(model, edgepair, src.idx => dst.idx)
 end
@@ -223,10 +222,10 @@ julia> model[:gen] = SinewaveGenerator();
 
 julia> model[:gain] = Gain(Inport());
 
-julia> model[:gen => :gain] = Edge();
+julia> model[:gen => :gain] = Indices();
 
 julia> model[:gen => :gain]
-Branch(nodepair:1 => 2, edgepair:Edge(Colon() => Colon()), links=Link{Float64}[Link(state:open, eltype:Float64, isreadable:false, iswritable:false)])
+Branch(nodepair:1 => 2, edgepair:Indices(Colon() => Colon()), links=Link{Float64}[Link(state:open, eltype:Float64, isreadable:false, iswritable:false)])
 ```
 """
 function getindex(model::Model, nodepair::Pair{Int, Int}) 
@@ -322,7 +321,7 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
     
     # Connect the loopbreker to the loop at the breakpoint.
     srcidx, dstidx = branch.edgepair.pair
-    model[newidx => dstnode.idx] = Edge(srcidx => dstidx)
+    model[newidx => dstnode.idx] = Indices(srcidx => dstidx)
     return true 
 end
 
@@ -370,7 +369,15 @@ function loopnodefuncs(model, loop)
         loopcomponent = model[idx].component
         innbrs, outnbrs = inneighbors(graph, idx), outneighbors(graph, idx)
         if areinside(innbrs, outnbrs, loop)
-            nodefunc = u -> loopcomponent.outputfunc(u, 0.)
+            if loopcomponent isa AbstractStaticSystem
+                nodefunc = (ut) -> (loopcomponent.outputfunc(ut[1], ut[2]), ut[2])
+            elseif loopcomponent isa AbstractDynamicSystem
+                nodefunc = (ut) -> loopcomponent.outputfunc(loopcomponent.state, ut[1], ut[2])
+            else
+                msg = "Expected loop component of type `AbstractStaticSystem` or `AbstractDynamicSystem`"
+                msg *= "Got typeof(loopcomponent)"
+                error(msg)
+            end
         else 
             nodeinvals = []
             nodeinidxs = Int[]

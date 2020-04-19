@@ -106,6 +106,6 @@ export Simulation, SimulationError, setlogger, closelogger, report
 
 include("models/model.jl")
 export Model, getloops, hasloops, breakloop, inspect, initialize, run, terminate, simulate
-export Node, Edge, addnode, addbranch, Branch, deletebranch
+export Node, Branch, Indices, addnode, addbranch, deletebranch
 
 end  # module

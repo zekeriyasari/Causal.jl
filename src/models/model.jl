@@ -260,18 +260,19 @@ Inspects the `model`. If `model` has some inconsistencies such as including alge
 error is thrown.
 """
 function inspect(model)
-    if hasloops(model)
-        loops = getloops(model)
+    loops = getloops(model)
+    if !isempty(loops)
         msg = "\tThe model has algrebraic loops:$(loops)"
         msg *= "\n\t\tTrying to break these loops..."
         @info msg
         while !isempty(loops)
             loop = pop!(loops)
-            try 
+            # try 
                 breakloop(model, loop)
-            catch ex
-                error(ex, " Algebric loop:$loop could not be broken.")
-            end
+            # catch ex
+            #     error(ex, " Algebric loop:$loop could not be broken.")
+            # end
+            loops = getloops(model)
         end
     end
 end
@@ -283,19 +284,6 @@ end
 Returns idx of nodes that constructs algrebraic loops.
 """
 getloops(model::Model) = simplecycles(model.graph)
-
-hasmemory(model, loop) = any(isa.(map(idx -> model[idx].component, loop), AbstractMemory))
-
-"""
-    hasloops(model)
-
-Return `true` is `model` has algrebraic loops.
-"""
-function hasloops(model::Model)
-    loops = getloops(model)
-    isempty(loops) && return false
-    return any(map(loop -> !hasmemory(model, loop), loops))
-end
 
 """
     breakloop(model, loop, breakpoint=length(loop))
@@ -310,13 +298,14 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
     branch = model[srcnode.idx => dstnode.idx]
     
     # Construct the loopbreaker.
-    nodefuncs = loopnodefuncs(model, loop)
+    nodefuncs = wrap(model, loop)
     ff = feedforward(nodefuncs, breakpoint)
     n = length(srcnode.component.output)
     breaker = StaticSystem((u,t) -> findroot(ff, n, t), nothing, Outport(n))
     newidx = length(model.nodes) + 1 
     model[newidx] = breaker
     
+    # Delete the branch at the breakpoint
     deletebranch(model, branch)
     
     # Connect the loopbreker to the loop at the breakpoint.
@@ -325,87 +314,100 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
     return true 
 end
 
-#
-# `wrap` function wraps component output function with inval to construct loop node input-output function.
-#
-function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
-    nin = length(component.input)
-    outputfunc = component.outputfunc
-    x = component.state 
-    function gf(ut)
-        u, t = ut
-        uu = zeros(nin) 
-        uu[inidxs] .= map(f -> f(t), inval) 
-        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
-        out = outputfunc(x, uu, t)
-        (out[outidxs], t)
-    end
-end
-
-function wrap(component::AbstractStaticSystem, inval, inidxs, outidxs)
-    nin = length(component.input)
-    outputfunc = component.outputfunc
-    function gf(ut)
-        u, t = ut
-        uu = zeros(nin) 
-        val = map(f -> f(t), inval) 
-        uu[inidxs] .= val
-        uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
-        out = outputfunc(uu, t)
-        typeof(out) <: Real ? ([out], t) : (out, t)
-    end
-end
-
-# Returns `true` if `innbrs` and `outnbrs` are inside loop. 
-function areinside(innbrs, outnbrs, loop)
-    isempty(filter(v -> v ∉ loop, innbrs)) && isempty(filter(v -> v ∉ loop, outnbrs))
-end
-
-# Returns loop functions of nodes of `loop`. 
-function loopnodefuncs(model, loop)
+function wrap(model, loop)
     graph = model.graph
-    nodefuncs = Vector{Function}(undef, length(loop))
-    for (k, idx) in enumerate(loop)
-        loopcomponent = model[idx].component
+    map(loop) do idx 
+        node = model[idx]
         innbrs, outnbrs = inneighbors(graph, idx), outneighbors(graph, idx)
-        if areinside(innbrs, outnbrs, loop)
-            if loopcomponent isa AbstractStaticSystem
-                nodefunc = (ut) -> (loopcomponent.outputfunc(ut[1], ut[2]), ut[2])
-            elseif loopcomponent isa AbstractDynamicSystem
-                nodefunc = (ut) -> loopcomponent.outputfunc(loopcomponent.state, ut[1], ut[2])
-            else
-                msg = "Expected loop component of type `AbstractStaticSystem` or `AbstractDynamicSystem`"
-                msg *= "Got typeof(loopcomponent)"
-                error(msg)
-            end
+        if isempty(innbrs) && isempty(outnbrs)
+            zero_in_zero_out(node)
+        elseif isempty(innbrs) && !isempty(outnbrs)
+            zero_in_nonzero_out(node, getoutmask(model, node, loop))
+        elseif !isempty(innbrs) && isempty(outnbrs)
+            nonzero_in_zero_out(node, getinmask(model, node, loop))
         else 
-            nodeinvals = []
-            nodeinidxs = Int[]
-            for innbr in filter(idx -> idx ∉ loop, innbrs)
-                inbranch = model[innbr => idx]
-                innbrcomponent = model[innbr].component
-                if innbrcomponent isa AbstractSource
-                    nodeinval = t -> [innbrcomponent.outputfunc(t)...][inbranch.edgepair.pair.first]
-                elseif innbrcomponent isa AbstractDynamicSystem 
-                    nodeinval = t -> begin 
-                        out = innbrcomponent.input === nothing ? 
-                        innbrcomponent.outputfunc(nothing, innbrcomponent.state, t) : error("One step further")
-                        out[inbranch.edgepair.pair.first]
-                    end
-                else 
-                    error("One step futher")
-                end
-                push!(nodeinvals, nodeinval)
-                append!(nodeinidxs, inbranch.edgepair.pair.second)
-            end
-            outnbr = filter(idx -> idx ∈ loop, outnbrs)[1]
-            outbranch = model[idx => outnbr]
-            nodefunc = wrap(loopcomponent, nodeinvals, nodeinidxs, outbranch.edgepair.pair.first)    
-        end
-        nodefuncs[k] = nodefunc
+            nonzero_in_nonzero_out(node, getinmask(model, node, loop), getoutmask(model, node, loop))
+        end 
     end
-    nodefuncs
 end
+
+function zero_in_zero_out(node) 
+    component = node.component
+    function func(ut)
+        u, t = ut 
+        out = [computeout(component, u, t)...]
+        out, t
+    end
+end
+
+function zero_in_nonzero_out(node, outmask)
+    component = node.component
+    function func(ut)
+        u, t = ut 
+        out = [computeout(component, u, t)...]
+        out[outmask], t
+    end
+end
+
+function nonzero_in_zero_out(node, inmask) 
+    component = node.component
+    nin = length(inmask)
+    function func(ut)
+        u, t = ut 
+        uu = zeros(nin)
+        uu[inmask] .= readbuffer(component.input, inmask)
+        uu[.!inmask] .= u
+        out = [computeout(component, uu, t)...]
+        out, t
+    end
+end
+
+function nonzero_in_nonzero_out(node, inmask, outmask)
+    @show node, inmask, outmask
+    component = node.component
+    nin = length(inmask)
+    function func(ut)
+        u, t = ut 
+        uu = zeros(nin)
+        uu[inmask] .= readbuffer(component.input, inmask)
+        uu[.!inmask] .= u
+        out = [computeout(component, uu, t)...]
+        out[outmask]
+        out, t
+    end
+end
+
+function getinmask(model, node, loop)
+    idx = node.idx
+    inmask = falses(length(node.component.input))
+    for nidx in filter(n -> n ∉ loop, inneighbors(model.graph, idx)) # Not-in-loop inneighbors
+        k = model[nidx => idx].edgepair.pair.second
+        if length(k) == 1 
+            inmask[k] = true
+        else
+            inmask[k] .= trues(length(k))
+        end
+    end
+    inmask
+end
+
+function getoutmask(model, node, loop)
+    idx = node.idx
+    outmask = falses(length(node.component.output))
+    for nidx in filter(n -> n ∈ loop, outneighbors(model.graph, idx)) # In-loop outneighbors
+        k = model[idx => nidx].edgepair.pair.first
+        if length(k) == 1 
+            outmask[k] = true
+        else 
+            outmask[k] .= trues(length(k))
+        end
+    end
+    outmask
+end
+
+readbuffer(input, inmask) = map(pin -> read(pin.link.buffer), input[inmask])
+computeout(component::AbstractStaticSystem, u, t) = component.outputfunc(u, t)
+computeout(component::AbstractDynamicSystem, u, t) = component.outputfunc(component.state, u, t)
 
 function feedforward(nodefuncs, breakpoint=length(nodefuncs))
     (u, t) -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)((u, t))[1] - u
@@ -415,6 +417,102 @@ function findroot(ff, n, t)
     sol = nlsolve((dx, x) -> (dx .= ff(x, t)), zeros(n))
     sol.zero
 end
+
+# hasmemory(model, loop) = any(isa.(map(idx -> model[idx].component, loop), AbstractMemory))
+
+# """
+#     hasloops(model)
+
+# Return `true` is `model` has algrebraic loops.
+# """
+# function hasloops(model::Model)
+#     loops = getloops(model)
+#     isempty(loops) && return false
+#     return any(map(loop -> !hasmemory(model, loop), loops))
+# end
+
+# #
+# # `wrap` function wraps component output function with inval to construct loop node input-output function.
+# #
+# function wrap(component::AbstractDynamicSystem, inval, inidxs, outidxs)
+#     nin = length(component.input)
+#     outputfunc = component.outputfunc
+#     x = component.state 
+#     function gf(ut)
+#         u, t = ut
+#         uu = zeros(nin) 
+#         uu[inidxs] .= map(f -> f(t), inval) 
+#         uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+#         out = outputfunc(x, uu, t)
+#         (out[outidxs], t)
+#     end
+# end
+
+# function wrap(component::AbstractStaticSystem, inval, inidxs, outidxs)
+#     nin = length(component.input)
+#     outputfunc = component.outputfunc
+#     function gf(ut)
+#         u, t = ut
+#         uu = zeros(nin) 
+#         val = map(f -> f(t), inval) 
+#         uu[inidxs] .= val
+#         uu[filter(i -> i ∉ inidxs, 1 : nin)] .= u
+#         out = outputfunc(uu, t)
+#         typeof(out) <: Real ? ([out], t) : (out, t)
+#     end
+# end
+
+# # Returns `true` if `innbrs` and `outnbrs` are inside loop. 
+# function areinside(innbrs, outnbrs, loop)
+#     isempty(filter(v -> v ∉ loop, innbrs)) && isempty(filter(v -> v ∉ loop, outnbrs))
+# end
+
+# # Returns loop functions of nodes of `loop`. 
+# function loopnodefuncs(model, loop)
+#     graph = model.graph
+#     nodefuncs = Vector{Function}(undef, length(loop))
+#     for (k, idx) in enumerate(loop)
+#         loopcomponent = model[idx].component
+#         innbrs, outnbrs = inneighbors(graph, idx), outneighbors(graph, idx)
+#         if areinside(innbrs, outnbrs, loop)
+#             if loopcomponent isa AbstractStaticSystem
+#                 nodefunc = (ut) -> (loopcomponent.outputfunc(ut[1], ut[2]), ut[2])
+#             elseif loopcomponent isa AbstractDynamicSystem
+#                 nodefunc = (ut) -> loopcomponent.outputfunc(loopcomponent.state, ut[1], ut[2])
+#             else
+#                 msg = "Expected loop component of type `AbstractStaticSystem` or `AbstractDynamicSystem`"
+#                 msg *= "Got typeof(loopcomponent)"
+#                 error(msg)
+#             end
+#         else 
+#             nodeinvals = []
+#             nodeinidxs = Int[]
+#             for innbr in filter(idx -> idx ∉ loop, innbrs)
+#                 inbranch = model[innbr => idx]
+#                 innbrcomponent = model[innbr].component
+#                 if innbrcomponent isa AbstractSource
+#                     nodeinval = t -> [innbrcomponent.outputfunc(t)...][inbranch.edgepair.pair.first]
+#                 elseif innbrcomponent isa AbstractDynamicSystem 
+#                     nodeinval = t -> begin 
+#                         out = innbrcomponent.input === nothing ? 
+#                         innbrcomponent.outputfunc(nothing, innbrcomponent.state, t) : error("One step further")
+#                         out[inbranch.edgepair.pair.first]
+#                     end
+#                 else 
+#                     error("One step futher")
+#                 end
+#                 push!(nodeinvals, nodeinval)
+#                 append!(nodeinidxs, inbranch.edgepair.pair.second)
+#             end
+#             outnbr = filter(idx -> idx ∈ loop, outnbrs)[1]
+#             outbranch = model[idx => outnbr]
+#             nodefunc = wrap(loopcomponent, nodeinvals, nodeinidxs, outbranch.edgepair.pair.first)    
+#         end
+#         nodefuncs[k] = nodefunc
+#     end
+#     nodefuncs
+# end
+
 
 ##### Model initialization
 """
@@ -485,32 +583,27 @@ end
 
 function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool)
     model = sim.model
-    try
-        @siminfo "Started simulation..."
-        sim.state = :running
+    @siminfo "Started simulation..."
+    sim.state = :running
 
-        @siminfo "Inspecting model..."
-        inspect(model)
-        @siminfo "Done."
+    @siminfo "Inspecting model..."
+    inspect(model)
+    @siminfo "Done."
 
-        @siminfo "Initializing the model..."
-        initialize(model)
-        @siminfo "Done..."
+    @siminfo "Initializing the model..."
+    initialize(model)
+    @siminfo "Done..."
 
-        @siminfo "Running the simulation..."
-        run(model, withbar)
-        sim.state = :done
-        sim.retcode = :success
-        @siminfo "Done..."
-        
-        @siminfo "Terminating the simulation..."
-        terminate(model)
-        @siminfo "Done."
-    catch e
-        sim.state = :halted
-        sim.retcode = :fail
-        throw(e)
-    end
+    @siminfo "Running the simulation..."
+    run(model, withbar)
+    sim.state = :done
+    sim.retcode = :success
+    @siminfo "Done..."
+    
+    @siminfo "Terminating the simulation..."
+    terminate(model)
+    @siminfo "Done."
+
     reportsim && report(sim)
     return sim
 end

@@ -9,35 +9,40 @@ mutable struct Interpolant{TMB, INB, ITP}
     timebuf::TMB
     databuf::INB 
     itp::ITP
+    function Interpolant(nt::Int, nd::Int) 
+        timebuf = Buffer(nt) 
+        databuf = nd == 1 ? Buffer(nt) : Buffer(nd, nt)
+        itp = [interpolation(zeros(1), zeros(1)) for i in 1 : nd]
+        new{typeof(timebuf), typeof(databuf), typeof(itp)}(timebuf, databuf, itp)
+    end
 end 
-
-function Interpolant(nt::Int, nd::Int)
-    timebuf = Buffer(nt)
-    databuf = nd == 1 ? Buffer(nt) : Buffer(nd, nt)
-    Interpolant(timebuf, databuf, interpolation(zeros(1), zeros(nd, 1)))
-end
 
 show(io::IO, interpolant::Interpolant)= print(io, "Interpolant(timebuf:$(interpolant.timebuf), ", 
     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
 
 # Callling interpolant.
-(interpolant::Interpolant)(t) = interpolant.itp(t)
 getindex(interpolant::Interpolant, idx::Int) = interpolant.itp[idx]
 
-function interpolation(tt::AbstractVector, uu::AbstractVector)
+# Update of interpolant. That is, reinterpolation. 
+"""
+    update!(intepolant) 
+
+Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
+"""
+update!(interpolant::Interpolant{T1, <:AbstractVector, T2}) where {T1,T2} = interpolant.itp[1] = _update!(interpolant)
+update!(interpolant::Interpolant{T1, <:AbstractMatrix, T2}) where {T1,T2} = interpolant.itp = _update!(interpolant)
+_update!(interpolant) = interpolation(content(interpolant.timebuf, flip=true), content(interpolant.databuf, flip=true))
+
+interpolation(tt, uu::AbstractMatrix) = map(row -> interpolation(tt, row), eachrow(uu))
+interpolation(tt, uu::AbstractVector) = CubicSplineInterpolation(getranges(tt, uu)...; extrapolation_bc=Line())
+
+function getranges(tt, uu)
     if length(tt) < 2 
         trange = range(tt[1], length=2, step=eps())
-        uvector = range(uu[1], length=2, step=eps())
+        urange = range(uu[1], length=2, step=eps())
     else 
         trange = range(tt[1], tt[end], length=length(tt))
-        uvector = uu
+        urange = uu
     end
-    [CubicSplineInterpolation(trange, uvector, extrapolation_bc=Line())]
-end
-interpolation(tt::AbstractVector, uu::AbstractMatrix) = vcat(map(row -> interpolation(tt, row), eachrow(uu))...)
-
-function update!(interpolant::Interpolant)
-    tt = content(interpolant.timebuf, flip=true)
-    uu = content(interpolant.databuf, flip=true)
-    interpolant.itp = interpolation(tt, uu)
+    trange, urange
 end

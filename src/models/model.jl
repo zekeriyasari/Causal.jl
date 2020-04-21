@@ -363,7 +363,6 @@ function nonzero_in_zero_out(node, inmask)
 end
 
 function nonzero_in_nonzero_out(node, inmask, outmask)
-    @show node, inmask, outmask
     component = node.component
     nin = length(inmask)
     function func(ut)

@@ -52,7 +52,7 @@ computeoutput(comp::AbstractStaticSystem, x, u, t) =
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
 function computeoutput(comp::AbstractDynamicSystem, x, u, t)
     typeof(comp.outputfunc) <: Nothing && return nothing
-    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(ui -> t -> ui, u), t) 
+    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, comp.integrator.sol.prob.p, t) 
 end
     # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
@@ -88,30 +88,36 @@ end
 function evolve!(comp::AbstractDynamicSystem, u, t)
     # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
     # Thus, there will be no evolution in such a case.
+    integrator = comp.integrator
+    interpolator = integrator.sol.prob.p
+    update_interpolator!(interpolator, u, t)
     comp.t == t && return comp.state  
 
     # Advance the system and update the system.
-    advance!(comp, u, t)
-    updatetime!(comp)
-    updatestate!(comp)
+    step!(integrator, t - comp.t, true)
+    comp.t = integrator.t
+    comp.state = integrator.u
 
     # Return comp state
-    comp.state
-end
-
-function advance!(comp::AbstractDynamicSystem, u, t)
-    interpolator = comp.integrator.sol.prob.p
-    update_interpolator!(interpolator, u, t)
-    step!(comp.integrator, t - comp.t, true)
-    update_interpolator!(interpolator)
+    return comp.state
 end
 update_interpolator!(interp::Nothing) = nothing
 update_interpolator!(interp::Nothing, u, t) = nothing
-update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
-update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
+function update_interpolator!(interp::Interpolant, u, t)
+    write!(interp.timebuf, t)
+    write!(interp.databuf, u)
+    update!(interp)
+end
 
-updatetime!(comp) = (comp.t = comp.integrator.t)
-updatestate!(comp) = (comp.state = comp.integrator.u)
+# function advance!(comp::AbstractDynamicSystem, u, t)
+#     interpolator = comp.integrator.sol.prob.p
+#     update_interpolator!(interpolator, u, t)
+#     step!(comp.integrator, t - comp.t, true)
+# end
+# update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
+# update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
+# updatetime!(comp) = (comp.t = comp.integrator.t)
+# updatestate!(comp) = (comp.state = comp.integrator.u)
 
 ##### Task management
 """

@@ -67,17 +67,17 @@ export DiscreteSystem
 include("components/systems/dynamicalsystems/odesystems.jl")
 export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem
 
-include("components/systems/dynamicalsystems/daesystems.jl")
-export DAESystem 
+# include("components/systems/dynamicalsystems/daesystems.jl")
+# export DAESystem 
 
-include("components/systems/dynamicalsystems/rodesystems.jl")
-export RODESystem 
+# include("components/systems/dynamicalsystems/rodesystems.jl")
+# export RODESystem 
 
-include("components/systems/dynamicalsystems/sdesystems.jl")
-export SDESystem
+# include("components/systems/dynamicalsystems/sdesystems.jl")
+# export SDESystem
 
-include("components/systems/dynamicalsystems/ddesystems.jl")
-export DDESystem
+# include("components/systems/dynamicalsystems/ddesystems.jl")
+# export DDESystem
 
 include("components/systems/subsystems/subsystem.jl")
 export SubSystem
@@ -105,7 +105,7 @@ include("models/simulation.jl")
 export Simulation, SimulationError, setlogger, closelogger, report
 
 include("models/model.jl")
-export Model, getloops, hasloops, breakloop, inspect, initialize, run, terminate, simulate
+export Model, getloops, breakloop, inspect, initialize, run, terminate, simulate
 export Node, Branch, Indices, addnode, addbranch, deletebranch
 
 end  # module

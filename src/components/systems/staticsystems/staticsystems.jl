@@ -173,7 +173,7 @@ mutable struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
         numinput = length(initial)
         databuf = numinput == 1 ? Buffer(T, numtaps) : Buffer(T, numinput, numtaps)
         timebuf = Buffer(T, numtaps)
-        trange = range(t0, length=numtaps, step=dt)
+        # trange = range(t0, length=numtaps, step=dt)
         # foreach(t -> write!(timebuf, t), trange)
         # foreach(t -> write!(databuf, initial), trange)
         function outputfunc(u, t)

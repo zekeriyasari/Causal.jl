@@ -51,11 +51,12 @@ DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isr
 mutable struct DiscreteSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDiscreteSystem
     @generic_dynamic_system_fields
     function DiscreteSystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        integrator = construct_integrator(DiscreteProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=3, callbacks=nothing,
+         name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                DiscreteProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
         new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
             typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
             integrator, input, output, trigger, handshake, callbacks, name, uuid4())

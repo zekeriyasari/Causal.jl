@@ -406,8 +406,8 @@ function getoutmask(model, node, loop)
 end
 
 readbuffer(input, inmask) = map(pin -> read(pin.link.buffer), input[inmask])
-computeout(component::AbstractStaticSystem, u, t) = component.outputfunc(u, t)
-computeout(component::AbstractDynamicSystem, u, t) = component.outputfunc(component.state, u, t)
+computeout(comp::AbstractStaticSystem, u, t) = comp.outputfunc(u, t)
+computeout(comp::AbstractDynamicSystem, u, t) = comp.outputfunc(comp.state, map(v -> (t -> v), u), t)
 
 function feedforward(nodefuncs, breakpoint=length(nodefuncs))
     (u, t) -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)((u, t))[1] - u

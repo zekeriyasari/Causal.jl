@@ -1,8 +1,6 @@
 # This file includes RODESystems
 
 
-const RODEAlg = RandomEM()
-# const RODENoise = Noise(WienerProcess(0.,0.))
 
 @doc raw"""
     RODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
@@ -53,12 +51,12 @@ mutable struct RODESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractRODE
     @generic_dynamic_system_fields
     # noise::N
     function RODESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
-        # haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        integrator = construct_integrator(RODEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                RODEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
         new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
             typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
             integrator, input, output, trigger, handshake, callbacks, name, uuid4())

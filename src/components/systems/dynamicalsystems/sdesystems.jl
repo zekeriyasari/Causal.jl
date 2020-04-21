@@ -1,8 +1,6 @@
 # This file contains SDESystem prototypes
 
 
-const SDEAlg = LambaEM{true}()
-
 @doc raw"""
     SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
         alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
@@ -53,11 +51,12 @@ SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Fl
 mutable struct SDESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractSDESystem
     @generic_dynamic_system_fields
     function SDESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        integrator = construct_integrator(SDEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                SDEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
         new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
             typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
             integrator, input, output, trigger, handshake, callbacks, name, uuid4())

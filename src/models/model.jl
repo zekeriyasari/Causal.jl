@@ -643,5 +643,10 @@ function simulate(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
 end
 
 ##### Plotting model
-gplot(model::Model, args...; kwargs...) = 
+"""
+    signalflow(model, args...; kwargs...)
+
+Plots the signal flow of `model`. `args` and `kwargs` are passed into [`gplot`](https://github.com/JuliaGraphs/GraphPlot.jl) function.
+"""
+signalflow(model::Model, args...; kwargs...) = 
     gplot(model.graph, args...; nodelabel=[node.label for node in model.nodes], kwargs...)

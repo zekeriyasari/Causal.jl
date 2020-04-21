@@ -17,7 +17,7 @@ mutable struct Interpolant{TMB, INB, ITP}
     end
 end 
 
-show(io::IO, interpolant::Interpolant)= print(io, "Interpolant(timebuf:$(interpolant.timebuf), ", 
+show(io::IO, interpolant::Interpolant) = print(io, "Interpolant(timebuf:$(interpolant.timebuf), ", 
     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
 
 # Callling interpolant.
@@ -37,12 +37,6 @@ interpolation(tt, uu::AbstractMatrix) = map(row -> interpolation(tt, row), eachr
 interpolation(tt, uu::AbstractVector) = CubicSplineInterpolation(getranges(tt, uu)...; extrapolation_bc=Line())
 
 function getranges(tt, uu)
-    if length(tt) < 2 
-        trange = range(tt[1], length=2, step=eps())
-        urange = range(uu[1], length=2, step=eps())
-    else 
-        trange = range(tt[1], tt[end], length=length(tt))
-        urange = uu
-    end
-    trange, urange
+    length(tt) < 2 && return (range(tt[1], length=2, step=eps()), range(uu[1], length=2, step=eps()))
+    return range(tt[1], tt[end], length=length(tt)), uu
 end

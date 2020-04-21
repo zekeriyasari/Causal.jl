@@ -21,6 +21,7 @@ import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 
     getindex, setindex!, size, isempty
 
+include("utilities/constants.jl")
 include("utilities/utils.jl")
 
 include("utilities/callback.jl")            
@@ -83,7 +84,7 @@ include("components/systems/subsystems/subsystem.jl")
 export SubSystem
 
 include("components/systems/subsystems/network.jl")
-export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, gplot, topology, nodes, numnodes, dimnodes, 
+export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
     deletelink, changeweight, maketimevarying
 
 include("components/sinks/manageplugins.jl")

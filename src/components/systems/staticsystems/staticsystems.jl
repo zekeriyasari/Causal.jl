@@ -131,7 +131,7 @@ struct Gain{OF, IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
     gain::G
     function Gain(input::Inport{<:Inpin{T}}=Inport(); gain=1., callbacks=nothing, name=Symbol()) where T 
         outputfunc(u, t) =  gain * u
-        output = Outport{T}(length(input))
+        output = Outport{T}(size(gain, 1))
         trigger = Inpin()
         handshake = Outpin{Bool}()
         new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 

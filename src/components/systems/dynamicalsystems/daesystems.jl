@@ -1,8 +1,6 @@
 # This file includes DAESystems
 
 
-const DAEAlg = IDA()
-
 
 @doc raw"""
     DAESystem(input, output, statefunc, outputfunc, state, stateder, t, modelargs=(), solverargs=(); 
@@ -56,11 +54,12 @@ DAESystem(state:[1.0, -1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:L
 mutable struct DAESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDAESystem
     @generic_dynamic_system_fields
     function DAESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), callbacks=nothing, name=Symbol())
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        integrator = construct_integrator(DAEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, stateder=stateder, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+        alg=DAEAlg, stateder=state, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, 
+        callbacks=nothing, name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                DAEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, stateder=stateder, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
         new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
             typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
             integrator, input, output, trigger, handshake, callbacks, name, uuid4())

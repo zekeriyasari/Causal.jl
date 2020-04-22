@@ -52,7 +52,7 @@ computeoutput(comp::AbstractStaticSystem, x, u, t) =
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
 function computeoutput(comp::AbstractDynamicSystem, x, u, t)
     typeof(comp.outputfunc) <: Nothing && return nothing
-    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, comp.integrator.sol.prob.p, t) 
+    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(uu -> t -> uu, u), t) 
 end
     # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing

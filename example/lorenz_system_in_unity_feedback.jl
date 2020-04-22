@@ -5,9 +5,10 @@ using Plots; pyplot()
 using LinearAlgebra
 
 # Construct the model 
+α = 0.001
 model = Model(clock=Clock(0., 0.01, 100)) 
 model[:gen] = FunctionGenerator(t -> zeros(3))
-model[:adder] = Gain(Inport(6), gain=0.001 * [diagm(ones(3)) -diagm(ones(3))])
+model[:adder] = Gain(Inport(6), gain=α*[diagm(ones(3)) -diagm(ones(3))])
 model[:ds] = LorenzSystem(Inport(3), Outport(3))
 model[:writer] = Writer(Inport(3))
 model[:gen => :adder] = Indices(1:3 => 1:3)

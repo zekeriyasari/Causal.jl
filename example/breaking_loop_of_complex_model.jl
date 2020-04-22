@@ -27,7 +27,7 @@ model[:adder2 => :adder] = Indices(1 => 3)
 model[:gen => :writer] = Indices(1 => 1)
 model[:gain2 => :writer] = Indices(1 => 2)
 
-display(gplot(model, linetype="curve"))
+display(signalflow(model, linetype="curve"))
 simulate(model)
 t, x = read(model[:writer].component)
 plot(t, x[:, 1], label=:gen)

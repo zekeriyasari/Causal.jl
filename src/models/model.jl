@@ -268,6 +268,7 @@ function inspect(model)
         while !isempty(loops)
             loop = pop!(loops)
             breakloop(model, loop)
+            @info "\tLoop $loop is broken"
             loops = getloops(model)
         end
     end
@@ -293,7 +294,11 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
 
     # Delete the branch at the breakpoint.
     srcnode = model[loop[breakpoint]]
-    dstnode = model[loop[(breakpoint + 1) % length(loop)]]
+    if breakpoint == length(loop)
+        dstnode = model[loop[1]]
+    else 
+        dstnode = model[loop[(breakpoint + 1)]]
+    end
     branch = model[srcnode.idx => dstnode.idx]
     
     # Construct the loopbreaker.

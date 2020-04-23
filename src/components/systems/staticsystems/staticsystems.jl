@@ -131,7 +131,8 @@ struct Gain{OF, IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
     gain::G
     function Gain(input::Inport{<:Inpin{T}}=Inport(); gain=1., callbacks=nothing, name=Symbol()) where T 
         outputfunc(u, t) =  gain * u
-        output = Outport{T}(size(gain, 1))
+        out = gain * zeros(length(input))
+        output = Outport{T}(length(out))
         trigger = Inpin()
         handshake = Outpin{Bool}()
         new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
@@ -163,7 +164,7 @@ end
 
 Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, the values from `initial` is returned.
 """
-mutable struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
+struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
     @generic_static_system_fields
     delay::D
     timebuf::TB

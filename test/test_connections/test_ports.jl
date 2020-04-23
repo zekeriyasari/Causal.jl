@@ -58,7 +58,7 @@
     put!(op, [NaN, NaN])
     @test istaskdone(t)
 
-    # Disconnection of data port
+    # Disconnection of ports
     op, ip = Outport(), Inport()
     ls = connect(op, ip)
     @test isconnected(op, ip)

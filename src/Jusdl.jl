@@ -68,17 +68,17 @@ export DiscreteSystem
 include("components/systems/dynamicalsystems/odesystems.jl")
 export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem
 
-# include("components/systems/dynamicalsystems/daesystems.jl")
-# export DAESystem 
+include("components/systems/dynamicalsystems/daesystems.jl")
+export DAESystem 
 
-# include("components/systems/dynamicalsystems/rodesystems.jl")
-# export RODESystem 
+include("components/systems/dynamicalsystems/rodesystems.jl")
+export RODESystem 
 
-# include("components/systems/dynamicalsystems/sdesystems.jl")
-# export SDESystem
+include("components/systems/dynamicalsystems/sdesystems.jl")
+export SDESystem
 
-# include("components/systems/dynamicalsystems/ddesystems.jl")
-# export DDESystem
+include("components/systems/dynamicalsystems/ddesystems.jl")
+export DDESystem
 
 include("components/systems/subsystems/subsystem.jl")
 export SubSystem

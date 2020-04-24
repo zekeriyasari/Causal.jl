@@ -47,6 +47,6 @@ function init_dynamic_system(deproblem, statefunc, state, t, input, modelargs=()
     trigger = Inpin()
     handshake = Outpin{Bool}()
     integrator = construct_integrator(deproblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
+            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps)
     trigger, handshake, integrator
 end

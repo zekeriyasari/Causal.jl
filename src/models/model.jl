@@ -6,39 +6,26 @@ import Base: getindex, setindex!, push!
 
 Constructs a model `Node` with `component`. `idx` is the index and `label` is label of `Node`.
 """
-struct Node{CP}
+struct Node{CP, L}
     component::CP 
     idx::Int    
-    label::Symbol 
-end 
+    label::L 
+end
 
 show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(node.idx), label:$(node.label))")
 
-
-"""
-    Indices(pair)
-
-Constructs an a branch `Indices` with `pair`. `pair` determines the subindices of the port of node components of a model.
-"""
-struct Indices{P<:Pair} 
-    pair::P 
-end 
-Indices() = Indices((:) => (:))
-
-show(io::IO, edge::Indices) = print(io, "Indices($(edge.pair))")
-
 """ 
-    Branch(nodepair, edgepair, links)
+    Branch(nodepair, indexpair, links)
 
-Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `edgepair` determines the subindices by which the elements of `nodepair` are connected.
+Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `indexpair` determines the subindices by which the elements of `nodepair` are connected.
 """
-struct Branch{NP, EP, LN}
+struct Branch{NP, IP, LN}
     nodepair::NP 
-    edgepair::EP 
+    indexpair::IP 
     links::LN
 end
 
-show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), edgepair:$(branch.edgepair), ",
+show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), indexpair:$(branch.indexpair), ",
     "links:$(branch.links))")
 
 """
@@ -66,11 +53,8 @@ struct Model{GR, ND, BR, CK, TM, CB}
         clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
         graph = SimpleDiGraph()
         taskmanager = TaskManager()
-        model = new{typeof(graph), typeof(nodes), typeof(branches), typeof(clock), typeof(taskmanager),
+        new{typeof(graph), typeof(nodes), typeof(branches), typeof(clock), typeof(taskmanager),
             typeof(callbacks)}(graph, nodes, branches, clock, taskmanager, callbacks, name, uuid4())
-        foreach(node -> addnode(model, node), nodes)
-        foreach(edge -> branches(model, edge), branches)
-        model
     end
 end
 
@@ -80,167 +64,57 @@ show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), "
 
 ##### Addinng nodes and branches.
 """
-    addnode(model::Model, node::Node)
+    addnode(model, component; label=nothing)
 
-Add `node` to nodes of `model`.
-"""
-function addnode(model::Model, node::Node)
-    checklabel(model, node)
-    push!(model.nodes, node)
-    register(model.taskmanager, node.component)
-    add_vertex!(model.graph)
-end
-
-checklabel(model,node) = node.label in [node.label for node in model.nodes] && error(node.label," is already assigned.")
-
-"""
-    addbranch(model::Model, branch::Branch)
-
-Adds `branch` to branched of `model`.
-"""
-function addbranch(model::Model, branch::Branch)
-    push!(model.branches, branch)
-    add_edge!(model.graph, branch.nodepair.first, branch.nodepair.second)
-end
-
-"""
-    deletebranch(model::Model, branch::Branch)
-
-Deletes `branch` from branched of `model`.
-
-    deletebranch(model::Model, srcnode::Node, dstnode::Node) 
-
-Deletes branch between `srcnode` and `dstnode` of the `model`.
-"""
-function deletebranch(model::Model, branch::Branch)
-    nodepair = branch.nodepair
-    srcnode, dstnode = model[nodepair.first], model[nodepair.second]
-    srcidx, dstidx = branch.edgepair.pair
-    disconnect(srcnode.component.output[srcidx], dstnode.component.input[dstidx]) 
-    rem_edge!(model.graph, srcnode.idx, dstnode.idx)
-end
-deletebranch(model::Model, srcnode::Node, dstnode::Node) = deletebranch(model, model[srcnode.idx => dstnode.idx])
-
-"""
-    setindex!(model, component, idx)
-
-Adds a node to `model` whose component is `component` and index is `idx`. `idx` can be of type `Int` or `Symbol`. The 
-syntax `model[idx] = component` is equal to `setindex!(model, component, idx)`. 
-
-# Example 
-```julia
-julia> model[1] = SinewaveGenerator() 
-SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
-
-julia> model[:adder] = Adder(Inport(2))
-Adder(signs:(+, +), input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
-```
-"""
-setindex!(model::Model, component::AbstractComponent, idx::Int) = addnode(model, Node(component, idx, Symbol(uuid4())))
-setindex!(model::Model, component::AbstractComponent, label::Symbol) = 
-    addnode(model, Node(component, length(model.nodes) + 1, label))
-
-"""
-    setindex!(model, edgepair, nodepair)
-
-Adds a branch to `model` that connects the element of `nodepair` with subindices `edgepair`. The syntax 
-`model[nodepair] = edgepair` is equal to `setindex!(model, edgepair, nodepair)`.
+Adds a node to `model`. Component is `component` and `label` is `label` the label of node. Returns added node.
 
 # Example 
 ```jldoctest 
-julia> model = Model();
+julia> model = Model() 
+Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
-julia> model[:gen] = SinewaveGenerator();
-
-julia> model[:gain] = Gain(Inport());
-
-julia> model[:gen => :gain] = Indices();
-
-julia> isconnected(model[:gen].component.output, model[:gain].component.input)
-true
+julia> addnode(model, SinewaveGenerator(), label=:gen)
+Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
 ```
 """
-function setindex!(model::Model, edgepair::Indices, nodepair::Pair{Int, Int}) 
-    src, dst = model[nodepair.first].component, model[nodepair.second].component
-    links = connect(src.output[edgepair.pair.first], dst.input[edgepair.pair.second])
-    addbranch(model, Branch(nodepair, edgepair, links))
+function addnode(model::Model, component::AbstractComponent; label=nothing)
+    label === nothing || label in [node.label for node in model.nodes] && error(label," is already assigned.")
+    node = Node(component, length(model.nodes) + 1, label)
+    push!(model.nodes, node)
+    register(model.taskmanager, component)
+    add_vertex!(model.graph)
+    node
 end
-function setindex!(model::Model, edgepair::Indices, nodepair::Pair{Symbol, Symbol}) 
-    src, dst = model[nodepair.first], model[nodepair.second]
-    setindex!(model, edgepair, src.idx => dst.idx)
-end
-
 
 """
-    getindex(model, idx) 
+    getnode(model, idx::Int) 
 
-Returns the node of whose index is `idx`. The syntax `model[idx]` equals to `getindex(model, idx)`.
+Returns node of `model` whose index is `idx`.
 
-# Example 
+    getnode(model, label)
+
+Returns node of `model` whose label is `label`.
+
+Example
 ```jldoctest
-julia> model = Model();
+julia> model = Model()
+Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
-julia> model[:gen] = SinewaveGenerator();
-
-julia> model[:gain] = Gain(Inport());
-
-julia> model[1]
+julia> addnode(model, SinewaveGenerator(), label=:gen)
 Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
 
-julia> model[:gen]
-Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
-
-julia> model[:gain]
+julia> addnode(model, Gain(), label=:gain)
 Node(component:Gain(gain:1.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64})), idx:2, label:gain)
 
-julia> model[2] 
+julia> getnode(model, :gen)
+Node(component:SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0), idx:1, label:gen)
+
+julia> getnode(model, 2)
 Node(component:Gain(gain:1.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64})), idx:2, label:gain)
 ```
 """
-function getindex(model::Model, idx::Int) 
-    nodes = filter(node -> node.idx == idx, model.nodes)
-    checklengh(length(nodes))
-    nodes[1]
-end
-function getindex(model::Model, label::Symbol) 
-    nodes = filter(node -> node.label == label, model.nodes)
-    checklengh(length(nodes))
-    nodes[1]
-end
-
-
-"""
-    getindex(model, nodepair)
-
-Returns `model` branch between `nodepair`. The syntax `model[nodepair]` is equal to `getindex(model, nodepair)`.
-
-# Example 
-```jldoctest
-julia> model = Model(); 
-
-julia> model[:gen] = SinewaveGenerator(); 
-
-julia> model[:gain] = Gain(Inport());
-
-julia> model[:gen => :gain] = Indices();
-
-julia> model[:gen => :gain]
-Branch(nodepair:1 => 2, edgepair:Indices(Colon() => Colon()), links=Link{Float64}[Link(state:open, eltype:Float64, isreadable:false, iswritable:false)])
-```
-"""
-function getindex(model::Model, nodepair::Pair{Int, Int}) 
-    branches = filter(branch -> branch.nodepair == nodepair, model.branches)
-    checklengh(length(branches))
-    branches[1]
-end
-function getindex(model::Model, nodepair::Pair{Symbol, Symbol}) 
-    getindex(model, model[nodepair.first].idx => model[nodepair.second].idx)
-end
-
-function checklengh(n)
-    n == 0 &&  error("Node cannot be found")
-    n > 1 &&  error("Multiple nodes found.")
-end
+getnode(model::Model, idx::Int) = model.nodes[idx]
+getnode(model::Model, label) = filter(node -> node.label === label, model.nodes)[1]
 
 function register(taskmanager, component)
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
@@ -251,6 +125,46 @@ function register(taskmanager, component)
     push!(handshakeport.pins, handshakepin)
     taskmanager.pairs[component] = nothing
 end
+
+"""
+    addbranch(model::Model, branch::Branch)
+
+Adds `branch` to branched of `model`.
+"""
+function addbranch(model::Model, nodepair::Pair, indexpair::Pair=(:)=>(:))
+    srcnode, dstnode = getnode(model, nodepair.first), getnode(model, nodepair.second)
+    links = connect(srcnode.component.output[indexpair.first], dstnode.component.input[indexpair.second])
+    srcidx, dstidx = srcnode.idx, dstnode.idx
+    branch =  Branch(srcidx => dstidx, indexpair, links)
+    push!(model.branches, branch)
+    add_edge!(model.graph, srcidx, dstidx)
+    branch
+end
+
+getbranch(model::Model, nodepair::Pair{Int, Int}) = filter(branch -> branch.nodepair == nodepair, model.branches)[1]
+getbranch(model::Model, nodepair::Pair{Symbol, Symbol}) = 
+    getbranch(getnode(nodepair.first).idx, getnode(nodepair.second).idx)
+
+"""
+    deletebranch(model::Model, branch::Branch)
+
+Deletes `branch` from branched of `model`.
+
+    deletebranch(model::Model, srcnode::Node, dstnode::Node) 
+
+Deletes branch between `srcnode` and `dstnode` of the `model`.
+"""
+function deletebranch(model::Model, nodepair::Pair{Int, Int})
+    srcnode, dstnode = getnode(model, nodepair.first), getnode(model, nodepair.second)
+    branch = getbranch(model, nodepair)
+    srcidx, dstidx = branch.indexpair
+    disconnect(srcnode.component.output[srcidx], dstnode.component.input[dstidx])
+    deleteat!(model.branches, findall(br -> br == branch, model.branches))
+    rem_edge!(model.graph, srcnode.idx, dstnode.idx)
+end
+deletebranch(model::Model, nodepair::Pair{Symbol, Symbol}) = 
+    deletebranch(model, getnode(model, nodepair.first).idx, getnode(model, nodepair.second).idx)
+
 
 ##### Model inspection.
 """
@@ -289,17 +203,17 @@ Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by i
 of loop.
 """
 function breakloop(model::Model, loop, breakpoint=length(loop)) 
-    nftidx = findfirst(idx -> !isfeedthrough(model[idx].component), loop)
+    nftidx = findfirst(idx -> !isfeedthrough(getnode(model, idx).component), loop)
     nftidx === nothing || (breakpoint = nftidx)
 
     # Delete the branch at the breakpoint.
-    srcnode = model[loop[breakpoint]]
+    srcnode = getnode(model, loop[breakpoint])
     if breakpoint == length(loop)
-        dstnode = model[loop[1]]
+        dstnode = getnode(model, loop[1])
     else 
-        dstnode = model[loop[(breakpoint + 1)]]
+        dstnode = getnode(model, loop[(breakpoint + 1)])
     end
-    branch = model[srcnode.idx => dstnode.idx]
+    branch = getbranch(model, srcnode.idx => dstnode.idx)
     
     # Construct the loopbreaker.
     if nftidx === nothing
@@ -312,22 +226,21 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
         n = length(component.output) 
         breaker = StaticSystem((u,t) -> component.outputfunc(component.state, nothing, t), nothing, Outport(n))
     end
-    newidx = length(model.nodes) + 1 
-    model[newidx] = breaker
+    # newidx = length(model.nodes) + 1 
+    newnode = addnode(model, breaker)
     
     # Delete the branch at the breakpoint
-    deletebranch(model, branch)
+    deletebranch(model, branch.nodepair)
     
     # Connect the loopbreker to the loop at the breakpoint.
-    srcidx, dstidx = branch.edgepair.pair
-    model[newidx => dstnode.idx] = Indices(srcidx => dstidx)
+    addbranch(model, newnode.idx => dstnode.idx, branch.indexpair)
     return true 
 end
 
 function wrap(model, loop)
     graph = model.graph
     map(loop) do idx 
-        node = model[idx]
+        node = getnode(model, idx)
         innbrs = filter(i -> i ∉ loop, inneighbors(graph, idx))
         outnbrs = filter(i -> i ∉ loop, outneighbors(graph, idx))
         if isempty(innbrs) && isempty(outnbrs)
@@ -391,7 +304,7 @@ function getinmask(model, node, loop)
     idx = node.idx
     inmask = falses(length(node.component.input))
     for nidx in filter(n -> n ∉ loop, inneighbors(model.graph, idx)) # Not-in-loop inneighbors
-        k = model[nidx => idx].edgepair.pair.second
+        k = getbranch(model, nidx => idx).indexpair.second
         if length(k) == 1 
             inmask[k] = true
         else
@@ -405,7 +318,7 @@ function getoutmask(model, node, loop)
     idx = node.idx
     outmask = falses(length(node.component.output))
     for nidx in filter(n -> n ∈ loop, outneighbors(model.graph, idx)) # In-loop outneighbors
-        k = model[idx => nidx].edgepair.pair.first
+        k = getbranch(model, idx => nidx).indexpair.first
         if length(k) == 1 
             outmask[k] = true
         else 

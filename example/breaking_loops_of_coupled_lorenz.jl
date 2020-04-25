@@ -6,16 +6,16 @@ using Plots; pyplot()
 # Construct the model 
 ε = 10.
 model = Model(clock=Clock(0., 0.01, 100.)) 
-model[:ds1] = LorenzSystem(Inport(3), Outport(3))
-model[:ds2] = LorenzSystem(Inport(3), Outport(3))
-model[:coupler] = Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0])
-model[:writer]  = Writer(Inport(6))
-model[:ds1 => :coupler] = Indices(1:3 => 1:3)
-model[:ds2 => :coupler] = Indices(1:3 => 4:6)
-model[:coupler => :ds1] = Indices(1:3 => 1:3)
-model[:coupler => :ds2] = Indices(4:6 => 1:3)
-model[:ds1 => :writer] = Indices(1:3 => 1:3)
-model[:ds2 => :writer] = Indices(1:3 => 4:6)
+addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
+addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
+addnode(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
+addnode(model,  Writer(Inport(6)), label=:writer)
+addbranch(model, :ds1 => :coupler, 1:3 => 1:3)
+addbranch(model, :ds2 => :coupler, 1:3 => 4:6)
+addbranch(model, :coupler => :ds1, 1:3 => 1:3)
+addbranch(model, :coupler => :ds2, 4:6 => 1:3)
+addbranch(model, :ds1 => :writer, 1:3 => 1:3)
+addbranch(model, :ds2 => :writer, 1:3 => 4:6)
 
 # Plot signal flow diagram of model 
 display(signalflow(model))
@@ -27,7 +27,7 @@ simulate(model)
 display(signalflow(model))
 
 # Read simulation data 
-t, x = read(model[:writer].component)
+t, x = read(getnode(model, :writer).component)
 
 # Compute errors
 err = x[:, 1] - x[:, 4]

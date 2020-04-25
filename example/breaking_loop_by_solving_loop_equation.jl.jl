@@ -6,22 +6,22 @@ using Plots; pyplot()
 # Construct model with algebraic loop
 α = 3
 model = Model(clock=Clock(0, 1, 100)) 
-model[:gen] = RampGenerator()
-model[:adder] = Adder((+,-))
-model[:gain] = Gain(gain=α)
-model[:writer] = Writer(Inport(2))
-model[:gen => :adder] = Indices(1 => 1) 
-model[:adder => :gain] = Indices(1 => 1) 
-model[:gain => :adder] = Indices(1 => 2) 
-model[:gen => :writer] = Indices(1 => 1)
-model[:gain => :writer] = Indices(1 => 2)
+addnode(model, RampGenerator(), label=:gen)
+addnode(model, Adder((+,-)), label=:adder)
+addnode(model, Gain(gain=α), label=:gain)
+addnode(model, Writer(Inport(2)), label=:writer)
+addbranch(model, :gen => :adder, 1 => 1)
+addbranch(model, :adder => :gain, 1 => 1)
+addbranch(model, :gain => :adder, 1 => 2)
+addbranch(model, :gen => :writer, 1 => 1)
+addbranch(model, :gain => :writer, 1 => 2)
 
 # Simulate the model
 simulate(model)
 
 # Plot the results
-t, y = read(model[:writer].component)
-yt = α / (α + 1) * model[:gen].component.outputfunc.(t)
+t, y = read(getnode(model, :writer).component)
+yt = α / (α + 1) * getnode(model, :gen).component.outputfunc.(t)
 err = yt - y[:, 2]
 p1 = plot(t, y[:, 1], label=:u)
     plot!(t, y[:, 2], label=:y)

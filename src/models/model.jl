@@ -143,7 +143,7 @@ end
 
 getbranch(model::Model, nodepair::Pair{Int, Int}) = filter(branch -> branch.nodepair == nodepair, model.branches)[1]
 getbranch(model::Model, nodepair::Pair{Symbol, Symbol}) = 
-    getbranch(getnode(nodepair.first).idx, getnode(nodepair.second).idx)
+    getbranch(model, getnode(model, nodepair.first).idx => getnode(model, nodepair.second).idx)
 
 """
     deletebranch(model::Model, branch::Branch)
@@ -161,6 +161,7 @@ function deletebranch(model::Model, nodepair::Pair{Int, Int})
     disconnect(srcnode.component.output[srcidx], dstnode.component.input[dstidx])
     deleteat!(model.branches, findall(br -> br == branch, model.branches))
     rem_edge!(model.graph, srcnode.idx, dstnode.idx)
+    branch
 end
 deletebranch(model::Model, nodepair::Pair{Symbol, Symbol}) = 
     deletebranch(model, getnode(model, nodepair.first).idx, getnode(model, nodepair.second).idx)
@@ -234,7 +235,7 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
     
     # Connect the loopbreker to the loop at the breakpoint.
     addbranch(model, newnode.idx => dstnode.idx, branch.indexpair)
-    return true 
+    return newnode
 end
 
 function wrap(model, loop)

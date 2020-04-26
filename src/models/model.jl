@@ -174,15 +174,16 @@ deletebranch(model::Model, nodepair::Pair{Symbol, Symbol}) =
 Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and 
 error is thrown.
 """
-function inspect(model)
+function inspect(model, breakpoints::Vector{Int}=Int[])
     loops = getloops(model)
     if !isempty(loops)
         msg = "\tThe model has algrebraic loops:$(loops)"
         msg *= "\n\t\tTrying to break these loops..."
         @info msg
         while !isempty(loops)
-            loop = pop!(loops)
-            breakloop(model, loop)
+            loop = popfirst!(loops)
+            breakpoint = isempty(breakpoints) ? length(loop) : popfirst!(breakpoints)
+            breakloop(model, loop, breakpoint)
             @info "\tLoop $loop is broken"
             loops = getloops(model)
         end
@@ -419,13 +420,13 @@ function terminate(model::Model)
 end
 
 
-function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool)
+function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints::Vector{Int})
     model = sim.model
     @siminfo "Started simulation..."
     sim.state = :running
 
     @siminfo "Inspecting model..."
-    inspect(model)
+    inspect(model, breakpoints)
     @siminfo "Done."
 
     @siminfo "Initializing the model..."
@@ -453,7 +454,8 @@ end
 Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar indicating the simualation status is displayed on the console.
 """
 function simulate(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
-    logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
+    logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true, 
+    breakpoints::Vector{Int}=Int[])
     
     # Construct a Simulation
     sim = Simulation(model, simdir=simdir, simprefix=simprefix, simname=simname)
@@ -461,7 +463,7 @@ function simulate(model::Model; simdir::String=tempdir(), simprefix::String="Sim
 
     # Simualate the modoel
     with_logger(sim.logger) do
-        _simulate(sim, reportsim, withbar)
+        _simulate(sim, reportsim, withbar, breakpoints)
     end
     logtofile && flush(sim.logger.stream)  # Close logger file stream.
     return sim

@@ -6,12 +6,6 @@ git-tree-sha1 = "86d092c2599f1f7bb01668bf8eb3412f98d61e47"
 uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 version = "0.3.2"
 
-[[AbstractTrees]]
-deps = ["Markdown"]
-git-tree-sha1 = "86d092c2599f1f7bb01668bf8eb3412f98d61e47"
-uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
-version = "0.3.2"
-
 [[Adapt]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "c88cfc7f9c1f9f8633cddf0b56e86302b70f64c5"
@@ -450,11 +444,6 @@ git-tree-sha1 = "67f9a88611bc79f992aa705d9bbc833a2547dec7"
 uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 version = "0.3.1"
 
-[[MLStyle]]
-git-tree-sha1 = "67f9a88611bc79f992aa705d9bbc833a2547dec7"
-uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
-version = "0.3.1"
-
 [[MacroTools]]
 deps = ["Markdown", "Random"]
 git-tree-sha1 = "f7d2e3f654af75f01ec49be82c231c382214223a"
@@ -566,12 +555,6 @@ git-tree-sha1 = "23ccaee3dd3a6d104a381011d715964dd2943491"
 uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
 version = "5.0.3"
 
-[[ParameterizedFunctions]]
-deps = ["DataStructures", "DiffEqBase", "LinearAlgebra", "ModelingToolkit"]
-git-tree-sha1 = "23ccaee3dd3a6d104a381011d715964dd2943491"
-uuid = "65888b18-ceab-5e60-b2b9-181511a3b968"
-version = "5.0.3"
-
 [[Parameters]]
 deps = ["OrderedCollections"]
 git-tree-sha1 = "b62b2558efb1eef1fa44e4be5ff58a515c287e38"
@@ -611,11 +594,6 @@ deps = ["Random", "Statistics", "Test"]
 git-tree-sha1 = "44d018211a56626288b5d3f8c6497d28c26dc850"
 uuid = "e409e4f3-bfea-5376-8464-e040bb5c01ab"
 version = "0.4.0"
-
-[[PrettyPrint]]
-git-tree-sha1 = "21e1f88cb73589ec39a1181f77eb444b5276151e"
-uuid = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
-version = "0.1.0"
 
 [[PrettyPrint]]
 git-tree-sha1 = "21e1f88cb73589ec39a1181f77eb444b5276151e"
@@ -777,23 +755,11 @@ version = "6.19.2"
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
-[[SuiteSparse_jll]]
-deps = ["Libdl", "METIS_jll", "OpenBLAS_jll", "Pkg"]
-git-tree-sha1 = "dad9c6f67fa143b7b1935ef3c6231d88e6dcdec2"
-uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "5.4.0+8"
-
 [[Sundials]]
 deps = ["BinaryProvider", "DataStructures", "DiffEqBase", "Libdl", "LinearAlgebra", "Logging", "Reexport", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "d6e23d712b0ec7161174acbc82fd224cde3e3103"
 uuid = "c3572dad-4567-51f8-b174-8c6c989267f4"
 version = "3.9.0"
-
-[[Sundials_jll]]
-deps = ["Libdl", "OpenBLAS_jll", "Pkg", "SuiteSparse_jll"]
-git-tree-sha1 = "4a4ae2ebefa34779552dbe87683c70c856624ec8"
-uuid = "fb77eaff-e24c-56d4-86b1-d163f2edb164"
-version = "5.2.0+0"
 
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions"]

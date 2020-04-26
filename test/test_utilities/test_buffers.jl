@@ -1,6 +1,8 @@
 # This file includes the buffer test set
 
 @testset "BufferTestSet" begin
+    @info "Running BufferTestSet ..."
+
     # Simple Buffer construction
     buf = Buffer(5)
     @test eltype(buf) == Float64
@@ -98,4 +100,5 @@
     @test isempty(buf)
     @test_throws Exception read(buf)  # When buffer is empty, no more reads.
 
+    @info "Done BufferTestSet."
 end  # testset

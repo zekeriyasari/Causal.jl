@@ -1,6 +1,8 @@
 # This file includes testset for RODESystem 
 
 @testset "RODESystemTestSet" begin 
+    @info "Running RODESystemTestSet ..."
+
     # RODESystem construction 
     function statefunc(dx, x, u, t, W)
         dx[1] = 2x[1]*sin(W[1] - W[2])
@@ -80,4 +82,5 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    @info "Done RODESystemTestSet ..."
 end  # testset 

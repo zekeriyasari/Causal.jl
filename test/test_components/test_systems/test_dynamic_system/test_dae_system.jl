@@ -1,6 +1,8 @@
 # This file includes testset for DAESystem 
 
 @testset "DAESystemTestSet" begin 
+    @info "Running DAESystemTestSet ..."
+
     # DAESystem construction 
     function sfunc(out, dx, x, u, t)
         out[1] = -0.04 * x[1] + 1e4 * x[2] * x[3] - dx[1]
@@ -96,4 +98,6 @@
     put!(ds.output, NaN * ones(length(ds.output)))
     sleep(0.1)
     @test istaskdone(tsk2)
+
+    @info "Done DAESystemTestSet."
 end # testset 

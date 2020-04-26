@@ -16,6 +16,7 @@ using LinearAlgebra
 using Dates
 using NLsolve
 using Interpolations
+using LibGit2
 import GraphPlot.gplot
 import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 
@@ -108,5 +109,8 @@ export Simulation, SimulationError, setlogger, closelogger, report
 include("models/model.jl")
 export Model, getloops, breakloop, inspect, initialize, run, terminate, simulate
 export Node, Branch, addnode, getnode, addbranch, getbranch, deletebranch
+
+include("plugins/loadplugins.jl")
+export AbstractPlugin, process, add, remove, enable, disable, check
 
 end  # module

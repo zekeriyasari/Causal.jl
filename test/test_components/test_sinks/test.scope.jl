@@ -1,6 +1,8 @@
 # This file constains testset for Scope 
 
 @testset "ScopeTestSet" begin 
+    @info "Running ScopeTestSet ..."
+
     # Scope construction 
     scope = Scope(Inport(1), buflen=100)
     @test typeof(scope.trigger) == Inpin{Float64}
@@ -25,4 +27,6 @@
     put!(trg, NaN)
     sleep(0.1)
     @test istaskdone(tsk)
+
+    @info "Done ScopeTestSet ..."
 end  # testset 

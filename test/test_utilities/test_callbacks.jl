@@ -1,7 +1,7 @@
 # This file includees the callbacks tests
 
 @testset  "CallbackTestSet" begin
-
+    @info "Running CallbackTestSet ..."
     condition(obj) = obj.x >= 5
     action(obj) = println("Callaback activated . obj.x = ", obj.x)
     clb = Callback(condition, action)
@@ -30,4 +30,5 @@
         applycallbacks(obj2)
     end
 
+    @info "Done CallbackTestSet."
 end # testset

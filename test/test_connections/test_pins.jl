@@ -1,6 +1,7 @@
 # This file includes the testset for pins
 
 @testset "PinTestSet" begin
+    @info "Running PinTestSet ..."
 
     # Construction of Outpin
     op = Outpin()
@@ -59,4 +60,5 @@
     disconnect(op, ip)
     @test !isconnected(op, ip)
 
+    @info "Done PinTestSet."
 end  # testset

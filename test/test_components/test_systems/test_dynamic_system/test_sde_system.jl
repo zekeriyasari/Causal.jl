@@ -1,6 +1,8 @@
 # This file includes testset for SDESystem 
 
 @testset "SDESystemTestSet" begin 
+    @info "Running SDESystemTestSet ..."
+
     # SDESystem construction 
     f(dx, x, u, t) = (dx[1] = -x[1])
     h(dx, x, u, t) = (dx[1] = -x[1])
@@ -78,4 +80,5 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    @info "Running SDESystemTestSet ..."
 end  # testset

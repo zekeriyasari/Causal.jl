@@ -1,7 +1,8 @@
 # This file includes testset for StaticSystems
 
 @testset "StaticSystems" begin
-    
+    @info "Running StaticSystemTestSet ..."
+
     # StaticSystem construction
     ofunc(u, t) = [u[1] + u[2], u[1] - u[2], u[1] * u[2]]
     ss = StaticSystem(ofunc, Inport(2), Outport(3))
@@ -213,4 +214,5 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    @info "Done StaticSystemTestSet ..."
 end # testset

@@ -9,6 +9,9 @@ using Logging
 using Random
 using JLD2, FileIO
 using UUIDs
+using Statistics
+using LightGraphs
+import Jusdl.process
 
 launchport(iport) = @async while true 
     all(take!(iport) .=== NaN) && break 

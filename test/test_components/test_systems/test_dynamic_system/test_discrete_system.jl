@@ -1,6 +1,8 @@
 # This file includes testset for DiscreteSystem 
 
 @testset "DiscreteSystemTestSet" begin 
+    @info "Running DiscreteSystemTestSet ..."
+
     # ODESystem construction 
     sfunc1(dx, x, u, t) = (dx .= -x)
     ofunc1(x, u, t) = x
@@ -58,4 +60,6 @@
     put!(ds.output, NaN * ones(length(ds.output)))
     sleep(0.1)
     @test istaskdone(tsk2)
+
+    @info "Done DiscreteSystemTestSet ..."
 end

@@ -1,6 +1,8 @@
 # This file includes testset for ODESystem 
 
 @testset "ODESystemTestSet" begin 
+    @info "Running ODESystemTestSet ..."
+
     # ODESystem construction 
     sfunc1(dx, x, u, t) = (dx .= -x)
     ofunc1(x, u, t) = x
@@ -247,5 +249,6 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    @info "Done ODESystemTestSet."
 end  # testset 
 

@@ -79,14 +79,16 @@ function report(simulation::Simulation)
         simreport["retcode"] = simulation.retcode
         
         # Save simulation model components.
-        foreach(unfasten, filter(component->isa(component, AbstractSink), getcomponents(simulation.model)))
+        model = simulation.model
+        components = [node.component for node in model.nodes]
+        foreach(unfasten, filter(component->isa(component, AbstractSink), components))
         model_group = JLD2.Group(simreport, "model")
         model_group["id"] = string(simulation.model.id)
         model_group["name"] = string(simulation.model.name)
         model_group["clock"] = simulation.model.clock
         model_group["callbacks"] = simulation.model.callbacks
         model_blocks_group = JLD2.Group(simreport, "components")
-        for component in filter(component->!isa(component, Writer), getcomponents(simulation.model))
+        for component in filter(component->!isa(component, Writer), components)
             model_blocks_group[string(component.name)] = component
         end
     end

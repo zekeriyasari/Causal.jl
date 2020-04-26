@@ -1,6 +1,7 @@
 # # This file includes the test set for ports
 
-@testset "BussesTestSet" begin
+@testset "PortTestSet" begin
+    @info "Running PortTestSet ..."
 
     # Constructiokn of Outport and Inport
     op = Outport(5)
@@ -65,4 +66,5 @@
     disconnect(op, ip)
     @test !isconnected(op, ip)
 
+    @info "Donke PortTestSet."
 end  # testset

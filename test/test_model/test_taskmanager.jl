@@ -1,6 +1,8 @@
 # This file includes testset for TaskManager
 
 @testset "TaskManager" begin 
+    @info "Running TaskManagerTestSet ..."
+
     # Preliminaries.
     gettask(ch) = @async while true 
         val = take!(ch)
@@ -23,4 +25,5 @@
     put!(chpairs[2], 0.)     # Fail the output task first Mytype1
     @test_throws Exception checktaskmanager(tm) 
 
+    @info "Done TaskManagerTestSet."
 end # testset

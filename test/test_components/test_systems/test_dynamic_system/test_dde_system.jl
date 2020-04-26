@@ -1,6 +1,8 @@
 # This file includes testset for DDESystem 
 
 @testset "DDESystemTestSet" begin 
+    @info "Running DDESystemTestSet ..."
+
     # DDESystem construction 
     out = zeros(1)
     tau = 1 
@@ -87,5 +89,7 @@
     put!(ds.output, NaN * ones(length(ds.output)))
     sleep(0.1)
     @test istaskdone(tsk2)
+
+    @info "Done DDESystemTestSet ..."
 end  # testset
 

@@ -1,6 +1,8 @@
 # This file includes testset for Model 
 
 @testset "ModelTestSet" begin 
+    @info "Running ModelTestSet ..."
+
     # Model construction
     model = Model()
     @test isempty(model.nodes)
@@ -176,4 +178,6 @@
     @test sim.state == :done
     @test isoutoftime(model.clock)
     @test all(istaskdone.(values(model.taskmanager.pairs)))
+
+    @info "Done ModelTestSet."
 end # testset

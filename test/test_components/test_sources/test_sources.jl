@@ -1,6 +1,8 @@
 # This file includes testset for sources.
 
 @testset "ClockTestSet" begin 
+    @info "Running ClockTestSet ..."
+
     # Clock construction 
     clk1 = Clock(0., 1., 10.)
     clk2 = Clock(0., 1, 10)
@@ -37,10 +39,13 @@
     for i = 1 : 10
         @test take!(clk) == 1.
     end
+
+    @info "Done ClockTestSet."
 end  # testset
 
 
 @testset "GeneratorsTestSet" begin 
+    @info "Running GeneratorsTestSet ..."
     # FunctionGenerator construction
     gen = FunctionGenerator(sin)
     @test typeof(gen.trigger) == Inpin{Float64} 
@@ -88,4 +93,6 @@ end  # testset
     # Mutaton of generators 
     sinegen.amplitude = 5.
     sqauregen.high = 10.
+
+    @info "Done GeneratorsTestSet ..."
 end  # testset

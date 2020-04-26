@@ -1,6 +1,8 @@
 # This file constains testset for Writer 
 
 @testset "WriterTestSet" begin
+    @info "Running WriterTestSet ..."
+
     # Preliminaries 
     randdirname() = string(uuid4())
     randfilename() = join([string(uuid4()), ".jld2"], "")
@@ -69,4 +71,5 @@
     sleep(0.1)
     @test istaskdone(comptask)
 
+    @info "Done WriterTestSet."
 end  # testset 

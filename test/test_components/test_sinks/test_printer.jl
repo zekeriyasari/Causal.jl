@@ -1,6 +1,8 @@
 # This file constains testset for Printer 
 
 @testset "PrinterTestSet" begin 
+    @info "Running PrinterTestSet ..."
+    
     # Printer construction 
     printer = Printer(Inport(2), buflen=100)
     @test typeof(printer.trigger) == Inpin{Float64}
@@ -23,4 +25,6 @@
     put!(trg, NaN)
     sleep(0.1)
     @test istaskdone(tsk)
+
+    @info "Done PrinterTestSet ..."
 end  # testset 

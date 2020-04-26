@@ -1,6 +1,8 @@
 # This file includes testset for Simulation 
 
 @testset "SimulationTestSet" begin 
+    @info "Running SimulationTestSet ..."
+
     # Simulation construction 
     model = Model()
     simname = string(uuid4())
@@ -14,15 +16,15 @@
     @test sim.name == "Simulation-" * simname
 
     # Check Writer files 
-    gen = SinewaveGenerator()
-    writer = Writer(Bus())
-    dname1 = dirname(writer.file.path)
-    connect(gen.output, writer.input)
-    model = Model(gen, writer)
+    model = Model()
+    addnode(model, SinewaveGenerator(), label=:gen)
+    addnode(model, Writer(Inport()), label=:writer)
+    addbranch(model, :gen => :writer)
+    dname1 = dirname(getnode(model, :writer).component.file.path)
     simname = string(uuid4())
     simdir = tempdir()
     sim = Simulation(model, simdir=simdir, simname=simname)
-    @test dirname(writer.file.path) == sim.path
+    @test dirname(getnode(model, :writer).component.file.path) == sim.path
     @test dname1 != sim.path
 
     # Report Simulation 
@@ -36,4 +38,5 @@
     @test data["state"] == sim.state
     @test data["retcode"] == sim.retcode
     
+    @info "Done SimulationTestSet."
 end # testset

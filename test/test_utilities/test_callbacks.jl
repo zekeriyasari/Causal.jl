@@ -1,16 +1,17 @@
 # This file includees the callbacks tests
 
-@testset  "CallbackTestSet" begin 
-
+@testset  "CallbackTestSet" begin
+    @info "Running CallbackTestSet ..."
     condition(obj) = obj.x >= 5
     action(obj) = println("Callaback activated . obj.x = ", obj.x)
     clb = Callback(condition, action)
-    @test clb.enabled 
+    @test isenabled(clb)
+    disable!(clb)
+    @test !isenabled(clb)
 
-
-    mutable struct Object
-        x::Int 
-        clb::Callback
+    mutable struct Object{CB}
+        x::Int
+        clb::CB
     end
     obj = Object(1, clb)
     for val in 1 : 10
@@ -18,22 +19,16 @@
         obj.clb(obj)
     end
 
-    mutable struct Object2
-        x::Int 
-        callbacks::Vector{Callback}
-        Object2(x::Int) = new(x, Callback[])
+    mutable struct Object2{CB}
+        x::Int
+        callbacks::CB
     end
 
-    obj2 = Object2(4)
-    @test isempty(obj2.callbacks)
-
-    clb = Callback(condition, action)
-    addcallback(obj2, clb)
-    @test length(obj2.callbacks) == 1
-
+    obj2 = Object2(4, Callback(condition, action))
     for val in 1 : 10
-        obj2.x = val 
-        obj2.callbacks(obj)
+        obj2.x = val
+        applycallbacks(obj2)
     end
 
+    @info "Done CallbackTestSet."
 end # testset

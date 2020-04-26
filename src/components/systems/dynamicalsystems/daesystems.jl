@@ -1,8 +1,5 @@
 # This file includes DAESystems
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDAESystem
-
-const DAEAlg = IDA()
 
 
 @doc raw"""
@@ -54,19 +51,20 @@ DAESystem(state:[1.0, -1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:L
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
-mutable struct DAESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDAESystem
+mutable struct DAESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDAESystem
     @generic_dynamic_system_fields
-    function DAESystem(input, output, statefunc, outputfunc, state, stateder, t, modelargs=(), solverargs=(); 
-        alg=DAEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
-        integrator = construct_integrator(DAEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, stateder=stateder, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], 
-            uuid4(), statefunc, outputfunc, state, t, integrator)
+    function DAESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=DAEAlg, stateder=state, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, 
+        callbacks=nothing, name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                DAEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, stateder=stateder, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
 show(io::IO, ds::DAESystem) = print(io, 
-    "DAESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "DAESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

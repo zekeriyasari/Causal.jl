@@ -1,11 +1,5 @@
 # This file includes the Plugins module
 
-@reexport module Plugins
-
-using LibGit2
-using Random
-import Base.show
-
 abstract type AbstractPlugin end
 
 # Define generic plugin functions.
@@ -54,8 +48,8 @@ function add(name::AbstractString, url::AbstractString=remote_repo_url)
     end
 end
 
-# Includes essential plugins from Jusdl
-foreach(include, search(joinpath(@__DIR__, "essentials"), ".jl"))
+# # Includes essential plugins from Jusdl
+# foreach(include, search(joinpath(@__DIR__, "essentials"), ".jl"))
 
 # Includes additional plugins from Jusdl
 foreach(include, search(joinpath(@__DIR__, "additionals"), ".jl"))
@@ -64,6 +58,3 @@ foreach(include, search(joinpath(@__DIR__, "additionals"), ".jl"))
 user_plugins_path = joinpath(pwd(), "plugins")
 ispath(user_plugins_path) && foreach(include, search(joinpath(user_plugins_path), ".jl"))
 
-export process, add, remove, enable, disable, check
-
-end  # module

@@ -1,0 +1,30 @@
+# This file includes the simulation of a model consisting an algrebraic loop with multiple inneighbor branches joinin an algrebraic loop.
+
+using Jusdl 
+using Plots; pyplot() 
+
+model = Model() 
+addnode(model, SinewaveGenerator(frequency=2), label=:gen)
+addnode(model, SinewaveGenerator(frequency=3), label=:gen2)
+addnode(model, Adder((+, +)), label=:adder2)
+addnode(model, Gain(gain=1), label=:gain1)
+addnode(model, Adder((+,-, +)), label=:adder)
+addnode(model, Gain(gain=1), label=:gain2)
+addnode(model, Gain(gain=1), label=:gain3)
+addnode(model, Writer(Inport(2)), label=:writer)
+addbranch(model, :gen => :gain1, 1 => 1)
+addbranch(model, :gain1 => :adder, 1 => 1)
+addbranch(model, :gen2 => :adder2, 1 => 1)
+addbranch(model, :gen => :adder2, 1 => 2)
+addbranch(model, :adder => :gain2, 1 => 1)
+addbranch(model, :gain2 => :gain3, 1 => 1)
+addbranch(model, :gain3 => :adder, 1 => 2)
+addbranch(model, :adder2 => :adder, 1 => 3)
+addbranch(model, :gen => :writer, 1 => 1)
+addbranch(model, :gain2 => :writer, 1 => 2)
+
+display(signalflow(model, linetype="curve"))
+simulate(model)
+t, x = read(getnode(model, :writer).component)
+plot(t, x[:, 1], label=:gen)
+plot!(t, x[:, 2], label=:gain)

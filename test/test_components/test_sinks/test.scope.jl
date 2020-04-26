@@ -1,28 +1,32 @@
 # This file constains testset for Scope 
 
 @testset "ScopeTestSet" begin 
+    @info "Running ScopeTestSet ..."
+
     # Scope construction 
-    scope = Scope(Bus(1), buflen=100)
-    @test typeof(scope.trigger) == Link{Float64}
-    @test typeof(scope.handshake) == Link{Bool}
+    scope = Scope(Inport(1), buflen=100)
+    @test typeof(scope.trigger) == Inpin{Float64}
+    @test typeof(scope.handshake) == Outpin{Bool}
     @test size(scope.timebuf) == (100,)
     @test size(scope.databuf) == (1, 100)
-    @test isa(scope.input, Bus)
+    @test isa(scope.input, Inport)
     @test scope.plugin === nothing
-    @test !isempty(scope.callbacks)
+    @test typeof(scope.callbacks) <: Callback
 
     # Driving Scope 
     open(scope)
-    tsk = launch(scope)
+    oport, iport, trg, hnd, tsk, tsk2 = prepare(scope)
     for t in 1 : 200
-        drive(scope, t)
-        put!(scope.input, ones(1) * t)
-        approve(scope)
+        put!(trg, t)
+        put!(oport, ones(1) * t)
+        take!(hnd)
         @test read(scope.timebuf) == t
-        @test [read(link.buffer) for link in scope.input] == ones(1) * t
+        @test [read(pin.links[1].buffer) for pin in oport] == ones(1) * t
         @show t
     end 
-    terminate(scope)
+    put!(trg, NaN)
     sleep(0.1)
-    @test all(istaskdone.(tsk))
+    @test istaskdone(tsk)
+
+    @info "Done ScopeTestSet ..."
 end  # testset 

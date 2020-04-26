@@ -12,23 +12,23 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 !!! warning 
     When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
 """
-mutable struct Writer{IB, DB, TB, P, T, H, F} <: AbstractSink
+mutable struct Writer{IB, DB, TB, PL, TR, HS, CB, FL} <: AbstractSink
     @generic_sink_fields
-    file::F
-    function Writer(input::Bus{<:Link{T}}; buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4()))) where T 
-        # Construct the file
+    file::FL
+    function Writer(input::Inport{<:Inpin{T}}=Inport(); buflen=64, plugin=nothing, callbacks=nothing, 
+        name=Symbol(uuid4()), path=joinpath(tempdir(), string(name))) where T 
         endswith(path, ".jld2") || (path *= ".jld2")
-        file = isfile(path) ? error("$path exists") :  jldopen(path, "w")
+        file = jldopen(path, "w")
         close(file)     # Close file so that the file can be sent to remote Julia processes
-
-        # Construct the buffers
         timebuf = Buffer(buflen)
-        databuf = Buffer(T, length(input), buflen)
-        trigger = Link()
-        handshake = Link(Bool)
-        addplugin(
-            new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
-            typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, Callback[], uuid4(), file), write!)
+        databuf = length(input) == 1 ? Buffer(T, buflen) :  Buffer(T, length(input), buflen)
+        id = uuid4() 
+        callbacks = fasten(plugin, write!, timebuf, databuf, callbacks, id)
+        trigger = Inpin()
+        handshake = Outpin{Bool}()
+        new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
+            typeof(callbacks), typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id, 
+            file)
     end
 end
 
@@ -71,7 +71,7 @@ fwrite(file, td, xd) = file[string(td)] = xd
 
 Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is also flattened.
 """
-function read(writer::Writer; flatten=false) 
+function read(writer::Writer; flatten=true) 
     content = fread(writer.file.path, flatten=flatten)
     # if flatten
     #     t = vcat(collect(keys(content))...)
@@ -91,9 +91,12 @@ function fread(path::String; flatten=false)
     content = load(path)
     data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
     if flatten
-        t = vcat(collect(keys(data))...)
-        x = collect(hcat(collect(values(data))...)')
-        # x = collect(hcat(vcat(collect(values(data))...)...)')
+        t = vcat(reverse.(keys(data), dims=1)...)
+        if typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractVector, T3}
+            x = vcat(reverse.(values(data), dims=1)...)
+        elseif typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractMatrix, T3}
+            x = collect(hcat(reverse.(values(data), dims=2)...)')
+        end
         return t, x
     else
         return data

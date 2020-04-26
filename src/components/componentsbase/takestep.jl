@@ -1,11 +1,5 @@
 # This file includes stepping of abstract types.
 
-import ....Jusdl.Connections: launch, Bus, release, isreadable
-import ....Jusdl.Utilities: write!
-
-using DifferentialEquations
-using Sundials
-
 ##### Input-Output reading and writing.
 """
     readtime(comp::AbstractComponent)
@@ -34,7 +28,7 @@ Returns the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, 
 """
 function readinput(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
-    typeof(comp.input) <: Bus ? take!(comp.input) : nothing
+    typeof(comp.input) <: Inport ? take!(comp.input) : nothing
 end
 
 """
@@ -44,7 +38,7 @@ Writes `out` to the output of `comp` if the `output` of `comp` is `Bus`. Otherwi
 """
 function writeoutput(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    typeof(comp.output) <: Bus ? put!(comp.output, out) : nothing
+    typeof(comp.output) <: Outport ? put!(comp.output, out) : nothing
 end
 
 """
@@ -58,7 +52,7 @@ computeoutput(comp::AbstractStaticSystem, x, u, t) =
     typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
 function computeoutput(comp::AbstractDynamicSystem, x, u, t)
     typeof(comp.outputfunc) <: Nothing && return nothing
-    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(ui -> t -> ui, u), t) 
+    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(uu -> t -> uu, u), t) 
 end
     # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
@@ -77,40 +71,53 @@ Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `u` is the v
 Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `u` is the value of `input` and `t` is time. 
     
     evolve!(comp::AbstractDynamicSystem, u, t)
-
+    
 Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. 
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
 evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
-evolve!(comp::AbstractStaticSystem, u, t) = typeof(comp) <: AbstractMemory ? write!(comp.buffer, u) : nothing
+function evolve!(comp::AbstractStaticSystem, u, t)
+    if typeof(comp) <: AbstractMemory 
+        timebuf = comp.timebuf 
+        databuf = comp.databuf
+        write!(timebuf, t)
+        write!(databuf, u)
+    end
+end
 function evolve!(comp::AbstractDynamicSystem, u, t)
     # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
     # Thus, there will be no evolution in such a case.
+    integrator = comp.integrator
+    interpolator = integrator.sol.prob.p
+    update_interpolator!(interpolator, u, t)
     comp.t == t && return comp.state  
 
     # Advance the system and update the system.
-    advance!(comp, u, t)
-    updatetime!(comp)
-    updatestate!(comp)
+    step!(integrator, t - comp.t, true)
+    comp.t = integrator.t
+    comp.state = integrator.u
 
     # Return comp state
-    comp.state
-end
-
-function advance!(comp::AbstractDynamicSystem, u, t)
-    interpolator = comp.integrator.sol.prob.p
-    update_interpolator!(interpolator, u, t)
-    step!(comp.integrator, t - comp.t, true)
-    update_interpolator!(interpolator)
+    return comp.state
 end
 update_interpolator!(interp::Nothing) = nothing
 update_interpolator!(interp::Nothing, u, t) = nothing
-update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
-update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
+function update_interpolator!(interp::Interpolant, u, t)
+    write!(interp.timebuf, t)
+    write!(interp.databuf, u)
+    update!(interp)
+end
 
-updatetime!(comp) = (comp.t = comp.integrator.t)
-updatestate!(comp) = (comp.state = comp.integrator.u)
+# function advance!(comp::AbstractDynamicSystem, u, t)
+#     interpolator = comp.integrator.sol.prob.p
+#     update_interpolator!(interpolator, u, t)
+#     step!(comp.integrator, t - comp.t, true)
+# end
+# update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
+# update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
+# updatetime!(comp) = (comp.t = comp.integrator.t)
+# updatestate!(comp) = (comp.state = comp.integrator.u)
 
 ##### Task management
 """
@@ -120,7 +127,6 @@ Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractM
 """
 function takestep(comp::AbstractComponent)
     t = readtime(comp)
-    # t === missing && return t
     t === NaN && return t
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
@@ -135,7 +141,7 @@ function forwardstep(comp, t)
     x = evolve!(comp, u, t)
     y = computeoutput(comp, x, u, t)
     writeoutput(comp, y)
-    comp.callbacks(comp)
+    applycallbacks(comp)
     return t
 end
 
@@ -151,35 +157,23 @@ function backwardstep(comp, t)
     writeoutput(comp, y)
     u = readinput(comp)
     xn = evolve!(comp, u, t)
-    comp.callbacks(comp)
+    applycallbacks(comp)
     return t
 end
-
 
 """
     launch(comp::AbstractComponent)
 
 Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
 """
-function launch(comp::AbstractComponent)
-    outputtask = if !(typeof(comp) <: AbstractSink)  # Check for `AbstractSink`.
-        if !(typeof(comp.output) <: Nothing)  # Check for `Terminator`.
-            @async while true 
-                val = take!(comp.output)
-                # all(val .=== missing) && break
-                all(val .=== NaN) && break
-            end
-        end
-    end
-    triggertask = @async begin 
+function launch(comp::AbstractComponent) 
+    @async begin 
         while true
-            # takestep(comp) === missing && break
             takestep(comp) === NaN && break
             put!(comp.handshake, true)
         end
         typeof(comp) <: AbstractSink && close(comp)
     end
-    return triggertask, outputtask
 end
 
 """
@@ -225,7 +219,18 @@ end
 
 Launches all subcomponents of `comp`. See also: [`launch(comp::AbstractComponent)`](@ref)
 """
-launch(comp::AbstractSubSystem) = launch.(comp.components)
+function launch(comp::AbstractSubSystem)
+    comptask = @async begin 
+        while true
+            if takestep(comp) === NaN 
+                put!(comp.triggerport, fill(NaN, length(comp.components)))
+                break   
+            end
+            put!(comp.handshake, true)
+        end
+    end
+    [launch.(comp.components)..., comptask]
+end
 
 """
     takestep(comp::AbstractSubSystem)
@@ -234,11 +239,12 @@ Makes `comp` to take a step by making each subcomponent of `comp` take a step. S
 """
 function takestep(comp::AbstractSubSystem)
     t = readtime(comp)
-    # t === missing && return t
     t === NaN && return t
-    foreach(takestep, comp.components)
-    approve(comp) ||  @warn "Could not be approved in the subsystem"
-    put!(comp.handshake, true)
+    put!(comp.triggerport, fill(t, length(comp.components)))
+    all(take!(comp.handshakeport)) || @warn "Could not be approved in the subsystem"
+    # foreach(takestep, comp.components)
+    # approve(comp) ||  @warn "Could not be approved in the subsystem"
+    # put!(comp.handshake, true)
 end
 
 """
@@ -263,8 +269,8 @@ Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(co
 """
 function release(comp::AbstractSubSystem)
     foreach(release, comp.components)
-    typeof(comp.input) <: Bus && release(comp.input)
-    typeof(comp.output) <: Bus && release(comp.output)
+    typeof(comp.input) <: Inport && release(comp.input)
+    typeof(comp.output) <: Outport && release(comp.output)
 end
 
 """
@@ -273,3 +279,4 @@ end
 Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate(comp::AbstractComponent)`](@ref)
 """
 terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
+

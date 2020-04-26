@@ -1,8 +1,5 @@
 # This file contains SDESystem prototypes
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractSDESystem
-
-const SDEAlg = LambaEM{true}()
 
 @doc raw"""
     SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
@@ -51,22 +48,23 @@ SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Fl
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
-mutable struct SDESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractSDESystem
+mutable struct SDESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractSDESystem
     @generic_dynamic_system_fields
-    function SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
-        integrator = construct_integrator(SDEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
-            statefunc, outputfunc, state, t, integrator)
+    function SDESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                SDEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
 show(io::IO, ds::SDESystem) = print(io, 
-    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 
 ##### Noisy Linear System
 

@@ -1,19 +1,8 @@
 # This file contains the links to connect together the tools of DsSimulator.
-
-import Base: put!, take!, RefValue, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate
-
-"""
-    Pin() 
-
-Constructs a `Pin`. A `Pin` is the auxilary type to monitor connection status of `Links`. See [`Link`](@ref)
-"""
-struct Pin
-    id::UUID
-    Pin() = new(uuid4())
-end
+import Base: put!, take!, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate
 
 """
-    Link(dtype::Type{T}, ln::Int=64) where {T}
+    Link{T}(ln::Int=64) where {T}
 
 Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type is `T` and mode is `Cyclic`.
 
@@ -23,7 +12,7 @@ Constructs a `Link` with element type `Float64` and buffer length `ln`. The buff
 
 # Example
 ```jldoctest
-julia> l = Link(Int, 5)
+julia> l = Link{Int}(5)
 Link(state:open, eltype:Int64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
 
 julia> l = Link(Bool)
@@ -33,27 +22,23 @@ Link(state:open, eltype:Bool, hasmaster:false, numslaves:0, isreadable:false, is
 mutable struct Link{T}
     buffer::Buffer{Cyclic, T, 1}
     channel::Channel{T}
-    leftpin::Pin
-    rightpin::Pin
-    callbacks::Vector{Callback}
+    masterid::UUID
+    slaveid::UUID
     id::UUID
-    master::RefValue{Link{T}}
-    slaves::Vector{RefValue{Link{T}}}
-    Link(dtype::Type{T}, ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), Pin(), Pin(),
-        Callback[], uuid4(), RefValue{Link{T}}(), Vector{RefValue{Link{T}}}()) 
+    Link{T}(ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), uuid4(), uuid4(), uuid4())
 end
-Link(ln::Int=64) = Link(Float64, ln)
+Link(ln::Int=64) = Link{Float64}(ln)
 
-show(io::IO, link::Link) = print(io, 
-    "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), hasmaster:$(isassigned(link.master)), ", 
-    "numslaves:$(length(link.slaves)), isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
+
+show(io::IO, link::Link) = print(io, "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), ", 
+    "isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
 
 """
     eltype(link::Link)
 
 Returns element type of `link`.
 """
-eltype(link::Link{T}) where T = T
+eltype(link::Link{T}) where {T} = T
 
 ##### Link reading writing.
 """
@@ -90,11 +75,9 @@ NaN
 """
 function put!(link::Link, val) 
     write!(link.buffer, val)
-    isempty(link.slaves) || foreach(junc -> put!(junc[], val), link.slaves)
     put!(link.channel, val)
-    link.callbacks(link)
-    return val
 end
+
 
 """
     take!(link::Link)
@@ -123,7 +106,6 @@ julia> take!(l)
 """
 function take!(link::Link)
     val = take!(link.channel)
-    link.callbacks(link)
     return val
 end
 
@@ -136,11 +118,9 @@ Closes `link`. All the task bound the `link` is also terminated safely. When clo
 """
 function close(link::Link)
     channel = link.channel
-    # isempty(channel.cond_take.waitq) || put!(link, missing)   # Terminate taker task 
-    isempty(channel.cond_take.waitq) || put!(link, NaN)   # Terminate taker task 
-    isempty(channel.cond_put.waitq) || collect(link.channel)   # Terminater putter task 
-    # isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
-    isopen(link.channel) && close(link.channel)  # Close link channel if it is open.
+    iswritable(link) && put!(link, NaN)   # Terminate taker task 
+    isreadable(link) && collect(link.channel)   # Terminater putter task 
+    isopen(link) && close(link.channel)  # Close link channel if it is open.
     return 
 end 
 
@@ -157,14 +137,14 @@ isopen(link::Link) = isopen(link.channel)
 
 Returns `true` if `link` is readable. When `link` is readable, data can be read from `link` with `take` function.
 """
-isreadable(link::Link) = !isempty(link.channel.cond_put)
+isreadable(link::Link) = length(link.channel.cond_put.waitq) > 0
 
 """
     writable(link::Link)
 
 Returns `true` if `link` is writable. When `link` is writable, data can be written into `link` with `put` function.
 """
-iswritable(link::Link) = !isempty(link.channel.cond_take) 
+iswritable(link::Link) = length(link.channel.cond_take.waitq) > 0
 
 """
     isfull(link::Link)
@@ -173,209 +153,12 @@ Returns `true` if the `buffer` of `link` is full.
 """
 isfull(link::Link) = isfull(link.buffer)
 
-
-"""
-    hasslaves(link::Link)
-
-Returns `true` if `link` has slave links.
-"""
-hasslaves(link::Link) = !isempty(link.slaves)
-
-"""
-    hasmaster(link::Link)
-
-Returns `true` if `link` has a master link.
-"""
-function hasmaster(link::Link) 
-    try
-        _ = link.master.x
-    catch UnderVarError
-        return false
-    end
-    return true
-end
-
-"""
-    getmaster(link::Link)
-
-Returns the `master` of `link`.
-"""
-getmaster(link::Link) = hasmaster(link) ? link.master[] : nothing
-
-"""
-    getslaves(link::Link)
-
-Returns the `slaves` of `link`.
-"""
-getslaves(link::Link) = [slave[] for slave in link.slaves]
-
 """
     snapshot(link::Link)
 
 Returns all the data of the `buffer` of `link`.
 """
 snapshot(link::Link) = link.buffer.data
-
-##### Connecting and disconnecting links
-#
-# This `iterate` function is dummy. It is defined just for `[l...]` to be written.
-#
-iterate(l::Link, i=1) = i > 1 ? nothing : (l, i + 1)
-
-"""
-    connect(master::Link, slave::Link)
-
-Connects `master` to `slave`. When connected, any element that is put into `master` is also put into `slave`. 
-
-    connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link})
-
-Connects each link in `master` to each link in `slave` one by one.
-
-# Example 
-```jldoctest 
-julia> l1, l2 = Link(), Link();
-
-julia> connect(l1, l2)
-
-julia> l2.master[] == l1
-true
-```
-"""
-function connect(master::Link, slave::Link)
-    isconnected(master, slave) && (@warn "$master and $slave are already connected."; return)
-    slave.leftpin = master.rightpin  # NOTE: The data flows through the links from left to right.
-    push!(master.slaves, Ref(slave))
-    slave.master = Ref(master) 
-    return 
-end
-connect(master::AbstractVector{<:Link}, slave::AbstractVector{<:Link}) = (connect.(master, slave); nothing)
-connect(master, slave) = connect([master...], [slave...])
-
-"""
-    disconnect(link1::Link, link2::Link)
-
-Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect`](@ref)
-"""
-function disconnect(link1::Link{T}, link2::Link{T}) where T
-    master, slave = findflow(link1, link2)
-    slaves = master.slaves
-    deleteat!(slaves, findall(linkref -> linkref[] == slave, slaves))
-    slave.master = RefValue{Link{T}}()
-    slave.leftpin = Pin()
-    return
-end
-disconnect(link1::AbstractVector{<:Link}, link2::AbstractVector{<:Link}) = (disconnect.(link1, link2); nothing)
-disconnect(link1, link2) = disconnect([link1...], [link2...])
-
-"""
-    isconnected(link1, link2)
-
-Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important.
-"""
-isconnected(link1::Link, link2::Link) = link2 in [sl[] for sl in link1.slaves] || link1 in [sl[] for sl in link2.slaves]
-isconnected(link1::AbstractVector{<:Link}, link2::AbstractVector{<:Link}) = all(isconnected.(link1, link2))
-isconnected(link1, link2) = isconnected([link1...], [link2...])
-
-"""
-    UnconnectedLinkError <: Exception
-
-Exception thrown when the links are not connected to each other.
-"""
-struct UnconnectedLinkError <: Exception
-    msg::String
-end
-Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
-
-"""
-    findflow(link1::Link, link2::Link)
-
-Returns a tuple of (`masterlink`, `slavelink`) where `masterlink` is the link that drives the other and `slavelink` is the link that is driven by the other.
-
-# Example
-```jldoctest
-julia> ls = [Link() for i = 1 : 2];
-
-julia> connect(ls[1], ls[2])
-
-julia> findflow(ls[2], ls[1]) .== (ls[1], ls[2])
-(true, true)
-```
-"""
-function findflow(link1::Link, link2::Link)
-    isconnected(link1, link2) || throw(UnconnectedLinkError("$link1, and $link2 are not connected."))
-    link2 in [slave[] for slave in link1.slaves] ? (link1, link2) : (link2, link1)
-end
-
-
-"""
-    insert(master::Link, slave::Link, new::Link)
-
-Inserts the `new` link between the `master` link and `slave` link. The `master` is connected to `new`, and `new` is connected to `slave`.
-
-# Example 
-```jldoctest
-julia> ls = [Link() for i = 1 : 3];  
-
-julia> connect(ls[1], ls[2]) 
-
-julia> insert(ls[1], ls[2], ls[3])
-
-julia> isconnected(ls[1], ls[2])
-false
-
-julia> isconnected(ls[1], ls[3]) && isconnected(ls[3], ls[2])
-true
-```
-
-"""
-function insert(master::Link, slave::Link, new::Link)
-    if isconnected(master, slave)
-        master, slave = findflow(master, slave)
-        disconnect(master, slave)
-    else
-        master, slave = master, slave
-    end
-    connect(master, new)
-    connect(new, slave)
-    return
-end
-# insert(master::Vector{<:Link}, slave::Vector{<:Link}, new::Vector{<:Link}) = 
-#     foreach(l -> insert(l...), zip(master, slave, new))
-
-"""
-    release(link::Link)
-
-Release all the slave links of `link`. That is, all the slave links of `link` is disconnected.
-
-# Example
-```jldoctest
-julia> ls = [Link() for i = 1 : 5];
-
-julia> foreach(l -> connect(ls[1], l), ls[2:5])
-
-julia> map(l -> isconnected(ls[1], l), ls[2:5])
-4-element Array{Bool,1}:
- 1
- 1
- 1
- 1
-
-julia> release(ls[1])  # Release all the slaves.
-
-julia> map(l -> isconnected(ls[1], l), ls[2:5])
-4-element Array{Bool,1}:
- 0
- 0
- 0
- 0
-```
-"""
-function release(link::Link)
-    while !isempty(link.slaves)
-        disconnect(link, link.slaves[1][])
-    end
-end
-release(links::AbstractVector{<:Link}) = foreach(release, links)
 
 ##### Launching links.
 

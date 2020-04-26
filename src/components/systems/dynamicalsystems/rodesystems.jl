@@ -1,9 +1,6 @@
 # This file includes RODESystems
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractRODESystem
 
-const RODEAlg = RandomEM()
-# const RODENoise = Noise(WienerProcess(0.,0.))
 
 @doc raw"""
     RODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
@@ -50,22 +47,22 @@ RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:L
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
-mutable struct RODESystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractRODESystem
+mutable struct RODESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractRODESystem
     @generic_dynamic_system_fields
     # noise::N
-    function RODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        # haskey(solver.params, :dt) || @warn "`solver` must have `:dt` initialized in its `params` for the systems to evolve."
-        trigger = Link()
-        handshake = Link(Bool)
-        integrator = construct_integrator(RODEProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state), typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(),
-            statefunc, outputfunc, state, t, integrator)
+    function RODESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=RODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                RODEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
 show(io::IO, ds::RODESystem) = print(io, 
-    "RODESystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "RODESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

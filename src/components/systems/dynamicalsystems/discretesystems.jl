@@ -1,9 +1,5 @@
 # This file includes the Discrete Systems
 
-import ....Components.ComponentsBase: @generic_system_fields, @generic_dynamic_system_fields, AbstractDiscreteSystem
-
-const DiscreteAlg = FunctionMap()
-
 
 @doc raw"""
     DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
@@ -49,19 +45,20 @@ DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isr
 !!! info 
     See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs`, `solverkwargs` and `alg`.
 """
-mutable struct DiscreteSystem{IB, OB, T, H, SF, OF, ST, I} <: AbstractDiscreteSystem
+mutable struct DiscreteSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDiscreteSystem
     @generic_dynamic_system_fields
-    function DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-        trigger = Link()
-        handshake = Link(Bool)
-        integrator = construct_integrator(DiscreteProblem, input, statefunc, state, t, modelargs, solverargs; 
-            alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs)
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(statefunc), typeof(outputfunc), 
-            typeof(state),  typeof(integrator)}(input, output, trigger, handshake, Callback[], uuid4(), statefunc, 
-            outputfunc, state, t, integrator)
+    function DiscreteSystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
+        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing,
+         name=Symbol())
+        trigger, handshake, integrator = init_dynamic_system(
+                DiscreteProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
     end
 end
 
 show(io::IO, ds::DiscreteSystem) = print(io, 
-    "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(checkandshow(ds.input)), output:$(checkandshow(ds.output)))")
+    "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

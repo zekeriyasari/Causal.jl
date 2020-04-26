@@ -1,6 +1,8 @@
 # This file includes testset for sources.
 
 @testset "ClockTestSet" begin 
+    @info "Running ClockTestSet ..."
+
     # Clock construction 
     clk1 = Clock(0., 1., 10.)
     clk2 = Clock(0., 1, 10)
@@ -37,31 +39,45 @@
     for i = 1 : 10
         @test take!(clk) == 1.
     end
+
+    @info "Done ClockTestSet."
 end  # testset
 
 
 @testset "GeneratorsTestSet" begin 
+    @info "Running GeneratorsTestSet ..."
     # FunctionGenerator construction
     gen = FunctionGenerator(sin)
-    @test typeof(gen.trigger) == Link{Float64} 
-    @test typeof(gen.handshake) == Link{Bool} 
+    @test typeof(gen.trigger) == Inpin{Float64} 
+    @test typeof(gen.handshake) == Outpin{Bool} 
     @test !hasfield(typeof(gen), :input)
-    @test typeof(gen.output) == Bus{Link{Float64}}
+    @test typeof(gen.output) == Outport{Outpin{Float64}}
 
     gen = FunctionGenerator(t -> [sin(t), cos(t)])
     @test length(gen.output) == 2
 
     # Driving FunctionGenerator
     gen = FunctionGenerator(t -> t)
+    trg = Outpin()
+    hnd = Inpin{Bool}()
+    ip = Inport()
+    connect(gen.output, ip)
+    connect(trg, gen.trigger)
+    connect(gen.handshake, hnd)
     task = launch(gen)
-    for t in 1. : 10.
-        drive(gen, t)
-        approve(gen)
-        @test read(gen.output[1].buffer) == t
+    task2 = @async while true 
+        all(take!(ip) .=== NaN) && break 
     end
-    @task !istaskdone(task)
-    terminate(gen)
-    @task istaskdone(task)
+    for t in 1. : 10.
+        put!(trg, t)
+        take!(hnd)
+    end
+    @test content(ip[1].link.buffer) == collect(1:10)
+    @test !istaskdone(task)
+    put!(trg, NaN)
+    @test istaskdone(task)
+    put!(gen.output, [NaN])
+    @test istaskdone(task2)
 
     # Construction of other generators 
     sinegen = SinewaveGenerator()
@@ -77,4 +93,6 @@ end  # testset
     # Mutaton of generators 
     sinegen.amplitude = 5.
     sqauregen.high = 10.
+
+    @info "Done GeneratorsTestSet ..."
 end  # testset

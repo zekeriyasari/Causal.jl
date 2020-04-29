@@ -10,7 +10,7 @@ Network
 Let us continue with examples. We first construct a couple of dynamical systems.
 ```@repl network_ex 
 using Jusdl # hide 
-nodes = [LorenzSystem(Bus(3), Bus(3)) for i = 1 : 5]
+nodes = [LorenzSystem(Inport(3), Outport(3)) for i = 1 : 5]
 ```
 Then, we connect the outer coupling matrix 
 ```@repl network_ex 

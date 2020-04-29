@@ -52,7 +52,7 @@ t = 0.
 Note from `statefunc`, the system has not any input, i.e. input is nothing, and has an output with a dimension of 1.
 ```@repl rode_system_ex
 input = nothing
-output = Bus(2)
+output = Outport(2)
 ```
 We are ready to construct the system
 ```@repl rode_system_ex 

@@ -37,9 +37,9 @@ g(u, t) = [t * u[1], sin(u[1]), cos(u[2])]
 ```
 Note that the function `g` is defined in such a way that the input value `u` is sampled, which implies `u` is not a vector of function but is a vector of real. Having defined output function `outputfunc`, the system can be constructed. 
 ```@repl static_system_ex
-ss = StaticSystem(Bus(2), Bus(3), g)
+ss = StaticSystem(g, Inport(2), Outport(3))
 ```
-Note the construction of input bus `Bus(2)` and output bus `Bus(3)` by recalling that the number of input is 2 and the number of output is 3.
+Note the construction of input bus `Inport(2)` and output bus `Outport(3)` by recalling that the number of input is 2 and the number of output is 3.
 
 A `StaticSystem` operates by being triggered through its `trigger` link. When triggered from its `trigger` link, a `StaticSystem` read the current time `t` from its `trigger` link and computes its output `y` according to its output function `outputfunc` and writes its output `t` to its `output` bus (if `output` bus exists since `output` bus may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` link is not writeable. 
 ```@repl static_system_ex

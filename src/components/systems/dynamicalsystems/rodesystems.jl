@@ -32,16 +32,16 @@ end
 ```
 
 # Example 
-```julia
-julia> function statefunc(dx, x, u, t, W)
+```jldoctest
+julia> function sfuncrode(dx, x, u, t, W)
          dx[1] = 2x[1]*sin(W[1] - W[2])
          dx[2] = -2x[2]*cos(W[1] + W[2])
        end;
 
-julia> outputfunc(x, u, t) = x;
+julia> ofuncrode(x, u, t) = x;
 
-julia> ds = RODESystem(nothing, Bus(2), statefunc, outputfunc, [1., 1.], 0., solverkwargs=(dt=0.01,))
-RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Bus(nlinks:2, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> RODESystem(sfuncrode, ofuncrode, [1., 1.], 0., solverkwargs=(dt=0.01,), nothing, Outport(2))
+RODESystem(state:[1.0, 1.0], t:0.0, input:nothing, output:Outport(numpins:2, eltype:Outpin{Float64}))
 ```
 
 !!! info 

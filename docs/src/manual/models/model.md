@@ -14,7 +14,7 @@ Let us continue with some examples. We will construct very simple `Model` consis
 ```@repl model_construction_ex 
 using Jusdl # hide 
 gen = SinewaveGenerator()
-writer = Writer(Bus())
+writer = Writer(Inport())
 ```
 Next, we construct the model
 ```@repl model_construction_ex 

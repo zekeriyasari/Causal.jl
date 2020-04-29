@@ -32,17 +32,15 @@ end
 
 # Example 
 ```jldoctest
-julia> sfunc(dx,x,u,t) = (dx .= 0.5x)
-sfunc (generic function with 1 method)
+julia> sfuncode(dx,x,u,t) = (dx[1] = 0.5x[1] + u[1](t));
 
-julia> ofunc(x, u, t) = x
-ofunc (generic function with 1 method)
+julia> ofuncode(x, u, t) = x;
 
-julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
-ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> ds = ODESystem(sfuncode, ofuncode, [1.], 0., Inport(), Outport())
+ODESystem(state:[1.0], t:0.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 
-julia> ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0., solverkwargs=(dt=0.1, reltol=1e-6))
-ODESystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> ds = ODESystem(sfuncode, ofuncode, [1.], 0., Inport(), Outport(), solverkwargs=(dt=0.1, reltol=1e-6))
+ODESystem(state:[1.0], t:0.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 
 !!! info 

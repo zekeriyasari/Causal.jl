@@ -52,6 +52,5 @@ Callback
 enable!
 disable!
 isenabled
-addcallback
-deletecallback
+applycallbacks
 ```

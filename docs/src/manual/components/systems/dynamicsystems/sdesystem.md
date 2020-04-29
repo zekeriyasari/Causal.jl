@@ -40,7 +40,7 @@ Note that the in drift function `f` and diffusion function `g`, the vector `dx` 
 From the definition of drift function `f` and the diffusion function `g`, it is seen that the system does not have any input, that is, the input of the system is `nothing`. Since all the state variables are taken as outputs, the system needs an output bus of length 1. Thus, 
 ```@repl sde_system_ex 
 input = nothing 
-output = Bus(1)
+output = Outport(1)
 ```
 At this point, we are ready to construct the system `ds`.
 ```@repl sde_system_ex 

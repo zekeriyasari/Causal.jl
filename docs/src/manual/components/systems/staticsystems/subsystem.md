@@ -14,7 +14,7 @@ Let us construct a subsystem consisting of a generator and an adder.
 ```@repl subsystem_ex
 using Jusdl # hide 
 gen = ConstantGenerator()
-adder = Adder(Bus(2))
+adder = Adder((+,+))
 ```
 Connect the generator and adder.
 ```@repl subsystem_ex 

@@ -1,102 +1,92 @@
-# Busses 
+ # Ports
 
-A `Bus` is actually is a bunch of links. Reading from and writing into  data is performed as in the case of [Links](@ref).
+A `Port` is actually is a bunch of pins. Reading from and writing into  data is performed as in the case of [Links](@ref).
 
-## Construction of Bus
-A `Bus` is constructed by specifying its element type `T`, the number of links `nlinks` and the buffer length of its links.
+## Construction of Ports
+A `Port` is constructed by specifying its element type `T`, the number of pins `npins` and the buffer length of its pins.
 
 ```@docs 
-Bus
+Outport
+Inport
 ```
 
-## Connection and Disconnection of Busses
-The `Bus`ses can be connected to and disconnected from each other. When connected any data written to the master bus is also written all slave busses. See the following example.
+## Connection and Disconnection of Ports
+The `Ports`ses can be connected to and disconnected from each other. When connected any data written to the master port is also written all slave ports. See the following example.
 
-Let us connect two busses and connect them together.
+Let us connect two ports and connect them together.
 ```@repl connection_of_busses 1
 using Jusdl # hide
-b1 = Bus(2, 5)  # Bus with `2` links with buffer length of `5`.
-b2 = Bus(2, 5)  # Bus with `2` links with buffer length of `5`.
-connect(b1, b2)
+op = Outport(2)  # Port with `2` pins with buffer length of `5`.
+ip = Inport(2)  # Port with `2` pins with buffer length of `5`.
+ls = connect(op, ip)
 ```
-Here, `b1` is the master bus and `b2` is the slave bus. That is, data written to `b1` is also written into `b2`.
+Here, `op` is the master port and `ip` is the slave port. That is, data written to `op` is also written into `ip`.
 ```@repl connection_of_busses 1
 t1 = @async while true
-    val = take!(b1)
+    val = take!(ip)
     all(val .=== NaN) && break
     println("Took " * string(val))
 end
-t2 = @async while true
-    val = take!(b2)
-    all(val .=== NaN) && break
-    println("Took " * string(val))
-end
-put!(b1, [5., 10.]);
-[b1[i].buffer.data for i = 1 : 2]
-[b2[i].buffer.data for i = 1 : 2]
+put!(op, [5., 10.]);
+[outbuf(pin.link.buffer) for pin in ip]
 ```
-Note that the data `[5, 10]` written to `b1` is also written `b2` since they are connected.
+Note that the data `[5, 10]` written to `op` is also written `ip` since they are connected.
 
-The `Bus`ses connected to each other can be disconnected. When disconnected, the data written to master is not written to slaves
+The `Port`ses connected to each other can be disconnected. When disconnected, the data written to master is not written to slaves
 ```@repl connection_of_busses 1
-disconnect(b1, b2)
-isconnected(b1, b2)
+disconnect(op, ip)
+isconnected(op, ip)
 ```
 
-## Data Flow through Busses
-Data flow through the `Bus`ses is very similar to the case in `Link`s. See [Data Flow through Links](@ref) for information about data flow through `Link`s. Runnable tasks must be bound to the links of the busses for data flow through the `Bus`. Again, `put!` and `take!` functions are used to write data from a `Bus` and read from data from a `Bus`.
+## Data Flow through Ports
+Data flow through the `Port`ses is very similar to the case in `Link`s. See [Data Flow through Links](@ref) for information about data flow through `Link`s. Runnable tasks must be bound to the pins of the ports for data flow through the `Port`. Again, `put!` and `take!` functions are used to write data from a `Port` and read from data from a `Port`.
 ```@docs 
-put!(bus::Bus, vals)
-take!(bus::Bus)
+put!(outport::Outport, vals)
+take!(inport::Inport)
 ```
-Any data written to a `Bus` is recorded into the buffers of its links.
+Any data written to a `Port` is recorded into the buffers of its pins.
 ```
 @repl writing_to_busses
 using Jusdl # hide
-b = Bus(2, 5);
+op, ip = Outport(2), Inport(2);
 t = @async while true
-    val = take!(b)
+    val = take!(ip)
     all(val .=== NaN) && break
     println("Took " * string(val))
 end
-put!(b, 1.);
-b[1].buffer.data
+put!(op, 1.);
+ip[1].link.buffer
 ```
 
-## Indexing and Iteration of Busses 
+## Indexing and Iteration of Ports 
 
-Busses can be indexed similarly to the arrays in Julia. When indexed, the corresponding link of the bus is returned.
+Ports can be indexed similarly to the arrays in Julia. When indexed, the corresponding pin of the port is returned.
 ```@repl bus_indexing_ex_1
 using Jusdl # hide 
-b = Bus(3) 
-b[1]
-b[end] 
-b[:]
-b[1] = Link()
-b[1:2] = [Link(), Link()]
+op = Outport(3) 
+op[1]
+op[end] 
+op[:]
+op[1] = Outpin()
+op[1:2] = [Outpin(), Outpin()]
 ```
-The iteration of `Bus`ses in a loop is also possible. When iterated, the links of the `Bus` is returned.
+The iteration of `Port`s in a loop is also possible. When iterated, the pins of the `Port` is returned.
 ```@repl 
 using Jusdl # hide 
-bus = Bus(3)
-for link in bus
-    @show link
+port = Inport(3)
+for pin in port
+    @show pin
 end
 ```
 
 ## Full API 
 
 ```@docs 
-Connections.hasslaves(bus::Bus)
-Connections.hasmaster(bus::Bus)
-Connections.close(bus::Bus)
-Connections.isfull(bus::Bus)
-Connections.isreadable(bus::Bus)
-Connections.iswritable(bus::Bus)
-Connections.snapshot(bus::Bus)
-Connections.launch(bus::Bus)
-Connections.launch(bus::Bus, valrange::AbstractVector)
-size(bus::Bus)
-getindex(bus::Bus, idx::Vararg{Int, N}) where N
-setindex!(bus::Bus, item, idx::Vararg{Int, N}) where N
-```
+datatype(port::AbstractPort{<:AbstractPin{T}}) where T
+size(port::AbstractPort)
+getindex(port::AbstractPort, idx::Vararg{Int, N}) where N
+setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N
+take!(inport::Inport)
+put!(outport::Outport, vals)
+similar(outport::Outport{P}, numpins::Int=length(outport)) where {P<:Outpin{T}} where {T} 
+``` 

@@ -35,14 +35,14 @@ end
 
 # Example 
 ```jldoctest
-julia> f(dx, x, u, t) = (dx[1] = -x[1]);
+julia> sfuncdrift(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> h(dx, x, u, t) = (dx[1] = -x[1]);
+julia> sfuncdiffusion(dx, x, u, t) = (dx[1] = -x[1]);
 
-julia> g(x, u, t) = x;
+julia> ofuncsde(x, u, t) = x;
 
-julia> ds = SDESystem(nothing, Bus(), (f,h), g, [1.], 0.)
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> SDESystem((sfuncdrift,sfuncdiffusion), ofuncsde, [1.], 0., nothing, Outport())
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 
 !!! info 

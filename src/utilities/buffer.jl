@@ -1,4 +1,4 @@
-# This file constains the Buffer for internals buffering.
+# This file constains the Buffer for data buffering.
 
 
 ##### Buffer modes
@@ -26,14 +26,14 @@ abstract type LinearMode <: BufferMode end
 """
     Cyclic <: CyclicMode
 
-Cyclic buffer mode. The internals is written to buffer until the buffer is full. When the buffer is full, new internals is written by overwriting the internals available in the buffer starting from the beginning of the buffer. When the buffer is read, the element written last is returned and the returned element is not deleted from the buffer.
+Cyclic buffer mode. The data is written to buffer until the buffer is full. When the buffer is full, new data is written by overwriting the data available in the buffer starting from the beginning of the buffer. When the buffer is read, the element written last is returned and the returned element is not deleted from the buffer.
 """
 struct Cyclic <: CyclicMode end 
 
 """
     Normal <: LinearMode
 
-LinearMode buffer mode. The internals is written to buffer until the buffer is full. When it is full, no more internals is written to the buffer. When read, the internals written last is returned and the returned internals is not deleted from the internal container of the buffer. 
+LinearMode buffer mode. The data is written to buffer until the buffer is full. When it is full, no more data is written to the buffer. When read, the data written last is returned and the returned data is not deleted from the internal container of the buffer. 
 """
 struct Normal <: LinearMode end
 
@@ -47,7 +47,7 @@ struct Lifo <: LinearMode end
 """
     Fifo <: LinearMode
 
-Fifo (First-in-last-out) buffer mode. This type of buffer is a *first-in-first-out* buffer. The internals is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first element written into the buffer is returned. The returned element is deleted from the buffer. 
+Fifo (First-in-last-out) buffer mode. This type of buffer is a *first-in-first-out* buffer. The data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first element written into the buffer is returned. The returned element is deleted from the buffer. 
 """
 struct Fifo <: LinearMode end 
 
@@ -56,7 +56,7 @@ struct Fifo <: LinearMode end
 """
     Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T}
 
-Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how internals is to read from and written into the `Buffer`.  There exists for different buffer modes: 
+Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to read from and written into the `Buffer`.  There exists for different buffer modes: 
 
 * `Normal`: See [`Normal`](@ref)
 
@@ -80,20 +80,20 @@ Constructs a `Buffer` of size `sz` and element type `T`. The mode of buffer is `
 
 Constructs a `Buffer` of size `sz` with mode `Cyclic` and element type of `Float64`.
 
-    Buffer{M}(internals::AbstractVecOrMat{T}) where {M, T<:Real}
+    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real}
 
-Constructs a `Buffer` with `internals`.
+Constructs a `Buffer` with `data`.
 
 # Example 
 ```jldoctest 
 julia> buf = Buffer(5)
-Buffer(mode:Cyclic, eltype:Float64, size:(5,), index:1, state:empty)
+5-element Buffer{Cyclic,Float64,1}
 
-julia> buf = Buffer{Cyclic}(2, 5)
-Buffer(mode:Cyclic, eltype:Float64, size:(2, 5), index:1, state:empty)
+julia> buf = Buffer{Fifo}(2, 5)
+2×5 Buffer{Fifo,Float64,2}
 
-julia> buf = Buffer{Cyclic}(collect(reshape(1:8, 2, 4)))
-Buffer(mode:Cyclic, eltype:Int64, size:(2, 4), index:1, state:empty)
+julia> buf = Buffer{Lifo}(collect(reshape(1:8, 2, 4)))
+2×4 Buffer{Lifo,Int64,2}
 ```
 """
 mutable struct Buffer{M<:BufferMode, T, N} <: AbstractArray{T, N}
@@ -120,7 +120,19 @@ function swapinternals(buf::Buffer)
     buf.src = buf.dst 
     buf.dst = temp
 end
+
+"""
+    inbuf(buf::Buffer)
+
+Returns the element of `internals` of `buf` that is used to input data to `buf`. See also [`outbuf`][@ref)
+"""
 inbuf(buf::Buffer) = buf.internals[buf.src]
+
+"""
+    outbuf(buf::Buffer)
+
+Returns the element of `intervals` of `buf` that is used to take data out of `buf`. See also: [`inbuf`](@ref)
+"""
 outbuf(buf::Buffer) = buf.internals[buf.dst]
 
 ##### Buffer info.
@@ -135,7 +147,20 @@ mode(buf::Buffer{M, T, N}) where {M, T, N} = M
 """
     datalength(buf::Buffer)
 
-Returns the internals length of `buf`.
+Returns the maximum number of data that can be hold in `buf`.
+
+# Example
+```jldoctest
+julia> buf = Buffer(5);
+
+julia> datalength(buf)
+5
+
+julia> buf2 = Buffer(2, 10);
+
+julia> datalength(buf2)
+10
+```
 """
 datalength(buf::Buffer{M, T, N}) where {M, T, N} = N == 1 ? size(buf, 1) : size(buf, 2)
 
@@ -155,21 +180,21 @@ Returns an element from `buf` at index `idx`. Same as `buf[idx]`
 ```jldoctest
 julia> buf = Buffer(2, 5);  # Construct a buffer.
 
-julia> write!(buf, reshape(2 : 2 : 20, 2, 5))  # Write internals into buffer.
+julia> write!(buf, reshape(2 : 2 : 20, 2, 5))  # Write data into buffer.
 
 julia> buf[1]
-2.0
+18.0
 
 julia> buf[1, 2]
-6.0
+14.0
 
 julia> buf[1, end]
-18.0
+2.0
 
 julia> buf[:, 2]
 2-element Array{Float64,1}:
- 6.0
- 8.0
+ 14.0
+ 16.0
 ```
 """
 getindex(buf::Buffer, idx::Vararg{Int, N}) where N = getindex(outbuf(buf), idx...)
@@ -195,9 +220,9 @@ julia> buf[end] = 10
 10
 
 julia> buf.internals
-2×5 Array{Float64,2}:
- 1.0  1.0  0.0  0.0   0.0
- 0.0  1.0  0.0  0.0  10.0
+2-element Array{Array{Float64,2},1}:
+ [1.0 1.0 … 0.0 0.0; 0.0 1.0 … 0.0 10.0]
+ [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
 ```
 """
 setindex!(buf::Buffer, item, idx::Vararg{Int, N}) where N = setindex!(inbuf(buf), item, idx...)
@@ -221,6 +246,23 @@ isfull(buf::Buffer) = buf.state == :full
     ishit(buf::Buffer)
 
 Returns true when `buf` index is an integer multiple of datalength of `buf`. 
+
+# Example
+```jldoctest
+julia> buf = Buffer(3);
+
+julia> for val in 1 : 7
+       write!(buf, val)
+       @show ishit(buf)
+       end
+ishit(buf) = false
+ishit(buf) = false
+ishit(buf) = true
+ishit(buf) = false
+ishit(buf) = false
+ishit(buf) = true
+ishit(buf) = false
+```
 """
 ishit(buf::Buffer) = buf.index % datalength(buf) == 1
 
@@ -264,12 +306,12 @@ Writes each element of `vals` into `buf`.
 Writes each column of `vals` into `buf`.
 
 !!! warning
-    Buffer mode determines how internals is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+    Buffer mode determines how data is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
 ```jldoctest
 julia> buf = Buffer(5)
-Buffer(mode:Cyclic, eltype:Float64, size:(5,), index:1, state:empty)
+5-element Buffer{Cyclic,Float64,1}
 
 julia> write!(buf, 1.)
 1.0
@@ -277,15 +319,12 @@ julia> write!(buf, 1.)
 julia> write!(buf, [2, 3])
 
 julia> buf.internals
-5-element Array{Float64,1}:
- 1.0
- 2.0
- 3.0
- 0.0
- 0.0
+2-element Array{Array{Float64,1},1}:
+ [3.0, 2.0, 1.0, 0.0, 0.0]
+ [2.0, 1.0, 0.0, 0.0, 0.0]
 
 julia> buf = Buffer(2,5)
-Buffer(mode:Cyclic, eltype:Float64, size:(2, 5), index:1, state:empty)
+2×5 Buffer{Cyclic,Float64,2}
 
 julia> write!(buf, [1, 1])
 2-element Array{Int64,1}:
@@ -295,9 +334,9 @@ julia> write!(buf, [1, 1])
 julia> write!(buf, [2 3; 2 3])
 
 julia> buf.internals
-2×5 Array{Float64,2}:
- 1.0  2.0  3.0  0.0  0.0
- 1.0  2.0  3.0  0.0  0.0
+2-element Array{Array{Float64,2},1}:
+ [3.0 2.0 … 0.0 0.0; 3.0 2.0 … 0.0 0.0]
+ [2.0 1.0 … 0.0 0.0; 2.0 1.0 … 0.0 0.0]
 ```
 """
 function write!(buf::Buffer, val) end 
@@ -320,27 +359,6 @@ writeitem(buf::AbstractArray{T, 1}, val) where {T} = buf[1] = val
 writeitem(buf::AbstractArray{T, 2}, val) where {T} = buf[:, 1] = val
 checkstate(buf::Buffer) = mode(buf) != Cyclic && isfull(buf) && error("Buffer is full")
 
-# """
-#     fill!(buf::Buffer, val)
-
-# Writes `val` to `buf` until `bus` is full.
-
-# # Example
-# ```jldoctest
-# julia> buf = Buffer(3);
-
-# julia> fill!(buf, 1.)
-# Buffer(mode:Cyclic, eltype:Float64, size:(3,), index:1, state:full)
-
-# julia> buf.internals
-# 3-element Array{Float64,1}:
-#  1.0
-#  1.0
-#  1.0
-# ```
-# """
-# fill!(buf::Buffer, val) = (foreach(i -> write!(buf, val), 1 : datalength(buf)); buf)
-
 ##### Reading from buffers
 """
     read(buf::Buffer)
@@ -350,28 +368,28 @@ Reads an element from `buf`. Reading is performed according to the mode of `buf`
 # Example
 ```jldoctest
 julia> buf = Buffer(3)
-Buffer(mode:Cyclic, eltype:Float64, size:(3,), index:1, state:empty)
+3-element Buffer{Cyclic,Float64,1}
 
 julia> write!(buf, [2, 4, 6])
 
 julia> for i = 1 : 3 
        @show (read(buf), buf.internals)
        end
-(read(buf), buf.internals) = (6.0, [2.0, 4.0, 6.0])
-(read(buf), buf.internals) = (6.0, [2.0, 4.0, 6.0])
-(read(buf), buf.internals) = (6.0, [2.0, 4.0, 6.0])
+(read(buf), buf.internals) = (6.0, [[6.0, 4.0, 2.0], [4.0, 2.0, 0.0]])
+(read(buf), buf.internals) = (6.0, [[6.0, 4.0, 2.0], [4.0, 2.0, 0.0]])
+(read(buf), buf.internals) = (6.0, [[6.0, 4.0, 2.0], [4.0, 2.0, 0.0]])
 
 julia> buf = Buffer{Fifo}(5)
-Buffer(mode:Fifo, eltype:Float64, size:(5,), index:1, state:empty)
+5-element Buffer{Fifo,Float64,1}
 
 julia> write!(buf, [2, 4, 6])
 
 julia> for i = 1 : 3 
        @show (read(buf), buf.internals)
        end
-(read(buf), buf.internals) = (2.0, [4.0, 6.0, 0.0, 0.0, 0.0])
-(read(buf), buf.internals) = (4.0, [6.0, 0.0, 0.0, 0.0, 0.0])
-(read(buf), buf.internals) = (6.0, [0.0, 0.0, 0.0, 0.0, 0.0])
+(read(buf), buf.internals) = (2.0, [[6.0, 4.0, 0.0, 0.0, 0.0], [4.0, 2.0, 0.0, 0.0, 0.0]])
+(read(buf), buf.internals) = (4.0, [[6.0, 0.0, 0.0, 0.0, 0.0], [4.0, 2.0, 0.0, 0.0, 0.0]])
+(read(buf), buf.internals) = (6.0, [[0.0, 0.0, 0.0, 0.0, 0.0], [4.0, 2.0, 0.0, 0.0, 0.0]])
 ```
 """
 function read(buf::Buffer)
@@ -409,7 +427,7 @@ rotate(ibuf::AbstractArray{T, 2}, obuf::AbstractArray{T, 2}, idx::Int) where {T}
 """
     content(buf, [flip=true])
 
-Returns the current internals of `buf`. If `flip` is `true`, the internals to be returned is flipped. See also [`snapshot`](@ref)
+Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
 
 # Example
 ```jldoctest
@@ -419,9 +437,9 @@ julia> write!(buf, 1:3)
 
 julia> content(buf, flip=false)
 3-element Array{Float64,1}:
- 1.0
- 2.0
  3.0
+ 2.0
+ 1.0
 
 julia> buf = Buffer(2, 5);
 
@@ -429,8 +447,8 @@ julia> write!(buf, reshape(1:10, 2, 5))
 
 julia> content(buf)
 2×5 Array{Float64,2}:
-  9.0  7.0  5.0  3.0  1.0
- 10.0  8.0  6.0  4.0  2.0
+ 1.0  3.0  5.0  7.0   9.0
+ 2.0  4.0  6.0  8.0  10.0
 ```
 """
 function content(buf::Buffer; flip::Bool=true)

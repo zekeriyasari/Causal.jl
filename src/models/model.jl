@@ -70,7 +70,7 @@ Adds a node to `model`. Component is `component` and `label` is `label` the labe
 
 # Example 
 ```jldoctest 
-julia> model = Model() 
+julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
 julia> addnode(model, SinewaveGenerator(), label=:gen)
@@ -95,7 +95,7 @@ Returns node of `model` whose index is `idx`.
 
 Returns node of `model` whose label is `label`.
 
-Example
+# Example
 ```jldoctest
 julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))

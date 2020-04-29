@@ -33,7 +33,7 @@
 
 \tikzset{
     border/.style = { 
-        draw, rectangle, minimum width=2cm, minimum height=1.5cm, thick
+        draw, rectangle, minimum width=2cm, minimum height=1.5cm, ultra thick
     },
     pics/Component/.style n args = {2}{
         code = {
@@ -50,9 +50,9 @@
         % Place the blocks 
         \draw pic (b1) {Component={B1}{t}};
         \draw(3.5, 0) pic (b2) {Component={B2}{t}};
-        % Glow the blocks
-        \drawshadowbis{b1-edge};
-        \drawshadowbis{b2-edge};
+        % % Glow the blocks
+        % \drawshadowbis{b1-edge};
+        % \drawshadowbis{b2-edge};
         \begin{scope}[line width=1.5mm, >={Triangle[width=3mm,length=3mm]}]
             \draw[->] ([xshift=-1cm] b1-edge.west) -- node[midway, anchor=south]{L1} (b1-edge.west);
             \draw[->] (b1-edge.east) -- node[midway, anchor=south]{L2} (b2-edge.west);

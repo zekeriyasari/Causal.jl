@@ -6,7 +6,7 @@ Having `launch`ed, a `Writer` is triggered through its `trigger` link. When trig
 Let us construct a `Writer`. 
 ```@repl writer_ex
 using Jusdl # hide 
-w = Writer(Bus(), buflen=5)
+w = Writer(Inport(), buflen=5)
 ```
 The file of `w` is closed and the `trigger` link of `w` is not writable. That is, it is not possible to trigger `w` from its `trigger` link.
 ```@repl writer_ex

@@ -59,14 +59,14 @@ makedocs(
                 "manual/models/model.md",
                 ],
             ],
-        "Tutorials" => [
-            "Simple Model Simulation" => "tutorials/simple_model.md",
-            "Breaking Algebraic Loops" => "tutorials/breaking_algebraic_loops.md",
-            "Constuction and Simulation of Subsystems" => "tutorials/construction_and_simulation_of_subsystems.md",
-            "Constuction and Simulation of Networks" => "tutorials/construction_and_simulation_of_networks.md",
-        ],
+        # "Tutorials" => [
+        #     "Simple Model Simulation" => "tutorials/simple_model.md",
+        #     "Breaking Algebraic Loops" => "tutorials/breaking_algebraic_loops.md",
+        #     "Constuction and Simulation of Subsystems" => "tutorials/construction_and_simulation_of_subsystems.md",
+        #     "Constuction and Simulation of Networks" => "tutorials/construction_and_simulation_of_networks.md",
+        # ],
     ],
     # format=DocumenterLaTeX.LaTeX()  # Uncomment this option to generate pdf output.
 )  # end makedocs
 
-deploydocs(repo = "github.com/zekeriyasari/Jusdl.jl.git")
+# deploydocs(repo = "github.com/zekeriyasari/Jusdl.jl.git")

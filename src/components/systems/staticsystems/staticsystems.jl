@@ -14,14 +14,14 @@ where `g` is `outputfunc`, `t` is the time, `u` is the input at time `t` and `y`
 julia> g(u, t) = [u[1] + u[2], sin(u[2]), cos([1])]  # The system has 2 inputs and 3 outputs.
 g (generic function with 1 method)
 
-julia> ss = StaticSystem(Bus(2), Bus(3), g)
-StaticSystem(outputfunc:g, input:Bus(nlinks:2, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:3, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> ss = StaticSystem(g, Inport(2), Outport(3))
+StaticSystem(outputfunc:g, input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:3, eltype:Outpin{Float64}))
 
 julia> g2(u, t) = t  # The system does not have any input.
 g2 (generic function with 1 method)
 
-julia> ss2 = StaticSystem(nothing, Bus(), g2)
-StaticSystem(outputfunc:g2, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> ss2 = StaticSystem(g2, nothing, Outport())
+StaticSystem(outputfunc:g2, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
 struct StaticSystem{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
@@ -46,7 +46,7 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 
 # Example 
 ```jldoctest
-julia> adder = Adder(Bus(3), (+, +, -));
+julia> adder = Adder((+, +, -));
 
 julia> adder.outputfunc([3, 4, 5], 0.) == 3 + 4 - 5
 true
@@ -79,7 +79,7 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 
 # Example 
 ```jldoctest
-julia> mlt = Multiplier(Bus(3), (*, *, /));
+julia> mlt = Multiplier((*, *, /));
 
 julia> mlt.outputfunc([3, 4, 5], 0.) == 3 * 4 / 5
 true
@@ -120,9 +120,9 @@ where ``K`` is `gain`, ``u`` is the value of `input` and `y` is the value of `ou
 ```jldoctest
 julia> K = [1. 2.; 3. 4.];
 
-julia> g = Gain(Bus(2), gain=K);
+julia> sfunc = Gain(Inport(2), gain=K);
 
-julia> g.outputfunc([1., 2.], 0.) == K * [1., 2.]
+julia> sfunc.outputfunc([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
@@ -160,9 +160,24 @@ end
 
 
 """
-    Memory(input::Bus{Union{Missing, T}}, numdelay::Int; initial=Vector{T}(undef, length(input)))
+    Memory(delay=1.; initial::AbstractVector{T}=zeros(1), numtaps::Int=5, t0=0., dt=0.01, callbacks=nothing, 
+        name=Symbol()) where T 
 
-Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, the values from `initial` is returned.
+Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. 
+`initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, 
+the values from `initial` is returned.
+
+# Example
+```jldoctest
+julia> Memory(0.1)
+Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
+
+julia> Memory(0.1; numtaps=5)
+Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
+
+julia> Memory(0.1; numtaps=5, dt=1.)
+Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
+```
 """
 struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
     @generic_static_system_fields

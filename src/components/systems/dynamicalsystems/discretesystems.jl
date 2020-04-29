@@ -32,14 +32,12 @@ end
 
 # Example 
 ```jldoctest 
-julia> sfunc(dx,x,u,t) = (dx .= 0.5x)
-sfunc (generic function with 1 method)
+julia> sfuncdiscrete(dx,x,u,t) = (dx .= 0.5x);
 
-julia> ofunc(x, u, t) = x
-ofunc (generic function with 1 method)
+julia> ofuncdiscrete(x, u, t) = x;
 
-julia> ds = DiscreteSystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
-DiscreteSystem(state:[1.0], t:0.0, input:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false), output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> DiscreteSystem(sfuncdiscrete, ofuncdiscrete, [1.], 0., nothing, Outport())
+DiscreteSystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 
 !!! info 

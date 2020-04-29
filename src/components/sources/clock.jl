@@ -38,14 +38,14 @@ show(io::IO, clk::Clock) = print(io,
 Takes a values from `clk`.
 
 # Example 
-```jldocstest
-ulia> clk = Clock(0., 0.1, 0.5)
+```jldoctest
+julia> clk = Clock(0., 0.1, 0.5)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
 
 julia> set!(clk)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:true)
 
-julia> for i = 0 : 5 
+julia> for i in 0 : 5
        @show take!(clk)
        end
 take!(clk) = 0.0
@@ -107,14 +107,9 @@ isoutoftime(clk::Clock) = clk.t >= clk.tf
 Sets `clk` for current clock time `t`, sampling time `dt` and final time `tf`. After the set,  it is possible to take clock tick from `clk`. See also [`take!(clk::Clock)`](@ref)
 
 # Example 
-```jldocstest
+```jldoctest
 julia> clk = Clock(0., 0.1, 0.5)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
-
-julia> take!(clk)
-┌ Warning: Clock is not running.
-└ @ Jusdl.Components.Sources ~/.julia/dev/Jusdl/src/components/sources/clock.jl:47
-0.0
 
 julia> set!(clk)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:true)
@@ -152,24 +147,23 @@ end
 Pauses `clk`. When paused, the current time of `clk` does not advance.
 
 # Example
-```jldocstest
+```jldoctest
 julia> clk = Clock(0., 0.1, 0.5);
 
 julia> set!(clk);
 
 julia> for i = 1 : 5
-       i > 3 && pause!(clk)
-       @show take!(clk)
-       end
-
+              i > 3 && pause!(clk)
+              @show take!(clk)
+              end
 take!(clk) = 0.0
 take!(clk) = 0.1
 take!(clk) = 0.2
 ┌ Warning: Clock is paused.
-└ @ Jusdl.Components.Sources ~/.julia/dev/Jusdl/src/components/sources/clock.jl:58
+└ @ Jusdl ~/.julia/dev/Jusdl/src/components/sources/clock.jl:61
 take!(clk) = 0.2
 ┌ Warning: Clock is paused.
-└ @ Jusdl.Components.Sources ~/.julia/dev/Jusdl/src/components/sources/clock.jl:58
+└ @ Jusdl ~/.julia/dev/Jusdl/src/components/sources/clock.jl:61
 take!(clk) = 0.2
 ```
 """
@@ -182,14 +176,14 @@ pause!(clk::Clock) = (clk.paused = true; clk)
 Iterationk interface for `clk`. `clk` can be iterated in a loop.
 
 # Example
-```jldocstest
+```jldoctest
 julia> clk = Clock(0., 0.1, 0.3);
 
 julia> set!(clk)
 Clock(t:0.0, dt:0.1, tf:0.3, paused:false, isrunning:true)
 
-julia> for t in clk
-       @show t 
+julia> for t in clk 
+       @show t
        end
 t = 0.0
 t = 0.1

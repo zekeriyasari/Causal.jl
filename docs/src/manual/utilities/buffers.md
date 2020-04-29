@@ -1,72 +1,56 @@
 # Buffer
 
-```@meta
-DocTestSetup  = quote
-    using Jusdl
-    import Utilities: BufferMode, LinearMode, CyclicMode
-end
-```
-
-`Buffer` is a used to *buffer* the data. Data can be read from and written into a buffer. The mode of the buffer determines the way to read from and write into the buffers. 
+A [`Buffer`](@ref) is a used to *buffer* the data flowing the connections of a model. Data can be read from and written into a buffer. The mode of the buffer determines the way to read from and write into the buffers. 
 
 ## Buffer Modes 
 
-Buffer mode determines the way the data is read from and written into a `Buffer`. Basically, there are four buffer modes: `Normal`, `Cyclic`, `Fifo` and `Lifo`. `Normal`, `Fifo` and `Lifo` are  subtypes of `LinearMode` and `Cyclic` is a subtype of `CyclicMode`.
-
-```@docs 
-Utilities.BufferMode 
-Utilities.LinearMode 
-Utilities.CyclicMode
-``` 
-
-There are four different buffer modes.
-
-```@docs 
-Normal
-Cyclic
-Lifo 
-Fifo
-```
+[`BufferMode`](@ref) determines the way the data is read from and written into a [`Buffer`](@ref). Basically, there are four buffer modes: [`Normal`](@ref), [`Cyclic`](@ref), [`Fifo`](@ref) and [`Lifo`](@ref). `Normal`, `Fifo` and `Lifo` are  subtypes of [`LinearMode`](@ref) and `Cyclic` is a subtype of [`CyclicMode`](@ref).
 
 ## Buffer Constructors 
 
-The `Buffer` construction is very similar to the construction of arrays in Julia. Just specify the mode, element type and length of the buffer. Here are the main `Buffer` constructors: 
+The [`Buffer`](@ref) construction is very similar to the construction of arrays in Julia. Just specify the mode, element type and length of the buffer. Here are some examples: 
 
-```@docs 
-Buffer
+```@repl 
+using Jusdl # hide 
+Buffer{Fifo}(2, 5)
+Buffer{Cyclic}(2, 10)
+Buffer{Lifo}(Bool, 2, 5)
+Buffer(5)
 ``` 
 
 ## Writing Data into Buffers 
-Writing data into a `Buffer` is done with `write!` function.
-
-```@docs
-write!(buf::Buffer, val)
-```
-
-Recall that when the buffer is full, no more data can be written into the buffer if the buffer mode is of type `LinearMode`. 
+Writing data into a [`Buffer`](@ref) is done with [`write!`](@ref) function. Recall that when the buffer is full, no more data can be written into the buffer if the buffer mode is of type `LinearMode`. 
 
 ```@repl
 using Jusdl # hide
 normalbuf = Buffer{Normal}(3)
-fill!(normalbuf, 1.)
-normalbuf.data 
-write!(normalbuf, 1.)
+foreach(item -> write!(normalbuf, item), 1:3)
+normalbuf
+write!(normalbuf, 4.)
 ```
 This situation is the same for `Lifo` and `Fifo` buffers, but not the case for `Cyclic` buffer. 
 ```@repl
 using Jusdl # hide
-normalbuf = Buffer{Cyclic}(3)
-fill!(normalbuf, 1.)
-normalbuf.data 
-write!(normalbuf, 3.)
-write!(normalbuf, 4.)
+cyclicbuf = Buffer{Cyclic}(3)
+foreach(item -> write!(cyclicbuf, item), 1:3)
+cyclicbuf
+write!(cyclicbuf, 3.)
+write!(cyclicbuf, 4.)
 ```
 
 ## Reading Data from Buffers 
-Reading data from a `Buffer` is done with `read` function.
+Reading data from a `Buffer` is done with [`read`](@ref) function.
 
-```@docs 
-read(buf::Buffer)
+```@repl
+using Jusdl # hide 
+nbuf, cbuf, fbuf, lbuf = Buffer{Normal}(5), Buffer{Cyclic}(5), Buffer{Lifo}(5), Buffer{Fifo}(5)
+foreach(buf -> foreach(item -> write!(buf, item), 1 : 5), [nbuf, cbuf, fbuf, lbuf])
+for buf in [nbuf, cbuf, fbuf, lbuf]
+    @show buf 
+    for i in 1 : 5 
+        @show read(buf)
+    end
+end
 ```
 
 ## AbstractArray Interface of Buffers
@@ -91,10 +75,23 @@ buf[3:5] = [7, 8, 9]
 
 ## Full API
 ```@docs 
-fill!
+BufferMode
+CyclicMode
+LinearMode
+Cyclic
+Normal
+Fifo 
+Lifo
+Buffer
+inbuf
+outbuf
+mode
+datalength
 isempty
 isfull
+ishit
+read(buf::Buffer)
+write!(buf::Buffer, val)
 content
-mode
-snapshot
+snapshot(buf::Buffer)
 ```

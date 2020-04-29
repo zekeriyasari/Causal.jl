@@ -47,7 +47,7 @@ hist = History(histfunc, conslags, ())
 ```
 At this point, we are ready to construct the system. 
 ```@repl dde_system_ex 
-ds = DDESystem(nothing, Bus(), statefunc, outputfunc, state, hist, 0.)
+ds = DDESystem(statefunc, outputfunc, state, hist, 0., nothing, Outport())
 ```
 
 ## Basic Operation of DDESystem 

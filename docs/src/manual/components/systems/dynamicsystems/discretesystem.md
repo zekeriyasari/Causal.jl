@@ -20,7 +20,7 @@ ofunc(x, u, t) = x
 From `sfunc`, it is seen that the system does not have any input, and from `ofunc` the system has one output. Thus, the `input` and `output` of the system is 
 ```@repl discrete_system_ex 
 input = nothing 
-output = Bus(1)
+output = Outport(1)
 ```
 We also need to specify the initial condition and time of the system
 ```@repl discrete_system_ex 

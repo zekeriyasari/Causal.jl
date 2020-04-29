@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  11 JAN 2020 16:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  16 MAR 2020 21:01
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/sari/Desktop/Latex/TaskForComponents/tasks
-(/home/sari/Desktop/Latex/TaskForComponents/tasks.tex
+**/home/sari/Documents/vmshare/pajes/Latex/TaskForComponents/tasks
+(/home/sari/Documents/vmshare/pajes/Latex/TaskForComponents/tasks.tex
 LaTeX2e <2017-04-15>
 Babel <3.18> and hyphenation patterns for 84 language(s) loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/standalone/standalone.cls
@@ -58,12 +58,12 @@ Output written on tasks.png.
  ) ) 
 Here is how much of TeX's memory you used:
  692 strings out of 492982
- 10895 string characters out of 6134897
+ 10943 string characters out of 6134897
  63829 words of memory out of 5000000
  4317 multiletter control sequences out of 15000+600000
  3640 words of font info for 14 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 34i,1n,56p,243b,49s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,1n,56p,259b,49s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 No pages of output.
 PDF statistics:
@@ -71,7 +71,7 @@ PDF statistics:
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
-  defining Unicode char U+00C3 (decimal 195)
+decimal 195)
    defining Unicode char U+00C4 (decimal 196)
    defining Unicode char U+00C5 (decimal 197)
    defining Unicode char U+00C6 (decimal 198)
@@ -699,13 +699,13 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 Here is how much of TeX's memory you used:
  15018 strings out of 492982
  327723 string characters out of 6134897
- 385373 words of memory out of 5000000
+ 385385 words of memory out of 5000000
  18294 multiletter control sequences out of 15000+600000
  3938 words of font info for 15 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  56i,9n,78p,476b,771s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on tasks.pdf (1 page, 11667 bytes).
+Output written on tasks.pdf (1 page, 11672 bytes).
 PDF statistics:
  39 PDF objects out of 1000 (max. 8388607)
  18 compressed objects within 1 object stream

@@ -100,9 +100,13 @@ Connects each link in `outpin` to each link in `inpin` one by one.
 ```jldoctest 
 julia> op, ip = Outpin(), Inpin();
 
-julia> connect(op, ip)
+julia> l = connect(op, ip)
+Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
-julia> l2.outpin[] == l1
+julia> l in op.links
+true
+
+julia> ip.link === l
 true
 ```
 """

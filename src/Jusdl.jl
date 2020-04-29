@@ -29,7 +29,7 @@ include("utilities/callback.jl")
 export Callback, enable!, disable!, isenabled, applycallbacks
 
 include("utilities/buffer.jl")
-export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
+export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
 
 include("connections/link.jl")
 export Link, launch

@@ -19,12 +19,12 @@ makedocs(
                 ], 
             "Connections" => [
                 "manual/connections/link.md",
-                "manual/connections/bus.md",
+                "manual/connections/pin.md",
+                "manual/connections/port.md",
                 ],
             "Components" => [
                 "ComponentsBase" => [
                     "manual/components/componentsbase/evolution.md",
-                    "manual/components/componentsbase/generic_fields.md",
                     ],
                 "Sources" => [
                     "manual/components/sources/clock.md",

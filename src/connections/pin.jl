@@ -1,6 +1,11 @@
 # This file contains the Pins to connect the links
 
 
+"""
+    AbstractPin{T} 
+
+Abstract type of `Outpin` and `Inpin`. See also: [`Outpin`](@ref), [`Inpin`](@ref)
+"""
 abstract type AbstractPin{T} end
 
 
@@ -33,13 +38,9 @@ Inpin() = Inpin{Float64}()
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
 
 """
-    bind(link::Link, inpin::Inpin)
+    bind(link::Link, pin)
 
-Binds `link` to `inpin`. When bound, any value taken from `inpin` is taken from `link`.
-
-    bind(link::Link, outpin::Outpin)
-
-Binds `link` to `pin`.
+Binds `link` to `pin`. When bound, data written into or read from `pin` is written into or read from `link`.
 """
 bind(link::Link, inpin::Inpin) = (inpin.link = link; link.slaveid = inpin.id)
 bind(link::Link, outpin::Outpin) = (push!(outpin.links, link); link.masterid = outpin.id)
@@ -69,14 +70,62 @@ eltype(pin::AbstractPin{T}) where T = T
 """
     take!(pin::Inpin)
 
-Takes an element from `pin`. The value is taken from the links of `pin`.
+Takes data from `pin`. The data is taken from the links of `pin`.
+
+!!! warning
+    To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
+
+# Example 
+```jldoctest
+julia> ip = Inpin();
+
+julia> l = Link();
+
+julia> bind(l, ip);
+
+julia> t = @async for item in 1 : 5 
+       put!(l, item)
+       end;
+
+julia> take!(ip)
+1.0
+
+julia> take!(ip)
+2.0
+```
 """
 take!(pin::Inpin) = take!(pin.link)
 
 """
     put!(pin::Outpin, val)
 
-Writer `val` to `pin`. `val` is written to the links of `pin`.
+Puts `val` to `pin`. `val` is put into the links of `pin`.
+
+!!! warning
+    To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
+
+# Example 
+```jldoctest
+julia> op = Outpin();
+
+julia> l = Link();
+
+julia> bind(l, op);
+
+julia> t = @async while true 
+       val = take!(l) 
+       val === NaN && break
+       println("Took " * string(val))
+       end;
+
+julia> put!(op, 1.)
+Took 1.0
+
+julia> put!(op, 3.)
+Took 3.0
+
+julia> put!(op, NaN)
+```
 """
 put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 
@@ -94,7 +143,7 @@ Connects `outpin` to `inpin`. When connected, any element that is put into `outp
 
     connect(outpin::AbstractVector{<:Link}, inpin::AbstractVector{<:Link})
 
-Connects each link in `outpin` to each link in `inpin` one by one.
+Connects each link in `outpin` to each link in `inpin` one by one. See also: [`disconnect`](@ref)
 
 # Example 
 ```jldoctest 
@@ -136,7 +185,8 @@ disconnect(outpins, inpins) = disconnect([outpins...], [inpins...])
 """
     isconnected(link1, link2)
 
-Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important.
+Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important. 
+See also [`connect`](@ref), [`disconnect`](@ref)
 """
 function isconnected(outpin::Outpin, inpin::Inpin)
     if !isbound(outpin) || !isbound(inpin)

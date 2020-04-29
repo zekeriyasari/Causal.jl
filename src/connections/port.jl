@@ -1,9 +1,34 @@
 # This file contains the Port tool for connecting the tools of Jusdl
 
 
+"""
+    AbstractPort{P}
+
+Abstract type of [`Outport`](@ref) and [`Inport`](@ref). See also: [`Outport`](@ref), [`Inport`](@ref).
+"""
 abstract type AbstractPort{P} <: AbstractVector{P} end
 
 
+"""
+    Outport{T}(numpins=1) 
+
+Constructs an `Outport` with `numpins` [`Outpins`](@ref).
+
+!!! warning
+    Element type of an `Outport` must be `Outpin`. See also [`Outpin`](@ref)
+
+# Example 
+```jldoctest
+julia> Outport{Int}(2)
+2-element Outport{Outpin{Int64}}:
+ Outpin(eltype:Int64, isbound:false)
+ Outpin(eltype:Int64, isbound:false)
+
+julia> Outport()
+1-element Outport{Outpin{Float64}}:
+ Outpin(eltype:Float64, isbound:false)
+```
+"""
 struct Outport{P} <: AbstractPort{P}
     pins::Vector{P}
     id::UUID
@@ -16,6 +41,26 @@ show(io::IO, outport::Outport) = print(io, "Outport(numpins:$(length(outport)), 
 # display(outport::Outport) = println("Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
 
 
+"""
+    Inport{T}(numpins=1) 
+
+Constructs an `Inport` with `numpins` [`Inpins`](@ref).
+
+!!! warning
+    Element type of an `Inport` must be `Inpin`. See also [`Inpin`](@ref)
+
+# Example 
+```jldoctest
+julia> Inport{Int}(2)
+2-element Inport{Inpin{Int64}}:
+ Inpin(eltype:Int64, isbound:false)
+ Inpin(eltype:Int64, isbound:false)
+
+julia> Inport()
+1-element Inport{Inpin{Float64}}:
+ Inpin(eltype:Float64, isbound:false)
+```
+"""
 struct Inport{P} <: AbstractPort{P}
     pins::Vector{P}
     Inport(pins::AbstractVector{P}) where {T, P<:Inpin{T}} = new{P}(pins)

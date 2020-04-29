@@ -1,7 +1,7 @@
 # StaticSystems
 
 ## Basic Operation of StaticSystems 
-Static systems are the systems whose output `y` at time `t` depends on the current time `t` and the value of their inputs `u`. The input-output relation of static systems are represented by their output function `outputfunc` which is of the form 
+A static system is a system whose output `y` at time `t` depends on the current time `t` and the value of its input `u`. The input-output relation of a static systems is represented by its output function `outputfunc` which is of the form 
 ```math 
     y = g(u, t)
 ```
@@ -41,47 +41,56 @@ ss = StaticSystem(g, Inport(2), Outport(3))
 ```
 Note the construction of input bus `Inport(2)` and output bus `Outport(3)` by recalling that the number of input is 2 and the number of output is 3.
 
-A `StaticSystem` operates by being triggered through its `trigger` link. When triggered from its `trigger` link, a `StaticSystem` read the current time `t` from its `trigger` link and computes its output `y` according to its output function `outputfunc` and writes its output `t` to its `output` bus (if `output` bus exists since `output` bus may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` link is not writeable. 
+A [`StaticSystem`](@ref) evolves by being triggered through its `trigger` pin. When triggered from its `trigger` pin, a `StaticSystem` reads the current time `t` from its `trigger` pin and computes its output `y` according to its output function `outputfunc` and writes its output `y(t)` to its `output` port (if `output` port exists since `output` port may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` pin is not writeable. 
 ```@repl static_system_ex
-ss.trigger
+ss.trigger.link
 ```
-To make `ss` drivable, we need to launch `ss`. 
+To make `ss` drivable, we need to construct the ports and pins for input-output and signaling. 
 ```@repl static_system_ex 
+oport, iport, trg, hnd = Outport(length(ss.input)), Inport(length(ss.output)), Outpin(), Inpin{Bool}()
+connect(oport, ss.input) 
+connect(ss.output, iport) 
+connect(trg, ss.trigger)
+connect(ss.handshake, hnd)
 task = launch(ss)
+taskout = @async while true 
+    all(take!(iport) .=== NaN) && break 
+    end
 ```
-Now, `ss` is drivable from its `trigger` link. 
+Now, `ss` is drivable from its `trg` pin. 
 ```@repl static_system_ex
-ss.trigger
+ss.trigger.link
 ```
 Now let us drive `ss`.
 ```@repl static_system_ex 
-put!(ss.trigger, 1.)
+put!(trg, 1.)
 ```
-As this point `ss` wait for its to be written. Let us write some data to `input` of `ss`.
+As this point `ss` wait for its to be written. Let us write some data to `oport`.
 ```@repl static_system_ex 
-put!(ss.input, [10., 10.])
+put!(oport, [10., 10.])
 ```
-`ss` read the value `u` of its `input` , read the current time `t`, and computed its output value `y` and wrote it its `output`. To signal that it succeeded to be take the step, it put a `true` to its handshake which needs to be taken.
+`ss` read the value `u` of its `input`(since `ss.input` is connected to `oport`), read the current time `t`, and computed its output value `y` and wrote it its `output` port. To signal that it succeeded to be take the step, it put a `true` to its handshake which needs to be taken.
 ```@repl static_system_ex 
-ss.handshake
-take!(ss.handshake)
+hnd.link
+take!(hnd)
 ```
-We can see the current data in the `output` of `ss`.
+We can see the current data in the `output` of `ss` through `iport` (since `iport` is connected to `ss.output`)
 ```@repl static_system_ex 
-println(ss.output[1].buffer.data)
+iport[1].link.buffer
 ```
 Let us further drive `ss`.
 ```@repl static_system_ex 
 for t in 2. : 10.
-    put!(ss.trigger, t)
-    put!(ss.input, [10 * t, 20 * t])
-    take!(ss.handshake)
+    put!(trg, t)
+    put!(oport, [10 * t, 20 * t])
+    take!(hnd)
 end
 ```
 The data written to the `output` of `ss` is also written to the internal buffers of `output`.
 ```@repl static_system_ex 
-println(ss.output[1].buffer.data)
+iport[1].link.buffer
 ```
+In addition to the generic [`StaticSystem`](@ref),  `Jusdl` provides some well-known static systems given in the next section.
 
 ## Full API 
 ```@docs 

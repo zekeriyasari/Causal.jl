@@ -13,6 +13,7 @@ makedocs(
             "modeling_and_simulation/simulation.md",
         ],
         "Tutorials" => [
+            "Models and Graphs" => "tutorials/models_and_graphs.md",
             "Simple Model Simulation" => "tutorials/simple_model.md",
             "Breaking Algebraic Loops" => "tutorials/breaking_algebraic_loops.md",
             "Constuction and Simulation of Subsystems" => "tutorials/construction_and_simulation_of_subsystems.md",

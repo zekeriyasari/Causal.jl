@@ -55,8 +55,8 @@ isconnected(op2[3:5], ip22)
 isconnected(op2[5], ip22[3])
 ```
 
-## Data Flow through Ports
-Data flow through the ports is very similar to the case in pins(see [Data Flow through Pins](@ref) for information about data flow through pins). Running tasks must be bound to the links of pins of the ports for data flow through the ports.
+## Data Flow Through Ports
+Data flow through the ports is very similar to the case in pins(see [Data Flow Through Pins](@ref) for information about data flow through pins). Running tasks must be bound to the links of pins of the ports for data flow through the ports.
 
 Let us construct an `Outport` and an `Inport`, connect them together with links and perform data transfer from the `Outport` to the `Inport` through the links. 
 ```@repl port_example_1
@@ -91,15 +91,8 @@ end
 ```
 
 ## Full API 
-```@docs 
-AbstractPort
-Outport 
-Inport
-datatype(port::AbstractPort{<:AbstractPin{T}}) where T
-size(port::AbstractPort)
-getindex(port::AbstractPort, idx::Vararg{Int, N}) where N
-setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N
-take!(inport::Inport)
-put!(outport::Outport, vals)
-Jusdl.similar(outport::Outport{P}, numpins::Int=length(outport)) where {P<:Outpin{T}} where {T} 
-``` 
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["port.jl"]
+Order = [:type, :function]
+```

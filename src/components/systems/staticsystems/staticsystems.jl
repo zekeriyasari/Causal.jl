@@ -36,7 +36,7 @@ end
 
 
 @doc raw"""
-    Adder(input::Bus[, signs])
+    Adder(signs=(+,+))
 
 Construts an `Adder` with input bus `input` and signs `signs`. `signs` is a tuplle of `+` and/or `-`. The output function `g` of `Adder` is of the form,
 ```math 
@@ -69,7 +69,7 @@ end
 
 
 @doc raw"""
-    Multiplier(input::Bus[, ops])
+    Multiplier(ops=(*,*))
 
 Construts an `Multiplier` with input bus `input` and signs `signs`. `signs` is a tuplle of `*` and/or `/`. The output function `g` of `Multiplier` is of the form,
 ```math 
@@ -142,7 +142,7 @@ end
 
 
 @doc raw"""
-    Terminator(input::Bus)
+    Terminator(input::Inport)
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """

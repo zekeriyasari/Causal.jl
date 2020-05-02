@@ -20,7 +20,7 @@ show(io::IO, plg::Variance) = print(io, "Mean(dims:$(plg.dims))")
 Returns the standard deviation of `x` along the dimension `plg.dims`.
 
 # Example 
-```jldoctest 
+```julia 
 julia> x = collect(reshape(1:16, 4,4))
 4×4 Array{Int64,2}:
  1  5   9  13

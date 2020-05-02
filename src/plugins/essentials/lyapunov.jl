@@ -25,7 +25,7 @@ show(io::IO, plg::Lyapunov) = print(io,
 Computes the maximum Lyapunov exponent of the input data `x`. 
 
 # Example
-```jldoctest 
+```julia 
 julia> using Random 
 
 julia> rng = MersenneTwister(1234);

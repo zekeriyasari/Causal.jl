@@ -1,10 +1,8 @@
 # Subsystem
 
 ## Construction of SubSystems
-A [`SubSystem`](@ref) consists of connected components. Thus, to construct a `SubSystem`, we first construct components, connect them and specify the input and output of `SubSystem`. See the basic constructor.
-```@docs 
-SubSystem
-```
+A [`SubSystem`](@ref) consists of connected components. Thus, to construct a `SubSystem`, we first construct components, connect them and specify the input and output of `SubSystem`.
+
 
 ## Basic Operation of SubSystems
 
@@ -54,3 +52,9 @@ sub.components[1].output[1].links[1].buffer[1]
 sub.components[2].output[1].links[1].buffer[1]
 ```
 Note that when `sub` is triggered, `sub` transfer the trigger to all its internal components.
+
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["subsystem.jl"]
+Order = [:type, :function]
+```

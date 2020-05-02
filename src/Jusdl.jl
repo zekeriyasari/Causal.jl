@@ -84,9 +84,9 @@ export DDESystem
 include("components/systems/subsystems/subsystem.jl")
 export SubSystem
 
-include("components/systems/subsystems/network.jl")
-export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
-    deletelink, changeweight, maketimevarying
+# include("components/systems/subsystems/network.jl")
+# export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
+#     deletelink, changeweight, maketimevarying
 
 include("components/sinks/manageplugins.jl")
 export fasten, unfasten

@@ -5,7 +5,7 @@
     DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
         alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Construct a `DiscreteSystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DiscreteSystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the diffence equation of the system.
+Constructs a `DiscreteSystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DiscreteSystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the diffence equation of the system.
 
 The system is represented by
 ```math
@@ -31,7 +31,7 @@ end
 ```
 
 # Example 
-```jldoctest 
+```julia 
 julia> sfuncdiscrete(dx,x,u,t) = (dx .= 0.5x);
 
 julia> ofuncdiscrete(x, u, t) = x;

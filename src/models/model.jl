@@ -357,7 +357,7 @@ end
 """
     initialize(model::Model)
 
-Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref). The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
+Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
 """
 function initialize(model::Model)
     pairs = model.taskmanager.pairs
@@ -388,7 +388,6 @@ Runs the `model` by triggering the components of the `model`. This triggering is
 
 !!! warning 
     The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
-```
 """
 function run(model::Model, withbar::Bool=true)
     taskmanager = model.taskmanager
@@ -409,7 +408,7 @@ end
 """
     terminate(model::Model)
 
-Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref).
+Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
 """
 function terminate(model::Model)
     taskmanager = model.taskmanager

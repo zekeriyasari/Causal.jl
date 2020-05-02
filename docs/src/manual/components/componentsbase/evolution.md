@@ -1,5 +1,5 @@
 # Evolution of Components
-In Jusdl, the simulation of a model is performed by individual evolution of components (see [Modeling](@ref) and [Simulation](@ref) for more information of modeling and simulation adopted in Jusdl). Basically, when triggered through its `trigger` pin, based on its type, a component takes a forward step as follows, 
+In Jusdl, the simulation of a model is performed by individual evolution of components (see [Modeling](@ref) and [Simulation](@ref section) for more information of modeling and simulation adopted in Jusdl). Basically, when triggered through its `trigger` pin, based on its type, a component takes a forward step as follows, 
 1. The next clock time `t` is read from its `trigger` pin.
 2. The next input value `u(t)` is read from from its `input` port, 
 3. The component evolves from its current time `t - dt` to the current clock time `t`

@@ -55,15 +55,8 @@ gen.output[1].links[1].buffer
 `Jusdl` provides some other function generators which are documented in the following section.
 
 ## Full API 
-```@docs 
-FunctionGenerator
-SinewaveGenerator
-DampedSinewaveGenerator
-SquarewaveGenerator
-TriangularwaveGenerator
-ConstantGenerator
-RampGenerator
-StepGenerator
-ExponentialGenerator
-DampedExponentialGenerator
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["generators.jl"]
+Order = [:type, :function]
 ```

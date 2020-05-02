@@ -2,7 +2,7 @@
 
 
 """
-    Scope(input::Bus, buflen::Int=64, plugin=nothing, args...; kwargs...)
+    Scope(input=Inport(), args...; buflen::Int=64, plugin=nothing, callbacks=nothing, name=Symbol(), kwargs...) 
 
 Constructs a `Scope` with input bus `input`. `buflen` is the length of the internal buffer of `Scope`. `plugin` is the additional data processing tool. `args`,`kwargs` are passed into `plots(args...; kwargs...))`. See (https://github.com/JuliaPlots/Plots.jl) for more information.
 

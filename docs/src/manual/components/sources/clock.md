@@ -66,15 +66,9 @@ end
 Note that `clk` is just iterated.
 
 ## Full API
-```@docs 
-Clock 
-take!(clk::Clock)
-isrunning
-ispaused
-isoutoftime
-set!
-stop!
-pause!
-iterate(clk::Clock)
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["clock.jl"]
+Order = [:type, :function]
 ```
 

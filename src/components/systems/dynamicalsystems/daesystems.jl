@@ -32,7 +32,7 @@ end
 ```
 
 # Example 
-```jldoctest 
+```julia 
 julia> function sfuncdae(out, dx, x, u, t)
            out[1] = x[1] + 1 - dx[1]
            out[2] = (x[1] + 1) * x[2] + 2

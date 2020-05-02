@@ -1,4 +1,4 @@
-# Modelling
+# Modeling
 
 Jusdl adopts the signal-flow approach in modeling systems. Briefly, in signal-flow approach models consists of components and connections. The simulation of the model is performed in a clocked simulation environment. That is, the models are not simulated in one shot by solving a huge mathematical equation, but are simulated by evolving components individually and in parallel in different sampling intervals.
 

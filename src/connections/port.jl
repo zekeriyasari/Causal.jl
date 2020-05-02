@@ -12,7 +12,7 @@ abstract type AbstractPort{P} <: AbstractVector{P} end
 """
     Outport{T}(numpins=1) 
 
-Constructs an `Outport` with `numpins` [`Outpins`](@ref).
+Constructs an `Outport` with `numpins` [`Outpin`](@ref).
 
 !!! warning
     Element type of an `Outport` must be `Outpin`. See also [`Outpin`](@ref)
@@ -34,6 +34,7 @@ struct Outport{P} <: AbstractPort{P}
     id::UUID
     Outport(pins::AbstractVector{P}) where {T, P<:Outpin{T}} = new{P}(pins, uuid4())
 end
+Outport(pin::Outpin) = Outport([pin])
 Outport{T}(numpins::Int=1) where T = Outport([Outpin{T}() for i = 1 : numpins]) 
 Outport(numpins::Int=1) = Outport{Float64}(numpins)
 
@@ -44,7 +45,7 @@ show(io::IO, outport::Outport) = print(io, "Outport(numpins:$(length(outport)), 
 """
     Inport{T}(numpins=1) 
 
-Constructs an `Inport` with `numpins` [`Inpins`](@ref).
+Constructs an `Inport` with `numpins` [`Inpin`](@ref).
 
 !!! warning
     Element type of an `Inport` must be `Inpin`. See also [`Inpin`](@ref)
@@ -65,6 +66,7 @@ struct Inport{P} <: AbstractPort{P}
     pins::Vector{P}
     Inport(pins::AbstractVector{P}) where {T, P<:Inpin{T}} = new{P}(pins)
 end
+Inport(pin::Inpin) = Inport([pin])
 Inport{T}(numpins::Int=1) where T = Inport([Inpin{T}() for i = 1 : numpins])
 Inport(numpins::Int=1) = Inport{Float64}(numpins)
 

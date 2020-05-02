@@ -31,7 +31,7 @@ end
 ```
 
 # Example 
-```jldoctest
+```julia
 julia> sfuncode(dx,x,u,t) = (dx[1] = 0.5x[1] + u[1](t));
 
 julia> ofuncode(x, u, t) = x;

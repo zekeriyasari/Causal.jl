@@ -30,7 +30,7 @@ function outputfunc(x, u, t)
 end
 ```
 # Example 
-```jldoctest
+```julia
 julia> const out = zeros(1);
 
 julia> histfunc(out, u, t) = (out .= 1.);

@@ -4,7 +4,7 @@ import Base.print
 
 
 """
-   Printer(input::Bus{Union{Missing, T}}, buflen=64, plugin=nothing) where T
+  Printer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol()) where T
 
 Constructs a `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
 """

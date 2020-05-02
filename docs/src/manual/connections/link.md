@@ -75,17 +75,8 @@ t  # Show that `t` is terminated.
 ```
 
 ## Full API 
-
-```@docs  
-Link
-put!(link::Link, val)
-take!(link::Link)
-close(link::Link)
-isopen(link::Link)
-isreadable(link::Link)
-iswritable(link::Link)
-isfull(link::Link)
-snapshot(link::Link
-bind(link::Link, task::Task)
-collect(link::Link)
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["link.jl"]
+Order = [:type, :function]
 ```

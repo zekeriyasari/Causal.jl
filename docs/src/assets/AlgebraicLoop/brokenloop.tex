@@ -33,7 +33,7 @@
 
 \tikzset{
     border/.style = { 
-        draw, rectangle, minimum width=2cm, minimum height=1.5cm, thick
+        draw, rectangle, minimum width=2cm, minimum height=1.5cm, ultra thick
     },
     pics/Component/.style n args = {2}{
         code = {
@@ -67,11 +67,11 @@
         \draw(7, 1.5) pic (writer) {Component={Writer}{t}};
         \draw(2, -2.25) pic (memory) {Component={Memory}{t}};
         % Glow the blocks
-        \drawshadowbis{gen-edge};
-        \drawshadowbis{adder-edge};
-        \drawshadowbis{ds-edge};
-        \drawshadowbis{writer-edge};
-        \drawshadowbis{memory-edge};
+        % \drawshadowbis{gen-edge};
+        % \drawshadowbis{adder-edge};
+        % \drawshadowbis{ds-edge};
+        % \drawshadowbis{writer-edge};
+        % \drawshadowbis{memory-edge};
         \begin{scope}[line width=1.5mm, ->, >={Triangle[width=3mm,length=3mm]}]
             \draw[-] ([yshift=2mm] gen-edge.east) -- ++(1cm, 0cm) node[midway, anchor=south]{$r(t)$} coordinate(d); 
             \draw (d) -- ([yshift=2mm]  adder-edge.west);

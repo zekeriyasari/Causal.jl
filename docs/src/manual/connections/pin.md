@@ -1,8 +1,8 @@
 # Pins
-`Pin`a are building blocks of [Ports](@ref). Pins can be thought of *gates* of components as they are the most primitive type for data transfer inside and outside the components. There are two types of pins: [`Outpin`](@ref) and [`Inpin`](@ref). The data flows from inside of the components to its outside through `Outpin` while data flow from outside of the components to its inside through `Inpin`.
+`Pin`s are building blocks of [Ports](@ref). Pins can be thought of *gates* of components as they are the most primitive type for data transfer inside and outside the components. There are two types of pins: [`Outpin`](@ref) and [`Inpin`](@ref). The data flows from inside of the components to its outside through `Outpin` while data flow from outside of the components to its inside through `Inpin`.
 
 ## Connection and Disconnection of Pins 
-In Jusdl, signal flow modelling approach is adopted(See [Modelling and Simulation in Jusdl](@ref) for more information on modelling approach in Jusdl). In this approach, the components drive each other and data flow is unidirectional. The unidirectional data movement is carried out though the [`Link`](@ref)s. A `Link` connects `Outpin`s to `Inpin`s, and the data flow is from `Outpin` to `Inpin`.
+In Jusdl, signal flow modelling approach is adopted(see [Modeling](@ref) and [Simulation](@ref section) for more information on modelling approach in Jusdl). In this approach, the components drive each other and data flow is unidirectional. The unidirectional data movement is carried out though the [`Link`](@ref)s. A `Link` connects `Outpin`s to `Inpin`s, and the data flow is from `Outpin` to `Inpin`.
 
 !!! note 
     As the data movement is from `Outpin` to `Inpin`, connection of an  `Inpin` to an `Outpin` gives a `MethodError`.
@@ -58,15 +58,8 @@ Note that in both of the cases given above the data flow is always from an `Outp
     It is not possible to take data from an `Outpin` and put into `Inpin`. Thus, `take!(pin::Outpoin)` and `put!(pin::Inpin)` throws a method error.
 
 ## Full API 
-```@docs 
-AbstractPin
-Outpin 
-Inpin 
-bind(link::Link, inpin::Inpin) 
-isbound 
-take!(pin::Inpin)
-put!(pin::Outpin, val)
-connect(outpin::Outpin, inpin::Inpin)
-disconnect(outpin::Outpin, inpin::Inpin)
-isconnected(outpin::Outpin, inpin::Inpin)
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["pin.jl"]
+Order = [:type, :function]
 ```

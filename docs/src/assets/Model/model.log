@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  17 DEC 2019 15:25
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  2 MAY 2020 01:31
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/sari/Documents/vmshare/pajes/Latex/Model/model
-(/home/sari/Documents/vmshare/pajes/Latex/Model/model.tex
+**/home/sari/.julia/dev/Jusdl/docs/src/assets/Model/model
+(/home/sari/.julia/dev/Jusdl/docs/src/assets/Model/model.tex
 LaTeX2e <2017-04-15>
 Babel <3.18> and hyphenation patterns for 84 language(s) loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/standalone/standalone.cls
@@ -58,12 +58,12 @@ Output written on model.png.
  ) ) 
 Here is how much of TeX's memory you used:
  692 strings out of 492982
- 10907 string characters out of 6134897
+ 10916 string characters out of 6134897
  63829 words of memory out of 5000000
  4317 multiletter control sequences out of 15000+600000
  3640 words of font info for 14 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 34i,1n,56p,237b,49s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,1n,56p,240b,49s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 No pages of output.
 PDF statistics:
@@ -71,7 +71,7 @@ PDF statistics:
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
-,SPQR)
+
  (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
 Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
  (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
@@ -348,27 +348,22 @@ Package grfext Info: Graphics extension search list:
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./model.aux) ) 
 Here is how much of TeX's memory you used:
- 13185 strings out of 492982
- 276377 string characters out of 6134897
- 359332 words of memory out of 5000000
- 16515 multiletter control sequences out of 15000+600000
+ 13179 strings out of 492982
+ 276194 string characters out of 6134897
+ 326300 words of memory out of 5000000
+ 16509 multiletter control sequences out of 15000+600000
  3938 words of font info for 15 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 56i,17n,78p,442b,1051s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 56i,17n,78p,442b,1059s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on model.pdf (1 page, 16775 bytes).
+Output written on model.pdf (1 page, 13992 bytes).
 PDF statistics:
- 45 PDF objects out of 1000 (max. 8388607)
- 21 compressed objects within 1 object stream
+ 39 PDF objects out of 1000 (max. 8388607)
+ 18 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 127 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 109 words of extra memory for PDF output out of 10000 (max. 10000000)
 

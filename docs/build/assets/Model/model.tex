@@ -34,7 +34,7 @@
 
 \tikzset{
     border/.style = { 
-        draw, rectangle, minimum width=\mw, minimum height=\mh, thick, align=center
+        draw, rectangle, minimum width=\mw, minimum height=\mh, thick, align=center, ultra thick
     },
     Component/.pic = {
         \node [border](-edge){#1}; 
@@ -67,10 +67,10 @@
                                             \& \draw pic (b4) {Component={B4}}; \&                                  \\[1.25cm]
                                             \& \draw pic (b5) {Component={B5}}; \&                                  \\
         };
-        % Glow the blocks
-        \foreach \x in {1, 2, 3, 4, 5}{
-            \drawshadowbis{b\x-edge};
-        }
+        % % Glow the blocks
+        % \foreach \x in {1, 2, 3, 4, 5}{
+        %     \drawshadowbis{b\x-edge};
+        % }
         % Draw connections 
         \begin{scope}[line width=2mm, >={Triangle[width=4mm,length=4mm]}]
             \def\shiftamount{0.5mm};

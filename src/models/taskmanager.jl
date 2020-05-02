@@ -1,28 +1,4 @@
-# # This file is for TaskManager object.
-
-# """
-#     ComponentTask(triggertask, outputtask)
-
-# Constructs a `ComponentTask` from `triggertask` and `outputtask`. `triggertask` is the task constructed for the evolution of components and `outputtask` task is contructed to make the output busses of the components writable. 
-
-# # Example
-# ```julia 
-# julia> gen = SinewaveGenerator()
-# SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0.0, delay:0.0)
-
-# julia> taskpair = launch(gen)
-# (Task (runnable) @0x00007f4de65544f0, Task (runnable) @0x00007f4de5e8fd00)
-
-# julia> comptask = ComponentTask(taskpair)
-# ComponentTask{Task,Task}(Task (runnable) @0x00007f4de65544f0, Task (runnable) @0x00007f4de5e8fd00)
-# ```
-# """
-# struct ComponentTask{T, S}
-#     triggertask::T 
-#     outputtask::S 
-# end
-# ComponentTask(tasks::Tuple) = ComponentTask(tasks...)
-# ComponentTask(tasks::AbstractVector{<:Tuple}) = [ComponentTask.(tasks...)...]
+# This file is for TaskManager object.
 
 """
     TaskManager(pairs)
@@ -78,7 +54,7 @@ Returns `false`.
 
     istaskfailed(comptask::ComponentTask)
 
-Returns `true` is `triggertask` or `outputtask` of `comptask` is failed. See also: [`ComponentTask`](@ref)
+Returns `true` is `triggertask` or `outputtask` of `comptask` is failed.
 """
 # function istaskfailed end
 # istaskfailed(task::Nothing) = false
@@ -95,7 +71,7 @@ Returns `true`
 
     istaskrunning(comptask::ComponentTask)
 
-Returns `true` if `triggertask` and `outputtask` of `comptask` is running. See also: [`ComponentTask`](@ref)
+Returns `true` if `triggertask` and `outputtask` of `comptask` is running. 
 """
 function istaskrunning end
 istaskrunning(task::Task) = task.state == :runnable
@@ -109,7 +85,7 @@ istaskrunning(task::Task) = task.state == :runnable
 
 #     istaskdone(comptask::ComponentTask)
 
-# Returns `true` if the state of `triggertask` and `outputtask` of `comptask` is `done`. See also: [`ComponentTask`](@ref)
+# Returns `true` if the state of `triggertask` and `outputtask` of `comptask` is `done`.
 # """
 # function istaskdone end
 # istaskdone(task::Nothing) = true

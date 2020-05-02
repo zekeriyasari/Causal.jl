@@ -74,24 +74,8 @@ buf[3:5] = [7, 8, 9]
 ```
 
 ## Full API
-```@docs 
-BufferMode
-CyclicMode
-LinearMode
-Cyclic
-Normal
-Fifo 
-Lifo
-Buffer
-inbuf
-outbuf
-mode
-datalength
-isempty
-isfull
-ishit
-read(buf::Buffer)
-write!(buf::Buffer, val)
-content
-snapshot(buf::Buffer)
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["buffer.jl"]
+Order = [:type, :function]
 ```

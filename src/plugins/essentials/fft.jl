@@ -19,7 +19,7 @@ show(io::IO, plg::Fft) = print(io, "Fft(dims:$(plg.dims))")
 Performes an `fft` transformation for the input data `x`.
 
 # Example
-```jldoctest 
+```julia 
 julia> x = collect(reshape(1:16, 4,4))
 4×4 Array{Int64,2}:
  1  5   9  13

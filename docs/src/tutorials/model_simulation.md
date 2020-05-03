@@ -1,12 +1,9 @@
 # Construction and Simulation of a Simple Model 
 
-It this tutorial, we will simulate a very simple model consisting of a sinusoidal generator and a writer.  
+In this tutorial, we will simulate a very simple model consisting of a generator and a writer.  
 
-### Model Construction
-A model consists of connected components. We can either construct the components first and then connect them together to construct the model, or, we construct an empty model with no components, construct the components, connect those components and add those connected components to the model.
-
-#### Construction of Model
-We construct an empty model and then add nodes and branches to model.
+### Model Simulation
+We construct an empty model and then add nodes and branches to model. See [Construction of Models](@ref section_header) for more detailed information about model construction.
 ```@example simple_model_ex
 using Jusdl 
 
@@ -25,14 +22,13 @@ addbranch(model, :gen => :writer)
 ```
 In this simple `model`, we have a single output sinusoidal wave generator `gen` and a `writer`. In the script above, we constructed the components, connected them together and constructed the model. 
 
-### Model Simulation 
 In addition to simulation time settings(which have set during the model construction), we can specify simulation settings such as whether a simulation log file are to constructed, model components are to saved in a file, etc. 
 ```@example simple_model_ex 
 simdir = "/tmp"     # Path in which simulation files are saved.
 logtofile = true    # If true, a simulation log file is constructed 
 reportsim = true    # If true, model components are saved.
 ```
-At this point, we are ready to simulate the model,
+At this point, the model can be simulated.
 ```@example simple_model_ex 
 sim = simulate(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
 ```
@@ -52,7 +48,7 @@ open(joinpath(sim.path, "simlog.log"), "r") do file
 end
 ```
 
-### Analysis of Simulation Data Files 
+### Analysis of Simulation Data
 After the simulation, the data saved in simulation data files, i.e. in the files of writers, can be read back any offline data analysis can be performed. 
 ```@example simple_model_ex
 # Read the simulation data

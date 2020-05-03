@@ -16,45 +16,45 @@ addnode(model, Writer(), label=:writer)
 # Adding branches to model
 addbranch(model, :gen =&gt; :writer)</code></pre><p>In this simple <code>model</code>, we have a single output sinusoidal wave generator <code>gen</code> and a <code>writer</code>. In the script above, we constructed the components, connected them together and constructed the model.</p><p>In addition to simulation time settings(which have set through model clock during the model construction above), we can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. </p><pre><code class="language-julia">simdir = &quot;/tmp&quot;
 logtofile = true
-reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">sim = simulate(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-73fb9cac-4bbf-4f43-ba46-8b3fbf136897)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 52
-drwxrwxr-x  2 travis travis  4096 May  3 23:41 .
-drwxrwxrwt 14 root   root    4096 May  3 23:41 ..
--rw-rw-r--  1 travis travis 15236 May  3 23:41 3f333473-e249-433d-b378-33cf17a971a2.jld2
--rw-rw-r--  1 travis travis 21831 May  3 23:41 report.jld2
--rw-rw-r--  1 travis travis  1159 May  3 23:41 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
+reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">sim = simulate(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-f9b521ca-6c81-4537-a3da-8cb17a6b65b5)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 52
+drwxrwxr-x  2 travis travis  4096 May  3 23:46 .
+drwxrwxrwt 14 root   root    4096 May  3 23:46 ..
+-rw-rw-r--  1 travis travis 15236 May  3 23:46 9160cdc7-fd3f-4bcd-88e1-fcc70da62283.jld2
+-rw-rw-r--  1 travis travis 21831 May  3 23:46 report.jld2
+-rw-rw-r--  1 travis travis  1158 May  3 23:46 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
 open(joinpath(sim.path, &quot;simlog.log&quot;), &quot;r&quot;) do file
     for line in readlines(file)
         println(line)
     end
-end</code></pre><pre><code class="language-none">┌ Info: 2020-05-03T23:41:28.617 Started simulation...
+end</code></pre><pre><code class="language-none">┌ Info: 2020-05-03T23:46:35.952 Started simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.645 Inspecting model...
+┌ Info: 2020-05-03T23:46:35.985 Inspecting model...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.645 Done.
+┌ Info: 2020-05-03T23:46:35.985 Done.
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.645 Initializing the model...
+┌ Info: 2020-05-03T23:46:35.985 Initializing the model...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.682 Done...
+┌ Info: 2020-05-03T23:46:36.03 Done...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.682 Running the simulation...
+┌ Info: 2020-05-03T23:46:36.03 Running the simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.742 Done...
+┌ Info: 2020-05-03T23:46:36.097 Done...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.742 Terminating the simulation...
+┌ Info: 2020-05-03T23:46:36.097 Terminating the simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-03T23:41:28.76 Done.
+┌ Info: 2020-05-03T23:46:36.122 Done.
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5</code></pre><p><code>report.jld2</code> file, which includes the information about the simulation and model components, can be read back after the simulation. </p><pre><code class="language-julia-repl">julia&gt; using FileIO, JLD2
 
 julia&gt; filecontent = load(joinpath(sim.path, &quot;report.jld2&quot;))
 Dict{String,Any} with 9 entries:
   &quot;retcode&quot;         =&gt; :success
-  &quot;name&quot;            =&gt; &quot;Simulation-73fb9cac-4bbf-4f43-ba46-8b3fbf136897&quot;
+  &quot;name&quot;            =&gt; &quot;Simulation-f9b521ca-6c81-4537-a3da-8cb17a6b65b5&quot;
   &quot;model/callbacks&quot; =&gt; nothing
   &quot;model/name&quot;      =&gt; &quot;&quot;
   &quot;model/clock&quot;     =&gt; Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:…
-  &quot;model/id&quot;        =&gt; &quot;56d5509b-a089-4169-954f-fd6b265d9573&quot;
+  &quot;model/id&quot;        =&gt; &quot;81c17512-5bd8-4127-ab4d-c34ecca8bd32&quot;
   &quot;components/&quot;     =&gt; SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0…
-  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-73fb9cac-4bbf-4f43-ba46-8b3fbf136897&quot;
+  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-f9b521ca-6c81-4537-a3da-8cb17a6b65b5&quot;
   &quot;state&quot;           =&gt; :done
 
 julia&gt; clock = filecontent[&quot;model/clock&quot;]
@@ -95,4 +95,4 @@ simulate(model, withbar=false)
 # Reading and plotting the simulation data
 t, x = read(getnode(model, :writer).component)
 plot(t, x)
-savefig(&quot;larger_model_plot.svg&quot;); nothing # hide</code></pre><p><img src="larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 3 May 2020 23:41">Sunday 3 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+savefig(&quot;larger_model_plot.svg&quot;); nothing # hide</code></pre><p><img src="larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 3 May 2020 23:47">Sunday 3 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

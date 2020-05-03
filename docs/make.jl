@@ -58,12 +58,12 @@ makedocs(
                     ],
                 ]
             ],
-            "Plugins" => "manual/plugins/plugins.md",
             "Models" => [
                 "manual/models/taskmanager.md",
                 "manual/models/simulation.md",
                 "manual/models/model.md",
             ],
+            "Plugins" => "manual/plugins/plugins.md",
         ]   
     ]
 )

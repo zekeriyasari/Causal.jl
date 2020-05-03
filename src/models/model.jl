@@ -182,6 +182,10 @@ function inspect(model, breakpoints::Vector{Int}=Int[])
         @info msg
         while !isempty(loops)
             loop = popfirst!(loops)
+            if hasmemory(model, loop)
+                @info "\tLoop $loop has a Memory component.  The loops is broken"
+                continue
+            end
             breakpoint = isempty(breakpoints) ? length(loop) : popfirst!(breakpoints)
             breakloop(model, loop, breakpoint)
             @info "\tLoop $loop is broken"
@@ -190,6 +194,7 @@ function inspect(model, breakpoints::Vector{Int}=Int[])
     end
 end
 
+hasmemory(model, loop) = any([getnode(model, idx).component isa Memory for idx in loop])
 
 """
     getloops(model)

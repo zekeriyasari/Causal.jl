@@ -1,6 +1,11 @@
 # Construction and Simulation of a Simple Model 
 
-In this tutorial, we will simulate a very simple model consisting of a generator and a writer.  
+In this tutorial, we will simulate a very simple model consisting of a generator and a writer as shown in the block diagram shown below. 
+```@raw html
+<center>
+    <img src="../../assets/GeneratorWriter/generatorwriter.svg" alt="model" width="35%"/>
+</center>
+```
 
 ## Model Simulation
 We construct an empty model and then add nodes and branches to model. See [Construction of Models](@ref section_header) for more detailed information about model construction.
@@ -68,3 +73,46 @@ plot(t, x, xlabel="t", ylabel="x", label="")
 savefig("simple_model_plot.svg"); nothing # hide
 ```
 ![](simple_model_plot.svg)
+
+
+## A Larger Model Simulation 
+Consider a larger model whose block diagram is given below
+```@raw html
+<center>
+    <img src="../../assets/ModelGraph/modelgraph.svg" alt="model" width="90%"/>
+</center>
+```
+The script below illustrates the construction and simulation of this model 
+```@example large_model 
+using Jusdl 
+using Plots; pyplot() 
+
+# Construction of the model 
+model = Model() 
+addnode(model, SinewaveGenerator(frequency=2), label=:gen1)
+addnode(model, Gain(gain=1), label=:gain1)
+addnode(model, Adder((+,+)), label=:adder1)
+addnode(model, SinewaveGenerator(frequency=3), label=:gen2)
+addnode(model, Adder((+, +, -)), label=:adder2)
+addnode(model, Gain(gain=1), label=:gain2)
+addnode(model, Writer(), label=:writer)
+addnode(model, Gain(gain=1), label=:gain3)
+addbranch(model, :gen1 => :gain1, 1 => 1)
+addbranch(model, :gain1 => :adder1, 1 => 1)
+addbranch(model, :adder1 => :adder2, 1 => 1)
+addbranch(model, :gen2 => :adder1, 1 => 2)
+addbranch(model, :gen2 => :adder2, 1 => 2)
+addbranch(model, :adder2 => :gain2, 1 => 1)
+addbranch(model, :gain2 => :writer, 1 => 1)
+addbranch(model, :gain2 => :gain3, 1 => 1)
+addbranch(model, :gain3 => :adder2, 1 => 3)
+
+# Simulation of the model 
+simulate(model, withbar=false)
+
+# Reading and plotting the simulation data
+t, x = read(getnode(model, :writer).component)
+plot(t, x)
+savefig("larger_model_plot.svg"); nothing # hide
+```
+![](larger_model_plot.svg)

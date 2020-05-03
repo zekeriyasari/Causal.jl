@@ -6,7 +6,7 @@ This tutorial illustrates the relation relation between models and graphs. A mod
 In this tutorial, we construct the model with the following block diagram
 ```@raw html
 <center>
-    <img src="../../assets/SimpleModel/simplemodel.svg" alt="model" width="50%"/>
+    <img src="../../assets/SimpleModel/simplemodel.svg" alt="model" width="60%"/>
 </center>
 ```
 and with the following signal-flow graph 

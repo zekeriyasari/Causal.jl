@@ -4,7 +4,7 @@ A model to be simulated consists of components connected to each other and a tim
 
 ```@raw html
 <center>
-    <img src="../../assets/FlowChart/flowchart.svg" alt="model" width="75%"/>
+    <img src="../../assets/FlowChart/flowchart.svg" alt="model" width="60%"/>
 </center>
 ```
 
@@ -47,7 +47,7 @@ In case the inspection phase results positive, the putter and taker tasks are la
 <body>
     <div class="row">
         <div class="column">
-            <img src="../../assets/TaskForComponents/components.svg" alt="components" style="width:80%">
+            <img src="../../assets/TaskForComponents/components.svg" alt="components" style="width:70%">
         </div>
         <div class="column">
             <img src="../../assets/TaskForComponents/tasks.svg" alt="tasks" style="width:100%">

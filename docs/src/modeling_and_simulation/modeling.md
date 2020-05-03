@@ -22,7 +22,7 @@ The sinks are data processing units. Their primary objective is to process the d
 
 ```@raw html
 <center>
-    <img src="../../assets/Components/components.svg" alt="model" width="100%"/>
+    <img src="../../assets/Components/components.svg" alt="model" width="85%"/>
 </center>
 ```
 
@@ -66,13 +66,13 @@ The data transferred to a port is transferred to its connection(or connections a
 <body>
     <div class="row">
         <div class="column">
-            <img src="../../assets/Tasks/reader_task.svg" alt="reader_task" style="width:60%">
+            <img src="../../assets/Tasks/reader_task.svg" alt="reader_task" style="width:45%">
         </div>
         <div class="column">
-            <img src="../../assets/Tasks/writer_task.svg" alt="writer_task" style="width:60%">
+            <img src="../../assets/Tasks/writer_task.svg" alt="writer_task" style="width:45%">
         </div>
         <div class="column">
-            <img src="../../assets/Tasks/reader_writer_task.svg" alt="reader_writer_task" style="width:100%">
+            <img src="../../assets/Tasks/reader_writer_task.svg" alt="reader_writer_task" style="width:75%">
         </div>
     </div>
 </body>

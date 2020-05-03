@@ -1,7 +1,6 @@
 # Construction and Simulation of Subsystems
 In this tutorial, we will construct and simulate subsystems. A subsystem consists of connected components. A subsystem can serve as a component of a model. That is, components of a model can be a subsystem consisting of sub-components. The input/output bus of a subsystem can be specified from the input/output bus of components of the subsystem. It is also possible that a subsystem may have no input/output. That is, the input or output of a subsystem is nothing. 
 
-### Construction of  Subsystem
 Like the construction of a model, a subsystem is constructed by constructing the sub-components of the subsystem and connecting the sub-components. 
 
 !!! warning 
@@ -27,11 +26,13 @@ model = Model()
 addnode(model, sub, label=:sub)
 addnode(model, SinewaveGenerator(frequency=5), label=:gen)
 addnode(model, Writer(), label=:writer)
+nothing # hide
 ```
 Then, to construct the model, we connect the components of the model 
 ```@example subsystem_tutorial
 addbranch(model, :gen => :sub, 1 => 1) 
 addbranch(model, :sub => :writer, 1 => 1) 
+nothing # hide
 ```
 At this point, we are ready to construct the model. At this step, we are ready to simulate the model 
 ```@example subsystem_tutorial 

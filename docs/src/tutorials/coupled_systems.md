@@ -39,9 +39,9 @@ where ``X = [x_{1}, x_{2}]``, ``F(X) = [f(x_{1}), f(x_{2})]``,
 and ``f`` is the Lorenz dynamics given by 
 ```math
 \begin{array}{l}
-    \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) \\[0.25cm]
-    \dot{x}_2 = \gamma (x_1 (\rho - x_3) - x_2) \\[0.25cm]
-    \dot{x}_3 = \gamma (x_1 x_2 - \beta x_3) 
+    \dot{x}_1 = \sigma (x_2 - x_1) \\[0.25cm]
+    \dot{x}_2 = x_1 (\rho - x_3) - x_2 \\[0.25cm]
+    \dot{x}_3 = x_1 x_2 - \beta x_3
 \end{array}
 ```
 

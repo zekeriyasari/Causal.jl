@@ -13,10 +13,10 @@ Constructs a `Link` with element type `Float64` and buffer length `ln`. The buff
 # Example
 ```jldoctest
 julia> l = Link{Int}(5)
-Link(state:open, eltype:Int64, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+Link(state:open, eltype:Int64, isreadable:false, iswritable:false)
 
-julia> l = Link(Bool)
-Link(state:open, eltype:Bool, hasmaster:false, numslaves:0, isreadable:false, iswritable:false)
+julia> l = Link{Bool}()
+Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 ```
 """
 mutable struct Link{T}

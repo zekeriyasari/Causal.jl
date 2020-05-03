@@ -52,55 +52,57 @@ t = 0.
 Note from `statefunc`, the system has not any input, i.e. input is nothing, and has an output with a dimension of 1.
 ```@repl rode_system_ex
 input = nothing
-output = Bus(2)
+output = Outport(2)
 ```
 We are ready to construct the system
 ```@repl rode_system_ex 
-ds = RODESystem(input, output, statefunc, outputfunc, x0, t)
+ds = RODESystem(statefunc, outputfunc, x0, t, input, output, solverkwargs=(dt=0.01,))
 ```
 Note that `ds` has a solver to solve its state function `statefunc` which is random differential equation. To solve its `statefunc`, the step size of the solver must be specified. See [`Random Differential Equtions`](https://docs.juliadiffeq.org/latest/tutorials/rode_example/) of [`DifferentialEquations `](https://docs.juliadiffeq.org/latest/) package.
-```@repl rode_system_ex 
-ds.solver.params[:dt] = 1 / 100
-```
 
 ## Basic Operation of RODESystem 
 When a `RODESystem` is triggered from its `trigger` link, it read the current time from its `trigger` link, reads its input (if available, i.e. its input is not nothing), solves its state function, computes its output value and writes its output value its `output` bus (again, if available, i.e., its output bus is not nothing). To drive a `RODESystem`, it must be `launched`. Let us continue with `ds` constructed in the previous section.
 ```@repl rode_system_ex 
+iport, trg, hnd = Inport(2), Outpin(), Inpin{Bool}()
+connect(ds.output, iport) 
+connect(trg, ds.trigger) 
+connect(ds.handshake, hnd)
 task = launch(ds)
+task2 = @async while true 
+    all(take!(iport) .=== NaN) && break 
+    end
 ```
 When launched, `ds` is ready to be driven. We can drive `ds` by `drive(ds, t)` or `put!(ds.trigger, t)` where `t` is the time until which we will drive `ds`. 
 ```@repl rode_system_ex 
-drive(ds, 1.)
+put!(trg, 1.)
 ```
 When triggered, `ds` read the time `t` from its `trigger` link, solved its differential equation, computed its value and writes its output value to its `output` bus. To signal that, the evolution is succeeded, `ds` writes `true` to its `handshake` link which must be taken to further drive `ds`. (`approve(ds)`) can also be used. 
 ```@repl rode_system_ex
-take!(ds.handshake)
+take!(hnd)
 ```
 We can continue to drive `ds`.
 ```@repl rode_system_ex
 for t in 2. : 10.
-    put!(ds.trigger, t)
-    take!(ds.handshake)
+    put!(trg, t)
+    take!(hnd)
 end
 ```
 After each evolution, `ds` writes its current output value to its `output` bus. 
 ```@repl rode_system_ex 
-[ds.output[1].buffer.data ds.output[2].buffer.data]
+[outbuf(pin.link.buffer) for pin in iport]
 ```
 When launched, a `task` was constructed which still running. As long as no exception is thrown during the evolution of `ds`, the state of `task` is running which implies `ds` can be driven. 
 ```@repl rode_system_ex
 task
+task2
 ```
 To terminate the `task` safely, `ds` should be terminated safely. 
 ```@repl rode_system_ex
-terminate(ds)
+put!(trg, NaN)
+put!(ds.output, [NaN, NaN])
 ```
 Note that the state of `task` is `done` which implies the `task` has been terminated safely.
 ```@repl rode_system_ex
 task
-```
-
-## Full API
-```@docs 
-RODESystem 
+task2
 ```

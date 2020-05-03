@@ -70,7 +70,7 @@ Adds a node to `model`. Component is `component` and `label` is `label` the labe
 
 # Example 
 ```jldoctest 
-julia> model = Model() 
+julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
 julia> addnode(model, SinewaveGenerator(), label=:gen)
@@ -95,7 +95,7 @@ Returns node of `model` whose index is `idx`.
 
 Returns node of `model` whose label is `label`.
 
-Example
+# Example
 ```jldoctest
 julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
@@ -182,6 +182,10 @@ function inspect(model, breakpoints::Vector{Int}=Int[])
         @info msg
         while !isempty(loops)
             loop = popfirst!(loops)
+            if hasmemory(model, loop)
+                @info "\tLoop $loop has a Memory component.  The loops is broken"
+                continue
+            end
             breakpoint = isempty(breakpoints) ? length(loop) : popfirst!(breakpoints)
             breakloop(model, loop, breakpoint)
             @info "\tLoop $loop is broken"
@@ -190,6 +194,7 @@ function inspect(model, breakpoints::Vector{Int}=Int[])
     end
 end
 
+hasmemory(model, loop) = any([getnode(model, idx).component isa Memory for idx in loop])
 
 """
     getloops(model)
@@ -357,7 +362,7 @@ end
 """
     initialize(model::Model)
 
-Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref). The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
+Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
 """
 function initialize(model::Model)
     pairs = model.taskmanager.pairs
@@ -388,7 +393,6 @@ Runs the `model` by triggering the components of the `model`. This triggering is
 
 !!! warning 
     The `model` must first be initialized to be `run`. See also: [`initialize`](@ref).
-```
 """
 function run(model::Model, withbar::Bool=true)
     taskmanager = model.taskmanager
@@ -409,7 +413,7 @@ end
 """
     terminate(model::Model)
 
-Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated. See also: [`ComponentTask`](@ref), [`TaskManager`](@ref).
+Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
 """
 function terminate(model::Model)
     taskmanager = model.taskmanager

@@ -29,7 +29,7 @@ include("utilities/callback.jl")
 export Callback, enable!, disable!, isenabled, applycallbacks
 
 include("utilities/buffer.jl")
-export Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
+export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
 
 include("connections/link.jl")
 export Link, launch
@@ -84,9 +84,9 @@ export DDESystem
 include("components/systems/subsystems/subsystem.jl")
 export SubSystem
 
-include("components/systems/subsystems/network.jl")
-export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
-    deletelink, changeweight, maketimevarying
+# include("components/systems/subsystems/network.jl")
+# export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
+#     deletelink, changeweight, maketimevarying
 
 include("components/sinks/manageplugins.jl")
 export fasten, unfasten
@@ -108,7 +108,7 @@ export Simulation, SimulationError, setlogger, closelogger, report
 
 include("models/model.jl")
 export Model, getloops, breakloop, inspect, initialize, run, terminate, simulate
-export Node, Branch, addnode, getnode, addbranch, getbranch, deletebranch
+export Node, Branch, addnode, getnode, addbranch, getbranch, deletebranch, signalflow
 
 include("plugins/loadplugins.jl")
 export AbstractPlugin, process, add, remove, enable, disable, check

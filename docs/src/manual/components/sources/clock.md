@@ -1,16 +1,17 @@
 # Clock
 
-`Jusdl` is a *clocked* simulation environment. That is, model components are evolved in different time intervals, called the *sampling interval*. During the simulation, model components are triggered by these generated time pulses.  The `Clock` type is used to to generate those time pulses. The simulation time settings--the simulation start time, stop time, sampling interval--are configured through the `Clock`.
+`Jusdl` is a *clocked* simulation environment. That is, model components are evolved in different time intervals, called the *sampling interval*. During the simulation, model components are triggered by these generated time pulses. A `Clock` instance is used to to generate those time pulses. The simulation time settings--the simulation start time, stop time, sampling interval--are configured through the `Clock`.
 
 ## Construction of Clock
 Construction of `Clock` is done by specifying its start time and final time and the simulation sampling period. 
-
-```@docs 
-Clock
+```@repl clock_example_1
+using Jusdl # hide 
+Clock(0., 1, 10.)
+Clock{Int}(1, 1, 10)
 ```
 
 ## Basic Usage of Clocks 
-A `Clock` instance has a [Callback](@ref) list so that a [`Callback`](@ref) can be constructed to trigger specific events configured with the time settings. See the following case study. 
+A `Clock` has a [Callback](@ref) list so that a [`Callback`](@ref) can be constructed to trigger specific events configured with the time settings. See the following case study. 
 
 Let us consider a `Clock` with initial time of `0`, sampling interval of `1` and final time of `10`.
 ```@repl clk_ex
@@ -40,8 +41,8 @@ Consider that we want to configure an alarm. For this, let us consider that when
 ```@repl clk_ex 
 condition(clk) = clk.t > 5
 action(clk) = println("Clock time = ", clk.t)
-callback = Callback(condition, action)
-addcallback(clk, callback)
+clk = Clock(0., 1., 10., callbacks=Callback(condition, action))
+set!(clk)
 ```
 Now, let us run `clk` by iterating it. 
 ```@repl clk_ex 
@@ -65,14 +66,9 @@ end
 Note that `clk` is just iterated.
 
 ## Full API
-```@docs 
-take!(clk::Clock)
-isrunning
-ispaused
-isoutoftime
-set!
-stop!
-pause!
-iterate(clk::Clock)
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["clock.jl"]
+Order = [:type, :function]
 ```
 

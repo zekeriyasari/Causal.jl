@@ -46,12 +46,8 @@ testobject.x is greater than zero
 ```
 
 ## Full API 
-
-```@docs 
-Callback
-enable!
-disable!
-isenabled
-addcallback
-deletecallback
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["callback.jl"]
+Order = [:type, :function]
 ```

@@ -11,59 +11,70 @@ ofunc(x, u, t) = x
 ```
 Let us construct the system 
 ```@repl ode_ex 
-ds = ODESystem(Bus(1), Bus(1), sfunc, ofunc, [1.], 0.)
+ds = ODESystem(sfunc, ofunc, [1.], 0., Inport(1), Outport(1))
 ```
 Note that `ds` is a single input single output `ODESystem` with an initial state of `[1.]` and initial time `0.`. To drive, i.e. trigger `ds`, we need to launch it.
 ```@repl ode_ex
+oport, iport, trg, hnd = Outport(1), Inport(1), Outpin(), Inpin{Bool}()
+connect(oport, ds.input) 
+connect(ds.output, iport) 
+connect(trg, ds.trigger) 
+connect(ds.handshake, hnd)
 task = launch(ds)
+task2 = @async while true 
+    all(take!(iport) .=== NaN) && break 
+    end
 ```
-When launced, `ds` is ready to driven. `ds` is driven from its `trigger` link. Note that the `trigger` link of `ds` is writable. 
+When launched, `ds` is ready to driven. `ds` is driven from its `trigger` link. Note that the `trigger` link of `ds` is writable. 
 ```@repl ode_ex 
-ds.trigger
+ds.trigger.link
 ```
 Let us drive `ds` to the time of `t` of `1` second.
 ```@repl ode_ex 
-drive(ds, 1.)
+put!(trg, 1.)
 ```
 When driven, `ds` reads current time of `t` from its `trigger` link, reads its input value from its `input`, solves its differential equation and computes its output values and writes its `output`. So, for the step to be continued, an input values must be written. Note that the `input` of `ds` is writable,
 ```@repl ode_ex 
-ds.input
+ds.input[1].link
 ```
 Let us write some value. 
 ```@repl ode_ex 
-put!(ds.input, [5.])
+put!(oport, [5.])
 ```
 At this point, `ds` completed its step and put `true` to its `handshake` link to signal that its step is succeeded.
 ```@repl ode_ex 
-ds.handshake
+hnd.link
 ```
 To complete the step and be ready for another step, we need to approve the step by reading its `handshake`. 
 ```@repl ode_ex 
-take!(ds.handshake)
+take!(hnd)
 ```
 At this point, `ds` can be driven further. 
 ```@repl ode_ex 
 for t in 2. : 10.
-    put!(ds.trigger, t)
-    put!(ds.input, [t * 10])
-    take!(ds.handshake)
+    put!(trg, t)
+    put!(oport, [t * 10])
+    take!(hnd)
 end
 ```
 Note that all the output value of `ds` is written to its `output`bus,
 ```@repl ode_ex 
-ds.output[1].buffer.data
+iport[1].link.buffer
 ```
 When we launched `ds`, we constructed a `task` and the `task` is still running.
 ```@repl ode_ex 
 task
+task2
 ```
 To terminate the `task` safely, we need to `terminate` `ds` safely.
 ```@repl ode_ex
-terminate(ds)
+put!(trg, NaN)
+put!(ds.output, [NaN])
 ```
 Now, the state of the `task` is done. 
 ```@repl ode_ex 
 task
+task2
 ```
 So, it is not possible to drive `ds`.
 
@@ -90,13 +101,9 @@ end
 ```
 Note the output value `y` is *computed* and *returned* from `outputfunc`. `y` is *not updated* but *generated* in the `outputfunc`.
 
-## Full API 
-```@docs 
-ODESystem 
-LinearSystem 
-LorenzSystem 
-ChenSystem
-ChuaSystem
-RosslerSystem 
-VanderpolSystem
+## Full API
+```@autodocs
+Modules = [Jusdl]
+Pages   = ["odesystems.jl"]
+Order = [:type, :function]
 ```

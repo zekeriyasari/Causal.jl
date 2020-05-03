@@ -33,7 +33,7 @@
 
 \tikzset{
     border/.style = { 
-        draw, rectangle, minimum width=2.5cm, minimum height=2cm, thick
+        draw, rectangle, minimum width=2.5cm, minimum height=2cm, ultra thick
     },
     pics/Component/.style n args={3}{
         code = {
@@ -71,10 +71,10 @@
         \draw pic (b8) {Component={DDESystem}{t}{$\dot{x}=f(x,x_\tau,u,t)$\\$y=f(x,u,t)$}}; 
         \\
         };
-        % Glow the blocks
-        \foreach \x in {1, 2, ..., 9}{
-            \drawshadowbis{b\x-edge};
-        }
+        % % Glow the blocks
+        % \foreach \x in {1, 2, ..., 9}{
+        %     \drawshadowbis{b\x-edge};
+        % }
         \begin{scope}[line width=\lw, >={Triangle[width=2mm,length=2mm]}]
             \foreach \x in {1, 2, 4, 5, 6, 7, 8, 9}{
                 \draw[line width = \lw, ->] (b\x-edge.east) -- ++(0.5cm, 0cm) node[anchor=west]{$y$};

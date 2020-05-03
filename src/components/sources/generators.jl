@@ -156,7 +156,7 @@ end
 @doc raw"""
     ConstantGenerator(;amplitude=1.)
 
-Constructs a `Constructs` with output of the form
+Constructs a `ConstantGenerator` with output of the form
 ```math 
     x(t) = A
 ```

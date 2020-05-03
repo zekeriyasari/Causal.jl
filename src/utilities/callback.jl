@@ -61,4 +61,28 @@ isenabled(clb::Callback) = clb.enabled
 ##### Callback calls
 (clb::Callback)(obj) = clb.enabled && clb.condition(obj) ?  clb.action(obj) : nothing
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
+
+"""
+    applycallbacks(obj)
+
+Calls the callbacks of `obj` if the callbacks are not nothing.
+
+# Example
+```jldoctest
+julia> mutable struct MyType{CB}
+       x::Int
+       callbacks::CB
+       end
+
+julia> obj = MyType(5, Callback(obj -> obj.x > 0, obj -> println("x is positive")));
+
+julia> applycallbacks(obj)
+x is positive
+
+julia> obj.x = -1
+-1
+
+julia> applycallbacks(obj)
+```
+"""
 applycallbacks(obj) = typeof(obj.callbacks) <: Nothing || obj.callbacks(obj)

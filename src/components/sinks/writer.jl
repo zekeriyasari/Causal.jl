@@ -2,7 +2,8 @@
 
 
 """
-    Writer(input::Bus; buflen=64, plugin=nothing, path=joinpath(tempdir(), string(uuid4())))
+    Writer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
+        path=joinpath(tempdir(), string(name))) 
 
 Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
 
@@ -42,7 +43,7 @@ Writes `xd` corresponding to `xd` to the file of `writer`.
 
 # Example 
 ```julia 
-julia> w = Writer(Bus(1))
+julia> w = Writer(Inport(1))
 Writer(path:/tmp/e907d6ad-8db2-4c4a-9959-5b8d33d32156.jld2, nin:1)
 
 julia> open(w)
@@ -124,7 +125,7 @@ julia> mkdir(joinpath(tempdir(), "testdir1"))
 julia> mkdir(joinpath(tempdir(), "testdir2"))
 "/tmp/testdir2"
 
-julia> w = Writer(Bus(), path="/tmp/testdir1/myfile.jld2")
+julia> w = Writer(Inport(), path="/tmp/testdir1/myfile.jld2")
 Writer(path:/tmp/testdir1/myfile.jld2, nin:1)
 
 julia> mv(w, "/tmp/testdir2")
@@ -154,7 +155,7 @@ julia> mkdir(joinpath(tempdir(), "testdir1"))
 julia> mkdir(joinpath(tempdir(), "testdir2"))
 "/tmp/testdir2"
 
-julia> w = Writer(Bus(), path="/tmp/testdir1")
+julia> w = Writer(Inport(), path="/tmp/testdir1")
 Writer(path:/tmp/testdir1.jld2, nin:1)
 
 julia> cp(w, "/tmp/testdir2")

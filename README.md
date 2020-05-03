@@ -32,7 +32,7 @@ Installation of Jusdl is like any other registered Julia package.  Enter the Pkg
 
 Consider following simple model.
 <center>
-    <img src="docs/src/assets/AlgebraicLoop/brokenloop.svg"
+    <img src="docs/src/assets/ReadMeModel/brokenloop.svg"
         alt="Closed Loop System"
         style="float: center; margin-right: 10px;"
         width="75%"/>
@@ -67,7 +67,7 @@ plot!(t, x[:, 2], label="y(t)", xlabel="t")
 plot!(t, 6 / 5 * exp.(-2t) + 1 / 5 * (2 * sin.(t) - cos.(t)), label="Analytical Solution")
 ```
 <center>
-    <img src="docs/src/assets/ReadMe/readme_example.svg"
+    <img src="docs/src/assets/ReadMePlot/readme_example.svg"
         alt="Readme Plot"
         style="float: center; margin-right: 10px;"
         width="75%"/>

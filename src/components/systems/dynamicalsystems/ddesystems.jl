@@ -30,24 +30,24 @@ function outputfunc(x, u, t)
 end
 ```
 # Example 
-```jldoctest
+```julia
 julia> const out = zeros(1);
 
 julia> histfunc(out, u, t) = (out .= 1.);
 
-julia> function statefunc(dx, x, h, u, t)
+julia> function sfuncdde(dx, x, h, u, t)
            h(out, u, t - tau) # Update out vector
            dx[1] = out[1] + x[1]
        end;
 
-julia> outputfunc(x, u, t) = x;
+julia> ofuncdde(x, u, t) = x;
 
 julia> tau = 1;
 
 julia> conslags = [tau];
 
-julia> ds = DDESystem(nothing, Bus(), (statefunc, histfunc), outputfunc, [1.],  0.)
-DDESystem(state:[1.0], t:0.0, input:nothing, output:Bus(nlinks:1, eltype:Link{Float64}, isreadable:false, iswritable:false))
+julia> DDESystem((sfuncdde, histfunc), ofuncdde, [1.],  0., nothing, Outport())
+DDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 
 !!! info 

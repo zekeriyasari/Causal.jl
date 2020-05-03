@@ -21,7 +21,7 @@ readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? com
 """
     readinput(comp::AbstractComponent)
 
-Returns the input value of `comp` if the `input` of `comp` is `Bus`. Otherwise, returns `nothing`.
+Returns the input value of `comp` if the `input` of `comp` is `Inport`. Otherwise, returns `nothing`.
 
 !!! note 
     To read input value of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref)
@@ -34,7 +34,7 @@ end
 """
     writeoutput(comp::AbstractComponent, out)
 
-Writes `out` to the output of `comp` if the `output` of `comp` is `Bus`. Otherwise, does `nothing`.
+Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Otherwise, does `nothing`.
 """
 function writeoutput(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
@@ -190,16 +190,16 @@ Read `handshake` link of `comp`. When not approved or `false` is read from the `
 """
 approve(comp::AbstractComponent) = take!(comp.handshake)
 
-"""
-    release(comp::AbstractComponent)
+# """
+#     release(comp::AbstractComponent)
 
-Releases the `input` and `output` bus of `comp`.
-""" 
-function release(comp::AbstractComponent)
-    typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
-    typeof(comp) <: AbstractSink    || typeof(comp.output) <: Nothing   || release(comp.output)
-    return 
-end
+# Releases the `input` and `output` bus of `comp`.
+# """ 
+# function release(comp::AbstractComponent)
+#     typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
+#     typeof(comp) <: AbstractSink    || typeof(comp.output) <: Nothing   || release(comp.output)
+#     return 
+# end
 
 
 """
@@ -262,16 +262,16 @@ Approves `comp` by approving each subcomponent of `comp`. See also: [`approve(co
 approve(comp::AbstractSubSystem) = all(approve.(comp.components))
 
 
-""" 
-    release(comp::AbstractSubSystem)
+# """ 
+#     release(comp::AbstractSubSystem)
 
-Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(comp::AbstractComponent)`](@ref)
-"""
-function release(comp::AbstractSubSystem)
-    foreach(release, comp.components)
-    typeof(comp.input) <: Inport && release(comp.input)
-    typeof(comp.output) <: Outport && release(comp.output)
-end
+# Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(comp::AbstractComponent)`](@ref)
+# """
+# function release(comp::AbstractSubSystem)
+#     foreach(release, comp.components)
+#     typeof(comp.input) <: Inport && release(comp.input)
+#     typeof(comp.output) <: Outport && release(comp.output)
+# end
 
 """
     terminate(comp::AbstractSubSystem)

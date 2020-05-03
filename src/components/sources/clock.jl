@@ -147,7 +147,7 @@ end
 Pauses `clk`. When paused, the current time of `clk` does not advance.
 
 # Example
-```jldoctest
+```julia
 julia> clk = Clock(0., 0.1, 0.5);
 
 julia> set!(clk);

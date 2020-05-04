@@ -96,8 +96,8 @@ sim = simulate(model, withbar=false)
 # Plot the simulation data
 using Plots
 t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))
+plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
+plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_plot1.svg)

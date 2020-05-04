@@ -44,29 +44,29 @@ julia&gt; connect(ds.handshake, hnd)
 Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; task = launch(ds)
-Task (runnable) @0x00007f3c57eeb0d0
+Task (runnable) @0x00007fe31d863d00
 
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (runnable) @0x00007f3cc6258280</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
+Task (runnable) @0x00007fe312194c40</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
 true</code></pre><p>We can continue to drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
            put!(trg, t)
            take!(hnd)
        end</code></pre><p>After each evolution, <code>ds</code> writes its current output value to its <code>output</code> bus. </p><pre><code class="language-julia-repl">julia&gt; [outbuf(pin.link.buffer) for pin in iport]
 2-element Array{Array{Float64,1},1}:
- [15603.477328126453, 6864.833151284337, 1480.6315699554307, 2640.291580537066, 2443.5487968618727, 800.9557332730305, 183.93834679047333, 112.63527631467481, 18.21723504223352, 3.0143896630951987  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
- [0.0004141207139498661, 0.00041263269923423856, 0.0018418913643287464, 0.011048362523382645, 0.006874882262995812, 0.005818860147359383, 0.0026087155508245094, 0.003321676285732932, 0.021358184576666123, 0.1380054244789334  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
-Task (runnable) @0x00007f3c57eeb0d0
+ [0.00026461556996006775, 0.00022877669476729532, 0.0008593194149692138, 0.005506242534992823, 0.030712305265240096, 0.14999663864596782, 0.2146815101028049, 0.0489672982453588, 0.053630134517948465, 0.3556259436700789  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ [0.0007038894209050587, 0.00024100286519013425, 0.001615160220073784, 0.0025682916347634734, 0.005483443673399288, 0.0022899983754801254, 0.007589355723748173, 0.018431692379517396, 0.08194661754299652, 0.22241799776982102  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
+Task (runnable) @0x00007fe31d863d00
 
 julia&gt; task2
-Task (runnable) @0x00007f3cc6258280</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
+Task (runnable) @0x00007fe312194c40</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
 
 julia&gt; put!(ds.output, [NaN, NaN])
 2-element Array{Float64,1}:
  NaN
  NaN</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
-Task (done) @0x00007f3c57eeb0d0
+Task (done) @0x00007fe31d863d00
 
 julia&gt; task2
-Task (done) @0x00007f3cc6258280</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 3 May 2020 23:47">Sunday 3 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Task (done) @0x00007fe312194c40</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 4 May 2020 00:50">Monday 4 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

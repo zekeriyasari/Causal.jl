@@ -16,61 +16,66 @@ addnode(model, Writer(), label=:writer)
 # Adding branches to model
 addbranch(model, :gen =&gt; :writer)</code></pre><p>In this simple <code>model</code>, we have a single output sinusoidal wave generator <code>gen</code> and a <code>writer</code>. In the script above, we constructed the components, connected them together and constructed the model.</p><p>In addition to simulation time settings(which have set through model clock during the model construction above), we can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. </p><pre><code class="language-julia">simdir = &quot;/tmp&quot;
 logtofile = true
-reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">sim = simulate(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-a2fa4020-7a23-4548-a01d-0504baa2be76)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 52
-drwxrwxr-x  2 travis travis  4096 May  4 16:22 .
-drwxrwxrwt 14 root   root    4096 May  4 16:22 ..
--rw-rw-r--  1 travis travis 15236 May  4 16:22 474ab041-d825-4d09-b714-dc19ccb9c2cc.jld2
--rw-rw-r--  1 travis travis 21831 May  4 16:22 report.jld2
--rw-rw-r--  1 travis travis  1159 May  4 16:22 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
+reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">sim = simulate(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-8cf8c490-075f-450e-8d39-abeb1c5d0a1f)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 52
+drwxrwxr-x  2 travis travis  4096 May  4 17:02 .
+drwxrwxrwt 15 root   root    4096 May  4 17:02 ..
+-rw-rw-r--  1 travis travis 15236 May  4 17:02 714e581e-2fff-49ff-b4d7-3735aaa0af52.jld2
+-rw-rw-r--  1 travis travis 21831 May  4 17:02 report.jld2
+-rw-rw-r--  1 travis travis  1160 May  4 17:02 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
 open(joinpath(sim.path, &quot;simlog.log&quot;), &quot;r&quot;) do file
     for line in readlines(file)
         println(line)
     end
-end</code></pre><pre><code class="language-none">┌ Info: 2020-05-04T16:22:24.551 Started simulation...
+end</code></pre><pre><code class="language-none">┌ Info: 2020-05-04T17:02:40.317 Started simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.587 Inspecting model...
+┌ Info: 2020-05-04T17:02:40.348 Inspecting model...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.587 Done.
+┌ Info: 2020-05-04T17:02:40.348 Done.
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.587 Initializing the model...
+┌ Info: 2020-05-04T17:02:40.348 Initializing the model...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.647 Done...
+┌ Info: 2020-05-04T17:02:40.391 Done...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.648 Running the simulation...
+┌ Info: 2020-05-04T17:02:40.391 Running the simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.737 Done...
+┌ Info: 2020-05-04T17:02:40.455 Done...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.737 Terminating the simulation...
+┌ Info: 2020-05-04T17:02:40.455 Terminating the simulation...
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5
-┌ Info: 2020-05-04T16:22:24.76 Done.
+┌ Info: 2020-05-04T17:02:40.477 Done.
 └ @ Jusdl /home/travis/build/zekeriyasari/Jusdl.jl/src/utilities/utils.jl:5</code></pre><p><code>report.jld2</code> file, which includes the information about the simulation and model components, can be read back after the simulation. </p><pre><code class="language-julia-repl">julia&gt; using FileIO, JLD2
 
 julia&gt; filecontent = load(joinpath(sim.path, &quot;report.jld2&quot;))
 Dict{String,Any} with 9 entries:
   &quot;retcode&quot;         =&gt; :success
-  &quot;name&quot;            =&gt; &quot;Simulation-a2fa4020-7a23-4548-a01d-0504baa2be76&quot;
+  &quot;name&quot;            =&gt; &quot;Simulation-8cf8c490-075f-450e-8d39-abeb1c5d0a1f&quot;
   &quot;model/callbacks&quot; =&gt; nothing
   &quot;model/name&quot;      =&gt; &quot;&quot;
   &quot;model/clock&quot;     =&gt; Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:…
-  &quot;model/id&quot;        =&gt; &quot;31ac7eb4-9a03-4078-a954-ab1540a3e5cd&quot;
+  &quot;model/id&quot;        =&gt; &quot;cf74b904-eceb-4ace-97e5-904f737af045&quot;
   &quot;components/&quot;     =&gt; SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0…
-  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-a2fa4020-7a23-4548-a01d-0504baa2be76&quot;
+  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-8cf8c490-075f-450e-8d39-abeb1c5d0a1f&quot;
   &quot;state&quot;           =&gt; :done
 
 julia&gt; clock = filecontent[&quot;model/clock&quot;]
-Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:false)</code></pre><h2 id="Analysis-of-Simulation-Data-1"><a class="docs-heading-anchor" href="#Analysis-of-Simulation-Data-1">Analysis of Simulation Data</a><a class="docs-heading-anchor-permalink" href="#Analysis-of-Simulation-Data-1" title="Permalink"></a></h2><p>After the simulation, the data saved in simulation data files, i.e. in the files of writers, can be read back any offline data analysis can be performed. </p><pre><code class="language-"># Read the simulation data
-t, x = read(getnode(model, :writer).component) 
+Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:false)</code></pre><h2 id="Analysis-of-Simulation-Data-1"><a class="docs-heading-anchor" href="#Analysis-of-Simulation-Data-1">Analysis of Simulation Data</a><a class="docs-heading-anchor-permalink" href="#Analysis-of-Simulation-Data-1" title="Permalink"></a></h2><p>After the simulation, the data saved in simulation data files, i.e. in the files of writers, can be read back any offline data analysis can be performed. </p><pre><code class="language-julia"># Read the simulation data
+t, x = read(getnode(model, :writer).component)
 
 # Plot the data
-using Plots; pyplot()
-plot(t, x, xlabel=&quot;t&quot;, ylabel=&quot;x&quot;, label=&quot;&quot;)
-savefig(&quot;simple_model_plot.svg&quot;); nothing # hide</code></pre><p><img src="simple_model_plot.svg" alt/></p><h2 id="A-Larger-Model-Simulation-1"><a class="docs-heading-anchor" href="#A-Larger-Model-Simulation-1">A Larger Model Simulation</a><a class="docs-heading-anchor-permalink" href="#A-Larger-Model-Simulation-1" title="Permalink"></a></h2><p>Consider a larger model whose block diagram is given below</p><center>
-    <img src="../../assets/ModelGraph/modelgraph.svg" alt="model" width="90%"/>
-</center><p>The script below illustrates the construction and simulation of this model </p><pre><code class="language-">using Jusdl 
-using Plots; pyplot()
+using Plots
+plot(t, x, xlabel=&quot;t&quot;, ylabel=&quot;x&quot;, label=&quot;&quot;)</code></pre><pre><code class="language-none">QXcbConnection: Could not connect to display
+Aborted (core dumped)
+connect: Connection refused
+GKS: can&#39;t connect to GKS socket application
 
-# Construction of the model 
-model = Model() 
+GKS: Open failed in routine OPEN_WS
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../simple_model_plot.svg" alt/></p><h2 id="A-Larger-Model-Simulation-1"><a class="docs-heading-anchor" href="#A-Larger-Model-Simulation-1">A Larger Model Simulation</a><a class="docs-heading-anchor-permalink" href="#A-Larger-Model-Simulation-1" title="Permalink"></a></h2><p>Consider a larger model whose block diagram is given below</p><center>
+    <img src="../../assets/ModelGraph/modelgraph.svg" alt="model" width="90%"/>
+</center><p>The script below illustrates the construction and simulation of this model </p><pre><code class="language-julia">using Jusdl
+using Plots
+
+# Construction of the model
+model = Model()
 addnode(model, SinewaveGenerator(frequency=2), label=:gen1)
 addnode(model, Gain(gain=1), label=:gain1)
 addnode(model, Adder((+,+)), label=:adder1)
@@ -89,10 +94,27 @@ addbranch(model, :gain2 =&gt; :writer, 1 =&gt; 1)
 addbranch(model, :gain2 =&gt; :gain3, 1 =&gt; 1)
 addbranch(model, :gain3 =&gt; :adder2, 1 =&gt; 3)
 
-# Simulation of the model 
+# Simulation of the model
 simulate(model, withbar=false)
 
 # Reading and plotting the simulation data
 t, x = read(getnode(model, :writer).component)
-plot(t, x)
-savefig(&quot;larger_model_plot.svg&quot;); nothing # hide</code></pre><p><img src="larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 4 May 2020 16:23">Monday 4 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(t, x)</code></pre><pre><code class="language-none">[ Info: 2020-05-04T17:02:57.774 Started simulation...
+[ Info: 2020-05-04T17:02:57.775 Inspecting model...
+┌ Info: 	The model has algrebraic loops:[[5, 6, 8]]
+└ 		Trying to break these loops...
+[ Info: 	Loop [5, 6, 8] is broken
+[ Info: 2020-05-04T17:02:57.948 Done.
+[ Info: 2020-05-04T17:02:57.948 Initializing the model...
+[ Info: 2020-05-04T17:02:58.144 Done...
+[ Info: 2020-05-04T17:02:58.144 Running the simulation...
+[ Info: 2020-05-04T17:02:58.485 Done...
+[ Info: 2020-05-04T17:02:58.485 Terminating the simulation...
+[ Info: 2020-05-04T17:02:58.487 Done.
+QXcbConnection: Could not connect to display
+Aborted (core dumped)
+connect: Connection refused
+GKS: can&#39;t connect to GKS socket application
+
+GKS: Open failed in routine OPEN_WS
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 4 May 2020 17:03">Monday 4 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

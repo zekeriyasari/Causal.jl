@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  3 MAY 2020 21:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.8.5)  4 MAY 2020 22:46
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -57,9 +57,9 @@ Class standalone:
 Output written on algebraicloopwithmemory.png.
  ) ) 
 Here is how much of TeX's memory you used:
- 694 strings out of 492982
- 11128 string characters out of 6134897
- 63836 words of memory out of 5000000
+ 692 strings out of 492982
+ 11078 string characters out of 6134897
+ 63901 words of memory out of 5000000
  4317 multiletter control sequences out of 15000+600000
  3640 words of font info for 14 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -282,8 +282,7 @@ File: pgflibraryshapes.geometric.code.tex 2008/06/26 v3.0.1a (rcs-revision 1.1)
 )
 \pgf@layerbox@shadow=\box38
 \pgf@layerboxsaved@shadow=\box39
-
-No file algebraicloopwithmemory.aux.
+ (./algebraicloopwithmemory.aux)
 \openout1 = `algebraicloopwithmemory.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
@@ -298,7 +297,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
 LaTeX Font Info:    ... okay on input line 44.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
 LaTeX Font Info:    ... okay on input line 44.
-ABD: EveryShipout initializing macros (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+ ABD: EveryShipout initializing macros (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count109
 \scratchdimen=\dimen155
@@ -354,15 +353,15 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./algebraicloopwithmemory.aux) ) 
 Here is how much of TeX's memory you used:
- 13139 strings out of 492982
- 276086 string characters out of 6134897
- 323238 words of memory out of 5000000
+ 13141 strings out of 492982
+ 276142 string characters out of 6134897
+ 323241 words of memory out of 5000000
  16472 multiletter control sequences out of 15000+600000
  3640 words of font info for 14 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  56i,17n,78p,460b,1065s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on algebraicloopwithmemory.pdf (1 page, 25173 bytes).
+Output written on algebraicloopwithmemory.pdf (1 page, 25176 bytes).
 PDF statistics:
  43 PDF objects out of 1000 (max. 8388607)
  21 compressed objects within 1 object stream

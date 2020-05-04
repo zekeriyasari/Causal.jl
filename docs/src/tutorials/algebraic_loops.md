@@ -54,8 +54,8 @@ sim = simulate(model, withbar=false)
 using Plots
 t, y = read(getnode(model, :writerout).component)
 t, r = read(getnode(model, :writerin).component)
-plot(t, r, label="r(t)", marker=(:circle, 1)) 
-plot!(t, y, label="y(t)", marker=(:circle, 1)) 
+plot(t, r, label="r(t)", marker=(:circle, 3)) 
+plot!(t, y, label="y(t)", marker=(:circle, 3)) 
 savefig("breaking_algebraic_loops_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_plot1.svg)
@@ -134,8 +134,8 @@ sim = simulate(model)
 # Plot the results 
 using Plots
 t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))
+plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
+plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_incorrect_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_incorrect_plot1.svg)

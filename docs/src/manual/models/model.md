@@ -18,7 +18,7 @@ addbranch(model, :gen => :writer, 1 => 1)
 ## Simulation of Models 
 
 A `Model` to to be simulated consists of components connected to each other an a time reference.
-```@repl model_construction_ex_2
+```@repl model_construction_ex
 model.nodes         # Model components 
 model.branches      # Model components 
 model.clock         # Model time reference
@@ -40,7 +40,7 @@ When the model is initialized, the pairs of components and component tasks are r
 The run stage follows the initialization stage. The tasks activated in the initialization stage wait for the components to be triggered by the model time reference. During the run stage, time reference, that is the model clock, triggers the components by writing pulses that are generated in the intervals of the sampling period of the simulation to their trigger links. The job defined in a task is to read input dat a from the its input bus, to calculate its next state, if any, and output, and write its calculated output to its output bus. The run stage, starts at the initial time of the time reference and continues until the end time of the time reference. [`run`](@ref) function is used to run the models, 
 
 ### Termination
-After the run stage, the tasks opened in the initialization stage are closed and the simulation is terminated. [`terminate`]@ref) function is used to terminate the model 
+After the run stage, the tasks opened in the initialization stage are closed and the simulation is terminated. [`terminate`](@ref) function is used to terminate the model 
 
 `Model`s are constructed to [`simulate`](@ref) them. During the simulation, components of the `Model` process data and the data is transferred between the components via connection. Thus, to simulate the `Model`s, the components **must be connected**. In our model, the `writer` is used to record the output of `gen`. Thus, the flows from `gen` to `writer`. Thus, we connect `gen` output to `writer` input. 
 

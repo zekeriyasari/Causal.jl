@@ -56,6 +56,7 @@ end
 
 The case is very similar to read data from `l`. Again, a runnable task is bound the `l` 
 ```@repl link_reading_ex_1
+using Jusdl # hide
 l = Link(5)
 function writer(link::Link, vals)
     for val in vals

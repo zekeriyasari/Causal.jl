@@ -43,7 +43,6 @@ Next, we need to define the `history` for the system. History is defined by spec
 ```@repl dde_system_ex 
 tau = 1
 conslags = [tau]
-hist = History(histfunc, conslags, ())
 ```
 At this point, we are ready to construct the system. 
 ```@repl dde_system_ex 

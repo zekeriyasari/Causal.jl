@@ -51,7 +51,7 @@ addbranch(model, :gain => :writerout, 1 => 1)
 sim = simulate(model, withbar=false)
 
 # Read the simulation data and plot 
-using Plots; pyplot()
+using Plots
 t, y = read(getnode(model, :writerout).component)
 t, r = read(getnode(model, :writerin).component)
 plot(t, r, label="r(t)", marker=(:circle, 1)) 
@@ -94,7 +94,7 @@ addbranch(model, :gain => :writer, 1 => 2)
 sim = simulate(model, withbar=false)
 
 # Plot the simulation data
-using Plots; pyplot()
+using Plots
 t, x = read(getnode(model, :writer).component)
 plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
 plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))
@@ -132,7 +132,7 @@ addbranch(model, :gain => :writer, 1 => 2)
 sim = simulate(model)
 
 # Plot the results 
-using Plots; pyplot()
+using Plots
 t, x = read(getnode(model, :writer).component)
 plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
 plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))

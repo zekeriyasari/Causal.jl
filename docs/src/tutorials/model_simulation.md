@@ -68,7 +68,7 @@ After the simulation, the data saved in simulation data files, i.e. in the files
 t, x = read(getnode(model, :writer).component) 
 
 # Plot the data
-using Plots; pyplot()
+using Plots
 plot(t, x, xlabel="t", ylabel="x", label="")
 savefig("simple_model_plot.svg"); nothing # hide
 ```
@@ -85,7 +85,7 @@ Consider a larger model whose block diagram is given below
 The script below illustrates the construction and simulation of this model 
 ```@example large_model 
 using Jusdl 
-using Plots; pyplot()
+using Plots
 
 # Construction of the model 
 model = Model() 

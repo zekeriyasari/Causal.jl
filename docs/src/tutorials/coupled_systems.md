@@ -78,7 +78,7 @@ It also worths pointing out that the model has two algebraic loops. The first lo
 
 The model is ready for simulation. The code block below simulates the model and plots the simulation data.
 ```@example coupled_system
-using Plots; pyplot()
+using Plots
 
 # Simulate the model 
 simulate(model, withbar=false)

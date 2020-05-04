@@ -53,7 +53,7 @@ sim
 ```
 We, then, read the simulation data from the writer and plot it. 
 ```@example subsystem_tutorial 
-using Plots; pyplot()
+using Plots
 t, x = read(getnode(model, :writer).component)
 plot(t, x)
 savefig("subsystem_tutorial_plot.svg"); nothing # hide

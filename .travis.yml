@@ -1,4 +1,4 @@
-# Documentation: http://docs.travis-ci.com/user/languages/julia/
+
 language: julia
 
 os:
@@ -13,6 +13,9 @@ addons:
   apt:
     packages:
     - qt5-default
+
+env:
+  - GKSwstype="100"
 
 notifications:
   email: false

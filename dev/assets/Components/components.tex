@@ -13,7 +13,7 @@
 \def\shadowradius{3pt}
 
 
-\def\lw{1mm}        % Arrow line width
+\def\lw{2mm}        % Arrow line width
 \def\mw{2cm}        % Minimum width of component
 \def\mh{1.75cm}     % Minimum height of component
 \def\trianglecoordinate{2mm}    % Starting coordinate clock input triangle of components
@@ -68,19 +68,19 @@
         \& 
         \draw pic (b6) {Component={SDESystem}{t}{$dx=f(x,u,t)dt+h(x,u,t)dW_t$\\$\hspace*{0.2cm}y=g(x,u,t)$}};
         \&
-        \draw pic (b8) {Component={DDESystem}{t}{$\dot{x}=f(x,x_\tau,u,t)$\\$y=f(x,u,t)$}}; 
+        \draw pic (b8) {Component={DDESystem}{t}{$\dot{x}=f(x,x_\tau,u,t)$\\$y=g(x,u,t)$}}; 
         \\
         };
         % % Glow the blocks
         % \foreach \x in {1, 2, ..., 9}{
         %     \drawshadowbis{b\x-edge};
         % }
-        \begin{scope}[line width=\lw, >={Triangle[width=2mm,length=2mm]}]
+        \begin{scope}[line width=\lw, >={Triangle[width=4mm,length=4mm]}]
             \foreach \x in {1, 2, 4, 5, 6, 7, 8, 9}{
-                \draw[line width = \lw, ->] (b\x-edge.east) -- ++(0.5cm, 0cm) node[anchor=west]{$y$};
+                \draw[line width = \lw, ->] (b\x-edge.east) -- ++(1cm, 0cm) node[anchor=west]{$y$};
             }
             \foreach \x in {2, 3, 4, 5, 6, 7, 8, 9}{
-                \draw[line width = \lw, ->] ([xshift=-0.5cm] b\x-edge.west) node[anchor=east]{$u$} -- (b\x-edge.west);
+                \draw[line width = \lw, ->] ([xshift=-1cm] b\x-edge.west) node[anchor=east]{$u$} -- (b\x-edge.west);
             }
         \end{scope}
     \end{tikzpicture}

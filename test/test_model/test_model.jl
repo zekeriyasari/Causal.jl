@@ -19,7 +19,7 @@
     model = Model()
     comps = [SinewaveGenerator(), Gain(), Gain(), Writer()]
     for (k,comp) in enumerate(comps)
-        node = addnode(model, comp)
+        node = addnode!(model, comp)
         @test node.component === comp 
         @test node.idx == k 
         @test node.label === nothing 
@@ -29,11 +29,11 @@
     end
     n = length(model.nodes)
     singen = FunctionGenerator(sin)
-    newnode = addnode(model, singen, label=:gen)
+    newnode = addnode!(model, singen, label=:gen)
     @test newnode.idx == n + 1
     @test newnode.label == :gen
     rampgen = RampGenerator()
-    @test_throws Exception addnode(model, rampgen, label=:gen)
+    @test_throws Exception addnode!(model, rampgen, label=:gen)
 
     # Accessing nodes in model 
     node = getnode(model, 1)
@@ -47,15 +47,15 @@
 
     # Adding branches to model 
     model = Model() 
-    @test_throws BoundsError addbranch(model, 1 => 2)
-    @test_throws MethodError addbranch(model, 1, 2)
+    @test_throws BoundsError addbranch!(model, 1 => 2)
+    @test_throws MethodError addbranch!(model, 1, 2)
     for (comp, label) in zip(
             [FunctionGenerator(t -> [sin(t), cos(t)]), Gain(Inport(2)), Gain(Inport(3)), Writer(Inport(3))],
             [:gen, :gain1, :gain2, :writer]
         )
-        addnode(model, comp, label=label)
+        addnode!(model, comp, label=label)
     end
-    branch = addbranch(model, :gen => :gain1)
+    branch = addbranch!(model, :gen => :gain1)
     @test branch.nodepair == (1 => 2)
     @test branch.indexpair == ((:) => (:))
     @test typeof(branch.links) <: Vector{<:Link}
@@ -63,13 +63,13 @@
     @test length(model.branches) == 1
     @test ne(model.graph) == 1
     @test collect(edges(model.graph)) == [Edge(1, 2)]
-    branch2 = addbranch(model, 2 => 3, 1 => 1)
+    branch2 = addbranch!(model, 2 => 3, 1 => 1)
     @test branch2.nodepair == (2 => 3)
     @test branch2.indexpair == (1 => 1)
     @test typeof(branch2.links) <: Link
     @test length(model.branches) == 2 
     @test ne(model.graph) == 2 
-    branch3 = addbranch(model, 3 => :writer, 1:2 => 2:3)
+    branch3 = addbranch!(model, 3 => :writer, 1:2 => 2:3)
     @test length(model.branches) == 3
     @test ne(model.graph) == 3
     
@@ -82,7 +82,7 @@
 
     # Deleting branches
     n = length(model.nodes)
-    br = deletebranch(model, 1 => 2)
+    br = deletebranch!(model, 1 => 2)
     @test br === branch
     @test branch ∉ model.branches
     @test Edge(1, 2) ∉ edges(model.graph)
@@ -99,13 +99,13 @@
             [SinewaveGenerator(), Adder((+, +, +)), Gain(), Writer()],
             [:gen, :adder, :gain, :writer]
             )
-            addnode(model, comp, label=label)
+            addnode!(model, comp, label=label)
         end
-        addbranch(model, :gen => :adder, 1 => 1)
-        addbranch(model, :adder => :gain, 1 => 1)
-        addbranch(model, :gain => :adder, 1 => 2)
-        addbranch(model, :adder => :adder, 1 => 3)
-        addbranch(model, :gain => :writer, 1 => 1)
+        addbranch!(model, :gen => :adder, 1 => 1)
+        addbranch!(model, :adder => :gain, 1 => 1)
+        addbranch!(model, :gain => :adder, 1 => 2)
+        addbranch!(model, :adder => :adder, 1 => 3)
+        addbranch!(model, :gain => :writer, 1 => 1)
         model 
     end
     model = contruct_model_with_loops()
@@ -141,10 +141,10 @@
 
     # Initializing Model 
     model = Model()
-    addnode(model, SinewaveGenerator())
-    addnode(model, Writer())
-    addbranch(model, 1 => 2)
-    initialize(model)
+    addnode!(model, SinewaveGenerator())
+    addnode!(model, Writer())
+    addbranch!(model, 1 => 2)
+    Jusdl.initialize!(model)
     @test !isempty(model.taskmanager.pairs)
     @test checktaskmanager(model.taskmanager) === nothing
     @test length(model.taskmanager.pairs) == 2
@@ -154,24 +154,24 @@
     # Running Model 
     ti, dt, tf =  0., 0.01, 10.
     set!(model.clock, ti, dt, tf)
-    run(model)
+    run!(model)
     @test isoutoftime(model.clock)
     @test isapprox(read(getbranch(model, 1 => 2).links[1].buffer), sin(2 * pi * tf))
     @test read(getnode(model, 2).component.timebuf) == tf
 
     # Terminating Model 
     @test !any(istaskdone.(values(model.taskmanager.pairs)))
-    terminate(model)
+    Jusdl.terminate!(model)
     @test all(istaskdone.(values(model.taskmanager.pairs)))
 
     # Simulating Model
     model = Model()  
-    addnode(model, FunctionGenerator(t -> [sin(t), cos(t)]), label=:gen)
-    addnode(model, Adder(), label=:adder)
-    addnode(model, Writer(), label=:writer)
-    addbranch(model, :gen => :adder)
-    addbranch(model, :adder => :writer)
-    sim = simulate(model)
+    addnode!(model, FunctionGenerator(t -> [sin(t), cos(t)]), label=:gen)
+    addnode!(model, Adder(), label=:adder)
+    addnode!(model, Writer(), label=:writer)
+    addbranch!(model, :gen => :adder)
+    addbranch!(model, :adder => :writer)
+    sim = simulate!(model)
     @test typeof(sim) <: Simulation 
     @test sim.model === model
     @test sim.retcode == :success

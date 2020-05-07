@@ -43,9 +43,9 @@
     iport = Inport()
     trg = Outpin() 
     hnd = Inpin{Bool}()
-    connect(ds.output, iport)
-    connect(trg, ds.trigger)
-    connect(ds.handshake, hnd)
+    connect!(ds.output, iport)
+    connect!(trg, ds.trigger)
+    connect!(ds.handshake, hnd)
     tsk = launch(ds)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -90,10 +90,10 @@
     iport = Inport(3)
     trg = Outpin()
     hnd = Inpin{Bool}()
-    connect(ds.output, iport)
-    connect(ds.handshake, hnd)
-    connect(trg, ds.trigger)
-    connect(oport, ds.input)
+    connect!(ds.output, iport)
+    connect!(ds.handshake, hnd)
+    connect!(trg, ds.trigger)
+    connect!(oport, ds.input)
     tsk = launch(ds)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break
@@ -131,9 +131,9 @@
         iport = Inport(3)
         trg = Outpin() 
         hnd = Inpin{Bool}() 
-        connect(ds.output, iport)
-        connect(trg, ds.trigger) 
-        connect(ds.handshake, hnd)
+        connect!(ds.output, iport)
+        connect!(trg, ds.trigger) 
+        connect!(ds.handshake, hnd)
         tsk = launch(ds)
         tsk2 = @async while true 
             all(take!(iport) .=== NaN) && break 
@@ -163,10 +163,10 @@
         oport = Outport(3)
         trg = Outpin() 
         hnd = Inpin{Bool}() 
-        connect(ds.output, iport)
-        connect(oport, ds.input)
-        connect(trg, ds.trigger) 
-        connect(ds.handshake, hnd)
+        connect!(ds.output, iport)
+        connect!(oport, ds.input)
+        connect!(trg, ds.trigger) 
+        connect!(ds.handshake, hnd)
         tsk = launch(ds)
         tsk2 = @async while true 
             all(take!(iport) .=== NaN) && break 
@@ -197,9 +197,9 @@
     iport = Inport(2) 
     trg = Outpin() 
     hdn = Inpin{Bool}()
-    connect(ds.output, iport) 
-    connect(trg, ds.trigger) 
-    connect(ds.handshake, hnd)
+    connect!(ds.output, iport) 
+    connect!(trg, ds.trigger) 
+    connect!(ds.handshake, hnd)
     tsk = launch(ds)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break
@@ -226,10 +226,10 @@
     oport = Outport(2)
     trg = Outpin()
     hnd = Inpin{Bool}()
-    connect(oport, ds.input)
-    connect(ds.output, iport) 
-    connect(trg, ds.trigger)
-    connect(ds.handshake, hnd)
+    connect!(oport, ds.input)
+    connect!(ds.output, iport) 
+    connect!(trg, ds.trigger)
+    connect!(ds.handshake, hnd)
     tsk = launch(ds)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 

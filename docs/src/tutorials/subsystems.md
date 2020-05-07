@@ -20,8 +20,8 @@ using Jusdl
 adder = Adder((+,-))
 gain = Gain()
 gen = ConstantGenerator()
-connect(gen.output, adder.input[2])
-connect(adder.output, gain.input)
+connect!(gen.output, adder.input[2])
+connect!(adder.output, gain.input)
 sub = SubSystem([gen, adder, gain], adder.input[1], gain.output)
 ``` 
 Since these components will serve as a subsystem, we must connect them. The input port of `adder` and output port of `gain` is specified as the input and output port of the subsystem `sub`. That is, we have a single-input-single-output subsystem. 
@@ -35,20 +35,20 @@ Then, we construct the model. We drive the subsystem with a generator and save i
 Thus, we construct other remaining components.
 ```@example subsystem_tutorial
 model = Model() 
-addnode(model, sub, label=:sub)
-addnode(model, SinewaveGenerator(frequency=5), label=:gen)
-addnode(model, Writer(), label=:writer)
+addnode!(model, sub, label=:sub)
+addnode!(model, SinewaveGenerator(frequency=5), label=:gen)
+addnode!(model, Writer(), label=:writer)
 nothing # hide
 ```
 Then, to construct the model, we connect the components of the model 
 ```@example subsystem_tutorial
-addbranch(model, :gen => :sub, 1 => 1) 
-addbranch(model, :sub => :writer, 1 => 1) 
+addbranch!(model, :gen => :sub, 1 => 1) 
+addbranch!(model, :sub => :writer, 1 => 1) 
 nothing # hide
 ```
 At this step, we are ready to simulate the model.
 ```@example subsystem_tutorial 
-sim = simulate(model)
+sim = simulate!(model)
 sim
 ```
 We, then, read the simulation data from the writer and plot it. 

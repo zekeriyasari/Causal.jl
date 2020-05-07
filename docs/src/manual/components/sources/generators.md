@@ -15,9 +15,9 @@ gen isa AbstractSource
 To drive `gen`, that is to make `gen` evolve, we need to launch `gen`.  To this end, we construct ports and pins for input-output and signaling.
 ```@repl source_ex
 trg, hnd, iport = Outpin(), Inpin{Bool}(), Inport(length(gen.output))
-connect(gen.output, iport)
-connect(trg, gen.trigger) 
-connect(gen.handshake, hnd)
+connect!(gen.output, iport)
+connect!(trg, gen.trigger) 
+connect!(gen.handshake, hnd)
 t = launch(gen)
 tout = @async while true 
     all(take!(iport) .=== NaN) && break 

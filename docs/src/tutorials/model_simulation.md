@@ -19,11 +19,11 @@ tf = 10.    # Final time
 model = Model(clock=Clock(t0, dt, tf)) 
 
 # Adding nodes to model
-addnode(model, SinewaveGenerator(), label=:gen)
-addnode(model, Writer(), label=:writer)
+addnode!(model, SinewaveGenerator(), label=:gen)
+addnode!(model, Writer(), label=:writer)
 
 # Adding branches to model
-addbranch(model, :gen => :writer)
+addbranch!(model, :gen => :writer)
 nothing # hide
 ```
 In this simple `model`, we have a single output sinusoidal wave generator `gen` and a `writer`. In the script above, we constructed the components, connected them together and constructed the model.
@@ -37,7 +37,7 @@ nothing # hide
 ```
 At this point, the model is ready for simulation. 
 ```@example simple_model_ex 
-sim = simulate(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
+sim = simulate!(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
 ```
 
 ## Investigation of Simulation 
@@ -89,26 +89,26 @@ using Plots
 
 # Construction of the model 
 model = Model() 
-addnode(model, SinewaveGenerator(frequency=2), label=:gen1)
-addnode(model, Gain(gain=1), label=:gain1)
-addnode(model, Adder((+,+)), label=:adder1)
-addnode(model, SinewaveGenerator(frequency=3), label=:gen2)
-addnode(model, Adder((+, +, -)), label=:adder2)
-addnode(model, Gain(gain=1), label=:gain2)
-addnode(model, Writer(), label=:writer)
-addnode(model, Gain(gain=1), label=:gain3)
-addbranch(model, :gen1 => :gain1, 1 => 1)
-addbranch(model, :gain1 => :adder1, 1 => 1)
-addbranch(model, :adder1 => :adder2, 1 => 1)
-addbranch(model, :gen2 => :adder1, 1 => 2)
-addbranch(model, :gen2 => :adder2, 1 => 2)
-addbranch(model, :adder2 => :gain2, 1 => 1)
-addbranch(model, :gain2 => :writer, 1 => 1)
-addbranch(model, :gain2 => :gain3, 1 => 1)
-addbranch(model, :gain3 => :adder2, 1 => 3)
+addnode!(model, SinewaveGenerator(frequency=2), label=:gen1)
+addnode!(model, Gain(gain=1), label=:gain1)
+addnode!(model, Adder((+,+)), label=:adder1)
+addnode!(model, SinewaveGenerator(frequency=3), label=:gen2)
+addnode!(model, Adder((+, +, -)), label=:adder2)
+addnode!(model, Gain(gain=1), label=:gain2)
+addnode!(model, Writer(), label=:writer)
+addnode!(model, Gain(gain=1), label=:gain3)
+addbranch!(model, :gen1 => :gain1, 1 => 1)
+addbranch!(model, :gain1 => :adder1, 1 => 1)
+addbranch!(model, :adder1 => :adder2, 1 => 1)
+addbranch!(model, :gen2 => :adder1, 1 => 2)
+addbranch!(model, :gen2 => :adder2, 1 => 2)
+addbranch!(model, :adder2 => :gain2, 1 => 1)
+addbranch!(model, :gain2 => :writer, 1 => 1)
+addbranch!(model, :gain2 => :gain3, 1 => 1)
+addbranch!(model, :gain3 => :adder2, 1 => 3)
 
 # Simulation of the model 
-simulate(model, withbar=false)
+simulate!(model, withbar=false)
 
 # Reading and plotting the simulation data
 t, x = read(getnode(model, :writer).component)

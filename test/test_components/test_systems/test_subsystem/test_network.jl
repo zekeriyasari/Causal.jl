@@ -83,11 +83,11 @@
 #     net = Network(nodes, conmat, cplmat)
 #     tsk = ComponentTask.(launch(net))
 #     for t in 0. : 10.
-#         drive(net, t)
-#         approve(net)
+#         drive!(net, t)
+#         approve!(net)
 #     end
 #     release(net)
-#     terminate(net)
+#     terminate!(net)
 #     sleep(0.1)
 #     @test all(istaskdone.(tsk))
 

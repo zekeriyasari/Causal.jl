@@ -103,7 +103,7 @@
 #     numnodes = size(coupler.conmat, 1)
 #     dimnodes = size(coupler.cplmat, 1)
 #     for (node, idx) in zip(nodes, 1 : dimnodes : numnodes * dimnodes) 
-#         connect(node.output, coupler.input[idx : idx + dimnodes - 1])
+#         connect!(node.output, coupler.input[idx : idx + dimnodes - 1])
 #     end
 # end
 
@@ -111,25 +111,25 @@
 #     numnodes = size(coupler.conmat, 1)
 #     dimnodes = size(coupler.cplmat, 1)
 #     for (memory, idx) in zip(memories, 1 : dimnodes : numnodes * dimnodes) 
-#         connect(coupler.output[idx : idx + dimnodes - 1], memory.input)
+#         connect!(coupler.output[idx : idx + dimnodes - 1], memory.input)
 #     end
 # end
 
 # function connect_memories_to_nodes(memories, nodes)
 #     for (memory, node) in zip(memories, nodes)
-#         connect(memory.output, node.input)
+#         connect!(memory.output, node.input)
 #     end  
 # end
 
 # function connect_memories_to_adders(memories, adders)
 #     for (memory, adder) in zip(memories, adders)
-#         connect(memory.output, adder.input[1 : length(memory.output)])
+#         connect!(memory.output, adder.input[1 : length(memory.output)])
 #     end
 # end
 
 # function connect_adders_to_nodes(adders, nodes)
 #     for (adder, node) in zip(adders, nodes)
-#         connect(adder.output, node.input)
+#         connect!(adder.output, node.input)
 #     end
 # end
 
@@ -171,9 +171,9 @@
 # #     dimnode = length(inputport)
 # #     masterlinks = getmaster(inputport)
 # #     adder = construct_an_adder(dimnode, 2, (+, -))
-# #     disconnect(masterlinks, inputport)
-# #     connect(masterlinks, adder.input[1:dimnode])
-# #     connect(adder.output, inputport)
+# #     disconnect!(masterlinks, inputport)
+# #     connect!(masterlinks, adder.input[1:dimnode])
+# #     connect!(adder.output, inputport)
 # #     push!(net.components, adder)
 # #     # TODO: Complete function 
 # # end

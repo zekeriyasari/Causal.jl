@@ -81,7 +81,7 @@ function report(simulation::Simulation)
         # Save simulation model components.
         model = simulation.model
         components = [node.component for node in model.nodes]
-        foreach(unfasten, filter(component->isa(component, AbstractSink), components))
+        foreach(unfasten!, filter(component->isa(component, AbstractSink), components))
         model_group = JLD2.Group(simreport, "model")
         model_group["id"] = string(simulation.model.id)
         model_group["name"] = string(simulation.model.name)

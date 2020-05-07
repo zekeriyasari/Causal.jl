@@ -24,13 +24,13 @@ Let us construct and `Outport` and an `Inport` and connect them together.
 ```@repl port_example_1
 op1 = Outport(2)  
 ip1 = Inport(2) 
-ls = connect(op1, ip1)
+ls = connect!(op1, ip1)
 ```
 Note that we connected all pins of `op` to `ip`. We cannot connect the ports partially. 
 ```@repl port_example_1
 op2, ip21, ip22 = Outport(5), Inport(2), Inport(3) 
-ls1 = connect(op2[1:2], ip21)
-ls2 = connect(op2[3:5], ip22)
+ls1 = connect!(op2[1:2], ip21)
+ls2 = connect!(op2[3:5], ip22)
 ```
 The connectedness of ports can be checked. 
 ```@repl port_example_1
@@ -42,9 +42,9 @@ isconnected(op2[5], ip22[3])
 ```
 Connected ports can be disconnected.
 ```@repl port_example_1
-disconnect(op2[1], ip21[1])
-disconnect(op2[2], ip21[2])
-disconnect(op2[3:5], ip22)
+disconnect!(op2[1], ip21[1])
+disconnect!(op2[2], ip21[2])
+disconnect!(op2[3:5], ip22)
 ```
 Now check again the connectedness,
 ```@repl port_example_1
@@ -61,7 +61,7 @@ Data flow through the ports is very similar to the case in pins(see [Data Flow T
 Let us construct an `Outport` and an `Inport`, connect them together with links and perform data transfer from the `Outport` to the `Inport` through the links. 
 ```@repl port_example_1
 op3, ip3 = Outport(2), Inport(2)
-ls = connect(op3, ip3)
+ls = connect!(op3, ip3)
 t = @async while true
     val = take!(ip3)
     all(val .=== NaN) && break

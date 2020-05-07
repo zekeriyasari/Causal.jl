@@ -9,10 +9,10 @@
 
     # Try equip a writer in a model.
     model = Model(clock=Clock(0., 0.01, 10.)) 
-    addnode(model, SinewaveGenerator(), label=:gen)
-    addnode(model, Writer(buflen=50, plugin=MeanPlugin()), label=:writer)
-    addbranch(model, :gen => :writer)
-    simulate(model)
+    addnode!(model, SinewaveGenerator(), label=:gen)
+    addnode!(model, Writer(buflen=50, plugin=MeanPlugin()), label=:writer)
+    addbranch!(model, :gen => :writer)
+    simulate!(model)
 
     # Test the simulation data
     data = read(getnode(model, :writer).component, flatten=false)

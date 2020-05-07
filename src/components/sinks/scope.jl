@@ -20,7 +20,7 @@ mutable struct Scope{IB, DB, TB, PL, TR, HS, CB, PLT} <: AbstractSink
         timebuf = Buffer(buflen)
         databuf = Buffer(T, length(input), buflen)
         id = uuid4()
-        callbacks = fasten(plugin, update, timebuf, databuf, callbacks, id)
+        callbacks = fasten!(plugin, update, timebuf, databuf, callbacks, id)
         trigger = Inpin()
         handshake = Outpin{Bool}()
         new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 

@@ -48,10 +48,10 @@ ss.trigger.link
 To make `ss` drivable, we need to construct the ports and pins for input-output and signaling. 
 ```@repl static_system_ex 
 oport, iport, trg, hnd = Outport(length(ss.input)), Inport(length(ss.output)), Outpin(), Inpin{Bool}()
-connect(oport, ss.input) 
-connect(ss.output, iport) 
-connect(trg, ss.trigger)
-connect(ss.handshake, hnd)
+connect!(oport, ss.input) 
+connect!(ss.output, iport) 
+connect!(trg, ss.trigger)
+connect!(ss.handshake, hnd)
 task = launch(ss)
 taskout = @async while true 
     all(take!(iport) .=== NaN) && break 

@@ -29,13 +29,13 @@ ds = LinearSystem(Bus(), Bus(), A=diagm([0.]), B=diagm([1/τ]), C=diagm([-1.]), 
 writerin = Writer(Bus())
 writerout = Writer(Bus())
 
-connect(gen.output, writerin.input)
-connect(gen.output, ds.input)
-connect(ds.output, writerout.input)
+connect!(gen.output, writerin.input)
+connect!(gen.output, ds.input)
+connect!(ds.output, writerout.input)
 
 model = Model(gen, ds, writerin, writerout)
 
-sim = simulate(model, t0, dt, tf)
+sim = simulate!(model, t0, dt, tf)
 
 t, u = read(writerin, flatten=true)
 t, y = read(writerout, flatten=true)

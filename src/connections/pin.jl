@@ -137,19 +137,19 @@ put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
 
 """
-    connect(outpin::Link, inpin::Link)
+    connect!(outpin::Link, inpin::Link)
 
 Connects `outpin` to `inpin`. When connected, any element that is put into `outpin` is also put into `inpin`. 
 
-    connect(outpin::AbstractVector{<:Link}, inpin::AbstractVector{<:Link})
+    connect!(outpin::AbstractVector{<:Link}, inpin::AbstractVector{<:Link})
 
-Connects each link in `outpin` to each link in `inpin` one by one. See also: [`disconnect`](@ref)
+Connects each link in `outpin` to each link in `inpin` one by one. See also: [`disconnect!`](@ref)
 
 # Example 
 ```jldoctest 
 julia> op, ip = Outpin(), Inpin();
 
-julia> l = connect(op, ip)
+julia> l = connect!(op, ip)
 Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia> l in op.links
@@ -159,34 +159,34 @@ julia> ip.link === l
 true
 ```
 """
-function connect(outpin::Outpin, inpin::Inpin)
+function connect!(outpin::Outpin, inpin::Inpin)
     isconnected(outpin, inpin) && (@warn "$outpin and $inpin are already connected."; return)
     link = Link{promote_type(eltype(outpin), eltype(inpin))}()
     bind(link, outpin)
     bind(link, inpin)
     return link
 end
-connect(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect.(outpins, inpins)
-connect(outpins, inpins) = connect([outpins...], [inpins...])
+connect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect!.(outpins, inpins)
+connect!(outpins, inpins) = connect!([outpins...], [inpins...])
 
 """
-    disconnect(link1::Link, link2::Link)
+    disconnect!(link1::Link, link2::Link)
 
-Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect`](@ref)
+Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect!`](@ref)
 """
-function disconnect(outpin::Outpin, inpin::Inpin)
+function disconnect!(outpin::Outpin, inpin::Inpin)
     deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
     inpin.link = Link{eltype(inpin)}()
 end
-disconnect(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect.(outpins, inpins); nothing)
-disconnect(outpins, inpins) = disconnect([outpins...], [inpins...])
+disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect!.(outpins, inpins); nothing)
+disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])
 
 
 """
     isconnected(link1, link2)
 
 Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important. 
-See also [`connect`](@ref), [`disconnect`](@ref)
+See also [`connect!`](@ref), [`disconnect!`](@ref)
 """
 function isconnected(outpin::Outpin, inpin::Inpin)
     if !isbound(outpin) || !isbound(inpin)

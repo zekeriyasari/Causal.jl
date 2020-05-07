@@ -15,7 +15,7 @@ Here `dt` is the simulation step size.
 
 ## Reading Time 
 ```@docs 
-readtime
+readtime!
 ```
 
 ## Reading State 
@@ -25,12 +25,12 @@ readstate
 
 ## Reading Input
 ```@docs 
-readinput
+readinput!
 ```
 
 ## Writing Output
 ```@docs 
-writeoutput
+writeoutput!
 ```
 
 ## Computing Output 
@@ -45,13 +45,13 @@ evolve!
 
 ## Taking Steps 
 ```@docs 
-takestep
+takestep!
 Jusdl.forwardstep
 Jusdl.backwardstep
 launch(comp::AbstractComponent)
 launch(comp::AbstractSubSystem)
-drive
-approve
-terminate
+drive!
+approve!
+terminate!
 ```
 

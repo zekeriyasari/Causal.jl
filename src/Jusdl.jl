@@ -19,7 +19,7 @@ using Interpolations
 using LibGit2
 import GraphPlot.gplot
 import FileIO: load
-import Base: show, display, write, read, close, setproperty!, mv, cp, open, run, istaskdone, istaskfailed, 
+import Base: show, display, write, read, close, setproperty!, mv, cp, open,  istaskdone, istaskfailed, 
     getindex, setindex!, size, isempty
 
 include("utilities/constants.jl")
@@ -35,7 +35,7 @@ include("connections/link.jl")
 export Link, launch
 
 include("connections/pin.jl")
-export AbstractPin, Outpin, Inpin, connect, disconnect, isconnected, isbound
+export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound
 
 include("connections/port.jl")
 export AbstractPort, Inport, Outport, datatype
@@ -51,7 +51,7 @@ export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink, Abstract
 include("components/componentsbase/genericfields.jl")
 
 include("components/componentsbase/takestep.jl")
-export readtime, readstate, readinput, writeoutput, computeoutput, evolve!, takestep, drive, approve
+export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, drive!, approve!
 
 include("components/sources/clock.jl")
 export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
@@ -89,10 +89,10 @@ export SubSystem
 #     deletelink, changeweight, maketimevarying
 
 include("components/sinks/manageplugins.jl")
-export fasten, unfasten
+export fasten!, unfasten!
 
 include("components/sinks/writer.jl")
-export Writer, write!, fwrite, fread, flatten
+export Writer, write!, fwrite!, fread, flatten
 
 include("components/sinks/printer.jl")
 export Printer
@@ -107,8 +107,8 @@ include("models/simulation.jl")
 export Simulation, SimulationError, setlogger, closelogger, report
 
 include("models/model.jl")
-export Model, getloops, breakloop, inspect, initialize, run, terminate, simulate
-export Node, Branch, addnode, getnode, addbranch, getbranch, deletebranch, signalflow
+export Model, getloops, breakloop, inspect!, initialize!, run!, terminate!, simulate!
+export Node, Branch, addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow
 
 include("plugins/loadplugins.jl")
 export AbstractPlugin, process, add, remove, enable, disable, check

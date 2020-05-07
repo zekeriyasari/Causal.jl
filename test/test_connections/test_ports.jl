@@ -25,7 +25,7 @@
 
     # Connection of Outport and Inport
     op, ip = Outport(3), Inport(3)
-    ls = connect(op, ip)
+    ls = connect!(op, ip)
     @test typeof(ls) <: Vector{<:Link}
     @test length(ls) == 3
     for (l, _op, _ip) in zip(ls, op, ip)
@@ -37,9 +37,9 @@
     # Partial connection of Outport and Inport
     op = Outport(5)
     ip1, ip2 = Inport(3), Inport(2)
-    @test_throws DimensionMismatch connect(op, ip1) # Length of op and ip1 are not same
-    ls1 = connect(op[1:3], ip1)
-    ls2 = connect(op[4:5], ip2)
+    @test_throws DimensionMismatch connect!(op, ip1) # Length of op and ip1 are not same
+    ls1 = connect!(op[1:3], ip1)
+    ls2 = connect!(op[4:5], ip2)
     @test isconnected(op[1], ip1[1])
     @test isconnected(op[4], ip2[1])
     @test !isconnected(op[3], ip2[1])
@@ -48,7 +48,7 @@
     op, ip = Outport(2), Inport(2)
     @test_throws MethodError take!(op)
     @test_throws MethodError put!(ip, zeros(2))
-    ls = connect(op, ip)
+    ls = connect!(op, ip)
     t = @async while true
         all(take!(ip) .=== NaN) && break
     end
@@ -61,9 +61,9 @@
 
     # Disconnection of ports
     op, ip = Outport(), Inport()
-    ls = connect(op, ip)
+    ls = connect!(op, ip)
     @test isconnected(op, ip)
-    disconnect(op, ip)
+    disconnect!(op, ip)
     @test !isconnected(op, ip)
 
     @info "Donke PortTestSet."

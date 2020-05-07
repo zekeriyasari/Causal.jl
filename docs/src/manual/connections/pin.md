@@ -12,9 +12,9 @@ For example, let us construct and `Outpin` and `Inpin`s and connect the together
 using Jusdl # hide 
 op = Outpin() 
 ip = Inpin() 
-link = connect(op, ip)
+link = connect!(op, ip)
 ```
-Note `connect(op, ip)` connects `op` and `ip` through a `Link` can return the constructed link. The connection of pins can be monitored. 
+Note `connect!(op, ip)` connects `op` and `ip` through a `Link` can return the constructed link. The connection of pins can be monitored. 
 ```@repl pin_example_1
 isconnected(op, ip)
 ```
@@ -27,7 +27,7 @@ ip.link === link
 !!! note 
     It is possible for an [`Outpin`](@ref) to have multiple [`Link`](@ref)s bound to itself. On contract, an [`Inpin`](@ref) can have just one [`Link`](@ref).
 
-The connected links `Outpin` and `Inpin` can be disconnected using [`disconnect`](@ref) function. When disconnected, the data transfer from the `Outpin` to `Inpin` is not possible. 
+The connected links `Outpin` and `Inpin` can be disconnected using [`disconnect!`](@ref) function. When disconnected, the data transfer from the `Outpin` to `Inpin` is not possible. 
 
 ## Data Flow Through Pins 
 The data flow from an `Outpin` to an `Inpin`. However for data flow through a pin, a running task must be bound the channel of the link of the pin. See the example below. 
@@ -45,7 +45,7 @@ put!(op, 3.)
 Note that `t` is a taker job. As the taker job `t` takes data from `op`, we were able to put values into `op`. The converse is also possible. 
 ```@repl pin_example_1
 op2, ip2  = Outpin(), Inpin() 
-link2 = connect(op2, ip2) 
+link2 = connect!(op2, ip2) 
 t2 = @async for item in 1 : 5
     put!(op2, item)
 end

@@ -33,7 +33,7 @@
 
 \tikzset{
     border/.style = { 
-        draw, rectangle, minimum width=2cm, minimum height=1.5cm, ultra thick
+        draw, rectangle, minimum width=1.5cm, minimum height=1cm, ultra thick
     },
     pics/Component/.style n args = {2}{
         code = {
@@ -61,33 +61,26 @@
 \begin{document}
     \begin{tikzpicture}[every node/.style={font=\normalsize}]
         % Place the blocks 
-        \draw(-3.5, 0) pic (gen) {Component={Sinewave\\Generator}{t}};
-        \draw pic (adder) {Component={Adder}{t}};
-        \draw(3.5, 0) pic (ds) {Component={ODESystem}{t}};
-        \draw(7, 1.5) pic (writer) {Component={Writer}{t}};
-        \draw(2, -2.25) pic (memory) {Component={Memory}{t}};
-        % Glow the blocks
-        % \drawshadowbis{gen-edge};
-        % \drawshadowbis{adder-edge};
-        % \drawshadowbis{ds-edge};
-        % \drawshadowbis{writer-edge};
-        % \drawshadowbis{memory-edge};
+        \draw(-3.5, 0) pic (gen) {Component={gen}{t}};
+        \draw pic (adder) {Component={adder}{t}};
+        \draw(3.5, 0) pic (ds) {Component={ds}{t}};
+        \draw(7, 1.5) pic (writer) {Component={writer}{t}};
         \begin{scope}[line width=1.5mm, ->, >={Triangle[width=3mm,length=3mm]}]
             \draw[-] ([yshift=2mm] gen-edge.east) -- ++(1cm, 0cm) node[midway, anchor=south]{$r(t)$} coordinate(d); 
             \draw (d) -- ([yshift=2mm]  adder-edge.west);
             \draw (adder-edge.east) -- node[midway, anchor=south]{$u(t)$} (ds-edge.west);
             \draw[-] (ds-edge.east) -- ++(1cm, 0cm) node[midway, anchor=south]{$y(t)$} coordinate (a);
             \draw (a) |- ([yshift=-3mm] writer-edge.west);
-            \draw (a) |- (memory-edge.east);
-            \draw[-] (memory-edge.west) -- ++(-2.5cm, 0cm) coordinate (c);
-            \draw ([yshift=-0.75mm] c) |- ([yshift=-2mm] adder-edge.west);
+            \draw[-] (a) |- ++(-7cm, -2cm) coordinate (c);
+            \draw ([yshift=-0.75mm]c) |- ([yshift=-2mm] adder-edge.west);
+            \draw[-] ([yshift=2mm] gen-edge.east) -- ++ (1cm, 0cm) coordinate(d);
             \draw (d) |- ([yshift=3mm] writer-edge.west);
         \end{scope}
-        \draw[very thick, dashed] (-5, 3) rectangle (8.5, -4);
-        \node at (7.5, -3.5) {Model};
+        \draw[very thick, dashed] (-4.5, 2.5) rectangle (8, -4);
+        \node at (7, -3.25) {model};
 
          % \Place clock 
-        \begin{scope}[shift={(-4.25cm, -3.25cm)}]
+        \begin{scope}[shift={(-4cm, -3cm)}]
             \draw pic(clk) {Clock={T}} ;
         \end{scope}
 

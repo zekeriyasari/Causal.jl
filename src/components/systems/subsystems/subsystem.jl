@@ -15,9 +15,9 @@ julia> gain = Gain();
 
 julia> gen = ConstantGenerator();
 
-julia> connect(gen.output, adder.input);
+julia> connect!(gen.output, adder.input);
 
-julia> connect(adder.output, gain.input);
+julia> connect!(adder.output, gain.input);
 
 julia> ss = SubSystem([gen, adder, gain], adder.input[1], gain.output)
 SubSystem(input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}), components:AbstractComponent[ConstantGenerator(amp:1.0), Adder(signs:(+, -), input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64})), Gain(gain:1.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))])
@@ -35,8 +35,8 @@ mutable struct SubSystem{IB, OB, TR, HS, CB, CP, TP, HP} <: AbstractSubSystem
         triggerport = Outport(numcomps)
         handshakeport = Inport{Bool}(numcomps)
         for (k, component) in enumerate(components)
-            connect(triggerport[k], component.trigger)
-            connect(component.handshake, handshakeport[k])
+            connect!(triggerport[k], component.trigger)
+            connect!(component.handshake, handshakeport[k])
         end
         inputport = typeof(input) <: Union{<:Inpin, AbstractVector{<:Inpin}} ? Inport(input) : input  
         outputport = typeof(output) <: Union{<:Outpin, AbstractVector{<:Outpin}} ? Outport(output) : output

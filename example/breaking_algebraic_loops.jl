@@ -14,17 +14,17 @@ writerout = Writer(Bus(length(adder.output)))
 writerin = Writer(Bus(length(gen.output)))
 
 # Connect model blocks 
-connect(gen.output, adder.input[1])
-connect(mem.output, adder.input[2])
-connect(adder.output, mem.input)
-connect(mem.output, writerout.input)
-connect(gen.output, writerin.input)
+connect!(gen.output, adder.input[1])
+connect!(mem.output, adder.input[2])
+connect!(adder.output, mem.input)
+connect!(mem.output, writerout.input)
+connect!(gen.output, writerin.input)
 
 # Construct the model 
 model = Model(gen, adder, mem, writerout, writerin)
 
 # Simulate the model 
-sim = simulate(model, t0, dt, tf)
+sim = simulate!(model, t0, dt, tf)
 
 # Diplay model taskmanager
 display(model.taskmanager.pairs)

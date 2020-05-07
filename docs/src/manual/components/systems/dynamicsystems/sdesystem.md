@@ -53,9 +53,9 @@ The basic operation of a `SDESystem` is the same as those of other dynamical sys
 In this section, we continue with the system `ds` constructed in the previous section. To make `ds` drivable, we need to `launch` it.
 ```@repl sde_system_ex 
 iport, trg, hnd = Inport(1), Outpin(), Inpin{Bool}()
-connect(ds.output, iport) 
-connect(trg, ds.trigger) 
-connect(ds.handshake, hnd)
+connect!(ds.output, iport) 
+connect!(trg, ds.trigger) 
+connect!(ds.handshake, hnd)
 task = launch(ds)
 task2 = @async while true 
     all(take!(iport) .=== NaN) && break 
@@ -65,7 +65,7 @@ When launched, `ds` can be driven. For this, either of the syntax `put!(ds.trigg
 ```@repl sde_system_ex 
 put!(trg, 1.)
 ```
-After this command, `ds` reads its time `t` from its `trigger` link, solves its state function and computes its output. The calculated output value is written to the buffer of `output`. To signal that, the step is takes with success, `ds` writes `true` to its `handshake` link. To further drive `ds`, this `handshake` link must be read. For this either of the syntax, `take!(ds.handshake)` or `approve(ds)` can be used
+After this command, `ds` reads its time `t` from its `trigger` link, solves its state function and computes its output. The calculated output value is written to the buffer of `output`. To signal that, the step is takes with success, `ds` writes `true` to its `handshake` link. To further drive `ds`, this `handshake` link must be read. For this either of the syntax, `take!(ds.handshake)` or `approve!(ds)` can be used
 ```@repl sde_system_ex
 hnd.link
 take!(hnd)
@@ -90,7 +90,7 @@ When we launched `ds`, we constructed a `task` whose state is `running` which im
 !!! warning 
     The state of the `task` is different from `running` in case an exception is thrown. 
 
-To terminate the `task` securely, we need to terminate `ds` securely. To do that, can use `terminate(ds)`.
+To terminate the `task` securely, we need to terminate `ds` securely. To do that, can use `terminate!(ds)`.
 ```@repl sde_system_ex
 put!(trg, NaN)
 put!(ds.output, [NaN])

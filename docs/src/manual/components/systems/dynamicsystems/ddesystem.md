@@ -53,9 +53,9 @@ ds = DDESystem((statefunc, histfunc), outputfunc, [1.],  0., nothing, Outport())
 The basis operaiton of `DDESystem` is the same as those of other dynamical systems. When triggered from its `trigger` link, the `DDESystem` reads its time from its `trigger` link, reads input, solves its differential equation, computes its output and writes the computed output to its `output` bus. To drive `DDESystem`, we must first launch it,
 ```@repl dde_system_ex
 iport, trg, hnd = Inport(), Outpin(), Inpin{Bool}()
-connect(ds.output, iport) 
-connect(trg, ds.trigger) 
-connect(ds.handshake, hnd)
+connect!(ds.output, iport) 
+connect!(trg, ds.trigger) 
+connect!(ds.handshake, hnd)
 task = launch(ds)
 task2 = @async while true 
     all(take!(iport) .=== NaN) && break 
@@ -65,7 +65,7 @@ When launched, `ds` is drivable. To drive `ds`, we can use the syntax `drive(ds,
 ```@repl dde_system_ex 
 put!(trg, 1.)
 ```
-When driven, `ds` reads the time `t` from its `trigger` link, (since its input is `nothing`, `ds` does nothing during its input reading stage), solves its differential equation, computes output and writes the value of its output to its `output` bus. To signify, the step was taken with success, `ds` writes `true` to its `handshake` which must be read to further drive `ds`. For this, we can use the syntax `approve(ds)` or `take!(ds.handshake)`.
+When driven, `ds` reads the time `t` from its `trigger` link, (since its input is `nothing`, `ds` does nothing during its input reading stage), solves its differential equation, computes output and writes the value of its output to its `output` bus. To signify, the step was taken with success, `ds` writes `true` to its `handshake` which must be read to further drive `ds`. For this, we can use the syntax `approve!(ds)` or `take!(ds.handshake)`.
 ```@repl dde_system_ex
 take!(hnd)
 ``` 

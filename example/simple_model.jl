@@ -15,7 +15,7 @@ addconnection(model, :mem, :adder, 1, 2)
 addconnection(model, :ds, :writer4)
 
 # Simulate the model 
-sim = simulate(model)
+sim = simulate!(model)
 
 # Plots results
 t, x = read(getcomponent(model, :writer4), flatten=true)

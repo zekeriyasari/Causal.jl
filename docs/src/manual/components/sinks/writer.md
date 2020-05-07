@@ -16,9 +16,9 @@ w.trigger
 To trigger `w`, we need to open and launch it, 
 ```@repl writer_ex
 oport, trg, hnd = Outport(), Outpin(), Inpin{Bool}()
-connect(oport, w.input)
-connect(trg, w.trigger)
-connect(w.handshake, hnd)
+connect!(oport, w.input)
+connect!(trg, w.trigger)
+connect!(w.handshake, hnd)
 open(w)
 t = launch(w)
 ```

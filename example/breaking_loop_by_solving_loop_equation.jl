@@ -6,18 +6,18 @@ using Plots; pyplot()
 # Construct model with algebraic loop
 α = 3
 model = Model(clock=Clock(0, 1, 100)) 
-addnode(model, RampGenerator(), label=:gen)
-addnode(model, Adder((+,-)), label=:adder)
-addnode(model, Gain(gain=α), label=:gain)
-addnode(model, Writer(Inport(2)), label=:writer)
-addbranch(model, :gen => :adder, 1 => 1)
-addbranch(model, :adder => :gain, 1 => 1)
-addbranch(model, :gain => :adder, 1 => 2)
-addbranch(model, :gen => :writer, 1 => 1)
-addbranch(model, :gain => :writer, 1 => 2)
+addnode!(model, RampGenerator(), label=:gen)
+addnode!(model, Adder((+,-)), label=:adder)
+addnode!(model, Gain(gain=α), label=:gain)
+addnode!(model, Writer(Inport(2)), label=:writer)
+addbranch!(model, :gen => :adder, 1 => 1)
+addbranch!(model, :adder => :gain, 1 => 1)
+addbranch!(model, :gain => :adder, 1 => 2)
+addbranch!(model, :gen => :writer, 1 => 1)
+addbranch!(model, :gain => :writer, 1 => 2)
 
 # Simulate the model
-simulate(model)
+simulate!(model)
 
 # Plot the results
 t, y = read(getnode(model, :writer).component)

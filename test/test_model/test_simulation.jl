@@ -17,9 +17,9 @@
 
     # Check Writer files 
     model = Model()
-    addnode(model, SinewaveGenerator(), label=:gen)
-    addnode(model, Writer(Inport()), label=:writer)
-    addbranch(model, :gen => :writer)
+    addnode!(model, SinewaveGenerator(), label=:gen)
+    addnode!(model, Writer(Inport()), label=:writer)
+    addbranch!(model, :gen => :writer)
     dname1 = dirname(getnode(model, :writer).component.file.path)
     simname = string(uuid4())
     simdir = tempdir()
@@ -28,7 +28,7 @@
     @test dname1 != sim.path
 
     # Report Simulation 
-    sim = simulate(model, 0., 0.01, 10.)
+    sim = simulate!(model, 0., 0.01, 10.)
     report(sim)
     filename = joinpath(sim.path, "report.jld2")
     @test isfile(filename)

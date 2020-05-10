@@ -371,11 +371,12 @@ function initialize!(model::Model)
         pairs[component] = launch(component)
     end
     isrunning(model.clock) || set!(model.clock)  # Turnon clock internal generator.
-    for node in filter(node->isa(node.component, Writer), model.nodes)
-        node.component.file = jldopen(node.component.file.path, "a")
-    end
+    foreach(node -> open(node.component), filter(node->isa(node.component, AbstractSink), model.nodes))
+    # for node in filter(node->isa(node.component, AbstractSink), model.nodes)
+    #     open(node.component)
+    # end
 end
-
+ 
 ##### Model running
 # Copy-paste loop body. See `run!(model, withbar)`.
 @def loopbody begin 

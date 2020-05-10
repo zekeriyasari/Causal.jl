@@ -29,8 +29,8 @@
     @test typeof(subsys.handshake) == Outpin{Bool}
     @test length(subsys.input) == 1
     @test length(subsys.output) == 1
-    connect(gen.output, adder.input[1])
-    connect(adder.output, gain.input)
+    connect!(gen.output, adder.input[1])
+    connect!(adder.output, gain.input)
     oport, iport, trg, hnd, tsk, tsk2 = prepare(subsys)
     # comptsk = ComponentTask.(launch(subsys))
     put!(trg, 1.)

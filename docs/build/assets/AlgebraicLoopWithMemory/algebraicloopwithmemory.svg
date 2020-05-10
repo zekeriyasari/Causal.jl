@@ -221,13 +221,13 @@
 <path style="fill:none;stroke-width:0.79701;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-dasharray:2.98883,2.98883;stroke-miterlimit:10;" d="M -170.082469 -113.387344 L -170.082469 70.866562 L 170.081594 70.866562 L 170.081594 -113.387344 Z M -170.082469 -113.387344 " transform="matrix(1,0,0,-1,170.477,71.265)"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use xlink:href="#glyph0-12" x="291.562" y="159.763"/>
-  <use xlink:href="#glyph0-10" x="300.694715" y="159.763"/>
+  <use xlink:href="#glyph0-13" x="291.978" y="159.763"/>
+  <use xlink:href="#glyph0-10" x="300.279835" y="159.763"/>
 </g>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
-  <use xlink:href="#glyph0-9" x="305.954968" y="159.763"/>
-  <use xlink:href="#glyph0-5" x="311.490189" y="159.763"/>
-  <use xlink:href="#glyph0-19" x="315.917568" y="159.763"/>
+  <use xlink:href="#glyph0-9" x="305.540087" y="159.763"/>
+  <use xlink:href="#glyph0-5" x="311.075308" y="159.763"/>
+  <use xlink:href="#glyph0-19" x="315.502687" y="159.763"/>
 </g>
 </g>
 </svg>

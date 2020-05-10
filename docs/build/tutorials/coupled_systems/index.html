@@ -17,30 +17,30 @@
             0 &amp; 0 &amp; 0 \\
             0 &amp; 0 &amp; 0 \\
         \end{bmatrix}\]</div><p>and <span>$f$</span> is the Lorenz dynamics given by </p><div>\[\begin{array}{l}
-    \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) \\[0.25cm]
-    \dot{x}_2 = \gamma (x_1 (\rho - x_3) - x_2) \\[0.25cm]
-    \dot{x}_3 = \gamma (x_1 x_2 - \beta x_3) 
+    \dot{x}_1 = \sigma (x_2 - x_1) \\[0.25cm]
+    \dot{x}_2 = x_1 (\rho - x_3) - x_2 \\[0.25cm]
+    \dot{x}_3 = x_1 x_2 - \beta x_3
 \end{array}\]</div><p>The script below constructs and simulates the model</p><pre><code class="language-julia">using Jusdl
 
 # Construct the model
 ε = 10.
 model = Model(clock=Clock(0., 0.01, 100.))
-addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
-addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
-addnode(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
-addnode(model,  Writer(Inport(6)), label=:writer)
-addbranch(model, :ds1 =&gt; :coupler, 1:3 =&gt; 1:3)
-addbranch(model, :ds2 =&gt; :coupler, 1:3 =&gt; 4:6)
-addbranch(model, :coupler =&gt; :ds1, 1:3 =&gt; 1:3)
-addbranch(model, :coupler =&gt; :ds2, 4:6 =&gt; 1:3)
-addbranch(model, :ds1 =&gt; :writer, 1:3 =&gt; 1:3)
-addbranch(model, :ds2 =&gt; :writer, 1:3 =&gt; 4:6)
+addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
+addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
+addnode!(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
+addnode!(model,  Writer(Inport(6)), label=:writer)
+addbranch!(model, :ds1 =&gt; :coupler, 1:3 =&gt; 1:3)
+addbranch!(model, :ds2 =&gt; :coupler, 1:3 =&gt; 4:6)
+addbranch!(model, :coupler =&gt; :ds1, 1:3 =&gt; 1:3)
+addbranch!(model, :coupler =&gt; :ds2, 4:6 =&gt; 1:3)
+addbranch!(model, :ds1 =&gt; :writer, 1:3 =&gt; 1:3)
+addbranch!(model, :ds2 =&gt; :writer, 1:3 =&gt; 4:6)
 nothing # hide</code></pre><p>To construct the model, we added <code>ds1</code> and <code>ds2</code> each of which has input ports of length 3 and output port of length 3. To couple them together, we constructed a <code>coupler</code> which has input port of length 6 and output port of length 6. The output port of <code>ds1</code> is connected to the first 3 pins of <code>coupler</code> input port,  and the output of <code>ds2</code> is connected to last 3 pins of <code>coupler</code> input port. Then, the first 3 pins of <code>coupler</code> output is connected to the input port of <code>ds1</code> and last 3 pins of <code>coupler</code> output is connected to the input port of <code>ds2</code>. The block diagram of the model is given below.</p><center>
     <img src="../../assets/CoupledSystem/coupledsystem.svg" alt="model" width="60%"/>
-</center><p>The the signal-flow graph of the model has 4 directed branches and each of these branches has 3 links. </p><p>It also worths pointing out that the model has two algebraic loops. The first loop consists of <code>ds1</code> and <code>coupler</code>, and the second loop consists of <code>ds2</code> and <code>coupler</code>. During the simulation these loops are broken automatically without requiring any user intervention.</p><p>The model is ready for simulation. The code block below simulates the model and plots the simulation data.</p><pre><code class="language-julia">using Plots; pyplot()
+</center><p>The the signal-flow graph of the model has 4 directed branches and each of these branches has 3 links. </p><p>It also worths pointing out that the model has two algebraic loops. The first loop consists of <code>ds1</code> and <code>coupler</code>, and the second loop consists of <code>ds2</code> and <code>coupler</code>. During the simulation these loops are broken automatically without requiring any user intervention.</p><p>The model is ready for simulation. The code block below simulates the model and plots the simulation data.</p><pre><code class="language-julia">using Plots
 
 # Simulate the model
-simulate(model, withbar=false)
+simulate!(model, withbar=false)
 
 # Read simulation data
 t, x = read(getnode(model, :writer).component)
@@ -52,16 +52,16 @@ err = x[:, 1] - x[:, 4]
 p1 = plot(x[:, 1], x[:, 2], label=&quot;ds1&quot;)
 p2 = plot(x[:, 4], x[:, 5], label=&quot;ds2&quot;)
 p3 = plot(t, err, label=&quot;err&quot;)
-plot(p1, p2, p3, layout=(3, 1))</code></pre><pre><code class="language-none">[ Info: 2020-05-04T01:46:05.322 Started simulation...
-[ Info: 2020-05-04T01:46:05.322 Inspecting model...
+plot(p1, p2, p3, layout=(3, 1))</code></pre><pre><code class="language-none">[ Info: 2020-05-08T01:34:24.843 Started simulation...
+[ Info: 2020-05-08T01:34:24.843 Inspecting model...
 ┌ Info: 	The model has algrebraic loops:[[1, 3], [3, 2]]
 └ 		Trying to break these loops...
 [ Info: 	Loop [1, 3] is broken
 [ Info: 	Loop [2, 3] is broken
-[ Info: 2020-05-04T01:46:05.587 Done.
-[ Info: 2020-05-04T01:46:05.587 Initializing the model...
-[ Info: 2020-05-04T01:46:06.644 Done...
-[ Info: 2020-05-04T01:46:06.644 Running the simulation...
-[ Info: 2020-05-04T01:46:08.562 Done...
-[ Info: 2020-05-04T01:46:08.562 Terminating the simulation...
-[ Info: 2020-05-04T01:46:08.571 Done.</code></pre><p><img src="../coupled_systems_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../subsystems/">« Subsystems</a><a class="docs-footer-nextpage" href="../../manual/utilities/callback/">Callback »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 4 May 2020 01:46">Monday 4 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+[ Info: 2020-05-08T01:34:25.111 Done.
+[ Info: 2020-05-08T01:34:25.111 Initializing the model...
+[ Info: 2020-05-08T01:34:26.278 Done...
+[ Info: 2020-05-08T01:34:26.278 Running the simulation...
+[ Info: 2020-05-08T01:34:28.264 Done...
+[ Info: 2020-05-08T01:34:28.264 Terminating the simulation...
+[ Info: 2020-05-08T01:34:28.28 Done.</code></pre><p><img src="../coupled_systems_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../subsystems/">« Subsystems</a><a class="docs-footer-nextpage" href="../../manual/utilities/callback/">Callback »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 8 May 2020 01:34">Friday 8 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

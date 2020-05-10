@@ -158,7 +158,7 @@ Takes an element from `inport`. Each link of the `inport` is a read and a vector
 julia> op, ip = Outport(), Inport()
 (Outport(numpins:1, eltype:Outpin{Float64}), Inport(numpins:1, eltype:Inpin{Float64}))
 
-julia> ls = connect(op, ip)
+julia> ls = connect!(op, ip)
 1-element Array{Link{Float64},1}:
  Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
@@ -190,7 +190,7 @@ Puts `vals` to `outport`. Each item in `vals` is putted to the `links` of the `o
 julia> op, ip = Outport(), Inport() 
 (Outport(numpins:1, eltype:Outpin{Float64}), Inport(numpins:1, eltype:Inpin{Float64}))
 
-julia> ls = connect(op, ip)
+julia> ls = connect!(op, ip)
 1-element Array{Link{Float64},1}:
  Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 

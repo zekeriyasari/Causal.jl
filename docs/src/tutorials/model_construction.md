@@ -23,9 +23,9 @@ model = Model()
 ```
 We constructed an empty model, i.e., the model has no components and connections. To modify the model, we need to add components and connections to the model. As the model is grown by adding components and connections, the components and connections are added into the model as nodes and branches (see [`Node`](@ref), [`Branch`](@ref)).  Let's add our first component, a [`SinewaveGenerator`](@ref) to the `model`.
 ```@repl model_graph_example
-addnode(model, SinewaveGenerator(), label=:gen)
+addnode!(model, SinewaveGenerator(), label=:gen)
 ```
-To add components to the `model`, we use [`addnode`](@ref) function. As seen, our node consists of a component, an index, and a label. 
+To add components to the `model`, we use [`addnode!`](@ref) function. As seen, our node consists of a component, an index, and a label. 
 ```@repl model_graph_example
 node1 = model.nodes[1]
 node1.component
@@ -34,7 +34,7 @@ node1.label
 ```
 Let us add another component, a [`Adder`](@ref), to the model, 
 ```@repl model_graph_example
-addnode(model, Adder((+,-)), label=:adder)
+addnode!(model, Adder((+,-)), label=:adder)
 ```
 and investigate our new node.
 ```@repl model_graph_example
@@ -50,8 +50,8 @@ getnode(model, 1)       # Access by index
 ```
 At this point, we have two nodes in our model. Let's add two more nodes, a [`Gain`](@ref) and a [`Writer`](@ref)
 ```@repl model_graph_example
-addnode(model, Gain(), label=:gain)
-addnode(model, Writer(), label=:writer)
+addnode!(model, Gain(), label=:gain)
+addnode!(model, Writer(), label=:writer)
 ```
 As the nodes are added to the `model`, its graph is modified accordingly.
 ```@repl model_graph_example
@@ -60,7 +60,7 @@ model.graph
 
 `model` has no connections. Let's add our first connection by connecting the first pin of the output port of the node 1 (which is labelled as `:gen`) to the first input pin of input port of node 2 (which is labelled as `:adder`). 
 ```@repl model_graph_example
-addbranch(model, :gen => :adder, 1 => 1)
+addbranch!(model, :gen => :adder, 1 => 1)
 ```
 The node labelled with `:gen` has an output port having one pin, and the node labelled with `:adder` has an input port of two pins. In our first connection, we connected the first(and the only) pin of the output port of the node labelled with `:gen` to the first pin of the input port of the node labelled with `:adder`.  The connections are added to model as branches, 
 ```@repl model_graph_example
@@ -75,9 +75,9 @@ br.links
 ```
 Note the branch `br` has one link(see [`Link`](@ref)). This is because we connected one pin to another pin. The branch that connects ``n`` pins to each other has `n` links. Let us complete the construction of the model by adding other connections. 
 ```@repl model_graph_example
-addbranch(model, :adder => :gain, 1 => 1)
-addbranch(model, :gain => :adder, 1 => 2)
-addbranch(model, :gain => :writer, 1 => 1)
+addbranch!(model, :adder => :gain, 1 => 1)
+addbranch!(model, :gain => :adder, 1 => 2)
+addbranch!(model, :gain => :writer, 1 => 1)
 ```
 
 ## Usage of Signal-Flow Graph 

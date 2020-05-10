@@ -61,9 +61,9 @@ end  # testset
     trg = Outpin()
     hnd = Inpin{Bool}()
     ip = Inport()
-    connect(gen.output, ip)
-    connect(trg, gen.trigger)
-    connect(gen.handshake, hnd)
+    connect!(gen.output, ip)
+    connect!(trg, gen.trigger)
+    connect!(gen.handshake, hnd)
     task = launch(gen)
     task2 = @async while true 
         all(take!(ip) .=== NaN) && break 

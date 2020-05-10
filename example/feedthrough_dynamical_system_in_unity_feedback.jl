@@ -17,7 +17,7 @@ model[:ds => :adder] = Indices(1 => 2)
 model[:ds => :writer] = Indices(1 => 1)
 
 # Simulate the model 
-simulate(model)
+simulate!(model)
 
 # Read simulation data
 t, ys = read(model[:writer].component)

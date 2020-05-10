@@ -8,7 +8,7 @@ addcomponent(model, Writer(Inport(3), name=:writer))
 addconnection(model, :ds, :writer)
 
 # Simulate model 
-sim = simulate(model)
+sim = simulate!(model)
 
 # Plot results 
 t, x = read(getcomponent(model, :writer), flatten=true)

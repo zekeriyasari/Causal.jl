@@ -18,7 +18,7 @@ mutable struct Printer{IB, DB, TB, PL, TR, HS, CB} <: AbstractSink
         trigger = Inpin()
         handshake = Outpin{Bool}()
         id = uuid4()
-        callbacks = fasten(plugin, print, timebuf, databuf, callbacks, id)
+        callbacks = fasten!(plugin, print, timebuf, databuf, callbacks, id)
         new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake),
             typeof(callbacks)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id)
     end

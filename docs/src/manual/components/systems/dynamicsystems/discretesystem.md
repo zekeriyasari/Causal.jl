@@ -34,9 +34,9 @@ ds = DiscreteSystem(sfunc, ofunc, x0, t, input, output)
 To drive `ds`, we need to `launch` it.
 ```@repl discrete_system_ex 
 iport, trg, hnd = Inport(1), Outpin(), Inpin{Bool}()
-connect(ds.output, iport) 
-connect(trg, ds.trigger) 
-connect(ds.handshake, hnd)
+connect!(ds.output, iport) 
+connect!(trg, ds.trigger) 
+connect!(ds.handshake, hnd)
 task = launch(ds)
 task2 = @async while true 
     all(take!(iport) .=== NaN) && break 

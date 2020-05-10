@@ -64,9 +64,9 @@ Note that `ds` has a solver to solve its state function `statefunc` which is ran
 When a `RODESystem` is triggered from its `trigger` link, it read the current time from its `trigger` link, reads its input (if available, i.e. its input is not nothing), solves its state function, computes its output value and writes its output value its `output` bus (again, if available, i.e., its output bus is not nothing). To drive a `RODESystem`, it must be `launched`. Let us continue with `ds` constructed in the previous section.
 ```@repl rode_system_ex 
 iport, trg, hnd = Inport(2), Outpin(), Inpin{Bool}()
-connect(ds.output, iport) 
-connect(trg, ds.trigger) 
-connect(ds.handshake, hnd)
+connect!(ds.output, iport) 
+connect!(trg, ds.trigger) 
+connect!(ds.handshake, hnd)
 task = launch(ds)
 task2 = @async while true 
     all(take!(iport) .=== NaN) && break 
@@ -76,7 +76,7 @@ When launched, `ds` is ready to be driven. We can drive `ds` by `drive(ds, t)` o
 ```@repl rode_system_ex 
 put!(trg, 1.)
 ```
-When triggered, `ds` read the time `t` from its `trigger` link, solved its differential equation, computed its value and writes its output value to its `output` bus. To signal that, the evolution is succeeded, `ds` writes `true` to its `handshake` link which must be taken to further drive `ds`. (`approve(ds)`) can also be used. 
+When triggered, `ds` read the time `t` from its `trigger` link, solved its differential equation, computed its value and writes its output value to its `output` bus. To signal that, the evolution is succeeded, `ds` writes `true` to its `handshake` link which must be taken to further drive `ds`. (`approve!(ds)`) can also be used. 
 ```@repl rode_system_ex
 take!(hnd)
 ```

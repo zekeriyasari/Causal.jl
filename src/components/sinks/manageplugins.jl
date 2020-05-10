@@ -1,6 +1,6 @@
 # This file constains sink tools for the objects of Jusdl.
 
-function fasten(plugin, actionfunc, timebuf, databuf, callbacks, id)
+function fasten!(plugin, actionfunc, timebuf, databuf, callbacks, id)
     condition(sink) = ishit(sink.databuf) 
     # condition(sink) = isfull(sink.databuf) 
     if plugin === nothing
@@ -15,7 +15,7 @@ function fasten(plugin, actionfunc, timebuf, databuf, callbacks, id)
     callbacks
 end
 
-function unfasten(sink::AbstractSink)
+function unfasten!(sink::AbstractSink)
     callbacks = sink.callbacks
     sid = sink.id
     typeof(callbacks) <: AbstractVector && disable!(callbacks[callback.id == sid for callback in callbacks])

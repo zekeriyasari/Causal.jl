@@ -16,7 +16,7 @@ adder = Adder((+,+))
 ```
 Connect the generator and adder.
 ```@repl subsystem_ex 
-connect(gen.output, adder.input[1])
+connect!(gen.output, adder.input[1])
 ```
 We are ready to construct a `SubSystem`.
 ```@repl subsystem_ex
@@ -25,10 +25,10 @@ sub = SubSystem([gen, adder], [adder.input[2]], adder.output)
 To trigger the `sub`, we need to launch it. For that purpose, we construct ports and pins for input-output and signaling.
 ```@repl subsystem_ex
 oport, iport, trg, hnd = Outport(length(sub.input)), Inport(length(sub.output)), Outpin(), Inpin{Bool}()
-connect(oport, sub.input)
-connect(sub.output, iport)
-connect(trg, sub.trigger)
-connect(sub.handshake, hnd)
+connect!(oport, sub.input)
+connect!(sub.output, iport)
+connect!(trg, sub.trigger)
+connect!(sub.handshake, hnd)
 t = launch(sub)
 t2 = @async while true 
     all(take!(iport) .=== NaN) && break 

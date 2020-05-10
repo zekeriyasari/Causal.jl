@@ -16,10 +16,10 @@ ds = ODESystem(sfunc, ofunc, [1.], 0., Inport(1), Outport(1))
 Note that `ds` is a single input single output `ODESystem` with an initial state of `[1.]` and initial time `0.`. To drive, i.e. trigger `ds`, we need to launch it.
 ```@repl ode_ex
 oport, iport, trg, hnd = Outport(1), Inport(1), Outpin(), Inpin{Bool}()
-connect(oport, ds.input) 
-connect(ds.output, iport) 
-connect(trg, ds.trigger) 
-connect(ds.handshake, hnd)
+connect!(oport, ds.input) 
+connect!(ds.output, iport) 
+connect!(trg, ds.trigger) 
+connect!(ds.handshake, hnd)
 task = launch(ds)
 task2 = @async while true 
     all(take!(iport) .=== NaN) && break 

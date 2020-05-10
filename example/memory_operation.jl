@@ -18,7 +18,7 @@ model[:gen => :mem] = Indices(1 => 1)
 model[:mem => :gain] = Indices(1 => 1)
 model[:gen => :writer] = Indices(1 => 1)
 model[:gain => :writer] = Indices(1 => 2)
-simulate(model) 
+simulate!(model) 
 
 # Read simulation data
 t, x = read(model[:writer].component)

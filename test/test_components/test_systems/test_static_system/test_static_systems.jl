@@ -23,10 +23,10 @@
     ofunc3(u, t) = u[1] + u[2] 
     ss = StaticSystem(ofunc3, Inport(2), Outport(1))
     iport, oport, ipin, opin = Inport(1), Outport(2), Inpin{Bool}(), Outpin()
-    connect(oport, ss.input)
-    connect(ss.output, iport)
-    connect(opin, ss.trigger)
-    connect(ss.handshake, ipin)
+    connect!(oport, ss.input)
+    connect!(ss.output, iport)
+    connect!(opin, ss.trigger)
+    connect!(ss.handshake, ipin)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -54,10 +54,10 @@
     ss = Adder((+, +, -))
     @test ss.signs == (+, +, -)
     oport, iport, opin, ipin = Outport(3), Inport(1), Outpin(), Inpin{Bool}()
-    connect(opin, ss.trigger)
-    connect(oport, ss.input)
-    connect(ss.handshake, ipin)
-    connect(ss.output, iport)
+    connect!(opin, ss.trigger)
+    connect!(oport, ss.input)
+    connect!(ss.handshake, ipin)
+    connect!(ss.output, iport)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -82,10 +82,10 @@
     ss = Multiplier((*, *, /,*))
     @test ss.ops == (*, *, /, *)
     oport, iport, opin, ipin = Outport(4), Inport(1), Outpin(), Inpin{Bool}()
-    connect(opin, ss.trigger)
-    connect(oport, ss.input)
-    connect(ss.handshake, ipin)
-    connect(ss.output, iport)
+    connect!(opin, ss.trigger)
+    connect!(oport, ss.input)
+    connect!(ss.handshake, ipin)
+    connect!(ss.output, iport)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -109,10 +109,10 @@
     K = rand(3, 3)
     ss = Gain(Inport(3), gain=K)
     oport, iport, opin, ipin = Outport(3), Inport(3), Outpin(), Inpin{Bool}()
-    connect(oport, ss.input)
-    connect(opin, ss.trigger)
-    connect(ss.handshake, ipin)
-    connect(ss.output, iport)
+    connect!(oport, ss.input)
+    connect!(opin, ss.trigger)
+    connect!(ss.handshake, ipin)
+    connect!(ss.output, iport)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -137,9 +137,9 @@
     @test typeof(ss.trigger) == Inpin{Float64}
     @test typeof(ss.handshake) == Outpin{Bool}
     oport, opin, ipin = Outport(3), Outpin(), Inpin{Bool}()
-    connect(oport, ss.input)
-    connect(opin, ss.trigger)
-    connect(ss.handshake, ipin)
+    connect!(oport, ss.input)
+    connect!(opin, ss.trigger)
+    connect!(ss.handshake, ipin)
     tsk = launch(ss)
     put!(opin, 1.)
     put!(oport, [1., 2., 3.])
@@ -162,10 +162,10 @@
     @test typeof(ss.output) == Outport{Outpin{Float64}}
     @test outbuf(ss.databuf) == zeros(3, 10)
     oport, iport, opin, ipin = Outport(3), Inport(3), Outpin(), Inpin{Bool}()
-    connect(oport, ss.input)
-    connect(opin, ss.trigger)
-    connect(ss.handshake, ipin)
-    connect(ss.output, iport)
+    connect!(oport, ss.input)
+    connect!(opin, ss.trigger)
+    connect!(ss.handshake, ipin)
+    connect!(ss.output, iport)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 
@@ -194,10 +194,10 @@
     @test length(ss.input) == 6
     @test length(ss.output) == 6 
     oport, iport, opin, ipin = Outport(6), Inport(6), Outpin(), Inpin{Bool}()
-    connect(oport, ss.input)
-    connect(opin, ss.trigger)
-    connect(ss.handshake, ipin)
-    connect(ss.output, iport)
+    connect!(oport, ss.input)
+    connect!(opin, ss.trigger)
+    connect!(ss.handshake, ipin)
+    connect!(ss.output, iport)
     tsk = launch(ss)
     tsk2 = @async while true 
         all(take!(iport) .=== NaN) && break 

@@ -2,14 +2,14 @@
 
 ##### Input-Output reading and writing.
 """
-    readtime(comp::AbstractComponent)
+    readtime!(comp::AbstractComponent)
 
 Returns current time of `comp` read from its `trigger` link.
 
 !!! note 
     To read time of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref).
 """
-readtime(comp::AbstractComponent) = take!(comp.trigger)
+readtime!(comp::AbstractComponent) = take!(comp.trigger)
 
 """
     readstate(comp::AbstractComponent)
@@ -19,24 +19,24 @@ Returns the state of `comp` if `comp` is `AbstractDynamicSystem`. Otherwise, ret
 readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? comp.state : nothing
 
 """
-    readinput(comp::AbstractComponent)
+    readinput!(comp::AbstractComponent)
 
 Returns the input value of `comp` if the `input` of `comp` is `Inport`. Otherwise, returns `nothing`.
 
 !!! note 
     To read input value of `comp`, `comp` must be launched. See also: [`launch(comp::AbstractComponent)`](@ref)
 """
-function readinput(comp::AbstractComponent)
+function readinput!(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
     typeof(comp.input) <: Inport ? take!(comp.input) : nothing
 end
 
 """
-    writeoutput(comp::AbstractComponent, out)
+    writeoutput!(comp::AbstractComponent, out)
 
 Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Otherwise, does `nothing`.
 """
-function writeoutput(comp::AbstractComponent, out)
+function writeoutput!(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
     typeof(comp.output) <: Outport ? put!(comp.output, out) : nothing
 end
@@ -121,12 +121,12 @@ end
 
 ##### Task management
 """
-    takestep(comp::AbstractComponent)
+    takestep!(comp::AbstractComponent)
 
 Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractMemory`, a backward step is taken. Otherwise, a forward step is taken. See also: [`forwardstep`](@ref), [`backwardstep`](@ref).
 """
-function takestep(comp::AbstractComponent)
-    t = readtime(comp)
+function takestep!(comp::AbstractComponent)
+    t = readtime!(comp)
     t === NaN && return t
     typeof(comp) <: AbstractMemory ? backwardstep(comp, t) : forwardstep(comp, t)
 end
@@ -137,10 +137,10 @@ end
 Makes `comp` takes a forward step.  The input value `u` and state `x` of `comp` are read. Using `x`, `u` and time `t`,  `comp` is evolved. The output `y` of `comp` is computed and written into the output bus of `comp`. 
 """
 function forwardstep(comp, t)
-    u = readinput(comp)
+    u = readinput!(comp)
     x = evolve!(comp, u, t)
     y = computeoutput(comp, x, u, t)
-    writeoutput(comp, y)
+    writeoutput!(comp, y)
     applycallbacks(comp)
     return t
 end
@@ -154,8 +154,8 @@ Reads the state `x`. Using the time `t` and `x`, computes and writes the ouput v
 function backwardstep(comp, t)
     x = readstate(comp)
     y = computeoutput(comp, x, nothing, t)
-    writeoutput(comp, y)
-    u = readinput(comp)
+    writeoutput!(comp, y)
+    u = readinput!(comp)
     xn = evolve!(comp, u, t)
     applycallbacks(comp)
     return t
@@ -164,12 +164,12 @@ end
 """
     launch(comp::AbstractComponent)
 
-Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive(comp::AbstractComponent, t)`](@ref)
+Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive!(comp::AbstractComponent, t)`](@ref)
 """
 function launch(comp::AbstractComponent) 
     @async begin 
         while true
-            takestep(comp) === NaN && break
+            takestep!(comp) === NaN && break
             put!(comp.handshake, true)
         end
         typeof(comp) <: AbstractSink && close(comp)
@@ -177,18 +177,18 @@ function launch(comp::AbstractComponent)
 end
 
 """
-    drive(comp::AbstractComponent, t)
+    drive!(comp::AbstractComponent, t)
 
-Writes `t` to the `trigger` link of `comp`. When driven, `comp` takes a step. See also: [`takestep(comp::AbstractComponent)`](@ref)
+Writes `t` to the `trigger` link of `comp`. When driven, `comp` takes a step. See also: [`takestep!(comp::AbstractComponent)`](@ref)
 """
-drive(comp::AbstractComponent, t) = put!(comp.trigger, t)
+drive!(comp::AbstractComponent, t) = put!(comp.trigger, t)
 
 """
-    approve(comp::AbstractComponent)
+    approve!(comp::AbstractComponent)
 
 Read `handshake` link of `comp`. When not approved or `false` is read from the `handshake` link, the task launched for the `trigger` link of `comp` gets stuck during `comp` is taking step.
 """
-approve(comp::AbstractComponent) = take!(comp.handshake)
+approve!(comp::AbstractComponent) = take!(comp.handshake)
 
 # """
 #     release(comp::AbstractComponent)
@@ -203,11 +203,11 @@ approve(comp::AbstractComponent) = take!(comp.handshake)
 
 
 """
-    terminate(comp::AbstractComponent)
+    terminate!(comp::AbstractComponent)
 
 Closes the `trigger` link and `output` bus of `comp`.
 """
-function terminate(comp::AbstractComponent)
+function terminate!(comp::AbstractComponent)
     typeof(comp) <: AbstractSink || typeof(comp.output) <: Nothing || close(comp.output)
     close(comp.trigger)
     return 
@@ -222,7 +222,7 @@ Launches all subcomponents of `comp`. See also: [`launch(comp::AbstractComponent
 function launch(comp::AbstractSubSystem)
     comptask = @async begin 
         while true
-            if takestep(comp) === NaN 
+            if takestep!(comp) === NaN 
                 put!(comp.triggerport, fill(NaN, length(comp.components)))
                 break   
             end
@@ -233,33 +233,33 @@ function launch(comp::AbstractSubSystem)
 end
 
 """
-    takestep(comp::AbstractSubSystem)
+    takestep!(comp::AbstractSubSystem)
 
-Makes `comp` to take a step by making each subcomponent of `comp` take a step. See also: [`takestep(comp::AbstractComponent)`](@ref)
+Makes `comp` to take a step by making each subcomponent of `comp` take a step. See also: [`takestep!(comp::AbstractComponent)`](@ref)
 """
-function takestep(comp::AbstractSubSystem)
-    t = readtime(comp)
+function takestep!(comp::AbstractSubSystem)
+    t = readtime!(comp)
     t === NaN && return t
     put!(comp.triggerport, fill(t, length(comp.components)))
     all(take!(comp.handshakeport)) || @warn "Could not be approved in the subsystem"
-    # foreach(takestep, comp.components)
-    # approve(comp) ||  @warn "Could not be approved in the subsystem"
+    # foreach(takestep!, comp.components)
+    # approve!(comp) ||  @warn "Could not be approved in the subsystem"
     # put!(comp.handshake, true)
 end
 
 """
-    drive(comp::AbstractSubSystem, t)
+    drive!(comp::AbstractSubSystem, t)
 
-Drives `comp` by driving each subcomponent of `comp`. See also: [`drive(comp::AbstractComponent, t)`](@ref)
+Drives `comp` by driving each subcomponent of `comp`. See also: [`drive!(comp::AbstractComponent, t)`](@ref)
 """
-drive(comp::AbstractSubSystem, t) = foreach(component -> drive(component, t), comp.components)
+drive!(comp::AbstractSubSystem, t) = foreach(component -> drive!(component, t), comp.components)
 
 """
-    approve(comp::AbstractSubSystem)
+    approve!(comp::AbstractSubSystem)
 
-Approves `comp` by approving each subcomponent of `comp`. See also: [`approve(comp::AbstractComponent)`](@ref)
+Approves `comp` by approving each subcomponent of `comp`. See also: [`approve!(comp::AbstractComponent)`](@ref)
 """
-approve(comp::AbstractSubSystem) = all(approve.(comp.components))
+approve!(comp::AbstractSubSystem) = all(approve!.(comp.components))
 
 
 # """ 
@@ -274,9 +274,9 @@ approve(comp::AbstractSubSystem) = all(approve.(comp.components))
 # end
 
 """
-    terminate(comp::AbstractSubSystem)
+    terminate!(comp::AbstractSubSystem)
 
-Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate(comp::AbstractComponent)`](@ref)
+Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate!(comp::AbstractComponent)`](@ref)
 """
-terminate(comp::AbstractSubSystem) = foreach(terminate, comp.components)
+terminate!(comp::AbstractSubSystem) = foreach(terminate!, comp.components)
 

@@ -20,7 +20,7 @@ model[:ds => :writer] = Indices(1:3 => 1:3)
 display(signalflow(model))
 
 # Simulate the model 
-simulate(model)
+simulate!(model)
 
 # Display model signal flow before breaking algebraic loop
 display(signalflow(model))

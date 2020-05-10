@@ -39,9 +39,9 @@ where ``X = [x_{1}, x_{2}]``, ``F(X) = [f(x_{1}), f(x_{2})]``,
 and ``f`` is the Lorenz dynamics given by 
 ```math
 \begin{array}{l}
-    \dot{x}_1 = \gamma (\sigma (x_2 - x_1)) \\[0.25cm]
-    \dot{x}_2 = \gamma (x_1 (\rho - x_3) - x_2) \\[0.25cm]
-    \dot{x}_3 = \gamma (x_1 x_2 - \beta x_3) 
+    \dot{x}_1 = \sigma (x_2 - x_1) \\[0.25cm]
+    \dot{x}_2 = x_1 (\rho - x_3) - x_2 \\[0.25cm]
+    \dot{x}_3 = x_1 x_2 - \beta x_3
 \end{array}
 ```
 
@@ -52,16 +52,16 @@ using Jusdl
 # Construct the model 
 ε = 10.
 model = Model(clock=Clock(0., 0.01, 100.)) 
-addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
-addnode(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
-addnode(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
-addnode(model,  Writer(Inport(6)), label=:writer)
-addbranch(model, :ds1 => :coupler, 1:3 => 1:3)
-addbranch(model, :ds2 => :coupler, 1:3 => 4:6)
-addbranch(model, :coupler => :ds1, 1:3 => 1:3)
-addbranch(model, :coupler => :ds2, 4:6 => 1:3)
-addbranch(model, :ds1 => :writer, 1:3 => 1:3)
-addbranch(model, :ds2 => :writer, 1:3 => 4:6)
+addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
+addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
+addnode!(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
+addnode!(model,  Writer(Inport(6)), label=:writer)
+addbranch!(model, :ds1 => :coupler, 1:3 => 1:3)
+addbranch!(model, :ds2 => :coupler, 1:3 => 4:6)
+addbranch!(model, :coupler => :ds1, 1:3 => 1:3)
+addbranch!(model, :coupler => :ds2, 4:6 => 1:3)
+addbranch!(model, :ds1 => :writer, 1:3 => 1:3)
+addbranch!(model, :ds2 => :writer, 1:3 => 4:6)
 nothing # hide 
 ```
 To construct the model, we added `ds1` and `ds2` each of which has input ports of length 3 and output port of length 3. To couple them together, we constructed a `coupler` which has input port of length 6 and output port of length 6. The output port of `ds1` is connected to the first 3 pins of `coupler` input port,  and the output of `ds2` is connected to last 3 pins of `coupler` input port. Then, the first 3 pins of `coupler` output is connected to the input port of `ds1` and last 3 pins of `coupler` output is connected to the input port of `ds2`. The block diagram of the model is given below.
@@ -78,10 +78,10 @@ It also worths pointing out that the model has two algebraic loops. The first lo
 
 The model is ready for simulation. The code block below simulates the model and plots the simulation data.
 ```@example coupled_system
-using Plots; pyplot()
+using Plots
 
 # Simulate the model 
-simulate(model, withbar=false)
+simulate!(model, withbar=false)
 
 # Read simulation data 
 t, x = read(getnode(model, :writer).component)

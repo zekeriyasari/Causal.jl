@@ -34,28 +34,28 @@ t0, dt, tf = 0, 1 / 64, 1.
 model = Model(clock=Clock(t0, dt, tf))
 
 # Add nodes to the model
-addnode(model, RampGenerator(), label=:gen)
-addnode(model, Adder((+,-)), label=:adder)
-addnode(model, Gain(), label=:gain)
-addnode(model, Writer(), label=:writerout)
-addnode(model, Writer(), label=:writerin)
+addnode!(model, RampGenerator(), label=:gen)
+addnode!(model, Adder((+,-)), label=:adder)
+addnode!(model, Gain(), label=:gain)
+addnode!(model, Writer(), label=:writerout)
+addnode!(model, Writer(), label=:writerin)
 
 # Add branches to the model 
-addbranch(model, :gen => :adder, 1 => 1)
-addbranch(model, :adder => :gain, 1 => 1)
-addbranch(model, :gain => :adder, 1 => 2)
-addbranch(model, :gen => :writerin, 1 => 1)
-addbranch(model, :gain => :writerout, 1 => 1)
+addbranch!(model, :gen => :adder, 1 => 1)
+addbranch!(model, :adder => :gain, 1 => 1)
+addbranch!(model, :gain => :adder, 1 => 2)
+addbranch!(model, :gen => :writerin, 1 => 1)
+addbranch!(model, :gain => :writerout, 1 => 1)
 
 # Simulate the model 
-sim = simulate(model, withbar=false)
+sim = simulate!(model, withbar=false)
 
 # Read the simulation data and plot 
-using Plots; pyplot()
+using Plots
 t, y = read(getnode(model, :writerout).component)
 t, r = read(getnode(model, :writerin).component)
-plot(t, r, label="r(t)", marker=(:circle, 1)) 
-plot!(t, y, label="y(t)", marker=(:circle, 1)) 
+plot(t, r, label="r(t)", marker=(:circle, 3)) 
+plot!(t, y, label="y(t)", marker=(:circle, 3)) 
 savefig("breaking_algebraic_loops_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_plot1.svg)
@@ -78,26 +78,26 @@ ti, dt, tf = 0, 1 / 64, 1.
 model = Model(clock=Clock(ti, dt, tf))
 
 # Adding nodes to model 
-addnode(model, RampGenerator(), label=:gen) 
-addnode(model, Adder((+, -)), label=:adder) 
-addnode(model, Gain(), label=:gain) 
-addnode(model, Memory(dt, t0=tf, dt=dt, initial=zeros(1)), label=:mem) 
-addnode(model, Writer(Inport(2)), label=:writer)
-addbranch(model, :gen => :adder, 1 => 1) 
-addbranch(model, :adder => :gain, 1 => 1) 
-addbranch(model, :gain => :mem, 1 => 1) 
-addbranch(model, :mem => :adder, 1 => 2) 
-addbranch(model, :gen => :writer, 1 => 1) 
-addbranch(model, :gain => :writer, 1 => 2) 
+addnode!(model, RampGenerator(), label=:gen) 
+addnode!(model, Adder((+, -)), label=:adder) 
+addnode!(model, Gain(), label=:gain) 
+addnode!(model, Memory(dt, t0=tf, dt=dt, initial=zeros(1)), label=:mem) 
+addnode!(model, Writer(Inport(2)), label=:writer)
+addbranch!(model, :gen => :adder, 1 => 1) 
+addbranch!(model, :adder => :gain, 1 => 1) 
+addbranch!(model, :gain => :mem, 1 => 1) 
+addbranch!(model, :mem => :adder, 1 => 2) 
+addbranch!(model, :gen => :writer, 1 => 1) 
+addbranch!(model, :gain => :writer, 1 => 2) 
 
 # Simulate the model 
-sim = simulate(model, withbar=false)
+sim = simulate!(model, withbar=false)
 
 # Plot the simulation data
-using Plots; pyplot() 
+using Plots
 t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))
+plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
+plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_plot1.svg)
@@ -116,26 +116,26 @@ ti, dt, tf = 0, 1 / 64, 1.
 model = Model(clock=Clock(ti, dt, tf))
 
 # Adding nodes to model 
-addnode(model, RampGenerator(), label=:gen) 
-addnode(model, Adder((+, -)), label=:adder) 
-addnode(model, Gain(), label=:gain) 
-addnode(model, Memory(dt, t0=tf, dt=dt, initial=rand(1)), label=:mem) 
-addnode(model, Writer(Inport(2)), label=:writer)
-addbranch(model, :gen => :adder, 1 => 1) 
-addbranch(model, :adder => :gain, 1 => 1) 
-addbranch(model, :gain => :mem, 1 => 1) 
-addbranch(model, :mem => :adder, 1 => 2) 
-addbranch(model, :gen => :writer, 1 => 1) 
-addbranch(model, :gain => :writer, 1 => 2) 
+addnode!(model, RampGenerator(), label=:gen) 
+addnode!(model, Adder((+, -)), label=:adder) 
+addnode!(model, Gain(), label=:gain) 
+addnode!(model, Memory(dt, t0=tf, dt=dt, initial=rand(1)), label=:mem) 
+addnode!(model, Writer(Inport(2)), label=:writer)
+addbranch!(model, :gen => :adder, 1 => 1) 
+addbranch!(model, :adder => :gain, 1 => 1) 
+addbranch!(model, :gain => :mem, 1 => 1) 
+addbranch!(model, :mem => :adder, 1 => 2) 
+addbranch!(model, :gen => :writer, 1 => 1) 
+addbranch!(model, :gain => :writer, 1 => 2) 
 
 # Simulate the model 
-sim = simulate(model)
+sim = simulate!(model)
 
 # Plot the results 
-using Plots; pyplot() 
+using Plots
 t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 1))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 1))
+plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
+plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_incorrect_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_incorrect_plot1.svg)

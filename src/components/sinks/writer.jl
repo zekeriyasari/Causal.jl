@@ -24,7 +24,7 @@ mutable struct Writer{IB, DB, TB, PL, TR, HS, CB, FL} <: AbstractSink
         timebuf = Buffer(buflen)
         databuf = length(input) == 1 ? Buffer(T, buflen) :  Buffer(T, length(input), buflen)
         id = uuid4() 
-        callbacks = fasten(plugin, write!, timebuf, databuf, callbacks, id)
+        callbacks = fasten!(plugin, write!, timebuf, databuf, callbacks, id)
         trigger = Inpin()
         handshake = Outpin{Bool}()
         new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
@@ -64,8 +64,8 @@ julia> w.file[string(0.)]
 10.0
 ```
 """
-write!(writer::Writer, td, xd) = fwrite(writer.file, td, xd)
-fwrite(file, td, xd) = file[string(td)] = xd
+write!(writer::Writer, td, xd) = fwrite!(writer.file, td, xd)
+fwrite!(file, td, xd) = file[string(td)] = xd
 
 """
     read(writer::Writer, flatten=false)

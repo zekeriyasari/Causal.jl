@@ -10,15 +10,15 @@ Let us continue with some examples. We will construct very simple `Model` consis
 ```@repl model_construction_ex 
 using Jusdl # hide 
 model = Model() 
-addnode(model, SinewaveGenerator(), label=:gen)
-addnode(model, Writer(Inport()), label=:writer)
-addbranch(model, :gen => :writer, 1 => 1)
+addnode!(model, SinewaveGenerator(), label=:gen)
+addnode!(model, Writer(Inport()), label=:writer)
+addbranch!(model, :gen => :writer, 1 => 1)
 ```
 
 ## Simulation of Models 
 
 A `Model` to to be simulated consists of components connected to each other an a time reference.
-```@repl model_construction_ex_2
+```@repl model_construction_ex
 model.nodes         # Model components 
 model.branches      # Model components 
 model.clock         # Model time reference
@@ -28,21 +28,21 @@ The time reference is used to sample the continuous time signals flowing through
 ## Simulation Stages 
 
 ### Inspection
-The inspection stage is the first stage of the simulation process. In this stag,e the model is first inspected in terms of whether it is ready for simulation. This inspection is carried out to see whether the model has some inconsistencies such as unterminated busses or presence of algebraic loops. If the model has unterminated busses, the data that is supposed to flow those unterminated busses cannot flow through those busses and the simulation gets stuck. An algebraic is the subset of model components whose output depends directly on their inputs. In such a case, none of the components can produce outputs to break the loop which leads again the obstruction of simulation. Thus, to continue the simulation, the model must not contain any of those inconsistencies. The model inspection is done with [`inspect`](@ref) function.
+The inspection stage is the first stage of the simulation process. In this stag,e the model is first inspected in terms of whether it is ready for simulation. This inspection is carried out to see whether the model has some inconsistencies such as unterminated busses or presence of algebraic loops. If the model has unterminated busses, the data that is supposed to flow those unterminated busses cannot flow through those busses and the simulation gets stuck. An algebraic is the subset of model components whose output depends directly on their inputs. In such a case, none of the components can produce outputs to break the loop which leads again the obstruction of simulation. Thus, to continue the simulation, the model must not contain any of those inconsistencies. The model inspection is done with [`inspect!`](@ref) function.
 
 ### Initialization 
 
-If the inspection stage results positive, the initialization stage comes next. In this stage, the tasks required for the busses of the model to be both readable and writable are activated and bound the busses. To this end, a reader and writer task are activated and bound to both sides of each bus. To initialize the model, [`initialize`](@ref) function is used. 
+If the inspection stage results positive, the initialization stage comes next. In this stage, the tasks required for the busses of the model to be both readable and writable are activated and bound the busses. To this end, a reader and writer task are activated and bound to both sides of each bus. To initialize the model, [`initialize!`](@ref) function is used. 
 
 When the model is initialized, the pairs of components and component tasks are recorded into the task manager of the model. During the rest of the simulation, task manager keeps track of the tasks. Any exception or error that is thrown during the run stage of the simulation can be observed by means of the task manager of the model.
 
 ### Run 
-The run stage follows the initialization stage. The tasks activated in the initialization stage wait for the components to be triggered by the model time reference. During the run stage, time reference, that is the model clock, triggers the components by writing pulses that are generated in the intervals of the sampling period of the simulation to their trigger links. The job defined in a task is to read input dat a from the its input bus, to calculate its next state, if any, and output, and write its calculated output to its output bus. The run stage, starts at the initial time of the time reference and continues until the end time of the time reference. [`run`](@ref) function is used to run the models, 
+The run stage follows the initialization stage. The tasks activated in the initialization stage wait for the components to be triggered by the model time reference. During the run stage, time reference, that is the model clock, triggers the components by writing pulses that are generated in the intervals of the sampling period of the simulation to their trigger links. The job defined in a task is to read input dat a from the its input bus, to calculate its next state, if any, and output, and write its calculated output to its output bus. The run stage, starts at the initial time of the time reference and continues until the end time of the time reference. [`run!`](@ref) function is used to run the models, 
 
 ### Termination
-After the run stage, the tasks opened in the initialization stage are closed and the simulation is terminated. [`terminate`]@ref) function is used to terminate the model 
+After the run stage, the tasks opened in the initialization stage are closed and the simulation is terminated. [`terminate!`](@ref) function is used to terminate the model 
 
-`Model`s are constructed to [`simulate`](@ref) them. During the simulation, components of the `Model` process data and the data is transferred between the components via connection. Thus, to simulate the `Model`s, the components **must be connected**. In our model, the `writer` is used to record the output of `gen`. Thus, the flows from `gen` to `writer`. Thus, we connect `gen` output to `writer` input. 
+`Model`s are constructed to [`simulate!`](@ref) them. During the simulation, components of the `Model` process data and the data is transferred between the components via connection. Thus, to simulate the `Model`s, the components **must be connected**. In our model, the `writer` is used to record the output of `gen`. Thus, the flows from `gen` to `writer`. Thus, we connect `gen` output to `writer` input. 
 
 !!! note 
     During the `Model` construction, **the order of addition of nodes to the model is not important**. The nodes can be given in any order.

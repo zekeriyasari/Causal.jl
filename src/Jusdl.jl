@@ -17,7 +17,6 @@ using Dates
 using NLsolve
 using Interpolations
 using LibGit2
-using ForwardDiff
 import GraphPlot.gplot
 import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open,  istaskdone, istaskfailed, 

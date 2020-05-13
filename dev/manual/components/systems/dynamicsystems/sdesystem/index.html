@@ -28,12 +28,12 @@ julia&gt; connect!(ds.handshake, hnd)
 Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; task = launch(ds)
-Task (runnable) @0x00007fea85e38010
+Task (runnable) @0x00007fb0f79a8c40
 
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (runnable) @0x00007fea85e1e230</code></pre><p>When launched, <code>ds</code> can be driven. For this, either of the syntax <code>put!(ds.trigger, t)</code> or <code>drive(ds, t)</code> can be used. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>After this command, <code>ds</code> reads its time <code>t</code> from its <code>trigger</code> link, solves its state function and computes its output. The calculated output value is written to the buffer of <code>output</code>. To signal that, the step is takes with success, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link. To further drive <code>ds</code>, this <code>handshake</code> link must be read. For this either of the syntax, <code>take!(ds.handshake)</code> or <code>approve!(ds)</code> can be used</p><pre><code class="language-julia-repl">julia&gt; hnd.link
+Task (runnable) @0x00007fb0f3c8fd00</code></pre><p>When launched, <code>ds</code> can be driven. For this, either of the syntax <code>put!(ds.trigger, t)</code> or <code>drive(ds, t)</code> can be used. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>After this command, <code>ds</code> reads its time <code>t</code> from its <code>trigger</code> link, solves its state function and computes its output. The calculated output value is written to the buffer of <code>output</code>. To signal that, the step is takes with success, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link. To further drive <code>ds</code>, this <code>handshake</code> link must be read. For this either of the syntax, <code>take!(ds.handshake)</code> or <code>approve!(ds)</code> can be used</p><pre><code class="language-julia-repl">julia&gt; hnd.link
 Link(state:open, eltype:Bool, isreadable:true, iswritable:false)
 
 julia&gt; take!(hnd)
@@ -42,16 +42,16 @@ true</code></pre><p>At this point, we can further drive <code>ds</code>. </p><pr
            take!(hnd)
        end</code></pre><p>Note that during the evolution, the output of <code>ds</code> is written into the buffers of <code>output</code> bus.</p><pre><code class="language-julia-repl">julia&gt; iport[1].link.buffer
 64-element Buffer{Cyclic,Float64,1}:
- 2.019150394917182e-8
- 7.965935673707594e-7
- 4.2428151895861226e-5
- 0.00012416940126332875
- 0.0001358266778048292
- 0.0006896273322985914
- 0.030972060216872453
- 0.02154679697297124
- 0.07774873190152382
- 0.32644097837908875
+ 1.383027924469383e-6
+ 3.7348030113048084e-5
+ 2.2075237874384406e-5
+ 3.779981423077315e-5
+ 9.372575348075526e-5
+ 0.00043578661337510555
+ 0.010811877219625248
+ 0.021594671268422832
+ 0.049258079164386195
+ 0.14477996935132498
  ⋮
  0.0
  0.0
@@ -66,10 +66,10 @@ true</code></pre><p>At this point, we can further drive <code>ds</code>. </p><pr
 julia&gt; put!(ds.output, [NaN])
 1-element Array{Float64,1}:
  NaN</code></pre><p>Note that the <code>task</code> is terminated without a hassle. </p><pre><code class="language-julia-repl">julia&gt; task
-Task (done) @0x00007fea85e38010
+Task (done) @0x00007fb0f79a8c40
 
 julia&gt; task2
-Task (done) @0x00007fea85e1e230</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.SDESystem" href="#Jusdl.SDESystem"><code>Jusdl.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
+Task (done) @0x00007fb0f3c8fd00</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.SDESystem" href="#Jusdl.SDESystem"><code>Jusdl.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
     alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())</code></pre><p>Constructs a <code>SDESystem</code> with <code>input</code> and <code>output</code>. <code>statefunc</code> is the state function and <code>outputfunc</code> is the output function of <code>SDESystem</code>. <code>state</code> is the initial state and <code>t</code> is the time. <code>modelargs</code> and <code>modelkwargs</code> are passed into <code>ODEProblem</code> and <code>solverargs</code> and <code>solverkwargs</code> are passed into <code>solve</code> method of <code>DifferentialEquations</code>. <code>alg</code> is the algorithm to solve the differential equation of the system.</p><p>The <code>SDESystem</code> is represented by the state equation</p><div>\[    \begin{array}{l}
         dx = f(x, u, t) dt + h(x, u, t)dW \\
         y = g(x, u, t)
@@ -88,4 +88,4 @@ julia&gt; sfuncdiffusion(dx, x, u, t) = (dx[1] = -x[1]);
 julia&gt; ofuncsde(x, u, t) = x;
 
 julia&gt; SDESystem((sfuncdrift,sfuncdiffusion), ofuncsde, [1.], 0., nothing, Outport())
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))</code></pre><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>See <a href="https://docs.juliadiffeq.org/">DifferentialEquations</a> for more information about <code>modelargs</code>, <code>modelkwargs</code>, <code>solverargs</code> <code>solverkwargs</code> and <code>alg</code>.</p></div></div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/262fd7421bfca5fdb453238ebfde0bb38131a1cf/src/components/systems/dynamicalsystems/sdesystems.jl#L4-L50">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 13 May 2020 01:01">Wednesday 13 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+SDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))</code></pre><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>See <a href="https://docs.juliadiffeq.org/">DifferentialEquations</a> for more information about <code>modelargs</code>, <code>modelkwargs</code>, <code>solverargs</code> <code>solverkwargs</code> and <code>alg</code>.</p></div></div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/76fe9468a75a3fc5c6640554e3d32ab87de897ba/src/components/systems/dynamicalsystems/sdesystems.jl#L4-L50">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 13 May 2020 01:13">Wednesday 13 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

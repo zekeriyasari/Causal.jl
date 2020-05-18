@@ -269,7 +269,7 @@ struct Differentiator{OF, IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
     kd::KD
     t::T
     u::U
-    function Differentiator(kd=1; callbacks=nothing, name=Symbol())
+    function Differentiator(;kd=1, callbacks=nothing, name=Symbol())
         t = zeros(1)
         u = zeros(1)
         input = Inport() 

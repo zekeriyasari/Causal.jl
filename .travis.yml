@@ -31,7 +31,7 @@ jobs:
   include:
     - stage: Documentation
       julia: 1.4
-      script: travis_wait 20 julia --project=docs -e '
+      script: travis_wait 30 julia --project=docs -e '
           using Pkg;
           Pkg.develop(PackageSpec(path=pwd()));
           Pkg.instantiate();

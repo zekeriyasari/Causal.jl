@@ -62,6 +62,40 @@ mutable struct ODESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESy
     end
 end
 
+
+@doc raw"""
+    Integrator(state=zeros(0), t=0., modelargs=(), solverargs=(); 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+
+Constructs an integrator whose input output relation is given by 
+```math 
+u(t) = ki * \int_{0}^{t} u(\tau) d\tau
+```
+where ``u(t)`` is the input, ``y(t)`` is the output and ``ki`` is the integration constant.
+"""
+mutable struct Integrator{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractODESystem
+    @generic_dynamic_system_fields
+    ki::Float64
+    function Integrator(state=zeros(1), t=0., modelargs=(), solverargs=(); ki=1.,
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
+        name=Symbol())
+        statefunc(dx, x, u, t) = (dx[1] = ki * u[1](t))
+        outputfunc(x, u, t) = x
+        input = Inport() 
+        output = Outport()
+        trigger, handshake, integrator = init_dynamic_system(
+                ODEProblem, statefunc, state, t, input, modelargs, solverargs; 
+                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
+            )
+        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
+            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
+            integrator, input, output, trigger, handshake, callbacks, name, uuid4(), ki)
+    end
+end
+
+
+
 ##### LinearSystem
 @doc raw"""
     LinearSystem(input, output, modelargs=(), solverargs=(); 
@@ -498,3 +532,5 @@ show(io::IO, ds::RosslerSystem) = print(io,
 show(io::IO, ds::VanderpolSystem) = print(io, 
     "VanderpolSystem(mu:$(ds.mu), gamma:$(ds.gamma), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::Integrator) = print(io, 
+    "Integrator(ki:$(ds.ki), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

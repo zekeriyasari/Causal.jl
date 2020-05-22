@@ -255,6 +255,38 @@ struct Coupler{OF, IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
     end
 end
 
+@doc raw"""
+    Differentiator(kd=1; callbacks=nothing, name=Symbol())
+
+Consructs a `Differentiator` whose input output relation is of the form 
+```math 
+    y(t) = k_d \dot{u}(t)
+```
+where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
+"""
+struct Differentiator{OF, IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
+    @generic_static_system_fields
+    kd::KD
+    t::T
+    u::U
+    function Differentiator(;kd=1, callbacks=nothing, name=Symbol())
+        t = zeros(1)
+        u = zeros(1)
+        input = Inport() 
+        output = Outport()
+        trigger = Inpin() 
+        handshake = Outpin{Bool}()
+        function outputfunc(uu, tt)
+            out = tt ≤ t[1] ? u[1] : (uu[1] - u[1]) / (tt - t[1])
+            t .= tt
+            u .= uu
+            return kd * out 
+        end
+        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), typeof(kd), typeof(t), typeof(u)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), kd, t, u)
+    end
+end
+
+
 # ##### Pretty-printing
 show(io::IO, ss::StaticSystem) = 
     print(io, "StaticSystem(outputfunc:$(ss.outputfunc), input:$(ss.input), output:$(ss.output))")
@@ -265,3 +297,4 @@ show(io::IO, ss::Terminator) = print(io, "Terminator(input:$(ss.input), output:$
 show(io::IO, ss::Memory) = 
     print(io, "Memory(delay:$(ss.delay), numtaps:$(length(ss.timebuf)), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Coupler) = print(io, "Coupler(conmat:$(ss.conmat), cplmat:$(ss.cplmat))")
+show(io::IO, ss::Differentiator) = print(io, "Differentiator(kd:$(ss.kd))")

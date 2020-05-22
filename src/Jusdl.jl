@@ -58,7 +58,7 @@ export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
 
 include("components/sources/generators.jl")
 export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 
-    ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator
+    ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator, Differentiator, Integrator
 
 include("components/systems/staticsystems/staticsystems.jl")
 export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler

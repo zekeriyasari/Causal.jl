@@ -1,38 +1,38 @@
 # This file contains the static systems of Jusdl.
 
-@doc raw"""
-    StaticSystem(input, output, outputfunc)
+# @doc raw"""
+#     StaticSystem(input, output, outputfunc)
 
-Construts a `StaticSystem` with input `input`, output `output` and output function `outputfunc`. `outputfunc` is a two-argument function of the form
-```math
-    y = g(u, t)
-```
-where `g` is `outputfunc`, `t` is the time, `u` is the input at time `t` and `y` is the output at time `t`.  `input` and `output` may be `nothing` depending on relation defined in `outputfunc`.
+# Construts a `StaticSystem` with input `input`, output `output` and output function `outputfunc`. `outputfunc` is a two-argument function of the form
+# ```math
+#     y = g(u, t)
+# ```
+# where `g` is `outputfunc`, `t` is the time, `u` is the input at time `t` and `y` is the output at time `t`.  `input` and `output` may be `nothing` depending on relation defined in `outputfunc`.
 
-# Example 
-```jldoctest
-julia> g(u, t) = [u[1] + u[2], sin(u[2]), cos([1])]  # The system has 2 inputs and 3 outputs.
-g (generic function with 1 method)
+# # Example 
+# ```jldoctest
+# julia> g(u, t) = [u[1] + u[2], sin(u[2]), cos([1])]  # The system has 2 inputs and 3 outputs.
+# g (generic function with 1 method)
 
-julia> ss = StaticSystem(g, Inport(2), Outport(3))
-StaticSystem(outputfunc:g, input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:3, eltype:Outpin{Float64}))
+# julia> ss = StaticSystem(g, Inport(2), Outport(3))
+# StaticSystem(outputfunc:g, input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:3, eltype:Outpin{Float64}))
 
-julia> g2(u, t) = t  # The system does not have any input.
-g2 (generic function with 1 method)
+# julia> g2(u, t) = t  # The system does not have any input.
+# g2 (generic function with 1 method)
 
-julia> ss2 = StaticSystem(g2, nothing, Outport())
-StaticSystem(outputfunc:g2, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
-```
-"""
-struct StaticSystem{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
-    @generic_static_system_fields
-    function StaticSystem(outputfunc, input, output; callbacks=nothing, name=Symbol())
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
-            typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4())
-    end
-end
+# julia> ss2 = StaticSystem(g2, nothing, Outport())
+# StaticSystem(outputfunc:g2, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
+# ```
+# """
+# struct StaticSystem{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
+#     @generic_static_system_fields
+#     function StaticSystem(outputfunc, input, output; callbacks=nothing, name=Symbol())
+#         trigger = Inpin()
+#         handshake = Outpin{Bool}()
+#         new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
+#             typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4())
+#     end
+# end
 
 
 @doc raw"""
@@ -52,21 +52,23 @@ julia> adder.outputfunc([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-struct Adder{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
+struct Adder{IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     signs::S
     function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=(+,+); 
         callbacks=nothing, name=Symbol())
-        outputfunc(u, t) = sum([sign(val) for (sign, val) in zip(signs, u)])
         input = Inport(length(signs))
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(signs)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), signs)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(signs)}(input, output, trigger, handshake, callbacks, name, uuid4(), signs)
     end
 end
 
+function outputfunc(ss::Adder, u, t)
+    sum([sign(val) for (sign, val) in zip(ss.signs, u)])
+end 
 
 @doc raw"""
     Multiplier(ops=(*,*))
@@ -85,26 +87,29 @@ julia> mlt.outputfunc([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-struct Multiplier{OF, IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
+struct Multiplier{IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
     @generic_static_system_fields
     ops::S
     function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=(*,*);
         callbacks=nothing, name=Symbol())
-        function outputfunc(u, t)
-            val = 1
-            for i = 1 : length(ops)
-                val = ops[i](val, u[i])
-            end
-            val
-        end
         input = Inport(length(ops))
         output = Outport()
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(ops)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), ops)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(ops)}(input, output, trigger, handshake, callbacks, name, uuid4(), ops)
     end
 end
+
+function outputfunc(ss::Multiplier, u, t)
+    ops = ss.ops
+    val = 1
+    for i = 1 : length(ops)
+        val = ops[i](val, u[i])
+    end
+    val
+end
+
 
 
 @doc raw"""
@@ -126,19 +131,22 @@ julia> sfunc.outputfunc([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-struct Gain{OF, IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
+struct Gain{IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
     @generic_static_system_fields
     gain::G
     function Gain(input::Inport{<:Inpin{T}}=Inport(); gain=1., callbacks=nothing, name=Symbol()) where T 
-        outputfunc(u, t) =  gain * u
         out = gain * zeros(length(input))
         output = Outport{T}(length(out))
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(gain)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), gain)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+        typeof(gain)}(input, output, trigger, handshake, callbacks, name, uuid4(), gain)
     end
 end
+
+function outputfunc(ss::Gain, u, t) 
+    ss.gain * u
+end 
 
 
 @doc raw"""
@@ -146,15 +154,14 @@ end
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-struct Terminator{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
+struct Terminator{IB, OB, TR, HS, CB} <: AbstractStaticSystem
     @generic_static_system_fields
     function Terminator(input::Inport=Inport(); callbacks=nothing, name=Symbol())
-        outputfunc = nothing
         output = nothing
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
-            typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4()) 
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
+            typeof(callbacks)}(input, output, trigger, handshake, callbacks, name, uuid4()) 
     end
 end 
 
@@ -179,7 +186,7 @@ julia> Memory(0.1; numtaps=5, dt=1.)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
+struct Memory{IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
     @generic_static_system_fields
     delay::D
     timebuf::TB
@@ -189,38 +196,32 @@ struct Memory{OF, IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
         numinput = length(initial)
         databuf = numinput == 1 ? Buffer(T, numtaps) : Buffer(T, numinput, numtaps)
         timebuf = Buffer(T, numtaps)
-        # trange = range(t0, length=numtaps, step=dt)
-        # foreach(t -> write!(timebuf, t), trange)
-        # foreach(t -> write!(databuf, initial), trange)
-        function outputfunc(u, t)
-            if t <= delay
-                return initial
-            else
-                # if !isfull(timebuf)
-                #     return initial
-                # else 
-                    tt = content(timebuf, flip=false)
-                    uu = content(databuf, flip=false)
-                    if length(tt) == 1
-                        return uu[1]
-                    end
-                    if ndims(databuf) == 1
-                        itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
-                        return itp(t - delay)
-                    else
-                        itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
-                        return map(f -> f(t - delay), itp)
-                    end
-                # end
-            end
-        end
         input = Inport{T}(numinput)
         output = Outport{T}(numinput)
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(delay), typeof(timebuf), typeof(databuf)}(outputfunc, input, output, trigger, 
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(delay), typeof(timebuf), typeof(databuf)}(input, output, trigger, 
             handshake, callbacks, name, uuid4(), delay, timebuf, databuf)
+    end
+end
+
+function outputfunc(ss::Memory, u, t)
+    if t <= ss.delay
+        return ss.initial
+    else
+        tt = content(ss.timebuf, flip=false)
+        uu = content(ss.databuf, flip=false)
+        if length(tt) == 1
+            return uu[1]
+        end
+        if ndims(databuf) == 1
+            itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
+            return itp(t - ss.delay)
+        else
+            itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
+            return map(f -> f(t - ss.delay), itp)
+        end
     end
 end
 
@@ -233,7 +234,7 @@ Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and 
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-struct Coupler{OF, IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
+struct Coupler{IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
     @generic_static_system_fields
     conmat::C1
     cplmat::C2
@@ -242,18 +243,17 @@ struct Coupler{OF, IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
         d = size(cplmat, 1)
         input = Inport(n * d)
         output = Outport(n * d)
-        if eltype(conmat) <: Real 
-            outputfunc = (u, t) -> kron(conmat, cplmat) * u     # Time invariant coupling
-        else
-            outputfunc = (u, t) -> kron(map(f->f(t), conmat), cplmat) * u  # Time varying coupling 
-        end
         trigger = Inpin()
         handshake = Outpin{Bool}()
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(conmat), typeof(cplmat)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), conmat, 
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
+            typeof(conmat), typeof(cplmat)}(input, output, trigger, handshake, callbacks, name, uuid4(), conmat, 
             cplmat)
     end
 end
+
+function outputfunc(ss::Coupler,  u, t)
+    kron(ss.conmat, ss.cplmat) * u     # Time invariant coupling
+end 
 
 @doc raw"""
     Differentiator(kd=1; callbacks=nothing, name=Symbol())
@@ -264,7 +264,7 @@ Consructs a `Differentiator` whose input output relation is of the form
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
 """
-struct Differentiator{OF, IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
+struct Differentiator{IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
     @generic_static_system_fields
     kd::KD
     t::T
@@ -276,20 +276,17 @@ struct Differentiator{OF, IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
         output = Outport()
         trigger = Inpin() 
         handshake = Outpin{Bool}()
-        function outputfunc(uu, tt)
-            out = tt ≤ t[1] ? u[1] : (uu[1] - u[1]) / (tt - t[1])
-            t .= tt
-            u .= uu
-            return kd * out 
-        end
-        new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), typeof(kd), typeof(t), typeof(u)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4(), kd, t, u)
+        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), typeof(kd), typeof(t), typeof(u)}(input, output, trigger, handshake, callbacks, name, uuid4(), kd, t, u)
     end
 end
-
+function outputfunc(ss::Differentiator, uu, tt)
+    out = tt ≤ ss.t[1] ? ss.u[1] : (uu[1] - ss.u[1]) / (tt - ss.t[1])
+    t .= tt
+    u .= uu
+    return ss.kd * out 
+end
 
 # ##### Pretty-printing
-show(io::IO, ss::StaticSystem) = 
-    print(io, "StaticSystem(outputfunc:$(ss.outputfunc), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")

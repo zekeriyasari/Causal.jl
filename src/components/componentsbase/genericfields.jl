@@ -9,7 +9,7 @@
 end
 
 @def generic_source_fields begin
-    outputfunc::OF
+    # outputfunc::OF
     output::OB
     @generic_component_fields 
 end
@@ -29,7 +29,7 @@ end
 end
 
 @def generic_static_system_fields begin
-    outputfunc::OF 
+    # outputfunc::OF 
     @generic_system_fields
 end
 

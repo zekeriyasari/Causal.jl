@@ -56,61 +56,73 @@ export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, t
 include("components/sources/clock.jl")
 export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
 
+export outputfunc
+
 include("components/sources/generators.jl")
-export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 
-    ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator, Differentiator, Integrator
+export SinewaveGenerator,
+    DampedSinewaveGenerator,
+    SquarewaveGenerator,
+    TriangularwaveGenerator, 
+    ConstantGenerator, 
+    RampGenerator, 
+    StepGenerator,
+    ExponentialGenerator,
+    DampedExponentialGenerator
+
+# export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 
+#     ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator, Differentiator, Integrator
 
 include("components/systems/staticsystems/staticsystems.jl")
-export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler
+export Adder, Multiplier, Gain, Terminator, Memory, Coupler
 
-include("components/systems/dynamicalsystems/discretesystems.jl")
-export DiscreteSystem
+# include("components/systems/dynamicalsystems/discretesystems.jl")
+# export DiscreteSystem
 
-include("components/systems/dynamicalsystems/odesystems.jl")
-export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem
+# include("components/systems/dynamicalsystems/odesystems.jl")
+# export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem
 
-include("components/systems/dynamicalsystems/daesystems.jl")
-export DAESystem 
+# include("components/systems/dynamicalsystems/daesystems.jl")
+# export DAESystem 
 
-include("components/systems/dynamicalsystems/rodesystems.jl")
-export RODESystem 
+# include("components/systems/dynamicalsystems/rodesystems.jl")
+# export RODESystem 
 
-include("components/systems/dynamicalsystems/sdesystems.jl")
-export SDESystem
+# include("components/systems/dynamicalsystems/sdesystems.jl")
+# export SDESystem
 
-include("components/systems/dynamicalsystems/ddesystems.jl")
-export DDESystem
+# include("components/systems/dynamicalsystems/ddesystems.jl")
+# export DDESystem
 
-include("components/systems/subsystems/subsystem.jl")
-export SubSystem
+# include("components/systems/subsystems/subsystem.jl")
+# export SubSystem
 
-# include("components/systems/subsystems/network.jl")
-# export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
-#     deletelink, changeweight, maketimevarying
+# # include("components/systems/subsystems/network.jl")
+# # export SubSystem, Network, cgsconnectivity, clusterconnectivity, coupling, signalflow, topology, nodes, numnodes, dimnodes, 
+# #     deletelink, changeweight, maketimevarying
 
-include("components/sinks/manageplugins.jl")
-export fasten!, unfasten!
+# include("components/sinks/manageplugins.jl")
+# export fasten!, unfasten!
 
-include("components/sinks/writer.jl")
-export Writer, write!, fwrite!, fread, flatten
+# include("components/sinks/writer.jl")
+# export Writer, write!, fwrite!, fread, flatten
 
-include("components/sinks/printer.jl")
-export Printer
+# include("components/sinks/printer.jl")
+# export Printer
 
-include("components/sinks/scope.jl")
-export Scope
+# include("components/sinks/scope.jl")
+# export Scope
 
-include("models/taskmanager.jl")
-export TaskManager, checktaskmanager
+# include("models/taskmanager.jl")
+# export TaskManager, checktaskmanager
 
-include("models/simulation.jl")
-export Simulation, SimulationError, setlogger, closelogger, report
+# include("models/simulation.jl")
+# export Simulation, SimulationError, setlogger, closelogger, report
 
-include("models/model.jl")
-export Model, getloops, breakloop, inspect!, initialize!, run!, terminate!, simulate!
-export Node, Branch, addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow
+# include("models/model.jl")
+# export Model, getloops, breakloop, inspect!, initialize!, run!, terminate!, simulate!
+# export Node, Branch, addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow
 
-include("plugins/loadplugins.jl")
-export AbstractPlugin, process, add, remove, enable, disable, check
+# include("plugins/loadplugins.jl")
+# export AbstractPlugin, process, add, remove, enable, disable, check
 
 end  # module

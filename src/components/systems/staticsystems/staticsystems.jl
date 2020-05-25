@@ -1,39 +1,51 @@
 # This file contains the static systems of Jusdl.
 
-# @doc raw"""
-#     StaticSystem(input, output, outputfunc)
 
-# Construts a `StaticSystem` with input `input`, output `output` and output function `outputfunc`. `outputfunc` is a two-argument function of the form
-# ```math
-#     y = g(u, t)
-# ```
-# where `g` is `outputfunc`, `t` is the time, `u` is the input at time `t` and `y` is the output at time `t`.  `input` and `output` may be `nothing` depending on relation defined in `outputfunc`.
+macro defss(ex) 
+    nex = ex.head == :macrocall ? ex.args[end] : ex 
+    defss(nex) |> esc
+end
 
-# # Example 
-# ```jldoctest
-# julia> g(u, t) = [u[1] + u[2], sin(u[2]), cos([1])]  # The system has 2 inputs and 3 outputs.
-# g (generic function with 1 method)
+function defss(ex) 
+    head = ex.head
+    ismutable, name, args = ex.args
+    if ismutable
+        if name isa Symbol 
+            return quote 
+                Base.@kwdef mutable struct $name{TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        else 
+            return quote 
+                Base.@kwdef mutable struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        end
+    else 
+        if name isa Symbol
+            return quote 
+                Base.@kwdef struct $name{TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        else
+            return quote 
+                Base.@kwdef struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        end
+    end 
+end
 
-# julia> ss = StaticSystem(g, Inport(2), Outport(3))
-# StaticSystem(outputfunc:g, input:Inport(numpins:2, eltype:Inpin{Float64}), output:Outport(numpins:3, eltype:Outpin{Float64}))
 
-# julia> g2(u, t) = t  # The system does not have any input.
-# g2 (generic function with 1 method)
-
-# julia> ss2 = StaticSystem(g2, nothing, Outport())
-# StaticSystem(outputfunc:g2, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
-# ```
-# """
-# struct StaticSystem{OF, IB, OB, TR, HS, CB} <: AbstractStaticSystem
-#     @generic_static_system_fields
-#     function StaticSystem(outputfunc, input, output; callbacks=nothing, name=Symbol())
-#         trigger = Inpin()
-#         handshake = Outpin{Bool}()
-#         new{typeof(outputfunc), typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
-#             typeof(callbacks)}(outputfunc, input, output, trigger, handshake, callbacks, name, uuid4())
-#     end
-# end
-
+##### Define prototipical static systems.
 
 @doc raw"""
     Adder(signs=(+,+))
@@ -48,25 +60,17 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 ```jldoctest
 julia> adder = Adder((+, +, -));
 
-julia> adder.outputfunc([3, 4, 5], 0.) == 3 + 4 - 5
+julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-struct Adder{IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
-    @generic_static_system_fields
-    signs::S
-    function Adder(signs::Tuple{Vararg{Union{typeof(+), typeof(-)}}}=(+,+); 
-        callbacks=nothing, name=Symbol())
-        input = Inport(length(signs))
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(signs)}(input, output, trigger, handshake, callbacks, name, uuid4(), signs)
-    end
+@defss Base.@kwdef struct Adder{S, IP, OP}
+    signs::S = (+, +)
+    input::IP = Inport(length(signs))
+    output::OP = Outport()
 end
 
-function outputfunc(ss::Adder, u, t)
+function readout(ss::Adder, u, t)
     sum([sign(val) for (sign, val) in zip(ss.signs, u)])
 end 
 
@@ -83,25 +87,17 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 ```jldoctest
 julia> mlt = Multiplier((*, *, /));
 
-julia> mlt.outputfunc([3, 4, 5], 0.) == 3 * 4 / 5
+julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-struct Multiplier{IB, OB, TR, HS, CB, S} <: AbstractStaticSystem
-    @generic_static_system_fields
-    ops::S
-    function Multiplier(ops::Tuple{Vararg{Union{typeof(*), typeof(/)}}}=(*,*);
-        callbacks=nothing, name=Symbol())
-        input = Inport(length(ops))
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(ops)}(input, output, trigger, handshake, callbacks, name, uuid4(), ops)
-    end
+@defss Base.@kwdef struct Multiplier{S, IP, OP}
+    ops::S=(*,*)
+    input::IP = Inport(length(ops))
+    output::OP = Outport()
 end
 
-function outputfunc(ss::Multiplier, u, t)
+function readout(ss::Multiplier, u, t)
     ops = ss.ops
     val = 1
     for i = 1 : length(ops)
@@ -127,24 +123,17 @@ julia> K = [1. 2.; 3. 4.];
 
 julia> sfunc = Gain(Inport(2), gain=K);
 
-julia> sfunc.outputfunc([1., 2.], 0.) == K * [1., 2.]
+julia> sfunc.readout([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-struct Gain{IB, OB, TR, HS, CB, G} <: AbstractStaticSystem
-    @generic_static_system_fields
-    gain::G
-    function Gain(input::Inport{<:Inpin{T}}=Inport(); gain=1., callbacks=nothing, name=Symbol()) where T 
-        out = gain * zeros(length(input))
-        output = Outport{T}(length(out))
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-        typeof(gain)}(input, output, trigger, handshake, callbacks, name, uuid4(), gain)
-    end
+@defss Base.@kwdef struct Gain{G, IP, OP} 
+    gain::G = 1.
+    input::IP = Inport() 
+    output::OP = Outport(length(gain * zeros(length(input)))) 
 end
 
-function outputfunc(ss::Gain, u, t) 
+function readout(ss::Gain, u, t) 
     ss.gain * u
 end 
 
@@ -154,15 +143,9 @@ end
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-struct Terminator{IB, OB, TR, HS, CB} <: AbstractStaticSystem
-    @generic_static_system_fields
-    function Terminator(input::Inport=Inport(); callbacks=nothing, name=Symbol())
-        output = nothing
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), 
-            typeof(callbacks)}(input, output, trigger, handshake, callbacks, name, uuid4()) 
-    end
+@defss Base.@kwdef struct Terminator{IP, OP}
+    input::IP = Inport() 
+    output::OP = nothing
 end 
 
 
@@ -186,27 +169,17 @@ julia> Memory(0.1; numtaps=5, dt=1.)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-struct Memory{IB, OB, TR, HS, CB, D, TB, DB} <: AbstractMemory
-    @generic_static_system_fields
-    delay::D
-    timebuf::TB
-    databuf::DB 
-    function Memory(delay=1.; initial::AbstractVector{T}=zeros(1), numtaps::Int=5, 
-        t0=0., dt=0.01, callbacks=nothing, name=Symbol()) where T 
-        numinput = length(initial)
-        databuf = numinput == 1 ? Buffer(T, numtaps) : Buffer(T, numinput, numtaps)
-        timebuf = Buffer(T, numtaps)
-        input = Inport{T}(numinput)
-        output = Outport{T}(numinput)
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(delay), typeof(timebuf), typeof(databuf)}(input, output, trigger, 
-            handshake, callbacks, name, uuid4(), delay, timebuf, databuf)
-    end
-end
+@defss Base.@kwdef struct Memory{D, IN, TB, DB, IP, OP} 
+    delay::D = 1.
+    initial::IN = zeros(1)
+    numtaps::Int = 5
+    timebuf::TB = Buffer(numtaps)
+    databuf::DB = length(initial) == 1 ? Buffer(numtaps) : Buffer(length(initial), numtaps)
+    input::IP = Inport(length(initial))
+    output::OP = Outport(length(initial))
+end 
 
-function outputfunc(ss::Memory, u, t)
+function readout(ss::Memory, u, t)
     if t <= ss.delay
         return ss.initial
     else
@@ -215,7 +188,7 @@ function outputfunc(ss::Memory, u, t)
         if length(tt) == 1
             return uu[1]
         end
-        if ndims(databuf) == 1
+        if ndims(ss.databuf) == 1
             itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
             return itp(t - ss.delay)
         else
@@ -234,24 +207,14 @@ Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and 
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-struct Coupler{IB, OB, TR, HS, CB, C1, C2} <: AbstractStaticSystem
-    @generic_static_system_fields
-    conmat::C1
-    cplmat::C2
-    function Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix; callbacks=nothing, name=Symbol())
-        n = size(conmat, 1)
-        d = size(cplmat, 1)
-        input = Inport(n * d)
-        output = Outport(n * d)
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), 
-            typeof(conmat), typeof(cplmat)}(input, output, trigger, handshake, callbacks, name, uuid4(), conmat, 
-            cplmat)
-    end
+@defss Base.@kwdef struct Coupler{C1, C2, IP, OP} 
+    conmat::C1 = [-1. 1; 1. 1.]
+    cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
+    input::IP = Inport(size(C1, 1) * size(cplmat, 1))
+    output::OP = Outport(size(C1, 1) * size(cplmat, 1))
 end
 
-function outputfunc(ss::Coupler,  u, t)
+function readout(ss::Coupler,  u, t)
     kron(ss.conmat, ss.cplmat) * u     # Time invariant coupling
 end 
 
@@ -264,29 +227,22 @@ Consructs a `Differentiator` whose input output relation is of the form
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
 """
-struct Differentiator{IB, OB, TR, HS, CB, KD, T, U} <: AbstractStaticSystem
-    @generic_static_system_fields
-    kd::KD
-    t::T
-    u::U
-    function Differentiator(;kd=1, callbacks=nothing, name=Symbol())
-        t = zeros(1)
-        u = zeros(1)
-        input = Inport() 
-        output = Outport()
-        trigger = Inpin() 
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks), typeof(kd), typeof(t), typeof(u)}(input, output, trigger, handshake, callbacks, name, uuid4(), kd, t, u)
-    end
-end
-function outputfunc(ss::Differentiator, uu, tt)
-    out = tt ≤ ss.t[1] ? ss.u[1] : (uu[1] - ss.u[1]) / (tt - ss.t[1])
-    t .= tt
-    u .= uu
-    return ss.kd * out 
+@defss Base.@kwdef struct Differentiator{KD, T, U, IP, OP} 
+    kd::KD = 1. 
+    t::T = 0.
+    u::U = 0.
+    input::IP = Inport()
+    output::OP = Outport()
 end
 
-# ##### Pretty-printing
+function readout(ss::Differentiator, uu, tt)
+    out = tt ≤ ss.t[1] ? ss.u[1] : (uu[1] - ss.u[1]) / (tt - ss.t[1])
+    ss.t = tt
+    ss.u = uu
+    ss.kd * out 
+end
+
+##### Pretty-printing
 show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")

@@ -1,7 +1,51 @@
 # This file contains the function generator tools to drive other tools of DsSimulator.
 
+macro defgen(ex) 
+    nex = ex.head == :macrocall ? ex.args[end] : ex 
+    defgen(nex) |> esc
+end
+
+function defgen(ex) 
+    head = ex.head
+    ismutable, name, args = ex.args
+    if ismutable
+        if name isa Symbol 
+            return quote 
+                Base.@kwdef mutable struct $name{TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        else 
+            return quote 
+                Base.@kwdef mutable struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        end
+    else 
+        if name isa Symbol
+            return quote 
+                Base.@kwdef struct $name{TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        else
+            return quote 
+                Base.@kwdef struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
+                    $args
+                    @genericfields
+                end 
+            end
+        end
+    end 
+end
+
 
 ##### Common generator types.
+
  @doc raw"""
     SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
 
@@ -11,20 +55,13 @@ Constructs a `SinewaveGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi`` is `phase` and ``B`` is `offset`.
 """
-mutable struct SinewaveGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    amplitude::Float64
-    frequency::Float64
-    phase::Float64
-    delay::Float64
-    offset::Float64
-    function SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0., callbacks=nothing, 
-        name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(output, trigger, handshake, callbacks, name, uuid4(), amplitude, frequency, phase, delay, offset)
-    end
+@defgen Base.@kwdef struct SinewaveGenerator{OP}
+    amplitude::Float64 = 1.
+    frequency::Float64 = 1. 
+    phase::Float64 = 0. 
+    delay::Float64 = 0. 
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 @doc raw"""
@@ -36,20 +73,14 @@ Constructs a `DampedSinewaveGenerator` which generates outputs of the form
 ```
 where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`` is `phase`, ``\tau`` is `delay` and ``B`` is `offset`.
 """
-mutable struct DampedSinewaveGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    amplitude::Float64
-    decay::Float64
-    frequency::Float64
-    phase::Float64
-    delay::Float64
-    offset::Float64
-    function DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(output, trigger, handshake, callbacks, name, uuid4(), amplitude, decay,frequency, phase, delay, offset)
-    end
+@defgen Base.@kwdef struct DampedSinewaveGenerator{OP}
+    amplitude::Float64 = 1. 
+    decay::Float64 = 0.5 
+    frequency::Float64 = 1. 
+    phase::Float64 = 0. 
+    delay::Float64 = 0. 
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 
@@ -65,20 +96,13 @@ Constructs a `SquarewaveGenerator` with output of the form
 ```
 where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
 """
-mutable struct SquarewaveGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    high::Float64
-    low::Float64
-    period::Float64
-    duty::Float64
-    delay::Float64
-    function SquarewaveGenerator(;high=1., low=0., period=1., duty=0.5, delay=0., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}( 
-            output, trigger, handshake, callbacks, name, uuid4(), high, low, period, duty, delay)
-    end
+@defgen Base.@kwdef struct SquarewaveGenerator{OP}
+    high::Float64 = 1. 
+    low::Float64 = 0. 
+    period::Float64 = 1. 
+    duty::Float64 = 0.5
+    delay::Float64 = 0. 
+    output::OP = Outport()
 end
 
 
@@ -94,21 +118,13 @@ Constructs a `TriangularwaveGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
 """
-mutable struct TriangularwaveGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    amplitude::Float64
-    period::Float64
-    duty::Float64
-    delay::Float64
-    offset::Float64
-    function TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0, callbacks=nothing, 
-        name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}( 
-            output, trigger, handshake, callbacks, name, uuid4(), amplitude, period, duty, delay, offset)
-    end
+@defgen Base.@kwdef struct TriangularwaveGenerator{OP}
+    amplitude::Float64 =  1. 
+    period::Float64 = 1. 
+    duty::Float64 = 0.5 
+    delay::Float64 = 0. 
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 
@@ -121,16 +137,9 @@ Constructs a `ConstantGenerator` with output of the form
 ```
 where ``A`` is `amplitude.
 """
-mutable struct ConstantGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    amplitude::Float64
-    function ConstantGenerator(;amplitude=1., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(
-            output, trigger, handshake, callbacks, name, uuid4(), amplitude)
-    end
+@defgen Base.@kwdef struct ConstantGenerator{OP}
+    amplitude::Float64 = 1. 
+    output::OP = Outport()
 end
 
 
@@ -143,18 +152,11 @@ Constructs a `RampGenerator` with output of the form
 ```
 where ``\alpha`` is the `scale` and ``\tau`` is `delay`.
 """
-mutable struct RampGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    scale::Float64
-    delay::Float64
-    offset::Float64
-    function RampGenerator(;scale=1, delay=0., offset=0., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(
-            output, trigger, handshake, callbacks, name, uuid4(), scale, delay)
-    end
+@defgen Base.@kwdef struct RampGenerator{OP}
+    scale::Float64 = 1.
+    delay::Float64 = 0.
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 
@@ -170,18 +172,11 @@ Constructs a `StepGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
 """
-mutable struct StepGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    amplitude::Float64
-    delay::Float64
-    offset::Float64
-    function StepGenerator(;amplitude=1, delay=0, offset=0, callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}( 
-            output, trigger, handshake, callbacks, name, uuid4(), amplitude, delay, offset)
-    end
+@defgen Base.@kwdef struct StepGenerator{OP}
+    amplitude::Float64 = 1. 
+    delay::Float64 = 0. 
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 
@@ -194,18 +189,12 @@ Constructs an `ExponentialGenerator` with output of the form
 ```
 where ``A`` is `scale`, ``\alpha`` is `decay` and ``\tau`` is `delay`.
 """
-mutable struct ExponentialGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    scale::Float64
-    decay::Float64
-    delay::Float64
-    function ExponentialGenerator(;scale=1, decay=-1, delay=0., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger),typeof(handshake), typeof(callbacks)}(
-            output, trigger, handshake, callbacks, name, uuid4(), scale, decay, delay)
-    end
+@defgen Base.@kwdef struct ExponentialGenerator{OP}
+    scale::Float64 = 1. 
+    decay::Float64 = -1. 
+    delay::Float64 = 0.
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
 
@@ -218,30 +207,24 @@ Constructs an `DampedExponentialGenerator` with outpsuts of the form
 ```
 where ``A`` is `scale`, ``\alpha`` is `decay`, ``\tau`` is `delay`.
 """
-mutable struct DampedExponentialGenerator{OB, TR, HS, CB} <: AbstractSource
-    @generic_source_fields
-    scale::Float64
-    decay::Float64
-    delay::Float64
-    function DampedExponentialGenerator(;scale=1, decay=-1, delay=0., callbacks=nothing, name=Symbol())
-        output = Outport()
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(
-            output, trigger, handshake, callbacks, name, uuid4(), scale, decay, delay)
-    end
+@defgen Base.@kwdef struct DampedExponentialGenerator{OP}
+    scale::Float64 = 1.
+    decay::Float64 = -1. 
+    delay::Float64 = 0.
+    offset::Float64 = 0.
+    output::OP = Outport()
 end
 
-##### Define outputfunc of generators
-function outputfunc(gen::SinewaveGenerator, t)
+##### Define readout of generators
+function readout(gen::SinewaveGenerator, t)
     gen.amplitude * sin(2 * pi * gen.frequency * (t - gen.delay) + gen.phase) + gen.offset
 end 
 
-function outputfunc(gen::DampedSinewaveGenerator, t)
+function readout(gen::DampedSinewaveGenerator, t)
     gen.amplitude * exp(gen.decay * t) * sin(2 * pi * gen.frequency * (t - gen.delay)) + gen.offset
 end 
 
-function outputfunc(gen::SquarewaveGenerator, t)
+function readout(gen::SquarewaveGenerator, t)
     if t <= gen.delay
         return gen.low
     else
@@ -249,7 +232,7 @@ function outputfunc(gen::SquarewaveGenerator, t)
     end
 end
 
-function outputfunc(gen::TriangularwaveGenerator, t)
+function readout(gen::TriangularwaveGenerator, t)
     if t <= gen.delay
         return gen.offset
     else
@@ -262,24 +245,24 @@ function outputfunc(gen::TriangularwaveGenerator, t)
     end
 end
 
-function outputfunc(gen::ConstantGenerator, t)
+function readout(gen::ConstantGenerator, t)
     gen.amplitude
 end 
 
-function outputfunc(gen::RampGenerator, t)
+function readout(gen::RampGenerator, t)
     gen.scale * (t - gen.delay) + gen.offset
 end 
 
-function outputfunc(gen::StepGenerator,  t)
+function readout(gen::StepGenerator,  t)
     t - gen.delay >= 0 ? one(t) + gen.offset : zero(t) + gen.offset
 end 
 
-function outputfunc(gen::ExponentialGenerator, t)
-    gen.scale * exp(gen.decay * (t - gen.delay))
+function readout(gen::ExponentialGenerator, t)
+    gen.scale * exp(gen.decay * (t - gen.delay)) + gen.offset
 end
 
-function outputfunc(gen::DampedExponentialGenerator, t)
-    gen.scale * (t - gen.delay) * exp(gen.decay * (t - gen.delay))
+function readout(gen::DampedExponentialGenerator, t)
+    gen.scale * (t - gen.delay) * exp(gen.decay * (t - gen.delay)) + gen.offset
 end
 
 ##### Pretty-Printing of generators.

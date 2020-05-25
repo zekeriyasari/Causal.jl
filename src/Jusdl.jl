@@ -56,8 +56,6 @@ export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, t
 include("components/sources/clock.jl")
 export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
 
-export outputfunc
-
 include("components/sources/generators.jl")
 export SinewaveGenerator,
     DampedSinewaveGenerator,
@@ -69,11 +67,17 @@ export SinewaveGenerator,
     ExponentialGenerator,
     DampedExponentialGenerator
 
-# export FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, TriangularwaveGenerator, 
-#     ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, DampedExponentialGenerator, Differentiator, Integrator
 
 include("components/systems/staticsystems/staticsystems.jl")
-export Adder, Multiplier, Gain, Terminator, Memory, Coupler
+export Adder,
+    Multiplier, 
+    Gain,
+    Terminator, 
+    Memory, 
+    Coupler, 
+    Differentiator
+
+export readout  
 
 # include("components/systems/dynamicalsystems/discretesystems.jl")
 # export DiscreteSystem

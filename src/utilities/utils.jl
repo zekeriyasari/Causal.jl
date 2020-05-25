@@ -15,6 +15,14 @@ macro def(name, code)
     end
 end
 
+@def genericfields begin 
+    trigger::TR = Inpin()
+    handshake::HS = Outpin{Bool}()
+    callbacks::CB = nothing
+    name::Symbol = Symbol()
+    id::UUID = uuid4()
+end
+
 hasargs(func, n) = n + 1 in [method.nargs for method in methods(func)]
 
 allstates(x, u, t) = x

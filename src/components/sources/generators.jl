@@ -1,17 +1,19 @@
 # This file contains the function generator tools to drive other tools of DsSimulator.
 
-#= 
-Define common generator. To define new generator the following is sufficient 
-```
-    @def_source struct MyNewGen <: AbstractSource 
-        param1::T1 = val1
-        param1::T2 = val2 
-        ⋮
-        output::OP = val3
-    end
-    readout(gen::MyNewGen, t) = …
-```
-=#
+import UUIDs: uuid4
+
+macro def_source(ex) 
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+    end, [:TR, :HS, :CB, :ID]
+    _append_commond_fields!(ex, fields...)
+    def(ex)
+end
+
 
  @doc raw"""
     SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
@@ -22,16 +24,16 @@ Constructs a `SinewaveGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi`` is `phase` and ``B`` is `offset`.
 """
-@def_source struct SinewaveGenerator{OP} <: AbstractSource
+@def_source struct SinewaveGenerator{RO, OP} <: AbstractSource
     amplitude::Float64 = 1.
     frequency::Float64 = 1. 
     phase::Float64 = 0. 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, amplitude=amplitude, frequency=frequency, delay=delay, offset=offset) ->
+        amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset 
 end
-readout(gen::SinewaveGenerator, t) = 
-    gen.amplitude * sin(2 * pi * gen.frequency * (t - gen.delay) + gen.phase) + gen.offset 
 
 @doc raw"""
     DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
@@ -42,7 +44,7 @@ Constructs a `DampedSinewaveGenerator` which generates outputs of the form
 ```
 where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`` is `phase`, ``\tau`` is `delay` and ``B`` is `offset`.
 """
-@def_source struct DampedSinewaveGenerator{OP} <: AbstractSource
+@def_source struct DampedSinewaveGenerator{RO, OP} <: AbstractSource
     amplitude::Float64 = 1. 
     decay::Float64 = 0.5 
     frequency::Float64 = 1. 
@@ -50,9 +52,9 @@ where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, amplitude=amplitude, decay=decay, frequency=frequency, phase=phase, delay=delay, offset=offset) ->
+        amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset
 end
-readout(gen::DampedSinewaveGenerator, t) = 
-    gen.amplitude * exp(gen.decay * t) * sin(2 * pi * gen.frequency * (t - gen.delay)) + gen.offset
 
 @doc raw"""
     SquarewaveGenerator(;level1=1., level2=0., period=1., duty=0.5, delay=0.)
@@ -66,23 +68,16 @@ Constructs a `SquarewaveGenerator` with output of the form
 ```
 where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
 """
-@def_source struct SquarewaveGenerator{OP} <: AbstractSource
+@def_source struct SquarewaveGenerator{OP, RO} <: AbstractSource
     high::Float64 = 1. 
     low::Float64 = 0. 
     period::Float64 = 1. 
     duty::Float64 = 0.5
     delay::Float64 = 0. 
     output::OP = Outport()
+    readout::RO = (t, high=high, low=low, period=period, duty=duty, delay=delay) -> 
+        t <= delay ? low : ( ((t - delay) % period <= duty * period) ? high : low )
 end
-
-function readout(gen::SquarewaveGenerator, t)
-    if t <= gen.delay
-        return gen.low
-    else
-        ((t - gen.delay) % gen.period <= gen.duty * gen.period) ? gen.high : gen.low
-    end
-end
-
 
 @doc raw"""
     TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0)
@@ -96,27 +91,27 @@ Constructs a `TriangularwaveGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
 """
-@def_source struct TriangularwaveGenerator{OP} <: AbstractSource
+@def_source struct TriangularwaveGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 =  1. 
     period::Float64 = 1. 
     duty::Float64 = 0.5 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
-end
-
-function readout(gen::TriangularwaveGenerator, t)
-    if t <= gen.delay
-        return gen.offset
-    else
-        t = (t - gen.delay) % gen.period 
-        if t <= gen.duty * gen.period
-            gen.amplitude / (gen.duty * gen.period) * t + gen.offset
+    readout::RO = (t, amplitude=amplitude, period=period, duty=duty, delay=delay, offset=offset) -> begin 
+        if t <= delay
+            return offset
         else
-            (gen.amplitude * (gen.period - t)) / (gen.period * (1 - gen.duty)) + gen.offset
+            t = (t - delay) % period 
+            if t <= duty * period
+                amplitude / (duty * period) * t + offset
+            else
+                (amplitude * (period - t)) / (period * (1 - duty)) + offset
+            end
         end
     end
 end
+
 
 
 @doc raw"""
@@ -128,11 +123,11 @@ Constructs a `ConstantGenerator` with output of the form
 ```
 where ``A`` is `amplitude.
 """
-@def_source struct ConstantGenerator{OP} <: AbstractSource
+@def_source struct ConstantGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 = 1. 
     output::OP = Outport()
+    readout::RO = (t, amplitude=amplitude) -> amplitude
 end
-readout(gen::ConstantGenerator, t) = gen.amplitude
 
 @doc raw"""
     RampGenerator(;scale=1, delay=0.)
@@ -143,13 +138,13 @@ Constructs a `RampGenerator` with output of the form
 ```
 where ``\alpha`` is the `scale` and ``\tau`` is `delay`.
 """
-@def_source struct RampGenerator{OP} <: AbstractSource
+@def_source struct RampGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1.
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, scale=scale, delay=delay, offset=offset) ->  scale * (t - delay) + offset
 end
-readout(gen::RampGenerator, t) = gen.scale * (t - gen.delay) + gen.offset
 
 
 @doc raw"""
@@ -164,13 +159,14 @@ Constructs a `StepGenerator` with output of the form
 ```
 where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
 """
-@def_source struct StepGenerator{OP} <: AbstractSource
+@def_source struct StepGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 = 1. 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, amplitude=amplitude, delay=delay, offset=offset) -> 
+        t - delay >= 0 ? one(t) + offset : zero(t) + offset
 end
-readout(gen::StepGenerator, t) = t - gen.delay >= 0 ? one(t) + gen.offset : zero(t) + gen.offset
 
 
 @doc raw"""
@@ -182,14 +178,14 @@ Constructs an `ExponentialGenerator` with output of the form
 ```
 where ``A`` is `scale`, ``\alpha`` is `decay` and ``\tau`` is `delay`.
 """
-@def_source struct ExponentialGenerator{OP} <: AbstractSource
+@def_source struct ExponentialGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1. 
     decay::Float64 = -1. 
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> scale * exp(decay * (t - delay)) + offset
 end
-readout(gen::ExponentialGenerator, t) = gen.scale * exp(gen.decay * (t - gen.delay)) + gen.offset
 
 
 @doc raw"""
@@ -201,15 +197,15 @@ Constructs an `DampedExponentialGenerator` with outpsuts of the form
 ```
 where ``A`` is `scale`, ``\alpha`` is `decay`, ``\tau`` is `delay`.
 """
-@def_source struct DampedExponentialGenerator{OP} <: AbstractSource
+@def_source struct DampedExponentialGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1.
     decay::Float64 = -1. 
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
+    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> 
+        scale * (t - delay) * exp(decay * (t - delay)) + offset
 end
-readout(gen::DampedExponentialGenerator, t) = 
-    gen.scale * (t - gen.delay) * exp(gen.decay * (t - gen.delay)) + gen.offset
 
 
 ##### Pretty-Printing of generators.

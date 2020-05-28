@@ -17,34 +17,9 @@ abstract type AbstractDAESystem <: AbstractDynamicSystem end
 abstract type AbstractSDESystem <: AbstractDynamicSystem end
 abstract type AbstractDDESystem <: AbstractDynamicSystem end
 
-
-# 
-# Component definition interface 
-# 
-
-function commonfields()
-    quote
-        trigger::TR = Inpin()
-        handshake::HS = Outpin()
-        callbacks::CB = nothing
-        name::Symbol = Symbol()
-        id::UUID = uuid4()
-    end, [:TR, :HS, :CB]
-end
-
-
-# Define macros @def_source, @def_static_system, @def_dynamic_system
-for name in [:def_source, :def_static_system, :def_dynamic_system, :def_sink]
-    @eval begin 
-        macro ($name)(ex) 
-            ex isa Expr && ex.head == :struct || error("Invalid source defition")
-            _append_commond_fields!(ex, commonfields()...)
-            def(ex)
-        end
-    end
-end
-
-
+#####
+##### Component defition syntax.
+#####
 function _append_commond_fields!(ex, newbody, newparamtypes)
     # Append body 
     body = ex.args[3]
@@ -64,6 +39,9 @@ function _append_commond_fields!(ex, newbody, newparamtypes)
 end
 
 function def(ex)
+    # Check ex head
+    ex isa Expr && ex.head == :struct || error("Invalid source defition")
+
     # Get struct name
     name = ex.args[2]
     if name isa Expr && name.head === :(<:)
@@ -127,31 +105,5 @@ function _def!(body, kwargs, callargs)
             end
         end
     end
-end
-
-
-############################ Dynamic System integrator construction
-
-# mutable struct StateTransion{T}
-#     func::Union{Nothing, T}
-# end
-# StateTransion(func::T) where T = StateTransion{T}(func)
-# (st::StateTransion)(dx, x, u, t) = righthandside(typeof(st.func), dx, x, u, t)
-
-
-function construct_integrator(deproblem, input, statefunc, state, t, modelargs=(), solverargs=(); 
-    alg=nothing, stateder=state, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=3)
-    interpolant = input === nothing ? nothing : Interpolant(numtaps, length(input))
-
-    if deproblem == SDEProblem 
-        problem = deproblem(statefunc[1], statefunc[2], state, (t, Inf), interpolant, modelargs...; modelkwargs...)
-    elseif deproblem == DDEProblem
-        problem = deproblem(statefunc[1], state, statefunc[2], (t, Inf), interpolant, modelargs...; modelkwargs...)
-    elseif deproblem == DAEProblem
-        problem = deproblem(state_transition!, stateder, state, (t, Inf), interpolant, modelargs...; modelkwargs...)
-    else
-        problem = deproblem(state_transition!, state, (t, Inf), interpolant, modelargs...; modelkwargs...)
-    end
-    init(problem, alg, solverargs...; save_everystep=false, dense=true, solverkwargs...)
 end
 

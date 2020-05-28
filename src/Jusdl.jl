@@ -47,7 +47,7 @@ include("components/componentsbase/macros.jl")
 export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink, AbstractStaticSystem, 
     AbstractDynamicSystem, AbstractSubSystem, AbstractMemory, AbstractDiscreteSystem, AbstractODESystem, 
     AbstractRODESystem, AbstractDAESystem, AbstractSDESystem, AbstractDDESystem,
-    @def_source, @def_static_system, @def_dynamic_system, @def_sink
+    @def_source, @def_static_system, @def_ode_system
 
 include("components/componentsbase/takestep.jl")
 export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, drive!, approve!
@@ -79,9 +79,15 @@ export Adder,
     Differentiator
 
 
+include("components/systems/dynamicalsystems/init.jl")
 include("components/systems/dynamicalsystems/odesystems.jl")
-export righthandside,
-    LorenzSystem
+export LinearSystem,
+    LorenzSystem, 
+    ChenSystem, 
+    ChuaSystem, 
+    RosslerSystem, 
+    VanderpolSystem, 
+    Integrator
 
 # # include("components/systems/dynamicalsystems/discretesystems.jl")
 # # export DiscreteSystem

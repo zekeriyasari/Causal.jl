@@ -1,5 +1,19 @@
 # This file contains the static systems of Jusdl.
 
+import UUIDs: uuid4
+
+macro def_static_system(ex) 
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+    end, [:TR, :HS, :CB, :ID]
+    _append_commond_fields!(ex, fields...)
+    def(ex)
+end
+
 ##### Define prototipical static systems.
 
 @doc raw"""
@@ -19,12 +33,12 @@ julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-@def_static_system struct Adder{S, IP, OP} <: AbstractStaticSystem 
+@def_static_system struct Adder{S, IP, OP, RO} <: AbstractStaticSystem 
     signs::S = (+, +)
     input::IP = Inport(length(signs))
     output::OP = Outport()
+    readout::RO = (u, t, signs=signs) -> sum([sign(val) for (sign, val) in zip(signs, u)])
 end
-readout(ss::Adder, u, t) = sum([sign(val) for (sign, val) in zip(ss.signs, u)])
 
 
 @doc raw"""
@@ -44,19 +58,18 @@ julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-@def_static_system struct Multiplier{S, IP, OP} <: AbstractStaticSystem
+@def_static_system struct Multiplier{S, IP, OP, RO} <: AbstractStaticSystem
     ops::S = (*,*)
     input::IP = Inport(length(ops))
     output::OP = Outport()
-end
-
-function readout(ss::Multiplier, u, t)
-    ops = ss.ops
-    val = 1
-    for i = 1 : length(ops)
-        val = ops[i](val, u[i])
+    readout::RO = (u, t, ops=ops) -> begin 
+        ops = ops
+        val = 1
+        for i = 1 : length(ops)
+            val = ops[i](val, u[i])
+        end
+        val
     end
-    val
 end
 
 
@@ -79,12 +92,12 @@ julia> sfunc.readout([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-@def_static_system struct Gain{G, IP, OP} <: AbstractStaticSystem
+@def_static_system struct Gain{G, IP, OP, RO} <: AbstractStaticSystem
     gain::G = 1.
     input::IP = Inport() 
     output::OP = Outport(length(gain * zeros(length(input)))) 
+    readout::RO = (u, t, gain=gain) -> gain * u
 end
-readout(ss::Gain, u, t) = ss.gain * u
 
 
 @doc raw"""
@@ -92,9 +105,10 @@ readout(ss::Gain, u, t) = ss.gain * u
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-@def_static_system struct Terminator{IP, OP} <: AbstractStaticSystem
+@def_static_system struct Terminator{IP, OP, RO} <: AbstractStaticSystem
     input::IP = Inport() 
     output::OP = nothing
+    readout::RO = nothing
 end 
 
 
@@ -118,7 +132,7 @@ julia> Memory(0.1; numtaps=5, dt=1.)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-@def_static_system struct Memory{D, IN, TB, DB, IP, OP} <: AbstractMemory
+@def_static_system struct Memory{D, IN, TB, DB, IP, OP, RO} <: AbstractMemory
     delay::D = 1.
     initial::IN = zeros(1)
     numtaps::Int = 5
@@ -126,26 +140,26 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
     databuf::DB = length(initial) == 1 ? Buffer(numtaps) : Buffer(length(initial), numtaps)
     input::IP = Inport(length(initial))
     output::OP = Outport(length(initial))
-end 
-
-function readout(ss::Memory, u, t)
-    if t <= ss.delay
-        return ss.initial
-    else
-        tt = content(ss.timebuf, flip=false)
-        uu = content(ss.databuf, flip=false)
-        if length(tt) == 1
-            return uu[1]
-        end
-        if ndims(ss.databuf) == 1
-            itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
-            return itp(t - ss.delay)
+    readout::RO = (u, t, delay=delay, initial=initial, numptaps=numptaps, timebuf=timebuf, databuf=databuf) -> begin 
+        if t <= delay
+            return initial
         else
-            itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
-            return map(f -> f(t - ss.delay), itp)
+            tt = content(timebuf, flip=false)
+            uu = content(databuf, flip=false)
+            if length(tt) == 1
+                return uu[1]
+            end
+            if ndims(databuf) == 1
+                itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
+                return itp(t - delay)
+            else
+                itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
+                return map(f -> f(t - delay), itp)
+            end
         end
     end
-end
+end 
+
 
 @doc raw"""
     Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
@@ -156,16 +170,14 @@ Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and 
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-@def_static_system struct Coupler{C1, C2, IP, OP} <: AbstractStaticSystem
+@def_static_system struct Coupler{C1, C2, IP, OP, RO} <: AbstractStaticSystem
     conmat::C1 = [-1. 1; 1. 1.]
     cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
     input::IP = Inport(size(C1, 1) * size(cplmat, 1))
     output::OP = Outport(size(C1, 1) * size(cplmat, 1))
+    readout::RO = IP <: AbstractMatrix{<:Real} ? ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u) : 
+        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )
 end
-readout(ss::Coupler{C1, C2, IP, OP}, u, t) where {C1<:AbstractMatrix{<:Real}, C2, IP, OP} = 
-    kron(ss.conmat, ss.cplmat) * u     
-readout(ss::Coupler{C1, C2, IP, OP}, u, t) where {C1<:AbstractMatrix{<:Function}, C2, IP, OP} = 
-    kron(map(f -> f(t), ss.conmat), ss.cplmat) * u 
 
 @doc raw"""
     Differentiator(kd=1; callbacks=nothing, name=Symbol())
@@ -176,22 +188,21 @@ Consructs a `Differentiator` whose input output relation is of the form
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
 """
-@def_static_system struct Differentiator{IP, OP} <: AbstractStaticSystem 
+@def_static_system struct Differentiator{IP, OP, RO} <: AbstractStaticSystem 
     kd::Float64 = 1. 
-    t::Float64 = 0.
-    u::Float64 = 0.
+    t::Float64 = zeros(0.)
+    u::Float64 = zeros(0.)
     input::IP = Inport()
     output::OP = Outport()
-end
-
-function readout(ss::Differentiator, u, t)
-    val = only(u)
-    sst = ss.t 
-    ssu = ss.u
-    out = t ≤ sst ? ssu : (val - ssu) / (t - sst)
-    ss.t = t
-    ss.u = val
-    ss.kd * out 
+    readout::RO = (uu, tt, t=t, u=u, kd=kd) -> begin
+        val = only(uu)
+        sst = t[1]
+        ssu = u[1]
+        out = tt ≤ sst ? ssu : (val - ssu) / (tt - sst)
+        t .= t
+        u .= val
+        kd * out 
+    end
 end
 
 ##### Pretty-printing

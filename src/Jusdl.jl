@@ -98,8 +98,9 @@ export @def_discrete_system,
     GingerbreadmanSystem,
     LogisticSystem
 
-# # include("components/systems/dynamicalsystems/odesystems.jl")
-# # export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem
+include("components/systems/dynamicalsystems/sdesystems.jl")
+export @def_sde_system,
+    NoisyLorenzSystem, ForcedNoisyLorenzSystem
 
 # # include("components/systems/dynamicalsystems/daesystems.jl")
 # # export DAESystem 

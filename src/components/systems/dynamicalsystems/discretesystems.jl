@@ -46,7 +46,7 @@ The `DiscreteLinearSystem` is represented by the following state and output equa
 ```
 where ``x`` is `state`. `solver` is used to solve the above differential equation.
 """
-@def_ode_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractODESystem
+@def_ode_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractDiscreteSystem
     A::Matrix{Float64} = fill(-1., 1, 1)
     B::Matrix{Float64} = fill(0., 1, 1)
     C::Matrix{Float64} = fill(1., 1, 1)

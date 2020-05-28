@@ -1,68 +1,92 @@
 # This file contains SDESystem prototypes
 
+import DifferentialEquations: LambaEM, SDEProblem
+import UUIDs: uuid4
+
+"""
+    @def_sde_system
+
+Used to construct SDE system 
+"""
+macro def_sde_system(ex) 
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+        t::Float64 = 0.
+        modelargs::MA = () 
+        modelkwargs::MK = NamedTuple() 
+        solverargs::SA = () 
+        solverkwargs::SK = NamedTuple() 
+        alg::AL = Jusdl.LambaEM{true}()
+        integrator::IT = Jusdl.construct_integrator(Jusdl.SDEProblem, input, (drift, diffusion), state, t, modelargs, 
+            solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
+    end, [:TR, :HS, :CB, :ID, :MA, :MK, :SA, :SK, :AL, :IT]
+    _append_commond_fields!(ex, fields...)
+    def(ex)
+end
+
+
+##### Define SDE system library
 
 @doc raw"""
-    SDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    NoisyLorenzSystem() 
 
-Constructs a `SDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `SDESystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
-
-The `SDESystem` is represented by the state equation
-```math 
-    \begin{array}{l}
-        dx = f(x, u, t) dt + h(x, u, t)dW \\
-        y = g(x, u, t)
-    \end{array}
-```
-where ``f`` is the drift equation and ``h`` is the diffusion equation.  The `statefunc` is the tuple of drift function ``f`` and diffusion function ``h`` i.e. `statefunc = (f, h)`. ``g`` is `outputfunc`. ``t`` is the time `t`, ``x`` is the `state`, ``u`` is the value of `input` and ``y`` is the value of the `output`. ``W`` is the Wiever process. `noise` is the noise of the system and `solver` is used to solve the above differential equation. 
-
-The syntax of the drift and diffusion function of `statefunc` must be of the form
-```julia
-function f(dx, x, u, t)
-    dx .= ... # Update dx
-end
-function h(dx, x, u, t)
-    dx .= ... # Update dx.
-end
-```
-and the syntax of `outputfunc` must be of the form 
-```julia
-function outputfunc(x, u, t)
-    y = ... # Compute y 
-    return y
-end
-```
-
-# Example 
-```julia
-julia> sfuncdrift(dx, x, u, t) = (dx[1] = -x[1]);
-
-julia> sfuncdiffusion(dx, x, u, t) = (dx[1] = -x[1]);
-
-julia> ofuncsde(x, u, t) = x;
-
-julia> SDESystem((sfuncdrift,sfuncdiffusion), ofuncsde, [1.], 0., nothing, Outport())
-SDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
-```
-
-!!! info 
-    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
+Constructs a noisy Lorenz system 
 """
-mutable struct SDESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractSDESystem
-    @generic_dynamic_system_fields
-    function SDESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=SDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
-        name=Symbol())
-        trigger, handshake, integrator = init_dynamic_system(
-                SDEProblem, statefunc, state, t, input, modelargs, solverargs; 
-                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
-            )
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
-            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
-            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
+@def_sde_system mutable struct NoisyLorenzSystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
+    σ::Float64 = 10.
+    β::Float64 = 8 / 3
+    ρ::Float64 = 28.
+    η::Float64 = 1.
+    γ::Float64 = 1.
+    drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
+        dx[1] = σ * (x[2] - x[1])
+        dx[2] = x[1] * (ρ - x[3]) - x[2]
+        dx[3] = x[1] * x[2] - β * x[3]
+        dx .*= γ
     end
-end
+    diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = nothing 
+    output::OP = Outport(3) 
+end  
 
-show(io::IO, ds::SDESystem) = print(io, 
-    "SDESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+@doc raw"""
+    NoisyLorenzSystem() 
 
+Constructs a noisy Lorenz system 
+"""
+@def_sde_system mutable struct ForcedNoisyLorenzSystem{CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
+    σ::Float64 = 10.
+    β::Float64 = 8 / 3
+    ρ::Float64 = 28.
+    η::Float64 = 1.
+    cplmat::CM = I(3)
+    γ::Float64 = 1.
+    drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
+        dx[1] = σ * (x[2] - x[1])
+        dx[2] = x[1] * (ρ - x[3]) - x[2]
+        dx[3] = x[1] * x[2] - β * x[3]
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3) 
+    output::OP = Outport(3) 
+end  
+
+
+##### Pretty printing 
+
+show(io::IO, ds::NoisyLorenzSystem) = print(io, 
+    "NoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedNoisyLorenzSystem) = print(io, 
+    "ForcedNoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), cplmat:$(ds.cplmat), ", 
+    "state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

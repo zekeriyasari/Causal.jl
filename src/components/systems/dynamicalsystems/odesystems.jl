@@ -1,59 +1,15 @@
 # This file contains ODESystem prototypes
 
-macro defds(ex) 
-    nex = ex.head == :macrocall ? ex.args[end] : ex 
-    defds(nex) |> esc
-end
-
-function defds(ex) 
-    head = ex.head
-    ismutable, name, args = ex.args
-    if ismutable
-        if name isa Symbol 
-            return quote 
-                Base.@kwdef mutable struct $name{IP, OP, INT, TR, HS, CB} <: AbstractODESystem
-                    $args
-                    input::IP  
-                    output::OP 
-                    integrator::INT
-                    @genericfields
-                end 
-            end
-        else 
-            return quote 
-                Base.@kwdef mutable struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractODESystem
-                    $args
-                    @genericfields
-                end
-            end
-        end
-    else 
-        if name isa Symbol
-            return quote 
-                Base.@kwdef struct $name{TR, HS, CB} <: AbstractODESystem
-                    $args
-                    @genericfields
-                end 
-            end
-        else
-            return quote 
-                Base.@kwdef struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractODESystem
-                    $args
-                    @genericfields
-                end 
-            end
-        end
-    end 
-end
-
-@defds Base.@kwdef struct LorenzSystem{IP, OP}
+@def_dynamic_system mutable struct LorenzSystem{IP, OP}
     σ::Float64 = 1. 
     β::Float64 = 1. 
     ρ::Float64 = 1. 
-    γ::Float64 = 1. 
+    γ::Float64 = 1.
+    input::IP = nothing 
+    output::OP = Outport(3) 
 end  
 
-function righhandside(ds::LorenzSystem, dx, x, u, t)
+function (ds::LorenzSystem)(dx, x, u, t)
     dx[1] = ds.σ * (x[2] - x[1])
     dx[2] = x[1] * (ds.ρ - x[3]) - x[2]
     dx[3] = x[1] * x[2] - ds.β * x[3]
@@ -62,28 +18,6 @@ end
 
 readout(ds::LorenzSystem, x, u, t) = x 
 
-@defds Base.@kwdef struct ChenSystem{IP, OP}
-    α::Float64 = 1. 
-    β::Float64 = 1. 
-    ρ::Float64 = 1. 
-    γ::Float64 = 1. 
-    state::Vector{Float64} = rand(3)
-    t::Float64 = 0.
-    input::IP = nothing
-    output::OP = Outport(3)
-end  
-
-
-@defds Base.@kwdef struct LinearSystem{IP, OP}
-    A::Float64 = 1. 
-    B::Float64 = 1. 
-    C::Float64 = 1. 
-    D::Float64 = 1. 
-    state::Vector{Float64} = rand(3)
-    t::Float64 = 0.
-    input::IP = nothing
-    output::OP = Outport(3)
-end  
 
 # @doc raw"""
 #     ODESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 

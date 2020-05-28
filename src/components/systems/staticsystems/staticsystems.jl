@@ -1,50 +1,5 @@
 # This file contains the static systems of Jusdl.
 
-
-macro defss(ex) 
-    nex = ex.head == :macrocall ? ex.args[end] : ex 
-    defss(nex) |> esc
-end
-
-function defss(ex) 
-    head = ex.head
-    ismutable, name, args = ex.args
-    if ismutable
-        if name isa Symbol 
-            return quote 
-                Base.@kwdef mutable struct $name{TR, HS, CB} <: AbstractSource
-                    $args
-                    @genericfields
-                end 
-            end
-        else 
-            return quote 
-                Base.@kwdef mutable struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
-                    $args
-                    @genericfields
-                end 
-            end
-        end
-    else 
-        if name isa Symbol
-            return quote 
-                Base.@kwdef struct $name{TR, HS, CB} <: AbstractSource
-                    $args
-                    @genericfields
-                end 
-            end
-        else
-            return quote 
-                Base.@kwdef struct $(name.args[1]){$(name.args[2:end]...), TR, HS, CB} <: AbstractSource
-                    $args
-                    @genericfields
-                end 
-            end
-        end
-    end 
-end
-
-
 ##### Define prototipical static systems.
 
 @doc raw"""
@@ -64,15 +19,13 @@ julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-@defss Base.@kwdef struct Adder{S, IP, OP}
+@def_static_system struct Adder{S, IP, OP} <: AbstractStaticSystem 
     signs::S = (+, +)
     input::IP = Inport(length(signs))
     output::OP = Outport()
 end
+readout(ss::Adder, u, t) = sum([sign(val) for (sign, val) in zip(ss.signs, u)])
 
-function readout(ss::Adder, u, t)
-    sum([sign(val) for (sign, val) in zip(ss.signs, u)])
-end 
 
 @doc raw"""
     Multiplier(ops=(*,*))
@@ -91,8 +44,8 @@ julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-@defss Base.@kwdef struct Multiplier{S, IP, OP}
-    ops::S=(*,*)
+@def_static_system struct Multiplier{S, IP, OP} <: AbstractStaticSystem
+    ops::S = (*,*)
     input::IP = Inport(length(ops))
     output::OP = Outport()
 end
@@ -105,7 +58,6 @@ function readout(ss::Multiplier, u, t)
     end
     val
 end
-
 
 
 @doc raw"""
@@ -127,15 +79,12 @@ julia> sfunc.readout([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-@defss Base.@kwdef struct Gain{G, IP, OP} 
+@def_static_system struct Gain{G, IP, OP} <: AbstractStaticSystem
     gain::G = 1.
     input::IP = Inport() 
     output::OP = Outport(length(gain * zeros(length(input)))) 
 end
-
-function readout(ss::Gain, u, t) 
-    ss.gain * u
-end 
+readout(ss::Gain, u, t) = ss.gain * u
 
 
 @doc raw"""
@@ -143,7 +92,7 @@ end
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-@defss Base.@kwdef struct Terminator{IP, OP}
+@def_static_system struct Terminator{IP, OP} <: AbstractStaticSystem
     input::IP = Inport() 
     output::OP = nothing
 end 
@@ -169,7 +118,7 @@ julia> Memory(0.1; numtaps=5, dt=1.)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-@defss Base.@kwdef struct Memory{D, IN, TB, DB, IP, OP} 
+@def_static_system struct Memory{D, IN, TB, DB, IP, OP} <: AbstractMemory
     delay::D = 1.
     initial::IN = zeros(1)
     numtaps::Int = 5
@@ -207,16 +156,16 @@ Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and 
 ```
 where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-@defss Base.@kwdef struct Coupler{C1, C2, IP, OP} 
+@def_static_system struct Coupler{C1, C2, IP, OP} <: AbstractStaticSystem
     conmat::C1 = [-1. 1; 1. 1.]
     cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
     input::IP = Inport(size(C1, 1) * size(cplmat, 1))
     output::OP = Outport(size(C1, 1) * size(cplmat, 1))
 end
-
-function readout(ss::Coupler,  u, t)
-    kron(ss.conmat, ss.cplmat) * u     # Time invariant coupling
-end 
+readout(ss::Coupler{C1, C2, IP, OP}, u, t) where {C1<:AbstractMatrix{<:Real}, C2, IP, OP} = 
+    kron(ss.conmat, ss.cplmat) * u     
+readout(ss::Coupler{C1, C2, IP, OP}, u, t) where {C1<:AbstractMatrix{<:Function}, C2, IP, OP} = 
+    kron(map(f -> f(t), ss.conmat), ss.cplmat) * u 
 
 @doc raw"""
     Differentiator(kd=1; callbacks=nothing, name=Symbol())
@@ -227,18 +176,21 @@ Consructs a `Differentiator` whose input output relation is of the form
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
 """
-@defss Base.@kwdef struct Differentiator{KD, T, U, IP, OP} 
-    kd::KD = 1. 
-    t::T = 0.
-    u::U = 0.
+@def_static_system struct Differentiator{IP, OP} <: AbstractStaticSystem 
+    kd::Float64 = 1. 
+    t::Float64 = 0.
+    u::Float64 = 0.
     input::IP = Inport()
     output::OP = Outport()
 end
 
-function readout(ss::Differentiator, uu, tt)
-    out = tt ≤ ss.t[1] ? ss.u[1] : (uu[1] - ss.u[1]) / (tt - ss.t[1])
-    ss.t = tt
-    ss.u = uu
+function readout(ss::Differentiator, u, t)
+    val = only(u)
+    sst = ss.t 
+    ssu = ss.u
+    out = t ≤ sst ? ssu : (val - ssu) / (t - sst)
+    ss.t = t
+    ss.u = val
     ss.kd * out 
 end
 

@@ -2,6 +2,21 @@
 
 import UUIDs: uuid4
 
+"""
+    @def_source
+
+Used to define new type of source. Usage is as follows:
+```
+@def_source struct MySource{T1, T2, T3, OP, RO} <: AbstractSource
+    param1::T1 = param1_default
+    param2::T2 = param2_default
+    param3::T3 = param3_default
+        ⋮
+    output::OP = output_default
+    readout::RO = readout_function
+end
+```
+"""
 macro def_source(ex) 
     fields = quote
         trigger::TR = Inpin()
@@ -14,6 +29,8 @@ macro def_source(ex)
     def(ex)
 end
 
+
+##### Define Sources library
 
  @doc raw"""
     SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
@@ -35,6 +52,7 @@ where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi
         amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset 
 end
 
+
 @doc raw"""
     DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
 
@@ -55,6 +73,7 @@ where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`
     readout::RO = (t, amplitude=amplitude, decay=decay, frequency=frequency, phase=phase, delay=delay, offset=offset) ->
         amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset
 end
+
 
 @doc raw"""
     SquarewaveGenerator(;level1=1., level2=0., period=1., duty=0.5, delay=0.)
@@ -78,6 +97,7 @@ where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is 
     readout::RO = (t, high=high, low=low, period=period, duty=duty, delay=delay) -> 
         t <= delay ? low : ( ((t - delay) % period <= duty * period) ? high : low )
 end
+
 
 @doc raw"""
     TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0)
@@ -113,7 +133,6 @@ where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is
 end
 
 
-
 @doc raw"""
     ConstantGenerator(;amplitude=1.)
 
@@ -128,6 +147,7 @@ where ``A`` is `amplitude.
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude) -> amplitude
 end
+
 
 @doc raw"""
     RampGenerator(;scale=1, delay=0.)
@@ -209,6 +229,7 @@ end
 
 
 ##### Pretty-Printing of generators.
+
 show(io::IO, gen::SinewaveGenerator) = print(io, 
     "SinewaveGenerator(amp:$(gen.amplitude), freq:$(gen.frequency), phase:$(gen.phase), ",
     "offset:$(gen.offset), delay:$(gen.delay))")

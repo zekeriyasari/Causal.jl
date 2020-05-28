@@ -46,19 +46,17 @@ export Interpolant
 include("components/componentsbase/macros.jl")
 export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink, AbstractStaticSystem, 
     AbstractDynamicSystem, AbstractSubSystem, AbstractMemory, AbstractDiscreteSystem, AbstractODESystem, 
-    AbstractRODESystem, AbstractDAESystem, AbstractSDESystem, AbstractDDESystem,
-    @def_source, @def_static_system, @def_ode_system
+    AbstractRODESystem, AbstractDAESystem, AbstractSDESystem, AbstractDDESystem
 
 include("components/componentsbase/takestep.jl")
 export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, drive!, approve!
-
-export readout
 
 include("components/sources/clock.jl")
 export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
 
 include("components/sources/generators.jl")
-export SinewaveGenerator,
+export @def_source,
+    SinewaveGenerator,
     DampedSinewaveGenerator,
     SquarewaveGenerator,
     TriangularwaveGenerator, 
@@ -70,7 +68,8 @@ export SinewaveGenerator,
 
 
 include("components/systems/staticsystems/staticsystems.jl")
-export Adder,
+export @def_static_system,
+    Adder,
     Multiplier, 
     Gain,
     Terminator, 
@@ -78,19 +77,26 @@ export Adder,
     Coupler, 
     Differentiator
 
-
 include("components/systems/dynamicalsystems/init.jl")
+
 include("components/systems/dynamicalsystems/odesystems.jl")
-export LinearSystem,
-    LorenzSystem, 
-    ChenSystem, 
-    ChuaSystem, 
-    RosslerSystem, 
-    VanderpolSystem, 
+export @def_ode_system,
+    ContinuousLinearSystem,
+    LorenzSystem, ForcedLorenzSystem, 
+    ChenSystem, ForcedChenSystem,
+    ChuaSystem, ForcedChuaSystem,
+    RosslerSystem, ForcedRosslerSystem,
+    VanderpolSystem, ForcedVanderpolSystem,
     Integrator
 
-# # include("components/systems/dynamicalsystems/discretesystems.jl")
-# # export DiscreteSystem
+include("components/systems/dynamicalsystems/discretesystems.jl")
+export @def_discrete_system,
+    DiscreteLinearSystem,
+    HenonSystem, 
+    LoziSystem,
+    BogdanovSystem, 
+    GingerbreadmanSystem,
+    LogisticSystem
 
 # # include("components/systems/dynamicalsystems/odesystems.jl")
 # # export ODESystem, LinearSystem, LorenzSystem, ChenSystem, ChuaSystem, RosslerSystem, VanderpolSystem

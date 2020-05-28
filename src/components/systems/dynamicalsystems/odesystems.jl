@@ -3,6 +3,7 @@
 import DifferentialEquations: Tsit5, ODEProblem
 import UUIDs: uuid4
 
+
 macro def_ode_system(ex) 
     fields = quote
         trigger::TR = Inpin()
@@ -10,7 +11,6 @@ macro def_ode_system(ex)
         callbacks::CB = nothing
         name::Symbol = Symbol()
         id::ID = Jusdl.uuid4()
-        state::Vector{Float64} 
         t::Float64 = 0.
         modelargs::MA = () 
         modelkwargs::MK = NamedTuple() 
@@ -25,16 +25,16 @@ macro def_ode_system(ex)
 end
 
 
+#### Define ODE system library.
 
-##### LinearSystem
 @doc raw"""
-    LinearSystem(input, output, modelargs=(), solverargs=(); 
+    ContinuousLinearSystem(input, output, modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
         alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `LinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+Constructs a `ContinuousLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
-The `LinearSystem` is represented by the following state and output equations.
+The `ContinuousLinearSystem` is represented by the following state and output equations.
 ```math
 \begin{array}{l}
     \dot{x} = A x + B u \\[0.25cm]
@@ -43,13 +43,14 @@ The `LinearSystem` is represented by the following state and output equations.
 ```
 where ``x`` is `state`. `solver` is used to solve the above differential equation.
 """
-@def_ode_system mutable struct LinearSystem{IP, OP, RH, RO} <: AbstractODESystem
+@def_ode_system mutable struct ContinuousLinearSystem{IP, OP, RH, RO} <: AbstractODESystem
     A::Matrix{Float64} = fill(-1., 1, 1)
     B::Matrix{Float64} = fill(0., 1, 1)
     C::Matrix{Float64} = fill(1., 1, 1)
     D::Matrix{Float64} = fill(-1., 1, 1)
     input::IP = Inport(1)
     output::OP = nothing
+    state::Vector{Float64} = rand(size(A, 1))
     righthandside::RH = input === nothing ? (dx, x, u, t) -> (dx .= A * x) : 
         (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u.itp))
     readout::RO = input === nothing ? (x, u, t) -> (C * x) : 
@@ -57,7 +58,6 @@ where ``x`` is `state`. `solver` is used to solve the above differential equatio
 end
 
 
-##### Lorenz System
 @doc raw"""
     LorenzSystem(input, output, modelargs=(), solverargs=(); 
         sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
@@ -88,9 +88,9 @@ where ``A = [\alpha_{ij}]`` is `cplmat` and ``u = [u_{j}]`` is the value of the 
 where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `outputfunc`.
 """
 @def_ode_system mutable struct LorenzSystem{RH, RO, IP, OP} <: AbstractODESystem
-    σ::Float64 = 1. 
-    β::Float64 = 1. 
-    ρ::Float64 = 1. 
+    σ::Float64 = 10.
+    β::Float64 = 8 / 3
+    ρ::Float64 = 28.
     γ::Float64 = 1.
     righthandside::RH = function lorenzrhs(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
         dx[1] = σ * (x[2] - x[1])
@@ -99,12 +99,37 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
         dx .*= γ
     end
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
     input::IP = nothing 
     output::OP = Outport(3) 
 end  
 
 
-##### Chen System 
+"""
+    ForcedLorenzSystem() 
+
+Constructs a LorenzSystem that is driven by its inputs.
+"""
+@def_ode_system mutable struct ForcedLorenzSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+    σ::Float64 = 10. 
+    β::Float64 = 8 / 3 
+    ρ::Float64 = 28
+    γ::Float64 = 1.
+    cplmat::CM = I(3)
+    righthandside::RH = function lorenzrhs(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
+        dx[1] = σ * (x[2] - x[1])
+        dx[2] = x[1] * (ρ - x[3]) - x[2]
+        dx[3] = x[1] * x[2] - β * x[3]
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3)
+    output::OP = Outport(3) 
+end  
+
+
 @doc raw"""
     ChenSystem(input, output, modelargs=(), solverargs=(); 
         a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
@@ -146,12 +171,37 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
         dx .*= γ
     end
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
     input::IP = nothing 
     output::OP = Outport(3)
 end
 
 
-##### Chua System
+"""
+    ForcedChenSystem() 
+
+Constructs Chen system driven by its inputs.
+"""
+@def_ode_system mutable struct ForcedChenSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+    a::Float64 = 35.
+    b::Float64 = 3.
+    c::Float64 = 28.
+    γ::Float64 = 1.
+    cplmat::CM = I(3)
+    righthandside::RH = function chenrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
+        dx[1] = a * (x[2] - x[1])
+        dx[2] = (c - a) * x[1] + c * x[2] - x[1] * x[3]
+        dx[3] = x[1] * x[2] - b * x[3]
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3)
+    output::OP = Outport(3)
+end
+
+
 Base.@kwdef struct PiecewiseLinearDiode
     m0::Float64 = -1.143
     m1::Float64 = -0.714
@@ -227,8 +277,30 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     output::OP = Outport(3)
 end
 
+"""
+    ForcedChuaSystem() 
 
-##### Rossler System
+Constructs a Chua system with inputs.
+"""
+@def_ode_system mutable struct ForcedChuaSystem{DT, CM, RH, RO, IP, OP} <: AbstractODESystem
+    diode::DT = PiecewiseLinearDiode()
+    α::Float64 = 15.6
+    β::Float64 = 28.
+    γ::Float64 = 1.
+    cplmat::CM = I(3)
+    righthandside::RH = function chuarhs(dx, x, u, t, diode=diode, α=α, β=β, γ=γ)
+        dx[1] = α * (x[2] - x[1] - diode(x[1]))
+        dx[2] = x[1] - x[2] + x[3]
+        dx[3] = -β * x[2]
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    readout::RO = (x, u, t) -> x
+    input::IP = Inport(3)
+    output::OP = Outport(3)
+end
+
+
 @doc raw"""
     RosslerSystem(input, output, modelargs=(), solverargs=(); 
         a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
@@ -270,12 +342,36 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
         dx .*= γ
     end
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
     input::IP = nothing
     output::OP = Outport(3)
 end
 
+"""
+    ForcedRosslerSystem()
 
-##### Vanderpol System
+Constructs a Rossler system driven by its input.
+"""
+@def_ode_system mutable struct ForcedRosslerSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+    a::Float64 = 0.38
+    b::Float64 = 0.3
+    c::Float64 = 4.82
+    gamma::Float64 = 1.
+    cplmat::CM = I(3)
+    righthandside::RH = function rosslerrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
+        dx[1] = -x[2] - x[3]
+        dx[2] = x[1] + a * x[2]
+        dx[3] = b + x[3] * (x[1] - c)
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3)
+    output::OP = Outport(3)
+end
+
+
 @doc raw"""
     VanderpolSystem(input, output, modelargs=(), solverargs=(); 
         mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
@@ -311,8 +407,30 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
         dx[2] = -μ * (x[1]^2 - 1) * x[2] - x[1]
         dx .*= γ
     end
-    readout::RO = (x, u, t) = x 
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(2) 
     input::IP = nothing 
+    output::OP = Outport(3)
+end
+
+"""
+    ForcedVanderpolSystem() 
+
+Constructs a Vanderpol system driven by its input.
+"""
+@def_ode_system mutable struct ForcedVanderpolSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+    μ::Float64 = 5.
+    γ::Float64 = 1.
+    cplmat::CM = I(2)
+    righthandside::RH = function vanderpolrhs(dx, x, u, t, μ=μ, γ=γ)
+        dx[1] = x[2]
+        dx[2] = -μ * (x[1]^2 - 1) * x[2] - x[1]
+        dx .*= γ
+        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+    end
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(2) 
+    input::IP = Inport(2)
     output::OP = Outport(3)
 end
   
@@ -332,28 +450,44 @@ where ``u(t)`` is the input, ``y(t)`` is the output and ``ki`` is the integratio
     ki::Float64 = 1.
     righthandside::RH = (dx, x, u, t) -> (dx[1] = ki * u[1](t))
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(1)
     input::IP = Inport() 
     output::OP = Outport()
 end
 
 ##### Pretty-printing 
-show(io::IO, ds::LinearSystem) = print(io, 
-    "Linearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
+show(io::IO, ds::ContinuousLinearSystem) = print(io, 
+    "ContinuousLinearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::LorenzSystem) = print(io, 
     "LorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedLorenzSystem) = print(io, 
+    "LorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), γ:$(ds.γ), cplmat:$(ds.cplmat), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::ChenSystem) = print(io, 
     "ChenSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedChenSystem) = print(io, 
+    "ChenSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), γ:$(ds.γ), cplmat:$(ds.cplmat), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::ChuaSystem) = print(io, 
     "ChuaSystem(diode:$(ds.diode), α:$(ds.α), β:$(ds.β), γ:$(ds.γ), state:$(ds.state), ",
     "t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedChuaSystem) = print(io, 
+    "ChuaSystem(diode:$(ds.diode), α:$(ds.α), β:$(ds.β), γ:$(ds.γ), cplmat:$(ds.cplmat), state:$(ds.state), ",
+    "t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::RosslerSystem) = print(io, 
     "RosslerSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedRosslerSystem) = print(io, 
+    "RosslerSystem(a:$(ds.a), b:$(ds.b), c:$(ds.c), γ:$(ds.γ), cplmat:$(ds.cplmat), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::VanderpolSystem) = print(io, 
     "VanderpolSystem(μ:$(ds.μ), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::ForcedVanderpolSystem) = print(io, 
+    "VanderpolSystem(μ:$(ds.μ), γ:$(ds.γ), cplmat:$(ds.cplmat), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::Integrator) = print(io, 
     "Integrator(ki:$(ds.ki), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

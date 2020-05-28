@@ -1,62 +1,211 @@
 # This file includes the Discrete Systems
 
+import DifferentialEquations: FunctionMap, DiscreteProblem
+import UUIDs: uuid4
+
+"""
+    @def_discrete_system
+
+Defines discrete systems
+"""
+macro def_discrete_system(ex) 
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+        t::Float64 = 0.
+        modelargs::MA = () 
+        modelkwargs::MK = NamedTuple() 
+        solverargs::SA = () 
+        solverkwargs::SK = NamedTuple() 
+        alg::AL = Jusdl.FunctionMap()
+        integrator::IT = Jusdl.construct_integrator(Jusdl.DiscreteProblem, input, righthandside, state, t, modelargs, 
+            solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
+    end, [:TR, :HS, :CB, :ID, :MA, :MK, :SA, :SK, :AL, :IT]
+    _append_commond_fields!(ex, fields...)
+    def(ex)
+end
+
+##### Define Discrete system library
 
 @doc raw"""
-    DiscreteSystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    DiscreteLinearSystem(input, output, modelargs=(), solverargs=(); 
+        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
+        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
 
-Constructs a `DiscreteSystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DiscreteSystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the diffence equation of the system.
+Constructs a `DiscreteLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
-The system is represented by
+The `DiscreteLinearSystem` is represented by the following state and output equations.
 ```math
-    \begin{array}{l}
-        x_{k + 1} = f(x_k, u_k, k) \\
-        y_k = g(x_k, u_k, k)
-    \end{array}
+\begin{array}{l}
+    \dot{x} = A x + B u \\[0.25cm]
+    y = C x + D u 
+\end{array}
 ```
-where ``x_k`` is the state,  ``y_k`` is the value of output, ``u_k`` is the value of input at dicrete time ``k``. ``f` is `statefunc` and ``g`` is `outputfunc`. 
-
-The signature of `statefunc` must be of the form 
-```julia 
-function statefunc(dx, x, u, t)
-    dx = ...   # Update dx
-end
-```
-and the signature of `outputfunc` must be of the form 
-```julia 
-function outputfunc(x, u, t)
-    y = ...   # Compute y
-    return y
-end
-```
-
-# Example 
-```julia 
-julia> sfuncdiscrete(dx,x,u,t) = (dx .= 0.5x);
-
-julia> ofuncdiscrete(x, u, t) = x;
-
-julia> DiscreteSystem(sfuncdiscrete, ofuncdiscrete, [1.], 0., nothing, Outport())
-DiscreteSystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
-```
-
-!!! info 
-    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs`, `solverkwargs` and `alg`.
+where ``x`` is `state`. `solver` is used to solve the above differential equation.
 """
-mutable struct DiscreteSystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDiscreteSystem
-    @generic_dynamic_system_fields
-    function DiscreteSystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=DiscreteAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing,
-         name=Symbol())
-        trigger, handshake, integrator = init_dynamic_system(
-                DiscreteProblem, statefunc, state, t, input, modelargs, solverargs; 
-                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
-            )
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
-            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
-            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
-    end
+@def_ode_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractODESystem
+    A::Matrix{Float64} = fill(-1., 1, 1)
+    B::Matrix{Float64} = fill(0., 1, 1)
+    C::Matrix{Float64} = fill(1., 1, 1)
+    D::Matrix{Float64} = fill(-1., 1, 1)
+    input::IP = Inport(1)
+    output::OP = nothing
+    state::Vector{Float64} = rand(size(A, 1))
+    righthandside::RH = input === nothing ? (dx, x, u, t) -> (dx .= A * x) : 
+        (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u.itp))
+    readout::RO = input === nothing ? (x, u, t) -> (C * x) : 
+           ( (C === nothing || D === nothing) ? nothing : (x, u, t) -> (C * x + D * map(ui -> ui(t), u)) )
 end
 
-show(io::IO, ds::DiscreteSystem) = print(io, 
-    "DiscreteSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+
+@doc raw"""
+    Henon()
+
+Constructs a `Henon` system evolving with the dynamics 
+```math
+\begin{array}{l}
+    \dot{x}_1 = 1 - \alpha (x_1^2) + x_2 \\[0.25cm]
+    \dot{x}_2 = \beta x_1
+\end{array}
+```
+"""
+@def_discrete_system struct HenonSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    α::Float64 = 1.4 
+    β::Float64 = 0.3 
+    γ::Float64 = 1.
+    righthandside::RH = function henonrhs(dx, x, u, t, α=α, β=β, γ=γ)
+        dx[1] = 1 - α * x[1]^2 + x[2] 
+        dx[2] = β * x[1]
+        dx .*= γ
+    end 
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(2)
+    input::IP = nothing
+    output::OP = Outport(2)
+end
+
+@doc raw"""
+    LoziSystem()
+
+Constructs a `Lozi` system evolving with the dynamics 
+```math
+\begin{array}{l}
+    \dot{x}_1 = 1 - \alpha |x_1| + x_2 \\[0.25cm]
+    \dot{x}_2 = \beta x_1
+\end{array}
+```
+"""
+@def_discrete_system struct LoziSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    α::Float64 = 1.4 
+    β::Float64 = 0.3 
+    γ::Float64 = 1.
+    righthandside::RH = function lozirhs(dx, x, u, t, α=α, β=β, γ=γ)
+        dx[1] = 1 - α * abs(x[1]) + x[2] 
+        dx[2] = β * x[1]
+        dx .*= γ
+    end 
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(2)
+    input::IP = nothing
+    output::OP = Outport(2)
+end
+
+
+@doc raw"""
+    BogdanovSystem() 
+
+Constructs a Bogdanov system with equations
+```math
+\begin{array}{l}
+    \dot{x}_1 = x_1 + \dot{x}_2 \\[0.25cm]
+    \dot{x}_2 = x_2 + \epsilon + x_2 + k x_1 (x_1 - 1) + \mu  x_1 x_2
+\end{array}
+```
+"""
+@def_discrete_system struct BogdanovSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    ε::Float64 = 0. 
+    μ::Float64 = 0. 
+    k::Float64 = 1.2 
+    γ::Float64 = 1.
+    righthandside::RH = function bogdanovrhs(dx, x, u, t, ε=ε, μ=μ, k=k, γ=γ)
+        dx[2]= x[2] + ε * x[2] + k * x[1] * (x[1] - 1) + μ * x[1] * x[2]
+        dx[1] = x[1] + dx[2]
+        dx .*= γ
+    end 
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(2)
+    input::IP = nothing
+    output::OP = Outport(2)
+end
+
+
+@doc raw"""
+    GingerbreadmanSystem() 
+
+Constructs a GingerbreadmanSystem with the dynamics 
+```math
+\begin{array}{l}
+    \dot{x}_1 = 1 - x_2 + |x_1|\\[0.25cm]
+    \dot{x}_2 = x_1
+\end{array}
+```
+"""
+@def_discrete_system struct GingerbreadmanSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    γ::Float64 = 1.
+    righthandside::RH = function gingerbreadmanrhs(dx, x, u, t, γ=γ)
+        dx[1] = 1 - x[2] + abs(x[1])
+        dx[2] = x[1]
+        dx .*= γ
+    end
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(2)
+    input::IP = nothing 
+    output::OP = Outport(2)
+end
+
+
+@doc raw"""
+    LogisticSystem() 
+
+Constructs a LogisticSystem with the dynamics 
+```math
+\begin{array}{l}
+    \dot{x} = r x (1 - x)
+\end{array}
+```
+"""
+@def_discrete_system struct LogisticSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    r::Float64 = 1.
+    γ::Float64 = 1.
+    righthandside::RH = function logisticrhs(dx, x, u, t, r = r, γ=γ)
+        dx[1] = r * x[1] * (1 - x[1])
+        dx[1] *= γ
+    end
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(1)
+    input::IP = nothing 
+    output::OP = Outport(1)
+end
+
+
+##### Pretty-printting 
+
+show(io::IO, ds::DiscreteLinearSystem) = print(io, 
+    "DiscreteLinearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::HenonSystem) = print(io, 
+    "HenonSystem(α:$(ds.α), β:$(ds.β), γ:$(ds.γ),state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::LoziSystem) = print(io, 
+    "LoziSystem(α:$(ds.α), β:$(ds.β), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::BogdanovSystem) = print(io, 
+    "BogdanovSystem(ε:$(ds.ε), μ:$(ds.μ), k:$(ds.k), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::GingerbreadmanSystem) = print(io, 
+    "GingerbreadmanSystem(γ:$(ds.γ), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::LogisticSystem) = print(io, 
+    "LogisticSystem(r:$(ds.r), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+

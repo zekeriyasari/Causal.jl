@@ -23,41 +23,94 @@ import FileIO: load
 import Base: show, display, write, read, close, setproperty!, mv, cp, open,  istaskdone, istaskfailed, 
     getindex, setindex!, size, isempty
 
-include("utilities/constants.jl")
 include("utilities/utils.jl")
 
 include("utilities/callback.jl")            
-export Callback, enable!, disable!, isenabled, applycallbacks
+export Callback, 
+    enable!, 
+    disable!, 
+    isenabled, 
+    applycallbacks
 
 include("utilities/buffer.jl")
-export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
+export BufferMode, 
+    LinearMode,
+    CyclicMode, 
+    Buffer, 
+    Normal, 
+    Cyclic, 
+    Fifo, 
+    Lifo, 
+    write!, 
+    isfull, 
+    ishit, 
+    content, 
+    mode, 
+    snapshot, 
+    datalength, 
+    inbuf, 
+    outbuf
 
 include("connections/link.jl")
-export Link, launch
+export Link, 
+    launch
 
 include("connections/pin.jl")
-export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound
+export AbstractPin, 
+    Outpin, 
+    Inpin, 
+    connect!, 
+    disconnect!, 
+    isconnected, 
+    isbound
 
 include("connections/port.jl")
-export AbstractPort, Inport, Outport, datatype
+export AbstractPort, 
+    Inport, 
+    Outport, 
+    datatype
 
-include("components/interpolant.jl")
+include("components/componentsbase/hierarchy.jl")
+export AbstractComponent, 
+    AbstractSource, 
+    AbstractSystem,
+    AbstractSink, 
+    AbstractStaticSystem, 
+    AbstractDynamicSystem, 
+    AbstractSubSystem, 
+    AbstractMemory, 
+    AbstractDiscreteSystem, 
+    AbstractODESystem, 
+    AbstractRODESystem, 
+    AbstractDAESystem, 
+    AbstractSDESystem, 
+    AbstractDDESystem
+
+include("components/componentsbase/macros.jl")
+include("components/componentsbase/interpolant.jl")
 export Interpolant
 
-include("components/hierarchy.jl")
-export AbstractComponent, AbstractSource, AbstractSystem, AbstractSink, AbstractStaticSystem, 
-AbstractDynamicSystem, AbstractSubSystem, AbstractMemory, AbstractDiscreteSystem, AbstractODESystem, 
-AbstractRODESystem, AbstractDAESystem, AbstractSDESystem, AbstractDDESystem
+include("components/componentsbase/takestep.jl")
+export readtime!, 
+    readstate, 
+    readinput!, 
+    writeoutput!, 
+    computeoutput, 
+    evolve!, 
+    takestep!, 
+    drive!, 
+    approve!
 
-include("components/macros.jl")
+include("components/sources/clock.jl")
+export Clock, 
+    isrunning, 
+    ispaused, 
+    isoutoftime, 
+    set!, 
+    stop!, 
+    pause!
 
-include("components/takestep.jl")
-export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, drive!, approve!
-
-include("components/clock.jl")
-export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
-
-include("components/generators.jl")
+include("components/sources/generators.jl")
 export @def_source,
     SinewaveGenerator,
     DampedSinewaveGenerator,
@@ -85,11 +138,16 @@ include("components/systems/dynamicalsystems/init.jl")
 include("components/systems/dynamicalsystems/odesystems.jl")
 export @def_ode_system,
     ContinuousLinearSystem,
-    LorenzSystem, ForcedLorenzSystem, 
-    ChenSystem, ForcedChenSystem,
-    ChuaSystem, ForcedChuaSystem,
-    RosslerSystem, ForcedRosslerSystem,
-    VanderpolSystem, ForcedVanderpolSystem,
+    LorenzSystem, 
+    ChenSystem,
+    ChuaSystem, 
+    RosslerSystem, 
+    VanderpolSystem, 
+    ForcedLorenzSystem, 
+    ForcedChenSystem,
+    ForcedChuaSystem,
+    ForcedRosslerSystem,
+    ForcedVanderpolSystem,
     Integrator
 
 include("components/systems/dynamicalsystems/discretesystems.jl")
@@ -103,7 +161,8 @@ export @def_discrete_system,
 
 include("components/systems/dynamicalsystems/sdesystems.jl")
 export @def_sde_system,
-    NoisyLorenzSystem, ForcedNoisyLorenzSystem
+    NoisyLorenzSystem, 
+    ForcedNoisyLorenzSystem
 
 include("components/systems/dynamicalsystems/daesystems.jl")
 export @def_dae_system, 
@@ -119,7 +178,7 @@ include("components/systems/dynamicalsystems/ddesystems.jl")
 export @def_dde_system, 
     DelayFeedbackSystem
 
-include("components/sinks.jl")
+include("components/sinks/sinks.jl")
 export @def_sink,
     Writer, 
     Printer,
@@ -129,19 +188,42 @@ export @def_sink,
     fread
     update!
 
-
 include("models/taskmanager.jl")
 export TaskManager, 
     checktaskmanager
 
 include("models/simulation.jl")
-export Simulation, SimulationError, setlogger, closelogger, report
+export Simulation, 
+    setlogger, 
+    closelogger, 
+    report
 
 include("models/model.jl")
-export Model, getloops, breakloop, inspect!, initialize!, run!, terminate!, simulate!
-export Node, Branch, addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow
+export Model, 
+    inspect!, 
+    initialize!, 
+    run!, 
+    terminate!, 
+    simulate!,
+    getloops, 
+    breakloop,
+    Node, 
+    Branch, 
+    addnode!, 
+    getnode, 
+    addbranch!,
+    getbranch, 
+    deletebranch!, 
+    signalflow,
+    @defmodel
 
 include("plugins/loadplugins.jl")
-export AbstractPlugin, process, add, remove, enable, disable, check
+export AbstractPlugin, 
+    process,
+    add, 
+    remove, 
+    enable, 
+    disable, 
+    check
 
 end  # module

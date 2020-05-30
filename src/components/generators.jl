@@ -20,13 +20,13 @@ end
 macro def_source(ex) 
     fields = quote
         trigger::TR = Inpin()
-        handshake::HS = Outpin()
+        handshake::HS = Outpin{Bool}()
         callbacks::CB = nothing
         name::Symbol = Symbol()
         id::ID = Jusdl.uuid4()
     end, [:TR, :HS, :CB, :ID]
-    _append_commond_fields!(ex, fields...)
-    def(ex)
+    _append_common_fields!(ex, fields...)
+    deftype(ex)
 end
 
 

@@ -1,41 +1,41 @@
-# This file includes the writers
-
+# This file constains sink tools for the objects of Jusdl.
 
 """
-    Writer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
-        path=joinpath(tempdir(), string(name))) 
+    @def_sink 
 
-Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
-
-!!! note 
-    The type of `file` of `Writer` is [`JLD2`](https://github.com/JuliaIO/JLD2.jl).    
-
-!!! warning 
-    When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
+Used to define sinks
 """
-mutable struct Writer{IB, DB, TB, PL, TR, HS, CB, FL} <: AbstractSink
-    @generic_sink_fields
-    file::FL
-    function Writer(input::Inport{<:Inpin{T}}=Inport(); buflen=64, plugin=nothing, callbacks=nothing, 
-        name=Symbol(uuid4()), path=joinpath(tempdir(), string(name))) where T 
-        endswith(path, ".jld2") || (path *= ".jld2")
-        file = jldopen(path, "w")
-        close(file)     # Close file so that the file can be sent to remote Julia processes
-        timebuf = Buffer(buflen)
-        databuf = length(input) == 1 ? Buffer(T, buflen) :  Buffer(T, length(input), buflen)
-        id = uuid4() 
-        callbacks = fasten!(plugin, write!, timebuf, databuf, callbacks, id)
-        trigger = Inpin()
-        handshake = Outpin{Bool}()
-        new{typeof(input), typeof(databuf), typeof(timebuf), typeof(plugin), typeof(trigger), typeof(handshake), 
-            typeof(callbacks), typeof(file)}(input, databuf, timebuf, plugin, trigger, handshake, callbacks, name, id, 
-            file)
-    end
+macro def_sink(ex) 
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin{Bool}()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+        input = Inport(1)
+        buflen::Int = 64
+        plugin::PL = nothing
+        timebuf::TB = Buffer(buflen) 
+        databuf::DB = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)
+        sinkcallback::SCB = plugin === nothing ? 
+            Callback(sink->ishit(databuf), sink->action(outbuf(timebuf), outbuf(databuf)), true, id) :
+            Callback(sink->ishit(databuf), sink->action(outbuf(timebuf), plugin.process(outbuf(databuf))), true, id)
+    end, [:TR, :HS, :CB, :ID, :PL, :TB, :DB, :SCB]
+    _append_common_fields!(ex, fields...)
+    deftype(ex)
 end
 
-show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
 
-##### Writer reading and writing
+##### Define sink library
+
+# ----------------------------- Writer -------------------------------- 
+
+@def_sink mutable struct Writer{A, FL} <: AbstractSink
+    action::A = write!
+    path::String = joinpath(tempdir(), string(uuid4()))
+    file::FL = (f = jldopen(path, "w"); close(f); f)
+end
+
 """
     write!(writer, td, xd)
 
@@ -72,16 +72,7 @@ fwrite!(file, td, xd) = file[string(td)] = xd
 
 Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is also flattened.
 """
-function read(writer::Writer; flatten=true) 
-    content = fread(writer.file.path, flatten=flatten)
-    # if flatten
-    #     t = vcat(collect(keys(content))...)
-    #     x = collect(hcat(vcat(collect(values(content))...)...)')
-    #     return t, x
-    # else
-    #     return content
-    # end
-end
+read(writer::Writer; flatten=true) = fread(writer.file.path, flatten=flatten)
 
 """
     fread(path::String)
@@ -111,7 +102,6 @@ Returns a tuple of keys and values of `content`.
 """
 flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
 
-##### Writer controls
 """
     mv(writer::Writer, dst; force::Bool=false)
 
@@ -183,3 +173,89 @@ open(writer::Writer) = (writer.file = jldopen(writer.file.path, "a"); writer)
 Closes `writer` by closing its `file`. When `writer` is closed, it is not possible to write data in `writer`. See also [`open(writer::Writer)`](@ref)
 """
 close(writer::Writer) =  (close(writer.file); writer)
+
+
+# ----------------------------- Printer --------------------------------
+
+@def_sink mutable struct Printer{A} <: AbstractSink 
+    action::A = print 
+end
+
+import Base.print
+
+"""
+    print(printer::Printer, td, xd)
+
+Prints `xd` corresponding to `xd` to the console.
+"""
+print(printer::Printer, td, xd) = print("For time", "[", td[1], " ... ", td[end], "]", " => ", xd, "\n")
+
+"""
+    open(printer::Printer)
+
+Does nothing. Just a common interface function ot `AbstractSink` interface.
+"""
+open(printer::Printer) = printer
+
+"""
+    close(printer::Printer)
+
+Does nothing. Just a common interface function ot `AbstractSink` interface.
+"""
+close(printer::Printer) =  printer
+
+# ----------------------------- Scope --------------------------------
+
+@def_sink mutable struct Scope{A, PA, PK, PLT} <: AbstractSink
+    action::A = update!
+    pltargs::PA = () 
+    pltkwargs::PK = NamedTuple()
+    plt::PLT = plot(pltargs...; pltkwargs...)
+end
+
+"""
+    update!(s::Scope, x, yi)
+
+Updates the series of the plot windows of `s` with `x` and `yi`.
+"""
+function update!(s::Scope, x, yi)
+    y = collect(hcat(yi...)')
+    plt = s.plt
+    subplots = plt.subplots
+    clear.(subplots)
+    plot!(plt, x, y, xlim=(x[1], x[end]), label="")  # Plot the new series
+    gui()
+end
+
+clear(sp::Plots.Subplot) = popfirst!(sp.series_list)  # Delete the old series 
+
+""" 
+    close(sink::Scope)
+
+Closes the plot window of the plot of `sink`.
+"""
+close(sink::Scope) = closeall()
+
+"""
+    open(sink::Scope)
+
+Opens the plot window for the plots of `sink`.
+"""
+open(sink::Scope) = Plots.isplotnull() ? (@warn "No current plots") : gui()
+
+
+##### Pretty printing 
+
+show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
+show(io::IO, printer::Printer) = print(io, "Printer(nin:$(length(printer.input)))")
+show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
+
+##### Deprecated
+
+# function unfasten!(sink::AbstractSink)
+#     callbacks = sink.callbacks
+#     sid = sink.id
+#     typeof(callbacks) <: AbstractVector && disable!(callbacks[callback.id == sid for callback in callbacks])
+#     typeof(callbacks) <: Callback && disable!(callbacks)
+#     sink
+# end

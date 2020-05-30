@@ -1,73 +1,62 @@
 # This file includes DDESystems
 
+import DifferentialEquations: MethodOfSteps, Tsit5 
+import UUIDs: uuid4
 
-@doc raw"""
-    DDESystem(input, output, statefunc, outputfunc, state, t, modelargs=(), solverargs=(); 
-        alg=DDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
-
-Constructs a `DDESystem` with `input` and `output`. `statefunc` is the state function and `outputfunc` is the output function of `DDESystem`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
-
-The `DDESystem` is represented by
-```math 
-    \begin{array}{l}
-        \dot{x} = f(x, h, u, t) \\
-        y = g(x, u, t)
-    \end{array}
-```
-where ``t`` is the time `t`, ``x`` is the value of `state`, ``u`` is the value of `input`, ``y`` is the value of `output`. ``f`` is `statefunc`, ``g`` is `outputfunc`. ``h``is the history function of `history`. `solver` is used to solve the above differential equation.
-
-The syntax of `statefunc` must be of the form 
-```julia 
-function statefunc(dx, x, u, t)
-    dx .= ... # Update dx
-end
-```
-and the syntax of `outputfunc` must be of the form 
-```julia 
-function outputfunc(x, u, t)
-    y = ... # Compute y 
-    return y
-end
-```
-# Example 
-```julia
-julia> const out = zeros(1);
-
-julia> histfunc(out, u, t) = (out .= 1.);
-
-julia> function sfuncdde(dx, x, h, u, t)
-           h(out, u, t - tau) # Update out vector
-           dx[1] = out[1] + x[1]
-       end;
-
-julia> ofuncdde(x, u, t) = x;
-
-julia> tau = 1;
-
-julia> conslags = [tau];
-
-julia> DDESystem((sfuncdde, histfunc), ofuncdde, [1.],  0., nothing, Outport())
-DDESystem(state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
-```
-
-!!! info 
-    See [DifferentialEquations](https://docs.juliadiffeq.org/) for more information about `modelargs`, `modelkwargs`, `solverargs` `solverkwargs` and `alg`.
 """
-mutable struct DDESystem{SF, OF, ST, T, IN, IB, OB, TR, HS, CB} <: AbstractDDESystem
-    @generic_dynamic_system_fields
-    function DDESystem(statefunc, outputfunc, state, t, input, output, modelargs=(), solverargs=(); 
-        alg=DDEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
-        name=Symbol())
-        trigger, handshake, integrator = init_dynamic_system(
-                DDEProblem, statefunc, state, t, input, modelargs, solverargs; 
-                alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=numtaps
-            )
-        new{typeof(statefunc), typeof(outputfunc), typeof(state), typeof(t), typeof(integrator), typeof(input), 
-            typeof(output), typeof(trigger), typeof(handshake), typeof(callbacks)}(statefunc, outputfunc, state, t, 
-            integrator, input, output, trigger, handshake, callbacks, name, uuid4())
-    end
+    @def_dde_system
+
+Used to define DDE system
+"""
+macro def_dde_system(ex)
+    fields = quote
+        trigger::TR = Inpin()
+        handshake::HS = Outpin{Bool}()
+        callbacks::CB = nothing
+        name::Symbol = Symbol()
+        id::ID = Jusdl.uuid4()
+        t::Float64 = 0.
+        modelargs::MA = () 
+        modelkwargs::MK = NamedTuple() 
+        solverargs::SA = () 
+        solverkwargs::SK = NamedTuple() 
+        alg::AL = Jusdl.MethodOfSteps(Tsit5())
+        integrator::IT = Jusdl.construct_integrator(
+            Jusdl.DDEProblem, input, (righthandside, history), state, t, modelargs, solverargs; 
+            alg=alg, modelkwargs=(; 
+            zip(
+                (keys(modelkwargs)..., :constant_lags, :dependent_lags), 
+                (values(modelkwargs)..., constlags, depslags))...
+                ), 
+            solverkwargs=solverkwargs, numtaps=3)
+    end, [:TR, :HS, :CB, :ID, :MA, :MK, :SA, :SK, :AL, :IT]
+    _append_common_fields!(ex, fields...)
+    deftype(ex)
 end
 
-show(io::IO, ds::DDESystem) = print(io, 
-    "DDESystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+
+@def_dde_system struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+    constlags::Vector{Float64} = Jusdl._delay_feedback_system_constlags
+    depslags::Nothing = nothing
+    righthandside::RH = Jusdl._delay_feedback_system_rhs
+    history::HST = Jusdl._delay_feedback_system_history
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(1)
+    input::IP = nothing 
+    output::OP = Outport(1)
+end
+
+_delay_feedback_system_cache = zeros(1)
+_delay_feedback_system_tau = 1.
+_delay_feedback_system_constlags = [1.]
+_delay_feedback_system_history(cache, u, t) = (cache .= 1.)
+function _delay_feedback_system_rhs(dx, x, h, u, t, 
+    cache=Jusdl._delay_feedback_system_cache, τ=Jusdl._delay_feedback_system_tau)
+    h(cache, u, t - τ)  # Update cache 
+    dx[1] = cache[1] + x[1]
+end
+
+
+show(io::IO, ds::DelayFeedbackSystem) = print(io, 
+    "DelayFeedbackSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

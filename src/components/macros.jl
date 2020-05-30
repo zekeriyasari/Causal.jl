@@ -1,26 +1,7 @@
-# This file contains the Base module of Plugins module.
+# This file includes macro tools to define new components types
 
-# Type hierarchy
-abstract type AbstractComponent end
-abstract type AbstractSource <: AbstractComponent end
-abstract type AbstractSystem <: AbstractComponent end
-abstract type AbstractSink <: AbstractComponent end 
 
-abstract type AbstractStaticSystem <: AbstractSystem end
-abstract type AbstractDynamicSystem <: AbstractSystem end
-abstract type AbstractSubSystem <: AbstractSystem end
-abstract type AbstractMemory <: AbstractStaticSystem end
-abstract type AbstractDiscreteSystem <: AbstractDynamicSystem end
-abstract type AbstractODESystem <: AbstractDynamicSystem end
-abstract type AbstractRODESystem <: AbstractDynamicSystem end
-abstract type AbstractDAESystem <: AbstractDynamicSystem end
-abstract type AbstractSDESystem <: AbstractDynamicSystem end
-abstract type AbstractDDESystem <: AbstractDynamicSystem end
-
-#####
-##### Component defition syntax.
-#####
-function _append_commond_fields!(ex, newbody, newparamtypes)
+function _append_common_fields!(ex, newbody, newparamtypes)
     # Append body 
     body = ex.args[3]
     append!(body.args, newbody.args)
@@ -38,7 +19,7 @@ function _append_commond_fields!(ex, newbody, newparamtypes)
     end 
 end
 
-function def(ex)
+function deftype(ex)
     # Check ex head
     ex isa Expr && ex.head == :struct || error("Invalid source defition")
 

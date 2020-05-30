@@ -44,17 +44,17 @@ end
 """
     computeoutput(comp, x, u, t)
 
-Computes the output of `comp` according to its `outputfunc` if `outputfunc` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
+Computes the output of `comp` according to its `readout` if `readout` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
 """
 function computeoutput end
-computeoutput(comp::AbstractSource, x, u, t) = comp.outputfunc(t)
+computeoutput(comp::AbstractSource, x, u, t) = comp.readout(t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
-    typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(u, t)
+    typeof(comp.readout) <: Nothing ? nothing : comp.readout(u, t)
 function computeoutput(comp::AbstractDynamicSystem, x, u, t)
-    typeof(comp.outputfunc) <: Nothing && return nothing
-    typeof(u) <: Nothing ? comp.outputfunc(x, u, t) : comp.outputfunc(x, map(uu -> t -> uu, u), t) 
+    typeof(comp.readout) <: Nothing && return nothing
+    typeof(u) <: Nothing ? comp.readout(x, u, t) : comp.readout(x, map(uu -> t -> uu, u), t) 
 end
-    # typeof(comp.outputfunc) <: Nothing ? nothing : comp.outputfunc(x, constructinput(comp, u, t), t)
+    # typeof(comp.readout) <: Nothing ? nothing : comp.readout(x, constructinput(comp, u, t), t)
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 
 """
@@ -76,7 +76,7 @@ Solves the differential equation of the system of `comp` for the time interval `
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
-evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); nothing)
+evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); comp.sinkcallback(comp); nothing)
 function evolve!(comp::AbstractStaticSystem, u, t)
     if typeof(comp) <: AbstractMemory 
         timebuf = comp.timebuf 
@@ -108,16 +108,6 @@ function update_interpolator!(interp::Interpolant, u, t)
     write!(interp.databuf, u)
     update!(interp)
 end
-
-# function advance!(comp::AbstractDynamicSystem, u, t)
-#     interpolator = comp.integrator.sol.prob.p
-#     update_interpolator!(interpolator, u, t)
-#     step!(comp.integrator, t - comp.t, true)
-# end
-# update_interpolator!(interp::Interpolant) = (interp.tinit = interp.tfinal; interp.coefinit = interp.coeffinal)
-# update_interpolator!(interp::Interpolant, u, t) = (interp.tfinal = t; interp.coeffinal = u)
-# updatetime!(comp) = (comp.t = comp.integrator.t)
-# updatestate!(comp) = (comp.state = comp.integrator.u)
 
 ##### Task management
 """

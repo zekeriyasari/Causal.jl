@@ -7,7 +7,7 @@ import UUIDs: uuid4
 macro def_ode_system(ex) 
     fields = quote
         trigger::TR = Inpin()
-        handshake::HS = Outpin()
+        handshake::HS = Outpin{Bool}()
         callbacks::CB = nothing
         name::Symbol = Symbol()
         id::ID = Jusdl.uuid4()
@@ -20,8 +20,8 @@ macro def_ode_system(ex)
         integrator::IT = Jusdl.construct_integrator(Jusdl.ODEProblem, input, righthandside, state, t, modelargs, 
             solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
     end, [:TR, :HS, :CB, :ID, :MA, :MK, :SA, :SK, :AL, :IT]
-    _append_commond_fields!(ex, fields...)
-    def(ex)
+    _append_common_fields!(ex, fields...)
+    deftype(ex)
 end
 
 

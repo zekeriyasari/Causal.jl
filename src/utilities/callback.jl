@@ -26,12 +26,11 @@ julia> obj.clb(obj)  # Call the callback bound `obj`.
 Printing the object Object(1, Callback(condition:cond, action:action))
 ```
 """
-mutable struct Callback{CN, AC}
-    condition::CN       
-    action::AC     
-    enabled::Bool
-    id::UUID
-    Callback(condition::CN, action::AC) where {CN, AC} = new{CN, AC}(condition, action, true, uuid4()) 
+Base.@kwdef mutable struct Callback{CN, AC}
+    condition::CN = obj -> false 
+    action::AC = obj -> nothing
+    enabled::Bool = true 
+    id::UUID = uuid4()
 end
 
 show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), action:$(clb.action))")
@@ -59,7 +58,8 @@ Returns `true` if `clb` is enabled. Otherwise, returns `false`.
 isenabled(clb::Callback) = clb.enabled
 
 ##### Callback calls
-(clb::Callback)(obj) = clb.enabled && clb.condition(obj) ?  clb.action(obj) : nothing
+# Apply callback asynchronously.
+(clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? @async(clb.action(obj)) : nothing
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
 
 """

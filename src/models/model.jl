@@ -590,8 +590,14 @@ macro defmodel(name, ex)
         for (src, dst) in zip($lhs, $rhs)
             if src isa Symbol && dst isa Symbol 
                 addbranch!($name, src => dst)
-            elseif src isa Expr && dst isa Expr 
-                addbranch!($name, src.args[1] => dst.args[1], src.args[2] => dst.args[2])
+            elseif src isa Expr && dst isa Expr # src and dst has index.
+                if src.args[2] isa Expr && dst.args[2] isa Expr     
+                    # array or range index.
+                    addbranch!($name, src.args[1] => dst.args[1], eval(src.args[2]) => eval(dst.args[2]))
+                else   
+                    # integer index
+                    addbranch!($name, src.args[1] => dst.args[1], src.args[2] => dst.args[2])
+                end
             else 
                 error("Ambbiuos connection. Specify the indexes explicitely.")
             end

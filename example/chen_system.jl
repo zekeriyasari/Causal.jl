@@ -8,7 +8,7 @@ using Plots
         writer = Writer(input=Inport(3)) 
     end
     @branches begin 
-        ds => writer
+        ds[1:3] => writer[1:3]
     end
 end
 

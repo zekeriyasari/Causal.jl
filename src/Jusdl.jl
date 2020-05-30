@@ -123,7 +123,7 @@ export @def_source,
     DampedExponentialGenerator
 
 
-include("components/systems/staticsystems.jl")
+include("components/systems/staticsystems/staticsystems.jl")
 export @def_static_system,
     Adder,
     Multiplier, 

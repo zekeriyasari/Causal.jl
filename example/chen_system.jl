@@ -13,7 +13,7 @@ using Plots
 end
 
 # Simulate the model 
-@time simulate!(model, 0, 0.01, 100.)
+simulate!(model, 0, 0.01, 100.)
 
 # Plot results 
 t, x = read(getnode(model, :writer).component)

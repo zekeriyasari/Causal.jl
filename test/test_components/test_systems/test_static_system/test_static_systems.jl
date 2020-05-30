@@ -4,8 +4,13 @@
     @info "Running StaticSystemTestSet ..."
 
     # StaticSystem construction
-    ofunc(u, t) = [u[1] + u[2], u[1] - u[2], u[1] * u[2]]
-    ss = StaticSystem(ofunc, Inport(2), Outport(3))
+    @def_static_system struct Mysystem{IP, OP, RO} <: AbstractStaticSystem 
+        input::IP = Inport(2)
+        output::OP = Outport(3)
+        readout::RO = (u, t) -> [u[1] + u[2], u[1] - u[2], u[1] * u[2]]
+    end
+    # ofunc(u, t) = [u[1] + u[2], u[1] - u[2], u[1] * u[2]]
+    ss = Mysystem()
     @test isimmutable(ss)
     @test length(ss.input) == 2
     @test length(ss.output) == 3
@@ -14,14 +19,14 @@
     @test typeof(ss.trigger) == Inpin{Float64}
     @test typeof(ss.handshake) == Outpin{Bool}
     
-    ofunc2(u, t) = nothing
-    ss = StaticSystem(ofunc2, nothing, nothing)  # Input or output may be nothing
+    # ofunc2(u, t) = nothing
+    ss = Mysystem(readout=nothing, input=nothing, output=nothing)  # Input or output may be nothing
     @test ss.input === nothing
     @test ss.output === nothing
 
     # Driving of StaticSystem
     ofunc3(u, t) = u[1] + u[2] 
-    ss = StaticSystem(ofunc3, Inport(2), Outport(1))
+    ss = Mysystem(readout = ofunc3, input=Inport(2), output=Outport(1))
     iport, oport, ipin, opin = Inport(1), Outport(2), Inpin{Bool}(), Outpin()
     connect!(oport, ss.input)
     connect!(ss.output, iport)
@@ -51,7 +56,7 @@
     @test ss.signs == (+, +)
     @test length(ss.output) == 1
 
-    ss = Adder((+, +, -))
+    ss = Adder(signs=(+, +, -))
     @test ss.signs == (+, +, -)
     oport, iport, opin, ipin = Outport(3), Inport(1), Outpin(), Inpin{Bool}()
     connect!(opin, ss.trigger)
@@ -74,12 +79,12 @@
     @test istaskdone(tsk2)
 
     # Multiplier tests
-    ss = Multiplier((*, *))
+    ss = Multiplier(ops=(*, *))
     @test isimmutable(ss)
     @test ss.ops == (*, *)
     @test length(ss.output) == 1
 
-    ss = Multiplier((*, *, /,*))
+    ss = Multiplier(ops=(*, *, /,*))
     @test ss.ops == (*, *, /, *)
     oport, iport, opin, ipin = Outport(4), Inport(1), Outpin(), Inpin{Bool}()
     connect!(opin, ss.trigger)
@@ -102,12 +107,12 @@
     @test istaskdone(tsk2)
 
     # Gain tests 
-    ss = Gain(Inport(3))
+    ss = Gain(input=Inport(3))
     @test isimmutable(ss)
     @test ss.gain == 1.
     @test length(ss.output) == 3
     K = rand(3, 3)
-    ss = Gain(Inport(3), gain=K)
+    ss = Gain(input=Inport(3), gain=K)
     oport, iport, opin, ipin = Outport(3), Inport(3), Outpin(), Inpin{Bool}()
     connect!(oport, ss.input)
     connect!(opin, ss.trigger)
@@ -130,9 +135,9 @@
     @test istaskdone(tsk2)
 
     # Terminator tests 
-    ss = Terminator(Inport(3))
+    ss = Terminator(input=Inport(3))
     @test isimmutable(ss)
-    @test ss.outputfunc === nothing
+    @test ss.readout === nothing
     @test ss.output === nothing
     @test typeof(ss.trigger) == Inpin{Float64}
     @test typeof(ss.handshake) == Outpin{Bool}
@@ -150,7 +155,7 @@
     @test istaskdone(tsk)
 
     # Memory tests
-    ss = Memory(1, numtaps=10, initial=zeros(3), t0=0., dt=1)
+    ss = Memory(delay=1., numtaps=10, initial=zeros(3))
     @test isimmutable(ss)
     @test size(ss.databuf) == (3, 10)
     @test size(ss.timebuf) == (10,)
@@ -185,7 +190,7 @@
     # Coupler test
     conmat =  [-1 1; 1 -1]
     cplmat = [1 0 0; 0 0 0; 0 0 0]
-    ss = Coupler(conmat, cplmat)
+    ss = Coupler(conmat=conmat, cplmat=cplmat)
     @test isimmutable(ss)
     @test typeof(ss.trigger) == Inpin{Float64}
     @test typeof(ss.handshake) == Outpin{Bool}

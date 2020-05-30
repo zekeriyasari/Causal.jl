@@ -45,11 +45,11 @@ where ``x`` is `state`. `solver` is used to solve the above differential equatio
 """
 @def_ode_system mutable struct ContinuousLinearSystem{IP, OP, RH, RO} <: AbstractODESystem
     A::Matrix{Float64} = fill(-1., 1, 1)
-    B::Matrix{Float64} = fill(0., 1, 1)
+    B::Matrix{Float64} = fill(1., 1, 1)
     C::Matrix{Float64} = fill(1., 1, 1)
-    D::Matrix{Float64} = fill(-1., 1, 1)
+    D::Matrix{Float64} = fill(0., 1, 1)
     input::IP = Inport(1)
-    output::OP = nothing
+    output::OP = Outport(1)
     state::Vector{Float64} = rand(size(A, 1))
     righthandside::RH = input === nothing ? (dx, x, u, t) -> (dx .= A * x) : 
         (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u.itp))

@@ -1,23 +1,26 @@
 using Jusdl 
-using Plots; pyplot()
+using Plots
 
-# Construct a model 
-model = Model(clock=Clock(0, 0.01, 10)) 
-addcomponent(model, FunctionGenerator(one, name=:gen))
-addcomponent(model, Adder(Inport(2), (+, -), name=:adder))
-addcomponent(model, LinearSystem(Inport(), Outport(), B=fill(1, 1, 1), name=:ds))
-addcomponent(model, Memory(Inport(), 2, name=:mem))
-addcomponent(model, Writer(Inport(), name=:writer4))
-addconnection(model, :gen, :adder, 1, 1)
-addconnection(model, :adder, :ds)
-addconnection(model, :ds, :mem)
-addconnection(model, :mem, :adder, 1, 2)
-addconnection(model, :ds, :writer4)
+# Deifne model 
+@defmodel model begin
+    @nodes begin 
+        gen = ConstantGenerator(amplitude=1.) 
+        adder = Adder(signs=(+, -)) 
+        ds = ContinuousLinearSystem(state=rand(1))
+        writer = Writer() 
+    end 
+    @branches begin 
+        gen[1] => adder[1] 
+        adder => ds
+        ds[1] => adder[2] 
+        ds => writer
+    end
+end
 
 # Simulate the model 
-sim = simulate!(model)
+sim = simulate!(model, 0., 0.01, 10.)
 
 # Plots results
-t, x = read(getcomponent(model, :writer4), flatten=true)
+t, x = read(getnode(model, :writer).component)
 p = plot(t, x)
 display(p)

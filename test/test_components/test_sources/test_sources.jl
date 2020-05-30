@@ -47,17 +47,21 @@ end  # testset
 @testset "GeneratorsTestSet" begin 
     @info "Running GeneratorsTestSet ..."
     # FunctionGenerator construction
-    gen = FunctionGenerator(sin)
+    gen = SinewaveGenerator()
     @test typeof(gen.trigger) == Inpin{Float64} 
     @test typeof(gen.handshake) == Outpin{Bool} 
     @test !hasfield(typeof(gen), :input)
     @test typeof(gen.output) == Outport{Outpin{Float64}}
 
-    gen = FunctionGenerator(t -> [sin(t), cos(t)])
+    @def_source struct  Mygen{OP, RO} <: AbstractSource 
+        output::OP = Outport(2) 
+        readout::RO = t -> [sin(t), cos(t)]
+    end
+    gen = Mygen()
     @test length(gen.output) == 2
 
     # Driving FunctionGenerator
-    gen = FunctionGenerator(t -> t)
+    gen = Mygen(readout = t -> t, output=Outport(1))
     trg = Outpin()
     hnd = Inpin{Bool}()
     ip = Inport()
@@ -91,8 +95,8 @@ end  # testset
     dampedexpgen = DampedExponentialGenerator()
 
     # Mutaton of generators 
-    sinegen.amplitude = 5.
-    sqauregen.high = 10.
+    @test_throws Exception sinegen.amplitude = 5.
+    @test_throws Exception sqauregen.high = 10.
 
     @info "Done GeneratorsTestSet ..."
 end  # testset

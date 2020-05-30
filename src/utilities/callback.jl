@@ -59,6 +59,7 @@ isenabled(clb::Callback) = clb.enabled
 
 ##### Callback calls
 # Apply callback asynchronously.
+# (clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? clb.action(obj) : nothing
 (clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? @async(clb.action(obj)) : nothing
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
 

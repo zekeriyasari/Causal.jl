@@ -113,7 +113,7 @@ Constructs a LorenzSystem that is driven by its inputs.
 @def_ode_system mutable struct ForcedLorenzSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
     σ::Float64 = 10. 
     β::Float64 = 8 / 3 
-    ρ::Float64 = 28
+    ρ::Float64 = 28.
     γ::Float64 = 1.
     cplmat::CM = I(3)
     righthandside::RH = function lorenzrhs(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)

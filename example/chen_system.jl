@@ -1,17 +1,22 @@
 using Jusdl
-using Plots; pyplot()
+using Plots
 
-# Construct the model 
-model = Model(clock=Clock( 0., 0.001, 100.))
-addcomponent(model, ChenSystem(nothing, Outport(3), name=:ds))
-addcomponent(model, Writer(Inport(3), name=:writer))
-addconnection(model, :ds, :writer)
+# Construct the model
+@defmodel model begin
+    @nodes begin 
+        ds = ChenSystem() 
+        writer = Writer(input=Inport(3)) 
+    end
+    @branches begin 
+        ds => writer
+    end
+end
 
-# Simulate model 
-sim = simulate!(model)
+# Simulate the model 
+@time simulate!(model, 0, 0.01, 100.)
 
 # Plot results 
-t, x = read(getcomponent(model, :writer), flatten=true)
+t, x = read(getnode(model, :writer).component)
 plots = [
     plot(t, x[:, 1], label=:x1),
     plot(t, x[:, 2], label=:x1),

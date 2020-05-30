@@ -18,8 +18,8 @@ macro def_sink(ex)
         timebuf::TB = Buffer(buflen) 
         databuf::DB = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)
         sinkcallback::SCB = plugin === nothing ? 
-            Callback(sink->ishit(databuf), sink->action(outbuf(timebuf), outbuf(databuf)), true, id) :
-            Callback(sink->ishit(databuf), sink->action(outbuf(timebuf), plugin.process(outbuf(databuf))), true, id)
+            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
+            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))), true, id)
     end, [:TR, :HS, :CB, :ID, :PL, :TB, :DB, :SCB]
     _append_common_fields!(ex, fields...)
     deftype(ex)

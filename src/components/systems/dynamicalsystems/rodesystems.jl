@@ -29,6 +29,20 @@ macro def_rode_system(ex)
     deftype(ex)
 end
 
+##### Define RODE sytem library 
+
+"""
+    RODESystem(; righthandside, readout, state, input, output)
+
+Constructs a generic RODE system 
+"""
+@def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
+    righthandside::RH 
+    readout::RO 
+    state::ST 
+    input::IP 
+    output::OP
+end
 
 @doc raw"""
     MultiplicativeNoiseLinearSystem() 
@@ -51,6 +65,8 @@ where `W` is the noise process.
 end
 
 ##### Pretty printing 
+show(io::IO, ds::RODESystem) = print(io, 
+    "RODESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::MultiplicativeNoiseLinearSystem) = print(io, 
     "MultiplicativeNoiseLinearSystem(A:$(ds.A), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

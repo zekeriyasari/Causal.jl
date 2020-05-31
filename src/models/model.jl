@@ -186,11 +186,12 @@ function inspect!(model, breakpoints::Vector{Int}=Int[])
                 continue
             end
             breakpoint = isempty(breakpoints) ? length(loop) : popfirst!(breakpoints)
-            breakloop(model, loop, breakpoint)
+            breakloop!(model, loop, breakpoint)
             @info "\tLoop $loop is broken"
             loops = getloops(model)
         end
     end
+    model
 end
 
 hasmemory(model, loop) = any([getnode(model, idx).component isa Memory for idx in loop])
@@ -202,13 +203,21 @@ Returns idx of nodes that constructs algrebraic loops.
 """
 getloops(model::Model) = simplecycles(model.graph)
 
+# LoopBreaker to break the loop
+@def_static_system struct LoopBreaker{OP, RO} <: AbstractStaticSystem
+    input::Nothing = nothing 
+    output::OP
+    readout::RO
+end
+
+
 """
-    breakloop(model, loop, breakpoint=length(loop))
+    breakloop!(model, loop, breakpoint=length(loop))
 
 Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by inserting a `Memory` at the `breakpoint` 
 of loop.
 """
-function breakloop(model::Model, loop, breakpoint=length(loop)) 
+function breakloop!(model::Model, loop, breakpoint=length(loop)) 
     nftidx = findfirst(idx -> !isfeedthrough(getnode(model, idx).component), loop)
     nftidx === nothing || (breakpoint = nftidx)
 
@@ -226,12 +235,12 @@ function breakloop(model::Model, loop, breakpoint=length(loop))
         nodefuncs = wrap(model, loop)
         ff = feedforward(nodefuncs, breakpoint)
         n = length(srcnode.component.output)
-        breaker = StaticSystem((u,t) -> findroot(ff, n, t), nothing, Outport(n))
+        breaker = LoopBreaker(readout = (u,t) -> findroot(ff, n, t), output=Outport(n))
     else 
         component = srcnode.component
         n = length(component.output) 
-        breaker = StaticSystem((u,t) -> component.outputfunc(component.state, nothing, t), nothing, Outport(n))
-    end
+        breaker = LoopBreaker(readout = (u,t)->component.readout(component.state, nothing, t), output=Outport(n))
+    end 
     # newidx = length(model.nodes) + 1 
     newnode = addnode!(model, breaker)
     
@@ -335,8 +344,8 @@ function getoutmask(model, node, loop)
 end
 
 readbuffer(input, inmask) = map(pin -> read(pin.link.buffer), input[inmask])
-_computeoutput(comp::AbstractStaticSystem, u, t) = comp.outputfunc(u, t)
-_computeoutput(comp::AbstractDynamicSystem, u, t) = comp.outputfunc(comp.state, map(uu -> t -> uu, u), t)
+_computeoutput(comp::AbstractStaticSystem, u, t) = comp.readout(u, t)
+_computeoutput(comp::AbstractDynamicSystem, u, t) = comp.readout(comp.state, map(uu -> t -> uu, u), t)
 
 function feedforward(nodefuncs, breakpoint=length(nodefuncs))
     (u, t) -> ∘(reverse(circshift(nodefuncs, -breakpoint))...)((u, t))[1] - u
@@ -350,7 +359,7 @@ end
 function isfeedthrough(component)
     try 
         out = typeof(component) <: AbstractStaticSystem ? 
-            component.outputfunc(nothing, 0.) : component.outputfunc(component.state, nothing, 0.)
+            component.readout(nothing, 0.) : component.readout(component.state, nothing, 0.)
         return false
     catch ex 
         return true 
@@ -372,9 +381,7 @@ function initialize!(model::Model)
     end
     isrunning(model.clock) || set!(model.clock)  # Turnon clock internal generator.
     foreach(node -> open(node.component), filter(node->isa(node.component, AbstractSink), model.nodes))
-    # for node in filter(node->isa(node.component, AbstractSink), model.nodes)
-    #     open(node.component)
-    # end
+    model
 end
  
 ##### Model running
@@ -400,6 +407,7 @@ function run!(model::Model, withbar::Bool=true)
     ncomponents = length(model.nodes)
     clock = model.clock
     withbar ? (@showprogress clock.dt for t in clock @loopbody end) : (for t in clock @loopbody end)
+    model
 end
 
 # ##### Model termination
@@ -420,7 +428,7 @@ function terminate!(model::Model)
     tasks = unwrap(collect(values(taskmanager.pairs)), Task, depth=length(taskmanager.pairs))
     any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, length(model.nodes)))
     isrunning(model.clock) && stop!(model.clock)
-    return
+    model
 end
 
 
@@ -487,7 +495,20 @@ function simulate!(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
     simulate!(model; kwargs...)
 end
 
-##### Plotting model
+#### Troubleshooting 
+"""
+    troubleshoot(model) 
+
+Prints the exceptions of the tasks that are failed during the simulation of `model`.
+"""
+function troubleshoot(model::Model)
+    for (comp, task) in  filter(pair -> istaskfailed(pair.second), model.taskmanager.pairs)
+        println("", comp)
+        @error task.exception
+    end
+end
+
+##### Plotting signal flow of the model 
 """
     signalflow(model, args...; kwargs...)
 
@@ -560,6 +581,7 @@ Construts a model. The expected syntax is.
         end
     end
 ```
+Here `@nodes` and `@branches` blocks adefine the nodes and branches of the model, respectively. 
 """
 macro defmodel(name, ex) 
     # Check syntax 

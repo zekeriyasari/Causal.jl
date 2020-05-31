@@ -18,7 +18,7 @@
     # Check Writer files 
     model = Model()
     addnode!(model, SinewaveGenerator(), label=:gen)
-    addnode!(model, Writer(Inport()), label=:writer)
+    addnode!(model, Writer(), label=:writer)
     addbranch!(model, :gen => :writer)
     dname1 = dirname(getnode(model, :writer).component.file.path)
     simname = string(uuid4())

@@ -28,7 +28,7 @@
         @test ne(model.graph) == 0
     end
     n = length(model.nodes)
-    singen = FunctionGenerator(sin)
+    singen = FunctionGenerator(readout=sin)
     newnode = addnode!(model, singen, label=:gen)
     @test newnode.idx == n + 1
     @test newnode.label == :gen
@@ -50,7 +50,7 @@
     @test_throws BoundsError addbranch!(model, 1 => 2)
     @test_throws MethodError addbranch!(model, 1, 2)
     for (comp, label) in zip(
-            [FunctionGenerator(t -> [sin(t), cos(t)]), Gain(Inport(2)), Gain(Inport(3)), Writer(Inport(3))],
+            [FunctionGenerator(readout=t -> [sin(t), cos(t)], output=Outport(2)), Gain(input=Inport(2)), Gain(input=Inport(3)), Writer(input=Inport(3))],
             [:gen, :gain1, :gain2, :writer]
         )
         addnode!(model, comp, label=label)
@@ -96,7 +96,7 @@
     function contruct_model_with_loops()
         model = Model() 
         for (comp, label) in zip(
-            [SinewaveGenerator(), Adder((+, +, +)), Gain(), Writer()],
+            [SinewaveGenerator(), Adder(signs=(+, +, +)), Gain(), Writer()],
             [:gen, :adder, :gain, :writer]
             )
             addnode!(model, comp, label=label)
@@ -120,8 +120,8 @@
     @test isconnected(loopcomp.output[1], loopcomp.input[3])
     nn = length(model.nodes)
     nb = length(model.branches)
-    breakernode = breakloop(model, loop)
-    @test typeof(breakernode.component) <: StaticSystem
+    breakernode = breakloop!(model, loop)
+    @test typeof(breakernode.component) <: Jusdl.LoopBreaker
     @test breakernode.idx == nn + 1
     @test breakernode.label === nothing
     @test !isconnected(loopcomp.output[1], loopcomp.input[3])
@@ -135,8 +135,8 @@
     comp1 = getnode(model, 2).component
     comp2 = getnode(model, 3).component
     @test isconnected(comp2.output[1], comp1.input[2])
-    newbreakernode = breakloop(model, loops[1])
-    @test typeof(newbreakernode.component) <: StaticSystem
+    newbreakernode = breakloop!(model, loops[1])
+    @test typeof(newbreakernode.component) <: Jusdl.LoopBreaker
     @test !isconnected(comp2.output[1], comp1.input[2])
 
     # Initializing Model 
@@ -166,7 +166,7 @@
 
     # Simulating Model
     model = Model()  
-    addnode!(model, FunctionGenerator(t -> [sin(t), cos(t)]), label=:gen)
+    addnode!(model, FunctionGenerator(readout=t -> [sin(t), cos(t)], output=Outport(2)), label=:gen)
     addnode!(model, Adder(), label=:adder)
     addnode!(model, Writer(), label=:writer)
     addbranch!(model, :gen => :adder)

@@ -1,27 +1,34 @@
 # This file includes an example file by breaking algebraic loops by solving loop equation numerically.
 
 using Jusdl 
-using Plots; pyplot()
+using Plots
+
+# Simulation parameter
+α = 3.
 
 # Construct model with algebraic loop
-α = 3
-model = Model(clock=Clock(0, 1, 100)) 
-addnode!(model, RampGenerator(), label=:gen)
-addnode!(model, Adder((+,-)), label=:adder)
-addnode!(model, Gain(gain=α), label=:gain)
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :adder, 1 => 1)
-addbranch!(model, :adder => :gain, 1 => 1)
-addbranch!(model, :gain => :adder, 1 => 2)
-addbranch!(model, :gen => :writer, 1 => 1)
-addbranch!(model, :gain => :writer, 1 => 2)
+@defmodel model begin 
+    @nodes begin 
+        gen = RampGenerator() 
+        adder = Adder(signs=(+,-))
+        gain = Gain(gain=α) 
+        writer = Writer(input=Inport(2))
+    end
+    @branches begin 
+        gen[1]      =>      adder[1]
+        adder[1]    =>      gain[1]
+        gain[1]     =>      adder[2]
+        gen[1]      =>      writer[1] 
+        gain[1]     =>      writer[2] 
+    end
+end
 
 # Simulate the model
-simulate!(model)
+simulate!(model, 0., 1., 100.)
 
 # Plot the results
 t, y = read(getnode(model, :writer).component)
-yt = α / (α + 1) * getnode(model, :gen).component.outputfunc.(t)
+yt = α / (α + 1) * getnode(model, :gen).component.readout.(t)
 err = yt - y[:, 2]
 p1 = plot(t, y[:, 1], label=:u)
     plot!(t, y[:, 2], label=:y)

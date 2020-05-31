@@ -3,26 +3,31 @@
 using Jusdl 
 
 # Construct the model 
-model = Model(clock=Clock(0, 0.01, 10.))
-addnode!(model, FunctionGenerator(sin), label=:gen)
-addnode!(model, Adder((+,-)), label=:adder)
-addnode!(model, ODESystem((dx,x,u,t)->(dx[1]=-x[1]+u[1](t)), (x,u,t) -> x, [1.], 0., Inport(), Outport()), label=:ds)
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :adder, 1 => 1)
-addbranch!(model, :adder => :ds, 1 => 1)
-addbranch!(model, :ds => :adder, 1 => 2)
-addbranch!(model, :gen => :writer, 1 => 1)
-addbranch!(model, :ds => :writer, 1 => 2)
+@defmodel model begin 
+    @nodes begin 
+        gen = FunctionGenerator(readout=sin)
+        adder = Adder(signs=(+,-))
+        ds = ContinuousLinearSystem()
+        writer = Writer(input=Inport(2))
+    end
+    @branches begin 
+        gen[1]      =>  adder[1]
+        adder[1]    =>  ds[1]
+        ds[1]       =>  adder[2]
+        gen[1]      =>  writer[1]
+        ds[1]       =>  writer[2]
+    end
+end
 
 # Simualate the model 
-sim = simulate!(model)
+sim = simulate!(model, 0., 0.01, 10.)
 
 # Read and plot data 
 t, x = read(getnode(model, :writer).component)
-using Plots; pyplot()
+using Plots
 plot(t, x[:, 1], label="r(t)", xlabel="t", lw=3)
 plot!(t, x[:, 2], label="y(t)", xlabel="t", lw=3)
 plot!(t, 6 / 5 * exp.(-2t) + 1 / 5 * (2 * sin.(t) - cos.(t)), label="Analytical Solution", lw=3)
-fileanme = "readme_example.svg"
-path = joinpath(@__DIR__, "../docs/src/assets/ReadMePlot/")
-savefig(joinpath(path, fileanme))
+# fileanme = "readme_example.svg"
+# path = joinpath(@__DIR__, "../docs/src/assets/ReadMePlot/")
+# savefig(joinpath(path, fileanme))

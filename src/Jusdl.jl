@@ -112,6 +112,7 @@ export Clock,
 
 include("components/sources/generators.jl")
 export @def_source,
+    FunctionGenerator,
     SinewaveGenerator,
     DampedSinewaveGenerator,
     SquarewaveGenerator,
@@ -125,6 +126,7 @@ export @def_source,
 
 include("components/systems/staticsystems/staticsystems.jl")
 export @def_static_system,
+    StaticSystem,
     Adder,
     Multiplier, 
     Gain,
@@ -137,6 +139,7 @@ include("components/systems/dynamicalsystems/init.jl")
 
 include("components/systems/dynamicalsystems/odesystems.jl")
 export @def_ode_system,
+    ODESystem,
     ContinuousLinearSystem,
     LorenzSystem, 
     ChenSystem,
@@ -152,6 +155,7 @@ export @def_ode_system,
 
 include("components/systems/dynamicalsystems/discretesystems.jl")
 export @def_discrete_system,
+    DiscreteSystem,
     DiscreteLinearSystem,
     HenonSystem, 
     LoziSystem,
@@ -161,21 +165,25 @@ export @def_discrete_system,
 
 include("components/systems/dynamicalsystems/sdesystems.jl")
 export @def_sde_system,
+    SDESystem, 
     NoisyLorenzSystem, 
     ForcedNoisyLorenzSystem
 
 include("components/systems/dynamicalsystems/daesystems.jl")
 export @def_dae_system, 
+    DAESystem,
     RobertsonSystem,
     PendulumSystem, 
     RLCSystem
 
 include("components/systems/dynamicalsystems/rodesystems.jl")
 export @def_rode_system,
+    RODESystem,
     MultiplicativeNoiseLinearSystem
 
 include("components/systems/dynamicalsystems/ddesystems.jl")
 export @def_dde_system, 
+    DDESystem,
     DelayFeedbackSystem
 
 include("components/sinks/sinks.jl")
@@ -184,8 +192,8 @@ export @def_sink,
     Printer,
     Scope, 
     write!, 
-    fwrite! 
-    fread
+    fwrite!,
+    fread,
     update!
 
 include("models/taskmanager.jl")
@@ -199,14 +207,15 @@ export Simulation,
     report
 
 include("models/model.jl")
-export Model, 
+export @defmodel,
+    Model, 
     inspect!, 
     initialize!, 
     run!, 
     terminate!, 
     simulate!,
     getloops, 
-    breakloop,
+    breakloop!,
     Node, 
     Branch, 
     addnode!, 
@@ -215,7 +224,7 @@ export Model,
     getbranch, 
     deletebranch!, 
     signalflow,
-    @defmodel
+    troubleshoot
 
 include("plugins/loadplugins.jl")
 export AbstractPlugin, 

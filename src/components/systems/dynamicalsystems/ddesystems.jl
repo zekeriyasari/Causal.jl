@@ -34,8 +34,25 @@ macro def_dde_system(ex)
     deftype(ex)
 end
 
+##### Define DDE system library.
 
-@def_dde_system struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+"""
+    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output) 
+
+Construct a generic DDE system 
+"""
+@def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
+    constlags::CL 
+    depslags::DL 
+    righthandside::RH 
+    history::HST 
+    readout::RO 
+    state::ST 
+    input::IP 
+    output::OP
+end
+
+@def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
     constlags::Vector{Float64} = Jusdl._delay_feedback_system_constlags
     depslags::Nothing = nothing
     righthandside::RH = Jusdl._delay_feedback_system_rhs
@@ -56,7 +73,11 @@ function _delay_feedback_system_rhs(dx, x, h, u, t,
     dx[1] = cache[1] + x[1]
 end
 
+##### Pretty-printing
 
+show(io::IO, ds::DDESystem) = print(io, 
+    "DDESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ", 
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::DelayFeedbackSystem) = print(io, 
     "DelayFeedbackSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

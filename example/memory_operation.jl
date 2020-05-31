@@ -5,23 +5,30 @@ using Jusdl
 using Plots
 
 # Construct a model
-ti = 0
-dt = 1
-tf = 100.
+ti, dt, tf = 0., 1., 100.
 numtaps = 5  # Number of buffer taps in Memory.
 delay = dt   # One step size delay.
 model = Model(clock=Clock(ti, dt, tf)) 
-addnode!(model, RampGenerator(), label=:gen)
-addnode!(model, Memory(delay, numtaps=numtaps, dt=dt), label=:mem)
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :mem, 1 => 1)
-addbranch!(model, :mem => :writer, 1 => 1)
-addbranch!(model, :gen => :writer, 1 => 2)
-simulate!(model) 
+
+@defmodel model begin 
+    @nodes begin 
+        gen = RampGenerator() 
+        mem = Memory(delay=dt, numtaps=numtaps)
+        writer = Writer(input=Inport(2))
+    end
+    @branches begin 
+        gen     =>  mem 
+        mem[1]  =>  writer[1] 
+        gen[1]  =>  writer[2] 
+    end
+end
+
+# Simulate model 
+simulate!(model, ti, dt, tf) 
 
 # Read simulation data
 t, x = read(getnode(model, :writer).component)
-u = getnode(model, :gen).component.outputfunc.(t .- delay)
+u = getnode(model, :gen).component.readout.(t .- delay)
 err = u - x[:, 2]
 
 # Plots simulation data

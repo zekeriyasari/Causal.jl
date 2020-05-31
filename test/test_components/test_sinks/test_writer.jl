@@ -9,10 +9,10 @@
     testdir = tempdir()
 
     # Writer construction 
-    writer = Writer(Inport(3), buflen=10)
-    writer = Writer(Inport(3), buflen=10, path=joinpath(testdir, randfilename()))
+    writer = Writer(input=Inport(3), buflen=10)
+    writer = Writer(input=Inport(3), buflen=10, path=joinpath(testdir, randfilename()))
     path = joinpath(testdir, randfilename())
-    writer = Writer(Inport(3), path=path)
+    writer = Writer(input=Inport(3), path=path)
     @test typeof(writer.trigger) == Inpin{Float64}
     @test typeof(writer.handshake) == Outpin{Bool}
     @test isa(writer.input, Inport)
@@ -20,10 +20,11 @@
     @test size(writer.timebuf) == (64,)
     @test size(writer.databuf) == (3, 64)
     @test writer.plugin === nothing
-    @test typeof(writer.callbacks) <: Callback
+    @test writer.callbacks === nothing
+    @test typeof(writer.sinkcallback) <: Callback
 
     # Reading and writing into Writer 
-    writer = Writer(Inport())
+    writer = Writer(input=Inport())
     open(writer)
     for t in 1 : 10
         write!(writer, t, sin(t))
@@ -46,14 +47,14 @@
         path
     end
     paths = map(dname -> joinpath(dname, filename), dirnames)
-    w = Writer(Inport(), path=paths[1])
+    w = Writer(input=Inport(), path=paths[1])
     mv(w, dirnames[2], force=true)
     @test w.file.path == paths[2]
     cp(w, dirnames[3], force=true)
     @test isfile(paths[3])
 
     # Driving Writer 
-    writer = Writer(Inport(3), buflen=10)
+    writer = Writer(input=Inport(3), buflen=10)
     open(writer)
     oport, iport, trg, hnd, comptask, outtask = prepare(writer)
     for t in 1 : 100 

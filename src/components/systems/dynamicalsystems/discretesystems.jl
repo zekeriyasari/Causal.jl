@@ -30,6 +30,20 @@ end
 
 ##### Define Discrete system library
 
+"""
+    DiscreteSystem(; righthandside, readout, state, input, output)
+
+Constructs a generic discrete system 
+"""
+@def_discrete_system mutable struct DiscreteSystem{RH, RO, ST, IP, OP} <: AbstractDiscreteSystem
+    righthandside::RH
+    readout::RO 
+    state::ST 
+    input::IP 
+    output::OP
+end
+
+
 @doc raw"""
     DiscreteLinearSystem(input, output, modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
@@ -193,6 +207,9 @@ end
 
 ##### Pretty-printting 
 
+show(io::IO, ds::DiscreteSystem) = print(io, 
+    "DiscreteSystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::DiscreteLinearSystem) = print(io, 
     "DiscreteLinearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")

@@ -7,9 +7,8 @@
     f(dx, x, u, t) = (dx[1] = -x[1])
     h(dx, x, u, t) = (dx[1] = -x[1])
     g(x, u, t) = x
-    ds = SDESystem((f,h), g, [1.], 0., nothing, Outport(1), alg=LambaEM{true}())
-    ds = SDESystem((f,h), g, [1.], 0, nothing, Outport(1))
-    @test isa(ds.statefunc, Tuple{<:Function, <:Function})
+    ds = SDESystem(drift=f, diffusion=h, readout=g, state=[1.], input=nothing, output=Outport(1), alg=LambaEM{true}())
+    ds = SDESystem(drift=f, diffusion=h, readout=g, state=[1.], input=nothing, output=Outport(1))
     @test typeof(ds.trigger) == Inpin{Float64}
     @test typeof(ds.handshake) == Outpin{Bool}
     @test ds.input === nothing
@@ -53,7 +52,7 @@
         dx[3] = -x[3] + cos(u[2](t))
     end
     g2(x, u, t) = x 
-    ds = SDESystem((f2, h2), g2, ones(3), 0., Inport(2), Outport(3))
+    ds = SDESystem(drift=f2, diffusion=h2, readout=g2, state=ones(3), input=Inport(2), output=Outport(3))
     oport = Outport(2)
     iport = Inport(3)
     trg = Outpin() 

@@ -13,8 +13,8 @@
     state = [1., 0., 0.]
     stateder = [-0.04, 0.04, 0.]
     differential_vars = [true, true, false]
-    ds = DAESystem(sfunc, ofunc, state, 0., nothing, Outport(3), 
-        stateder=stateder, modelkwargs=(differential_vars=differential_vars,))
+    ds = DAESystem(righthandside=sfunc, readout=ofunc, state=state, input=nothing, output=Outport(3), 
+        stateder=stateder, diffvars=differential_vars)
     @test typeof(ds.trigger) == Inpin{Float64}
     @test typeof(ds.handshake) == Outpin{Bool} 
     @test ds.input === nothing 
@@ -58,8 +58,8 @@
     state = [1., 0., 0.]
     stateder = [-0.04, 0.04, 0.]
     differential_vars = [true, true, false]
-    ds = DAESystem(sfunc2, ofunc2, state, 0., Inport(2), Outport(3), 
-        stateder=stateder, modelkwargs=(differential_vars=differential_vars,), numtaps=5)
+    ds = DAESystem(righthandside=sfunc2, readout=ofunc2, state=state, input=Inport(2), output=Outport(3), 
+        stateder=stateder, diffvars=differential_vars)
     @test typeof(ds.trigger) == Inpin{Float64}
     @test typeof(ds.handshake) == Outpin{Bool} 
     @test typeof(ds.input) <: Inport 
@@ -69,8 +69,8 @@
     @test ds.state == state 
     @test ds.t == 0. 
     @test typeof(ds.integrator.sol.prob.p) <: Interpolant
-    @test size(ds.integrator.sol.prob.p.timebuf) == (5,)
-    @test size(ds.integrator.sol.prob.p.databuf) == (2,5)
+    @test size(ds.integrator.sol.prob.p.timebuf) == (3,)
+    @test size(ds.integrator.sol.prob.p.databuf) == (2,3)
     
     # Driving DAESystem with input 
     oport = Outport(2)

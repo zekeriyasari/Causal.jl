@@ -4,7 +4,7 @@
     @info "Running CallbackTestSet ..."
     condition(obj) = obj.x >= 5
     action(obj) = println("Callaback activated . obj.x = ", obj.x)
-    clb = Callback(condition, action)
+    clb = Callback(condition=condition, action=action)
     @test isenabled(clb)
     disable!(clb)
     @test !isenabled(clb)
@@ -24,7 +24,7 @@
         callbacks::CB
     end
 
-    obj2 = Object2(4, Callback(condition, action))
+    obj2 = Object2(4, Callback(condition=condition, action=action))
     for val in 1 : 10
         obj2.x = val
         applycallbacks(obj2)

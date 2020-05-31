@@ -4,14 +4,15 @@
     @info "Running PrinterTestSet ..."
     
     # Printer construction 
-    printer = Printer(Inport(2), buflen=100)
+    printer = Printer(input=Inport(2), buflen=100)
     @test typeof(printer.trigger) == Inpin{Float64}
     @test typeof(printer.handshake) == Outpin{Bool}
     @test size(printer.timebuf) == (100,)
     @test size(printer.databuf) == (2, 100)
     @test isa(printer.input, Inport)
     @test printer.plugin === nothing
-    @test typeof(printer.callbacks) <: Callback
+    @test typeof(printer.callbacks) <: Nothing
+    @test typeof(printer.sinkcallback) <: Callback
 
     # Driving Printer 
     oport, iport, trg, hnd, tsk, tsk2 = prepare(printer)

@@ -27,6 +27,19 @@ end
 
 #### Define ODE system library.
 
+"""
+    ODESystem(;righthandside, readout, state, input, output) 
+
+Constructs a generic ODE system. 
+"""
+@def_ode_system mutable struct ODESystem{RH, RO, ST, IP, OP} <: AbstractODESystem 
+    righthandside::RH 
+    readout::RO 
+    state::ST 
+    input::IP 
+    output::OP
+end
+
 @doc raw"""
     ContinuousLinearSystem(input, output, modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
@@ -273,6 +286,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
         dx .*= γ
     end
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
     input::IP = nothing 
     output::OP = Outport(3)
 end
@@ -296,6 +310,7 @@ Constructs a Chua system with inputs.
         dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
     end
     readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
     input::IP = Inport(3)
     output::OP = Outport(3)
 end
@@ -334,7 +349,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     a::Float64 = 0.38
     b::Float64 = 0.3
     c::Float64 = 4.82
-    gamma::Float64 = 1.
+    γ::Float64 = 1.
     righthandside::RH = function rosslerrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
         dx[1] = -x[2] - x[3]
         dx[2] = x[1] + a * x[2]
@@ -356,7 +371,7 @@ Constructs a Rossler system driven by its input.
     a::Float64 = 0.38
     b::Float64 = 0.3
     c::Float64 = 4.82
-    gamma::Float64 = 1.
+    γ::Float64 = 1.
     cplmat::CM = I(3)
     righthandside::RH = function rosslerrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
         dx[1] = -x[2] - x[3]
@@ -456,8 +471,11 @@ where ``u(t)`` is the input, ``y(t)`` is the output and ``ki`` is the integratio
 end
 
 ##### Pretty-printing 
+show(io::IO, ds::ODESystem) = print(io, 
+    "ODESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::ContinuousLinearSystem) = print(io, 
-    "ContinuousLinearystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
+    "ContinuousLinearSystem(A:$(ds.A), B:$(ds.B), C:$(ds.C), D:$(ds.D), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::LorenzSystem) = print(io, 
     "LorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",

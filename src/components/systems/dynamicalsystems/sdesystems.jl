@@ -31,6 +31,20 @@ end
 
 ##### Define SDE system library
 
+"""
+    SDESystem(; drift, diffusion, readout, state, input, output) 
+
+Constructs a SDE system.
+"""
+@def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
+    drift::DR 
+    diffusion::DF 
+    readout::RO 
+    state::ST 
+    input::IP 
+    output::OP 
+end
+
 @doc raw"""
     NoisyLorenzSystem() 
 
@@ -83,7 +97,9 @@ end
 
 
 ##### Pretty printing 
-
+show(io::IO, ds::SDESystem) = print(io, 
+    "SDESystem(drift:$(ds.drift), diffusion:$(ds.diffusion), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ",
+    "input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::NoisyLorenzSystem) = print(io, 
     "NoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
     "input:$(ds.input), output:$(ds.output))")

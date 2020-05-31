@@ -16,6 +16,18 @@ end
 
 ##### Define prototipical static systems.
 
+"""
+    StaticSystem(; readout, input, output)
+
+Generaic static system.
+"""
+@def_static_system struct StaticSystem{RO, IP, OP} <: AbstractStaticSystem
+    readout::RO 
+    input::IP 
+    output::OP
+end
+
+
 @doc raw"""
     Adder(signs=(+,+))
 
@@ -140,7 +152,7 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
     databuf::DB = length(initial) == 1 ? Buffer(numtaps) : Buffer(length(initial), numtaps)
     input::IP = Inport(length(initial))
     output::OP = Outport(length(initial))
-    readout::RO = (u, t, delay=delay, initial=initial, numptaps=numptaps, timebuf=timebuf, databuf=databuf) -> begin 
+    readout::RO = (u, t, delay=delay, initial=initial, numtaps=numtaps, timebuf=timebuf, databuf=databuf) -> begin 
         if t <= delay
             return initial
         else
@@ -173,9 +185,10 @@ where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplm
 @def_static_system struct Coupler{C1, C2, IP, OP, RO} <: AbstractStaticSystem
     conmat::C1 = [-1. 1; 1. 1.]
     cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
-    input::IP = Inport(size(C1, 1) * size(cplmat, 1))
-    output::OP = Outport(size(C1, 1) * size(cplmat, 1))
-    readout::RO = IP <: AbstractMatrix{<:Real} ? ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u) : 
+    input::IP = Inport(size(conmat, 1) * size(cplmat, 1))
+    output::OP = Outport(size(conmat, 1) * size(cplmat, 1))
+    readout::RO = typeof(conmat) <: AbstractMatrix{<:Real} ? 
+        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u ) : 
         ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )
 end
 
@@ -206,6 +219,7 @@ where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differe
 end
 
 ##### Pretty-printing
+show(io::IO, ss::StaticSystem) = print(io,"StaticSystem(readout:$(ss.readout), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")

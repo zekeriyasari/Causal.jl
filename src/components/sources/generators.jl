@@ -12,6 +12,7 @@ Used to define new type of source. Usage is as follows:
     param2::T2 = param2_default
     param3::T3 = param3_default
         ⋮
+    paramN::TN = paramN_default
     output::OP = output_default
     readout::RO = readout_function
 end
@@ -31,6 +32,15 @@ end
 
 
 ##### Define Sources library
+"""
+    FunctionGenerator(; readout) 
+
+Generic function generator .
+"""
+@def_source struct FunctionGenerator{RO, OP} <: AbstractSource 
+    readout::RO 
+    output::OP = Outport(1)    
+end
 
  @doc raw"""
     SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
@@ -230,6 +240,8 @@ end
 
 ##### Pretty-Printing of generators.
 
+show(io::IO, gen::FunctionGenerator) = print(io, 
+    "FunctionGenerator(readout:$(gen.readout),  output:$(gen.output))")
 show(io::IO, gen::SinewaveGenerator) = print(io, 
     "SinewaveGenerator(amp:$(gen.amplitude), freq:$(gen.frequency), phase:$(gen.phase), ",
     "offset:$(gen.offset), delay:$(gen.delay))")

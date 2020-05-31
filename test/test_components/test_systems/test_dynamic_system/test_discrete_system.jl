@@ -6,7 +6,7 @@
     # ODESystem construction 
     sfunc1(dx, x, u, t) = (dx .= -x)
     ofunc1(x, u, t) = x
-    ds = DiscreteSystem(sfunc1, ofunc1, [1.], 0., nothing, Outport())
+    ds = DiscreteSystem(righthandside=sfunc1, readout=ofunc1, state=[1.], input=nothing, output=Outport())
     @test typeof(ds.trigger) == Inpin{Float64}
     @test typeof(ds.handshake) == Outpin{Bool}
     @test ds.input === nothing
@@ -22,22 +22,22 @@
         dx[3] = x[3] + sin(u[1](t))
     end
     ofunc2(x, u, t) = x
-    ds = DiscreteSystem(sfunc2, ofunc2, ones(3), 0., Inport(2), Outport(3))
+    ds = DiscreteSystem(righthandside=sfunc2, readout=ofunc2, state=ones(3), input=Inport(2), output=Outport(3))
     @test isa(ds.input, Inport)
     @test isa(ds.output, Outport)
     @test length(ds.input) == 2
     @test length(ds.output) == 3
 
-    ds = DiscreteSystem(sfunc2, nothing, ones(3), 0., Inport(2), nothing)
+    ds = DiscreteSystem(righthandside=sfunc2, readout=nothing, state=ones(3), input = Inport(2), output = nothing)
     @test isa(ds.input, Inport)
     @test length(ds.input) == 2
-    @test ds.outputfunc === nothing
+    @test ds.readout === nothing
     @test ds.output === nothing
 
     # Driving ODESystem
     sfunc3(dx, x, u, t) = (dx .= -x)
     ofunc3(x, u, t) = x
-    ds = DiscreteSystem(sfunc3, ofunc3, [1.], 0., nothing, Outport())
+    ds = DiscreteSystem(righthandside=sfunc3, readout=ofunc3, state=[1.], input=nothing, output=Outport())
     iport = Inport() 
     trg = Outpin()
     hnd = Inpin{Bool}()

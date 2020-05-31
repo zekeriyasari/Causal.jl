@@ -4,8 +4,9 @@
     @info "Running PluginTestSet ..."
 
     # Construction of a new plugin
-    struct MeanPlugin  <: AbstractPlugin end 
-    Jusdl.process(plg::MeanPlugin, x) = mean(x)
+    Base.@kwdef struct MeanPlugin{PR}  <: AbstractPlugin 
+        process::PR = x -> mean(x)
+    end 
 
     # Try equip a writer in a model.
     model = Model(clock=Clock(0., 0.01, 10.)) 

@@ -9,10 +9,10 @@
         dx[2] = -2x[2]*cos(W[1] + W[2])
     end
     outputfunc(x, u, t) = x
-    ds = RODESystem(statefunc, outputfunc, ones(2), 0.,  nothing, Outport(2),
-        alg=RandomEM(), solverkwargs=(dt=0.01,))
-    ds = RODESystem(statefunc, outputfunc, ones(2), 0., nothing, Outport(2), 
-        alg=RandomEM(), solverkwargs=(dt=0.01,), modelkwargs=(rand_prototype=zeros(2),))
+    ds = RODESystem(righthandside=statefunc, readout=outputfunc, state=ones(2), input=nothing, output=Outport(2),
+        alg=RandomEM())
+    ds = RODESystem(righthandside=statefunc, readout=outputfunc, state=ones(2), input=nothing, output=Outport(2), 
+        alg=RandomEM(), modelkwargs=(rand_prototype=zeros(2),))
     @test typeof(ds.trigger) == Inpin{Float64}
     @test typeof(ds.handshake) == Outpin{Bool}
     @test ds.input === nothing
@@ -51,11 +51,11 @@
         dx[2] = -2x[2]*cos(W[1] + W[2]) - sin(u[1](t))
     end
     ofunc(x, u, t) = x
-    ds = RODESystem(sfunc, ofunc, ones(2), 0., Inport(2), Outport(2), 
-        solverkwargs=(dt=0.01,), modelkwargs=(rand_prototype=zeros(2),), numtaps=5)
+    ds = RODESystem(righthandside=sfunc, readout=ofunc, state=ones(2), input=Inport(2), output=Outport(2), 
+        modelkwargs=(rand_prototype=zeros(2),))
     @test typeof(ds.integrator.sol.prob.p) <: Interpolant
-    @test size(ds.integrator.sol.prob.p.timebuf) == (5,)
-    @test size(ds.integrator.sol.prob.p.databuf) == (2,5)
+    @test size(ds.integrator.sol.prob.p.timebuf) == (3,)
+    @test size(ds.integrator.sol.prob.p.databuf) == (2,3)
     oport = Outport(2) 
     iport = Inport(2) 
     trg = Outpin() 

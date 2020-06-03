@@ -1,29 +1,27 @@
 # This file constains the callbacks for event monitoring.
 
-"""
+@doc raw"""
     Callback(condition, action)
 
 Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument function. The `condition` returns `true` if the condition it checks occurs, otherwise, it returns `false`. `action` performs the specific action for which the `Callback` is constructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
 
 # Example 
-
-```jldoctest
+```julia 
 julia> struct Object  # Define a dummy type.
        x::Int 
        clb::Callback 
-       end 
+       end
 
-julia> cond(obj) = obj.x > 0  # Define callback condition.
-cond (generic function with 1 method)
+julia> cond(obj) = obj.x > 0;  # Define callback condition.
 
-julia> action(obj) = println("Printing the object ", obj) # Define callback action.
-action (generic function with 1 method)
+julia> action(obj) = println("obj.x = $(obj.x)"); # Define callback action.
 
-julia> obj = Object(1, Callback(cond, action))  # Construct an `Object` instance with `Callback`.
+julia> obj = Object(1, Callback(condition=cond, action=action))
 Object(1, Callback(condition:cond, action:action))
 
 julia> obj.clb(obj)  # Call the callback bound `obj`.
-Printing the object Object(1, Callback(condition:cond, action:action))
+obj.x = 1
+
 ```
 """
 Base.@kwdef mutable struct Callback{CN, AC}
@@ -60,7 +58,7 @@ isenabled(clb::Callback) = clb.enabled
 ##### Callback calls
 # Apply callback asynchronously.
 # (clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? clb.action(obj) : nothing
-(clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? @async(clb.action(obj)) : nothing
+(clb::Callback)(obj) = clb.enabled && clb.condition(obj) ? (@async(clb.action(obj)); nothing) : nothing
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
 
 """
@@ -69,13 +67,13 @@ isenabled(clb::Callback) = clb.enabled
 Calls the callbacks of `obj` if the callbacks are not nothing.
 
 # Example
-```jldoctest
+```julia
 julia> mutable struct MyType{CB}
        x::Int
        callbacks::CB
        end
 
-julia> obj = MyType(5, Callback(obj -> obj.x > 0, obj -> println("x is positive")));
+julia> obj = MyType(5, Callback(condition=obj -> obj.x > 0, action=obj -> println("x is positive")));
 
 julia> applycallbacks(obj)
 x is positive

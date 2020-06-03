@@ -34,7 +34,7 @@ node1.label
 ```
 Let us add another component, a [`Adder`](@ref), to the model, 
 ```@repl model_graph_example
-addnode!(model, Adder((+,-)), label=:adder)
+addnode!(model, Adder(signs=(+,-)), label=:adder)
 ```
 and investigate our new node.
 ```@repl model_graph_example
@@ -79,6 +79,46 @@ addbranch!(model, :adder => :gain, 1 => 1)
 addbranch!(model, :gain => :adder, 1 => 2)
 addbranch!(model, :gain => :writer, 1 => 1)
 ```
+
+## Handy-Tool for Model Construction 
+`@defmacro` can be used for a handy-tool for model construction. The syntax here is 
+```julia 
+@defmodel modelname begin 
+    @nodes begin 
+        label1 = Component1(args...; kwargs...)     # Node 1
+        label2 = Component2(args...; kwargs...)     # Node 2
+                ⋮
+        
+        labelN = ComponentN(args...; kwargs...)     # Node N
+    end 
+    @branches begin 
+        source_component_label1[src_index_range1] = destination_component_label1[dst_index_range1]
+        source_component_label2[src_index_range2] = destination_component_label1[dst_index_range2]
+            ⋮
+        source_component_labelM[src_index_rangeM] = destination_component_labelM[dst_index_range2]
+    end
+end 
+```
+Note that `modelname` is the name of the model to be compiled. The nodes of the model is defined in `@nodes begin ... end` block and the branches of the model is defined in `@branches begin ... end`. For example, the model given above can also be constructed as follows 
+```@repl model_graph_example_def_model_macro
+using Jusdl # hide 
+
+@defmodel model begin 
+    @nodes begin 
+        gen = SinewaveGenerator() 
+        adder = Adder(signs=(+,-))
+        gain = Gain() 
+        writer = Writer() 
+    end 
+    @branches begin 
+        gen[1]      =>      adder[1]
+        adder[1]    =>      gain[1]
+        gain[1]     =>      adder[2]
+        gain[1]     =>      writer[2]
+    end
+end
+```
+This macro is expanded to construct the `model`.
 
 ## Usage of Signal-Flow Graph 
 The signal-flow graph constructed alongside of the construction of the model can be used to perform any topological analysis. An example to such an analysis is the detection of algebraic loops. For instance, our model in this tutorial has an algebraic loop consisting of the nodes labelled with `:gen` and `gain`. This loop can be detected using the signal-flow graph of the node 

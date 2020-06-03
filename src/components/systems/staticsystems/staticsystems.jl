@@ -39,7 +39,7 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 
 # Example 
 ```jldoctest
-julia> adder = Adder((+, +, -));
+julia> adder = Adder(signs=(+, +, -));
 
 julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
 true
@@ -64,7 +64,7 @@ where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`,
 
 # Example 
 ```jldoctest
-julia> mlt = Multiplier((*, *, /));
+julia> mlt = Multiplier(ops=(*, *, /));
 
 julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
 true
@@ -98,7 +98,7 @@ where ``K`` is `gain`, ``u`` is the value of `input` and `y` is the value of `ou
 ```jldoctest
 julia> K = [1. 2.; 3. 4.];
 
-julia> sfunc = Gain(Inport(2), gain=K);
+julia> sfunc = Gain(input=Inport(2), gain=K);
 
 julia> sfunc.readout([1., 2.], 0.) == K * [1., 2.]
 true
@@ -134,13 +134,10 @@ the values from `initial` is returned.
 
 # Example
 ```jldoctest
-julia> Memory(0.1)
+julia> Memory(delay=0.1)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 
-julia> Memory(0.1; numtaps=5)
-Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
-
-julia> Memory(0.1; numtaps=5, dt=1.)
+julia> Memory(delay=0.1, numtaps=5)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """

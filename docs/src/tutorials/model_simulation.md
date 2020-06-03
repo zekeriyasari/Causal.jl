@@ -19,11 +19,15 @@ tf = 10.    # Final time
 model = Model(clock=Clock(t0, dt, tf)) 
 
 # Adding nodes to model
-addnode!(model, SinewaveGenerator(), label=:gen)
-addnode!(model, Writer(), label=:writer)
-
-# Adding branches to model
-addbranch!(model, :gen => :writer)
+@defmodel model begin 
+    @nodes begin 
+        gen = SinewaveGenerator() 
+        writer = Writer() 
+    end 
+    @branches begin 
+        gen => writer
+    end
+end
 nothing # hide
 ```
 In this simple `model`, we have a single output sinusoidal wave generator `gen` and a `writer`. In the script above, we constructed the components, connected them together and constructed the model.
@@ -37,7 +41,7 @@ nothing # hide
 ```
 At this point, the model is ready for simulation. 
 ```@example simple_model_ex 
-sim = simulate!(model, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
+sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
 ```
 
 ## Investigation of Simulation 

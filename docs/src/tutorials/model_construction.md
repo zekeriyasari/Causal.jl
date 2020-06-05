@@ -114,7 +114,7 @@ using Jusdl # hide
         gen[1]      =>      adder[1]
         adder[1]    =>      gain[1]
         gain[1]     =>      adder[2]
-        gain[1]     =>      writer[2]
+        gain[1]     =>      writer[1]
     end
 end
 ```

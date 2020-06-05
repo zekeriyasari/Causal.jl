@@ -92,24 +92,33 @@ using Jusdl
 using Plots
 
 # Construction of the model 
-model = Model() 
-addnode!(model, SinewaveGenerator(frequency=2), label=:gen1)
-addnode!(model, Gain(gain=1), label=:gain1)
-addnode!(model, Adder((+,+)), label=:adder1)
-addnode!(model, SinewaveGenerator(frequency=3), label=:gen2)
-addnode!(model, Adder((+, +, -)), label=:adder2)
-addnode!(model, Gain(gain=1), label=:gain2)
-addnode!(model, Writer(), label=:writer)
-addnode!(model, Gain(gain=1), label=:gain3)
-addbranch!(model, :gen1 => :gain1, 1 => 1)
-addbranch!(model, :gain1 => :adder1, 1 => 1)
-addbranch!(model, :adder1 => :adder2, 1 => 1)
-addbranch!(model, :gen2 => :adder1, 1 => 2)
-addbranch!(model, :gen2 => :adder2, 1 => 2)
-addbranch!(model, :adder2 => :gain2, 1 => 1)
-addbranch!(model, :gain2 => :writer, 1 => 1)
-addbranch!(model, :gain2 => :gain3, 1 => 1)
-addbranch!(model, :gain3 => :adder2, 1 => 3)
+using Jusdl 
+using Plots
+
+# Construct the model 
+@defmodel model begin 
+    @nodes begin 
+        gen1 = SinewaveGenerator(frequency=2.)
+        gain1 = Gain()
+        adder1 = Adder(signs=(+,+))
+        gen2 = SinewaveGenerator(frequency=3.)
+        adder2 = Adder(signs=(+,+,-))
+        gain2 = Gain()
+        writer = Writer() 
+        gain3 = Gain()
+    end 
+    @branches begin 
+        gen1[1]     =>      gain1[1] 
+        gain1[1]    =>      adder1[1]
+        adder1[1]   =>      adder2[1]
+        gen2[1]     =>      adder1[2]
+        gen2[1]     =>      adder2[2]
+        adder2[1]   =>      gain2[1]
+        gain2[1]    =>      writer[1]
+        gain2[1]    =>      gain3[1]
+        gain3[1]    =>      adder2[3]
+    end
+end
 
 # Simulation of the model 
 simulate!(model, withbar=false)

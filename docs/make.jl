@@ -16,7 +16,7 @@ makedocs(
             "Model Construction" => "tutorials/model_construction.md",
             "Model Simulation" => "tutorials/model_simulation.md",
             "Algebraic Loops" => "tutorials/algebraic_loops.md",
-            "Subsystems" => "tutorials/subsystems.md",
+            # "Subsystems" => "tutorials/subsystems.md",
             "Coupled Systems" => "tutorials/coupled_systems.md",
         ],
         "Manual" => [

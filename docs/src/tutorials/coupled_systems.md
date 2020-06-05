@@ -49,19 +49,24 @@ The script below constructs and simulates the model
 ```@example coupled_system
 using Jusdl 
 
-# Construct the model 
+# Describe the model
 ε = 10.
-model = Model(clock=Clock(0., 0.01, 100.)) 
-addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds1)
-addnode!(model, LorenzSystem(Inport(3), Outport(3)), label=:ds2)
-addnode!(model, Coupler(ε * [-1 1; 1 -1], [1 0 0; 0 0 0; 0 0 0]), label=:coupler)
-addnode!(model,  Writer(Inport(6)), label=:writer)
-addbranch!(model, :ds1 => :coupler, 1:3 => 1:3)
-addbranch!(model, :ds2 => :coupler, 1:3 => 4:6)
-addbranch!(model, :coupler => :ds1, 1:3 => 1:3)
-addbranch!(model, :coupler => :ds2, 4:6 => 1:3)
-addbranch!(model, :ds1 => :writer, 1:3 => 1:3)
-addbranch!(model, :ds2 => :writer, 1:3 => 4:6)
+@defmodel model begin 
+    @nodes begin
+        ds1 = ForcedLorenzSystem()
+        ds2 = ForcedLorenzSystem()
+        coupler = Coupler(conmat=ε*[-1 1; 1 -1], cplmat=[1 0 0; 0 0 0; 0 0 0])
+        writer = Writer(input=Inport(6))
+    end
+    @branches begin 
+        ds1[1:3] => coupler[1:3]
+        ds2[1:3] => coupler[4:6]
+        coupler[1:3] => ds1[1:3]
+        coupler[4:6] => ds2[1:3]
+        ds1[1:3] => writer[1:3]
+        ds2[1:3] => writer[4:6]
+    end
+end
 nothing # hide 
 ```
 To construct the model, we added `ds1` and `ds2` each of which has input ports of length 3 and output port of length 3. To couple them together, we constructed a `coupler` which has input port of length 6 and output port of length 6. The output port of `ds1` is connected to the first 3 pins of `coupler` input port,  and the output of `ds2` is connected to last 3 pins of `coupler` input port. Then, the first 3 pins of `coupler` output is connected to the input port of `ds1` and last 3 pins of `coupler` output is connected to the input port of `ds2`. The block diagram of the model is given below.
@@ -79,6 +84,9 @@ It also worths pointing out that the model has two algebraic loops. The first lo
 The model is ready for simulation. The code block below simulates the model and plots the simulation data.
 ```@example coupled_system
 using Plots
+
+# Simulation settings.
+ti, dt, tf = 0, 0.01, 100.
 
 # Simulate the model 
 simulate!(model, withbar=false)

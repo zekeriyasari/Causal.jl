@@ -27,28 +27,29 @@ Note that there exist an algebraic loop consisting of `adder` and `gain`.  Solvi
 ```
 The following script constructs and simulates the model. 
 ```@example breaking_algebraic_loops_ex
-using Jusdl
+using Jusdl 
 
-# Construct an empty model 
-t0, dt, tf = 0, 1 / 64, 1.
-model = Model(clock=Clock(t0, dt, tf))
-
-# Add nodes to the model
-addnode!(model, RampGenerator(), label=:gen)
-addnode!(model, Adder((+,-)), label=:adder)
-addnode!(model, Gain(), label=:gain)
-addnode!(model, Writer(), label=:writerout)
-addnode!(model, Writer(), label=:writerin)
-
-# Add branches to the model 
-addbranch!(model, :gen => :adder, 1 => 1)
-addbranch!(model, :adder => :gain, 1 => 1)
-addbranch!(model, :gain => :adder, 1 => 2)
-addbranch!(model, :gen => :writerin, 1 => 1)
-addbranch!(model, :gain => :writerout, 1 => 1)
+# Describe the model
+@defmodel model begin 
+    @nodes begin
+        gen = RampGenerator()
+        adder = Adder(signs=(+,-))
+        gain = Gain()
+        writerout = Writer() 
+        writerin = Writer() 
+    end
+    @branches begin 
+        gen[1] => adder[1]
+        adder[1] => gain[1]
+        gain[1] => adder[2]
+        gen[1] => writerin[1]
+        gain[1] => writerout[1]
+    end
+end
 
 # Simulate the model 
-sim = simulate!(model, withbar=false)
+ti, dt, tf = 0., 1. / 64., 1.
+sim = simulate!(model, ti, dt, tf)
 
 # Read the simulation data and plot 
 using Plots
@@ -73,31 +74,38 @@ The script given below simulates this case.
 ```@example breaking_algebraic_loops_with_memory 
 using Jusdl 
 
-# Construct the model 
-ti, dt, tf = 0, 1 / 64, 1. 
-model = Model(clock=Clock(ti, dt, tf))
+# Simulation time settings.
+ti, dt, tf = 0., 1. / 64., 1.
 
-# Adding nodes to model 
-addnode!(model, RampGenerator(), label=:gen) 
-addnode!(model, Adder((+, -)), label=:adder) 
-addnode!(model, Gain(), label=:gain) 
-addnode!(model, Memory(dt, t0=tf, dt=dt, initial=zeros(1)), label=:mem) 
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :adder, 1 => 1) 
-addbranch!(model, :adder => :gain, 1 => 1) 
-addbranch!(model, :gain => :mem, 1 => 1) 
-addbranch!(model, :mem => :adder, 1 => 2) 
-addbranch!(model, :gen => :writer, 1 => 1) 
-addbranch!(model, :gain => :writer, 1 => 2) 
+# Describe the model
+@defmodel model begin 
+    @nodes begin
+        gen = RampGenerator()
+        adder = Adder(signs=(+,-))
+        gain = Gain()
+        writerout = Writer() 
+        writerin = Writer() 
+        mem = Memory(delay=dt, initial=zeros(1))
+    end
+    @branches begin 
+        gen[1] => adder[1]
+        adder[1] => gain[1]
+        gain[1] => mem[1]
+        mem[1] => adder[2]
+        gen[1] => writerin[1]
+        gain[1] => writerout[1]
+    end
+end
 
 # Simulate the model 
-sim = simulate!(model, withbar=false)
+sim = simulate!(model, ti, dt, tf, withbar=false)
 
 # Plot the simulation data
 using Plots
-t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
+t, r = read(getnode(model, :writerin).component)
+t, y = read(getnode(model, :writerout).component)
+plot(t, r, label="r(t)", marker=(:circle, 3))
+plot!(t, y, label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_plot1.svg)
@@ -110,32 +118,40 @@ One other important issue with using the memory component is that the initial va
 That is the memory should be initialized with an initial value of zero, which is the case in the script above. To observe that how incorrect initialization of a memory to break an algebraic loop, consider the following example in which memory is initialized randomly. 
 ```@example breaking_algebraic_loops_with_memory_incorrect_initialization 
 using Jusdl 
+using Plots 
 
-# Construct the model 
-ti, dt, tf = 0, 1 / 64, 1. 
-model = Model(clock=Clock(ti, dt, tf))
+# Simulation time settings.
+ti, dt, tf = 0., 1. / 64., 1.
 
-# Adding nodes to model 
-addnode!(model, RampGenerator(), label=:gen) 
-addnode!(model, Adder((+, -)), label=:adder) 
-addnode!(model, Gain(), label=:gain) 
-addnode!(model, Memory(dt, t0=tf, dt=dt, initial=rand(1)), label=:mem) 
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :adder, 1 => 1) 
-addbranch!(model, :adder => :gain, 1 => 1) 
-addbranch!(model, :gain => :mem, 1 => 1) 
-addbranch!(model, :mem => :adder, 1 => 2) 
-addbranch!(model, :gen => :writer, 1 => 1) 
-addbranch!(model, :gain => :writer, 1 => 2) 
+# Describe the model
+@defmodel model begin 
+    @nodes begin
+        gen = RampGenerator()
+        adder = Adder(signs=(+,-))
+        gain = Gain()
+        writerout = Writer() 
+        writerin = Writer() 
+        mem = Memory(delay=dt, initial=rand(1))
+    end
+    @branches begin 
+        gen[1] => adder[1]
+        adder[1] => gain[1]
+        gain[1] => mem[1]
+        mem[1] => adder[2]
+        gen[1] => writerin[1]
+        gain[1] => writerout[1]
+    end
+end
 
 # Simulate the model 
-sim = simulate!(model)
+sim = simulate!(model, ti, dt, tf, withbar=false)
 
 # Plot the results 
 using Plots
-t, x = read(getnode(model, :writer).component)
-plot(t, x[:, 1], label="r(t)", marker=(:circle, 3))
-plot!(t, x[:, 2], label="y(t)", marker=(:circle, 3))
+t, r = read(getnode(model, :writerin).component)
+t, y = read(getnode(model, :writerout).component)
+plot(t, r, label="r(t)", marker=(:circle, 3))
+plot!(t, y, label="y(t)", marker=(:circle, 3))
 savefig("breaking_algebraic_loops_with_memory_incorrect_plot1.svg"); nothing # hide
 ```
 ![](breaking_algebraic_loops_with_memory_incorrect_plot1.svg)

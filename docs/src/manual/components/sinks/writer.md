@@ -71,8 +71,13 @@ w.file
     In this example, `w` does not have a `plugin` so nothing has been derived or computed from the data in `databuf`. The data in `databuf` is just written to `file` of `w`. To further data processing, see [Plugins](@ref)
 
 ## Full API 
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["writer.jl"]
-Order = [:type, :function]
+```@docs
+Writer 
+write!(writer::Writer, td, xd)
+read(writer::Writer; flatten=true)
+fread 
+mv(writer::Writer, dst; force::Bool=false)
+cp(writer::Writer, dst; force=false, follow_symlinks=false)
+open(writer::Writer)
+close(writer::Writer)
 ```

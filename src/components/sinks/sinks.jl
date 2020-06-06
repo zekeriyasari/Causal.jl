@@ -29,7 +29,17 @@ end
 ##### Define sink library
 
 # ----------------------------- Writer -------------------------------- 
+"""
+    Writer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
+        path=joinpath(tempdir(), string(name))) 
+Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
 
+!!! note 
+    The type of `file` of `Writer` is [`JLD2`](https://github.com/JuliaIO/JLD2.jl).    
+
+!!! warning 
+    When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
+"""
 @def_sink mutable struct Writer{A, FL} <: AbstractSink
     action::A = write!
     path::String = joinpath(tempdir(), string(uuid4()))
@@ -95,11 +105,6 @@ function fread(path::String; flatten=false)
     end
 end
 
-"""
-    flatten(content)
-
-Returns a tuple of keys and values of `content`.
-"""
 flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
 
 """
@@ -176,7 +181,10 @@ close(writer::Writer) =  (close(writer.file); writer)
 
 
 # ----------------------------- Printer --------------------------------
-
+"""
+  Printer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol()) where T
+Constructs a `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
+"""
 @def_sink mutable struct Printer{A} <: AbstractSink 
     action::A = print 
 end
@@ -205,7 +213,13 @@ Does nothing. Just a common interface function ot `AbstractSink` interface.
 close(printer::Printer) =  printer
 
 # ----------------------------- Scope --------------------------------
+"""
+    Scope(input=Inport(), args...; buflen::Int=64, plugin=nothing, callbacks=nothing, name=Symbol(), kwargs...) 
+Constructs a `Scope` with input bus `input`. `buflen` is the length of the internal buffer of `Scope`. `plugin` is the additional data processing tool. `args`,`kwargs` are passed into `plots(args...; kwargs...))`. See (https://github.com/JuliaPlots/Plots.jl) for more information.
 
+!!! warning 
+    When initialized, the `plot` of `Scope` is closed. See [`open(sink::Scope)`](@ref) and [`close(sink::Scope)`](@ref).
+"""
 @def_sink mutable struct Scope{A, PA, PK, PLT} <: AbstractSink
     action::A = update!
     pltargs::PA = () 

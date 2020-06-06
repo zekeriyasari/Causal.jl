@@ -93,8 +93,8 @@ iport[1].link.buffer
 ```
 
 ## Full API
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["ddesystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_dde_system 
+DDESystem 
+DelayFeedbackSystem 
 ```

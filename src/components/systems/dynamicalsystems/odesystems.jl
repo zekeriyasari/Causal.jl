@@ -3,7 +3,11 @@
 import DifferentialEquations: Tsit5, ODEProblem
 import UUIDs: uuid4
 
+"""
+    @def_ode_system
 
+Used to define ODE system
+"""
 macro def_ode_system(ex) 
     fields = quote
         trigger::TR = Inpin()

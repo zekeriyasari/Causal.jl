@@ -102,8 +102,19 @@ end
 Note the output value `y` is *computed* and *returned* from `outputfunc`. `y` is *not updated* but *generated* in the `outputfunc`.
 
 ## Full API
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["odesystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_ode_system 
+ODESystem 
+ContinuousLinearSystem 
+LorenzSystem 
+ForcedLorenzSystem 
+ChenSystem 
+ForcedChenSystem 
+ChuaSystem 
+ForcedChuaSystem 
+RosslerSystem 
+ForcedRosslerSystem 
+VanderpolSystem 
+ForcedVanderpolSystem
+Integrator 
 ```

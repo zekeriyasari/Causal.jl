@@ -2,6 +2,11 @@
 
 import UUIDs: uuid4
 
+"""
+    @def_static_system 
+
+Used to define static systems 
+"""
 macro def_static_system(ex) 
     fields = quote
         trigger::TR = Inpin()

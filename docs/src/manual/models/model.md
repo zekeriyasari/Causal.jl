@@ -53,3 +53,7 @@ Modules = [Jusdl]
 Pages   = ["model.jl"]
 Order = [:type, :function]
 ```
+
+```@docs 
+@defmodel
+```

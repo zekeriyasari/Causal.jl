@@ -80,8 +80,13 @@ task2
 Since the `task` is not running any more, `ds` cannot be drivable any more. However to drive `ds` again, we need launch `ds` again.
 
 ## Full API
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["discretesystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_discrete_system 
+DiscreteSystem 
+DiscreteLinearSystem 
+HenonSystem 
+LoziSystem 
+BogdanovSystem 
+GingerbreadmanSystem
+LogisticSystem 
 ```

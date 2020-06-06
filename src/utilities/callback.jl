@@ -1,6 +1,6 @@
 # This file constains the callbacks for event monitoring.
 
-@doc raw"""
+"""
     Callback(condition, action)
 
 Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument function. The `condition` returns `true` if the condition it checks occurs, otherwise, it returns `false`. `action` performs the specific action for which the `Callback` is constructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
@@ -14,14 +14,13 @@ julia> struct Object  # Define a dummy type.
 
 julia> cond(obj) = obj.x > 0;  # Define callback condition.
 
-julia> action(obj) = println("obj.x = $(obj.x)"); # Define callback action.
+julia> action(obj) = println("obj.x = ", obj.x); # Define callback action.
 
 julia> obj = Object(1, Callback(condition=cond, action=action))
 Object(1, Callback(condition:cond, action:action))
 
 julia> obj.clb(obj)  # Call the callback bound `obj`.
 obj.x = 1
-
 ```
 """
 Base.@kwdef mutable struct Callback{CN, AC}

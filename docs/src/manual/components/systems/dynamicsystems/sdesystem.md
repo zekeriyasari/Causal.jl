@@ -102,8 +102,9 @@ task2
 ```
 
 ## Full API
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["sdesystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_sde_system 
+SDESystem 
+NoisyLorenzSystem 
+ForcedNoisyLorenzSystem 
 ```

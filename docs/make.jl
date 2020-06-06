@@ -31,6 +31,7 @@ makedocs(
             ],
             "Components" => [
                 "ComponentsBase" => [
+                    "manual/components/componentsbase/hierarchy.md",
                     "manual/components/componentsbase/evolution.md",
                     "manual/components/componentsbase/interpolation.md",
                 ],
@@ -47,7 +48,7 @@ makedocs(
                 "Systems" => [
                     "StaticSystems" => [
                         "StaticSystems" => "manual/components/systems/staticsystems/staticsystems.md",
-                        "Subsystem" => "manual/components/systems/staticsystems/subsystem.md",
+                        # "Subsystem" => "manual/components/systems/staticsystems/subsystem.md",
                     ],
                     "DynamicSystems" => [
                         "DiscreteSystem" => "manual/components/systems/dynamicsystems/discretesystem.md",

@@ -6,7 +6,7 @@ import UUIDs: uuid4
 """
     @def_discrete_system
 
-Defines discrete systems
+Used to define discrete time system
 """
 macro def_discrete_system(ex) 
     fields = quote

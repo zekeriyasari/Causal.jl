@@ -93,8 +93,14 @@ iport[1].link.buffer
 In addition to the generic [`StaticSystem`](@ref),  `Jusdl` provides some well-known static systems given in the next section.
 
 ## Full API 
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["staticsystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_static_system 
+StaticSystem 
+Adder 
+Multiplier 
+Gain 
+Terminator 
+Memory 
+Coupler 
+Differentiator 
 ```

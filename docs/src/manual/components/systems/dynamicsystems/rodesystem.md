@@ -106,3 +106,10 @@ Note that the state of `task` is `done` which implies the `task` has been termin
 task
 task2
 ```
+
+## Full API 
+```@docs 
+@def_rode_system 
+RODESystem 
+MultiplicativeNoiseLinearSystem
+```

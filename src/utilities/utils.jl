@@ -7,13 +7,13 @@ macro siminfo(msg...)
 end
 
 
-"""
+#= 
     @def begin name 
         code 
     end
 
 Copy paste macro
-"""
+=#
 macro def(name, code)
     quote
         macro $(esc(name))()

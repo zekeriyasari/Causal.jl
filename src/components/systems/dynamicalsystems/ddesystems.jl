@@ -52,6 +52,11 @@ Construct a generic DDE system
     output::OP
 end
 
+"""
+    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output)
+
+Constructs DelayFeedbackSystem
+"""
 @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
     constlags::Vector{Float64} = Jusdl._delay_feedback_system_constlags
     depslags::Nothing = nothing

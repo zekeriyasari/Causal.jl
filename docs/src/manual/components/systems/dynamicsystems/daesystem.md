@@ -1,8 +1,10 @@
 # DAESystem 
 
 ## Full API
-```@autodocs
-Modules = [Jusdl]
-Pages   = ["daesystems.jl"]
-Order = [:type, :function]
+```@docs
+@def_dae_system 
+DAESystem 
+RobertsonSystem 
+PendulumSystem
+RLCSystem 
 ```

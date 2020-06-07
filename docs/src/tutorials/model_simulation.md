@@ -8,17 +8,11 @@ In this tutorial, we will simulate a very simple model consisting of a generator
 ```
 
 ## Model Simulation
-We construct an empty model and then add nodes and branches to model. See [Construction of Models](@ref section_header) for more detailed information about model construction.
+We construct an empty model and then add nodes and branches to model. See [Modifying Models](@ref section_header) for more detailed information about model construction.
 ```@example simple_model_ex
 using Jusdl 
 
-# Construction of an empty model 
-t0 = 0.     # Start time 
-dt = 0.01   # Sampling interval
-tf = 10.    # Final time
-model = Model(clock=Clock(t0, dt, tf)) 
-
-# Adding nodes to model
+# Describe the model 
 @defmodel model begin 
     @nodes begin 
         gen = SinewaveGenerator() 
@@ -32,7 +26,7 @@ nothing # hide
 ```
 In this simple `model`, we have a single output sinusoidal wave generator `gen` and a `writer`. In the script above, we constructed the components, connected them together and constructed the model.
 
-In addition to simulation time settings(which have set through model clock during the model construction above), we can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. 
+We can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. 
 ```@example simple_model_ex 
 simdir = "/tmp"  
 logtofile = true
@@ -41,6 +35,9 @@ nothing # hide
 ```
 At this point, the model is ready for simulation. 
 ```@example simple_model_ex 
+t0 = 0.     # Start time 
+dt = 0.01   # Sampling interval
+tf = 10.    # Final time
 sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)
 ```
 
@@ -88,10 +85,6 @@ Consider a larger model whose block diagram is given below
 ```
 The script below illustrates the construction and simulation of this model 
 ```@example large_model 
-using Jusdl 
-using Plots
-
-# Construction of the model 
 using Jusdl 
 using Plots
 

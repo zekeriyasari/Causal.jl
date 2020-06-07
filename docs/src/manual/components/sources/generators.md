@@ -5,8 +5,8 @@ An `AbstractSource` is a subtype of `AbstractComponent`. (See [Components](@ref)
 
 ```@repl source_ex
 using Jusdl # hide 
-outputfunc(t) = t * exp(t) + sin(t)
-gen = FunctionGenerator(outputfunc)
+f(t) = t * exp(t) + sin(t)
+gen = FunctionGenerator(readout=f)
 ```
 We constructed a [`FunctionGenerator`](@ref) which is an `AbstractSource`.
 ```@repl source_ex

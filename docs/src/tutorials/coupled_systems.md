@@ -89,7 +89,7 @@ using Plots
 ti, dt, tf = 0, 0.01, 100.
 
 # Simulate the model 
-simulate!(model, withbar=false)
+simulate!(model, ti, dt, tf, withbar=false)
 
 # Read simulation data 
 t, x = read(getnode(model, :writer).component)

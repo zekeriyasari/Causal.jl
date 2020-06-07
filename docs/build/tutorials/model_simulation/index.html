@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Model Simulation · Jusdl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Jusdl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Jusdl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Modeling and Simulation in Jusdl</span><ul><li><a class="tocitem" href="../../modeling_and_simulation/modeling/">Modeling</a></li><li><a class="tocitem" href="../../modeling_and_simulation/simulation/">Simulation</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../model_construction/">Model Construction</a></li><li class="is-active"><a class="tocitem" href>Model Simulation</a><ul class="internal"><li><a class="tocitem" href="#Model-Simulation-1"><span>Model Simulation</span></a></li><li><a class="tocitem" href="#Investigation-of-Simulation-1"><span>Investigation of Simulation</span></a></li><li><a class="tocitem" href="#Analysis-of-Simulation-Data-1"><span>Analysis of Simulation Data</span></a></li><li><a class="tocitem" href="#A-Larger-Model-Simulation-1"><span>A Larger Model Simulation</span></a></li></ul></li><li><a class="tocitem" href="../algebraic_loops/">Algebraic Loops</a></li><li><a class="tocitem" href="../coupled_systems/">Coupled Systems</a></li></ul></li><li><span class="tocitem">Manual</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Utilities</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/utilities/callback/">Callback</a></li><li><a class="tocitem" href="../../manual/utilities/buffers/">Buffer</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Connections</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/connections/link/">Links</a></li><li><a class="tocitem" href="../../manual/connections/pin/">Pins</a></li><li><a class="tocitem" href="../../manual/connections/port/">Ports</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Components</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-1"><span class="docs-label">ComponentsBase</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/componentsbase/hierarchy/">Component Type Hierarchy</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/evolution/">Evolution of Components</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/interpolation/">Interpolation</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-2"><span class="docs-label">Sources</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sources/clock/">Clock</a></li><li><a class="tocitem" href="../../manual/components/sources/generators/">Generators</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3-3"><span class="docs-label">Sinks</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sinks/sinks/">Sinks</a></li><li><a class="tocitem" href="../../manual/components/sinks/writer/">Writer</a></li><li><a class="tocitem" href="../../manual/components/sinks/printer/">Printer</a></li><li><a class="tocitem" href="../../manual/components/sinks/scope/">Scope</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4"><span class="docs-label">Systems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-1"><span class="docs-label">StaticSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/staticsystems/staticsystems/">StaticSystems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-2"><span class="docs-label">DynamicSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/discretesystem/">DiscreteSystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/odesystem/">ODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/daesystem/">DAESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/rodesystem/">RODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/sdesystem/">SDESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/ddesystem/">DDESystem</a></li></ul></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Models</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/models/taskmanager/">Task Manager</a></li><li><a class="tocitem" href="../../manual/models/simulation/">Simulation</a></li><li><a class="tocitem" href="../../manual/models/model/">Model</a></li></ul></li><li><a class="tocitem" href="../../manual/plugins/plugins/">Plugins</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Model Simulation</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Model Simulation</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/zekeriyasari/Jusdl.jl/blob/master/docs/src/tutorials/model_simulation.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Construction-and-Simulation-of-a-Simple-Model-1"><a class="docs-heading-anchor" href="#Construction-and-Simulation-of-a-Simple-Model-1">Construction and Simulation of a Simple Model</a><a class="docs-heading-anchor-permalink" href="#Construction-and-Simulation-of-a-Simple-Model-1" title="Permalink"></a></h1><p>In this tutorial, we will simulate a very simple model consisting of a generator and a writer as shown in the block diagram shown below. </p><center>
     <img src="../../assets/GeneratorWriter/generatorwriter.svg" alt="model" width="35%"/>
-</center><h2 id="Model-Simulation-1"><a class="docs-heading-anchor" href="#Model-Simulation-1">Model Simulation</a><a class="docs-heading-anchor-permalink" href="#Model-Simulation-1" title="Permalink"></a></h2><p>We construct an empty model and then add nodes and branches to model. See <a href="../model_construction/#section_header-1">Construction of Models</a> for more detailed information about model construction.</p><pre><code class="language-julia">using Jusdl
+</center><h2 id="Model-Simulation-1"><a class="docs-heading-anchor" href="#Model-Simulation-1">Model Simulation</a><a class="docs-heading-anchor-permalink" href="#Model-Simulation-1" title="Permalink"></a></h2><p>We construct an empty model and then add nodes and branches to model. See <a href="../model_construction/#section_header-1">Modifying Models</a> for more detailed information about model construction.</p><pre><code class="language-julia">using Jusdl
 
-# Construction of an empty model
-t0 = 0.     # Start time
-dt = 0.01   # Sampling interval
-tf = 10.    # Final time
-model = Model(clock=Clock(t0, dt, tf))
-
-# Adding nodes to model
+# Describe the model
 @defmodel model begin
     @nodes begin
         gen = SinewaveGenerator()
@@ -18,47 +12,50 @@ model = Model(clock=Clock(t0, dt, tf))
     @branches begin
         gen =&gt; writer
     end
-end</code></pre><p>In this simple <code>model</code>, we have a single output sinusoidal wave generator <code>gen</code> and a <code>writer</code>. In the script above, we constructed the components, connected them together and constructed the model.</p><p>In addition to simulation time settings(which have set through model clock during the model construction above), we can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. </p><pre><code class="language-julia">simdir = &quot;/tmp&quot;
+end</code></pre><p>In this simple <code>model</code>, we have a single output sinusoidal wave generator <code>gen</code> and a <code>writer</code>. In the script above, we constructed the components, connected them together and constructed the model.</p><p>We can specify simulation settings such as whether a simulation log file is be to constructed, model components are to be saved in a file, etc. </p><pre><code class="language-julia">simdir = &quot;/tmp&quot;
 logtofile = true
-reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-42fafd4e-3feb-4063-932a-64cdf30affa8)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 10568
-drwxr-xr-x 2 sari sari     4096 Jun  7 15:36 .
-drwxrwxrwt 1 root root 10764288 Jun  7 15:36 ..
--rw-r--r-- 1 sari sari    15236 Jun  7 15:36 e2176f54-470b-4ff4-80bb-24f003781f24
--rw-r--r-- 1 sari sari    21828 Jun  7 15:37 report.jld2
--rw-r--r-- 1 sari sari     1040 Jun  7 15:37 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
+reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">t0 = 0.     # Start time
+dt = 0.01   # Sampling interval
+tf = 10.    # Final time
+sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre><code class="language-none">Simulation(state:done, retcode:success, path:/tmp/Simulation-57709891-24fd-406f-a9a8-4ef5b0a454cb)</code></pre><h2 id="Investigation-of-Simulation-1"><a class="docs-heading-anchor" href="#Investigation-of-Simulation-1">Investigation of Simulation</a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation-1" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre><code class="language-none">total 10568
+drwxr-xr-x 2 sari sari     4096 Jun  7 17:44 .
+drwxrwxrwt 1 root root 10764288 Jun  7 17:44 ..
+-rw-r--r-- 1 sari sari    15236 Jun  7 17:44 43cec635-a77e-4cc3-9b7b-75abe120cb32
+-rw-r--r-- 1 sari sari    21828 Jun  7 17:44 report.jld2
+-rw-r--r-- 1 sari sari     1042 Jun  7 17:44 simlog.log</code></pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
 open(joinpath(sim.path, &quot;simlog.log&quot;), &quot;r&quot;) do file
     for line in readlines(file)
         println(line)
     end
-end</code></pre><pre><code class="language-none">┌ Info: 2020-06-07T15:36:57.341 Started simulation...
+end</code></pre><pre><code class="language-none">┌ Info: 2020-06-07T17:44:17.65 Started simulation...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.37 Inspecting model...
+┌ Info: 2020-06-07T17:44:17.688 Inspecting model...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.37 Done.
+┌ Info: 2020-06-07T17:44:17.688 Done.
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.37 Initializing the model...
+┌ Info: 2020-06-07T17:44:17.688 Initializing the model...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.388 Done...
+┌ Info: 2020-06-07T17:44:17.707 Done...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.388 Running the simulation...
+┌ Info: 2020-06-07T17:44:17.707 Running the simulation...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.423 Done...
+┌ Info: 2020-06-07T17:44:17.852 Done...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.423 Terminating the simulation...
+┌ Info: 2020-06-07T17:44:17.852 Terminating the simulation...
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5
-┌ Info: 2020-06-07T15:36:57.441 Done.
+┌ Info: 2020-06-07T17:44:17.869 Done.
 └ @ Jusdl /home/sari/.julia/dev/Jusdl/src/utilities/utils.jl:5</code></pre><p><code>report.jld2</code> file, which includes the information about the simulation and model components, can be read back after the simulation. </p><pre><code class="language-julia-repl">julia&gt; using FileIO, JLD2
 
 julia&gt; filecontent = load(joinpath(sim.path, &quot;report.jld2&quot;))
 Dict{String,Any} with 9 entries:
   &quot;retcode&quot;         =&gt; :success
-  &quot;name&quot;            =&gt; &quot;Simulation-42fafd4e-3feb-4063-932a-64cdf30affa8&quot;
+  &quot;name&quot;            =&gt; &quot;Simulation-57709891-24fd-406f-a9a8-4ef5b0a454cb&quot;
   &quot;model/callbacks&quot; =&gt; nothing
   &quot;model/name&quot;      =&gt; &quot;&quot;
   &quot;model/clock&quot;     =&gt; Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:…
-  &quot;model/id&quot;        =&gt; &quot;10ecdee6-a3e1-4095-a89c-ae33f2870ecd&quot;
+  &quot;model/id&quot;        =&gt; &quot;df0568ed-8e7d-4e73-bd2d-ba6bd54d2e21&quot;
   &quot;components/&quot;     =&gt; SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0…
-  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-42fafd4e-3feb-4063-932a-64cdf30affa8&quot;
+  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-57709891-24fd-406f-a9a8-4ef5b0a454cb&quot;
   &quot;state&quot;           =&gt; :done
 
 julia&gt; clock = filecontent[&quot;model/clock&quot;]
@@ -70,10 +67,6 @@ using Plots
 plot(t, x, xlabel=&quot;t&quot;, ylabel=&quot;x&quot;, label=&quot;&quot;)</code></pre><p><img src="../simple_model_plot.svg" alt/></p><h2 id="A-Larger-Model-Simulation-1"><a class="docs-heading-anchor" href="#A-Larger-Model-Simulation-1">A Larger Model Simulation</a><a class="docs-heading-anchor-permalink" href="#A-Larger-Model-Simulation-1" title="Permalink"></a></h2><p>Consider a larger model whose block diagram is given below</p><center>
     <img src="../../assets/ModelGraph/modelgraph.svg" alt="model" width="90%"/>
 </center><p>The script below illustrates the construction and simulation of this model </p><pre><code class="language-julia">using Jusdl
-using Plots
-
-# Construction of the model
-using Jusdl
 using Plots
 
 # Construct the model
@@ -106,15 +99,15 @@ simulate!(model, withbar=false)
 
 # Reading and plotting the simulation data
 t, x = read(getnode(model, :writer).component)
-plot(t, x)</code></pre><pre><code class="language-none">[ Info: 2020-06-07T15:37:09.815 Started simulation...
-[ Info: 2020-06-07T15:37:09.815 Inspecting model...
+plot(t, x)</code></pre><pre><code class="language-none">[ Info: 2020-06-07T17:44:32.29 Started simulation...
+[ Info: 2020-06-07T17:44:32.29 Inspecting model...
 ┌ Info: 	The model has algrebraic loops:[[5, 6, 8]]
 └ 		Trying to break these loops...
 [ Info: 	Loop [5, 6, 8] is broken
-[ Info: 2020-06-07T15:37:09.932 Done.
-[ Info: 2020-06-07T15:37:09.932 Initializing the model...
-[ Info: 2020-06-07T15:37:10.16 Done...
-[ Info: 2020-06-07T15:37:10.16 Running the simulation...
-[ Info: 2020-06-07T15:37:10.552 Done...
-[ Info: 2020-06-07T15:37:10.552 Terminating the simulation...
-[ Info: 2020-06-07T15:37:10.556 Done.</code></pre><p><img src="../larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 7 June 2020 15:37">Sunday 7 June 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+[ Info: 2020-06-07T17:44:32.411 Done.
+[ Info: 2020-06-07T17:44:32.411 Initializing the model...
+[ Info: 2020-06-07T17:44:32.638 Done...
+[ Info: 2020-06-07T17:44:32.638 Running the simulation...
+[ Info: 2020-06-07T17:44:33.17 Done...
+[ Info: 2020-06-07T17:44:33.17 Terminating the simulation...
+[ Info: 2020-06-07T17:44:33.173 Done.</code></pre><p><img src="../larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 7 June 2020 17:44">Sunday 7 June 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

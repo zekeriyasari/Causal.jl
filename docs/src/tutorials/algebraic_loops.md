@@ -49,7 +49,7 @@ end
 
 # Simulate the model 
 ti, dt, tf = 0., 1. / 64., 1.
-sim = simulate!(model, ti, dt, tf)
+sim = simulate!(model, ti, dt, tf, withbar=false)
 
 # Read the simulation data and plot 
 using Plots

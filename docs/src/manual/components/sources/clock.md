@@ -41,7 +41,7 @@ Consider that we want to configure an alarm. For this, let us consider that when
 ```@repl clk_ex 
 condition(clk) = clk.t > 5
 action(clk) = println("Clock time = ", clk.t)
-clk = Clock(0., 1., 10., callbacks=Callback(condition, action))
+clk = Clock(0., 1., 10., callbacks=Callback(condition=condition, action=action))
 set!(clk)
 ```
 Now, let us run `clk` by iterating it. 

@@ -1,8 +1,8 @@
-# Models and Graphs 
+# Model Construction
 
-This tutorial illustrates the relation relation between models and graphs. A model consists of components and connections. These components and connections can be associated with a signal-flow graph signifying the topology of the model. In the realm of graph theory, components and connections of a model are associated with nodes and branches of the signal-flow graph. As the model is modified by adding or deleting components or connections, the signal-flow graph of the model is modified accordingly to keep track of topological modifications. By associating a signal-flow graph to a model, any graph-theoretical analysis can be performed. An example to such an analysis is the determination and braking of algebraic loops. 
+This tutorial illustrates model construction and  the relation between models and graphs. A model consists of components and connections. These components and connections can be associated with a signal-flow graph signifying the topology of the model. In the realm of graph theory, components and connections of a model are associated with nodes and branches of the signal-flow graph. As the model is modified by adding or deleting components or connections, the signal-flow graph of the model is modified accordingly to keep track of topological modifications. By associating a signal-flow graph to a model, any graph-theoretical analysis can be performed. An example to such an analysis is the determination and braking of algebraic loops. 
 
-## [Construction of Models](@id section_header)
+## [Modifying Models](@id section_header)
 In this tutorial, we construct the model with the following block diagram
 ```@raw html
 <center>
@@ -80,7 +80,7 @@ addbranch!(model, :gain => :adder, 1 => 2)
 addbranch!(model, :gain => :writer, 1 => 1)
 ```
 
-## Handy-Tool for Model Construction 
+## Describing Models
 `@defmacro` can be used for a handy-tool for model construction. The syntax here is 
 ```julia 
 @defmodel modelname begin 

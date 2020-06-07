@@ -6,9 +6,62 @@ import Sundials: IDA
 import UUIDs: uuid4
 
 """
-    @def_dae_system 
+    @def_dae_system ex 
 
-Used to define new DAE system models.
+where `ex` is the expression to define to define a new AbstractDAESystem component type. The usage is as follows:
+```julia
+@def_dae_system struct MyDAESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDAESystem
+    param1::T1 = param1_default                 # optional field 
+    param2::T2 = param2_default                 # optional field 
+    param3::T3 = param3_default                 # optional field
+        ⋮
+    paramN::TN = paramN_default                 # optional field 
+    righthandside::RH = righthandside_default   # mandatory field
+    readout::RO = readout_default               # mandatory field
+    state::ST = state_default                   # mandatory field
+    stateder::ST = stateder_default             # mandatory field
+    diffvars::Vector{Bool} = diffvars_default   # mandatory field
+    input::IP = input_default                   # mandatory field
+    output::OP = output_default                 # mandatory field
+end
+```
+Here, `MyDAESystem` has `N` parameters. `MyDAESystem` is represented by the `righthandside` and `readout` function. `state`, 'stateder`, `diffvars`, `input` and `output` is the initial state, initial value of differential variables, vector signifing differetial variables, input port and output port of `MyDAESystem`.
+
+!!! warning 
+    `righthandside` must have the signature 
+    ```julia
+    function righthandside(out, dx, x, u, t, args...; kwargs...)
+        out .= .... # update out
+    end
+    ```
+    and `readout` must have the signature 
+    ```julia
+    function readout(x, u, t)
+        y = ...
+        return y
+    end
+    ```
+
+!!! warning 
+    New DAE system must be a subtype of `AbstractDAESystem` to function properly.
+
+# Example 
+```jldoctest 
+julia> @def_dae_system mutable struct MyDAESystem{RH, RO, ST, IP, OP} <: AbstractDAESystem
+        righthandside::RH = function sfuncdae(out, dx, x, u, t)
+                out[1] = x[1] + 1 - dx[1]
+                out[2] = (x[1] + 1) * x[2] + 2
+            end 
+        readout::RO = (x,u,t) -> x 
+        state::ST = [1., -1]
+        stateder::ST = [2., 0]
+        diffvars::Vector{Bool} = [true, false]
+        input::IP = nothing 
+        output::OP = Outport(1)
+        end
+
+julia> ds = MyDAESystem();
+```
 """
 macro def_dae_system(ex) 
     fields = quote
@@ -38,6 +91,23 @@ end
     DAESystem(; righthandside, readout, state, stateder, diffvars, input, output)
 
 Constructs a generic DAE system.
+
+# Example
+```jldoctest
+julia> function sfuncdae(out, dx, x, u, t)
+           out[1] = x[1] + 1 - dx[1]
+           out[2] = (x[1] + 1) * x[2] + 2
+       end;
+
+julia> ofuncdae(x, u, t) = x;
+
+julia> x0 = [1., -1];
+
+julia> dx0 = [2., 0.];
+
+julia> DAESystem(righthandside=sfuncdae, readout=ofuncdae, state=x0, input=nothing, output=Outport(1), diffvars=[true, false], stateder=dx0)
+DAESystem(righthandside:sfuncdae, readout:ofuncdae, state:[1.0, -1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
+```
 """
 @def_dae_system mutable struct DAESystem{RH, RO, ST, IP, OP} <: AbstractDAESystem
     righthandside::RH 
@@ -53,7 +123,7 @@ end
 @doc raw"""
     RobertsonSystem() 
 
-Construsts a Robertson systme with the dynamcis 
+Constructs a Robertson systme with the dynamcis 
 ```math
 \begin{array}{l}
     \dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\[0.25cm]
@@ -82,13 +152,13 @@ end
 @doc raw"""
     PendulumSystem() 
 
-Construsts a Pendulum systme with the dynamics
+Constructs a Pendulum systme with the dynamics
 ```math
 \begin{array}{l}
     \dot{x}_1 = x_3 \\[0.25cm]
     \dot{x}_2 = x_4 \\[0.25cm]
     \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_1 = g \drac{F}{l} x_2 \\[0.25cm]
+    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
 \end{array}
 ```
@@ -124,7 +194,7 @@ Construsts a RLC system with the dynamics
     \dot{x}_1 = x_3 \\[0.25cm]
     \dot{x}_2 = x_4 \\[0.25cm]
     \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_1 = g \drac{F}{l} x_2 \\[0.25cm]
+    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
 \end{array}
 ```

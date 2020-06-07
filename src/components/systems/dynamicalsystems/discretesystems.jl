@@ -39,7 +39,7 @@ Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented b
     ```
 
 !!! warning 
-    New ODE system must be a subtype of `AbstractDiscreteSystem` to function properly.
+    New discrete system must be a subtype of `AbstractDiscreteSystem` to function properly.
 
 # Example 
 ```jldoctest 
@@ -85,6 +85,17 @@ end
     DiscreteSystem(; righthandside, readout, state, input, output)
 
 Constructs a generic discrete system 
+
+# Example 
+```jldoctest
+julia> sfuncdiscrete(dx,x,u,t) = (dx .= 0.5x);
+
+julia> ofuncdiscrete(x, u, t) = x;
+
+julia> DiscreteSystem(righthandside=sfuncdiscrete, readout=ofuncdiscrete, state=[1.], input=nothing, output=Outport())
+DiscreteSystem(righthandside:sfuncdiscrete, readout:ofuncdiscrete, state:[1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
+
+```
 """
 @def_discrete_system mutable struct DiscreteSystem{RH, RO, ST, IP, OP} <: AbstractDiscreteSystem
     righthandside::RH

@@ -37,7 +37,7 @@ g(u, t) = [t * u[1], sin(u[1]), cos(u[2])]
 ```
 Note that the function `g` is defined in such a way that the input value `u` is sampled, which implies `u` is not a vector of function but is a vector of real. Having defined output function `outputfunc`, the system can be constructed. 
 ```@repl static_system_ex
-ss = StaticSystem(g, Inport(2), Outport(3))
+ss = StaticSystem(readout=g, input=Inport(2), output=Outport(3))
 ```
 Note the construction of input bus `Inport(2)` and output bus `Outport(3)` by recalling that the number of input is 2 and the number of output is 3.
 

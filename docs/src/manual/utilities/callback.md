@@ -46,6 +46,10 @@ testobject.x is greater than zero
 ```
 
 ## Full API 
+```@docs 
+Callback
+```
+
 ```@autodocs
 Modules = [Jusdl]
 Pages   = ["callback.jl"]

@@ -1,7 +1,7 @@
 # Subsystem
 
 ## Construction of SubSystems
-A [`SubSystem`](@ref) consists of connected components. Thus, to construct a `SubSystem`, we first construct components, connect them and specify the input and output of `SubSystem`.
+A SubSystem consists of connected components. Thus, to construct a `SubSystem`, we first construct components, connect them and specify the input and output of `SubSystem`.
 
 
 ## Basic Operation of SubSystems

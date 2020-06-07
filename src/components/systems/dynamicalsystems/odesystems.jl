@@ -3,10 +3,62 @@
 import DifferentialEquations: Tsit5, ODEProblem
 import UUIDs: uuid4
 
-"""
-    @def_ode_system
 
-Used to define ODE system
+"""
+    @def_ode_system ex 
+
+where `ex` is the expression to define to define a new AbstractODESystem component type. The usage is as follows:
+```julia
+@def_ode_system struct MyODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractODESystem
+    param1::T1 = param1_default             # optional field 
+    param2::T2 = param2_default             # optional field 
+    param3::T3 = param3_default             # optional field
+        ⋮
+    paramN::TN = paramN_default             # optional field 
+    righthandside::RH = readout_function    # mandatory field
+    readout::RO = readout_function          # mandatory field
+    state::ST = readout_function            # mandatory field
+    input::IP = input_default               # mandatory field
+    output::OP = output_default             # mandatory field 
+end
+```
+Here, `MyODESystem` has `N` parameters. `MyODESystem` is represented by the `righthandside` and `readout` function. `state`, `input` and `output` is the state, input port and output port of `MyODESystem`.
+
+!!! warning 
+    `righthandside` must have the signature 
+    ```julia
+    function righthandside(dx, x, u, t, args...; kwargs...)
+        dx .= .... # update dx 
+    end
+    ```
+    and `readout` must have the signature 
+    ```julia
+    function readout(x, u, t)
+        y = ...
+        return y
+    end
+    ```
+
+!!! warning 
+    New ODE system must be a subtype of `AbstractODESystem` to function properly.
+
+# Example 
+```jldoctest 
+julia> @def_static_system struct MyODESystem{RH, RO, IP, OP} <: AbstractODESystem 
+       α::Float64 = 1. 
+       β::Float64 = 2. 
+       righthandside::RH = (dx, x, u, t, α=α) -> (dx[1] = α * x[1] + u[1](t))
+       readout::RO = (x, u, t) -> x
+       input::IP = Inport(1) 
+       output::OP = Outport(1) 
+       end
+
+julia> ds = MyODESystem();
+
+julia> ds.input 
+1-element Inport{Inpin{Float64}}:
+ Inpin(eltype:Float64, isbound:false)
+```
 """
 macro def_ode_system(ex) 
     fields = quote
@@ -34,7 +86,16 @@ end
 """
     ODESystem(;righthandside, readout, state, input, output) 
 
-Constructs a generic ODE system. 
+Constructs a generic ODE system.
+
+# Example
+```jldoctest
+julia> ds = ODESystem(righthandside=(dx,x,u,t)->(dx.=-x), readout=(x,u,t)->x, state=[1.],input=nothing, output=Outport(1));
+
+julia> ds.state
+1-element Array{Float64,1}:
+ 1.0
+```
 """
 @def_ode_system mutable struct ODESystem{RH, RO, ST, IP, OP} <: AbstractODESystem 
     righthandside::RH 

@@ -4,9 +4,60 @@ import DifferentialEquations: FunctionMap, DiscreteProblem
 import UUIDs: uuid4
 
 """
-    @def_discrete_system
+    @def_discrete_system ex 
 
-Used to define discrete time system
+where `ex` is the expression to define to define a new AbstractDiscreteSystem component type. The usage is as follows:
+```julia
+@def_discrete_system struct MyDiscreteSystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDiscreteSystem
+    param1::T1 = param1_default             # optional field 
+    param2::T2 = param2_default             # optional field 
+    param3::T3 = param3_default             # optional field
+        ⋮
+    paramN::TN = paramN_default             # optional field 
+    righthandside::RH = readout_function    # mandatory field
+    readout::RO = readout_function          # mandatory field
+    state::ST = readout_function            # mandatory field
+    input::IP = input_default               # mandatory field
+    output::OP = output_default             # mandatory field 
+end
+```
+Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented by the `righthandside` and `readout` function. `state`, `input` and `output` is the state, input port and output port of `MyDiscreteSystem`.
+
+!!! warning 
+    `righthandside` must have the signature 
+    ```julia
+    function righthandside(dx, x, u, t, args...; kwargs...)
+        dx .= .... # update dx 
+    end
+    ```
+    and `readout` must have the signature 
+    ```julia
+    function readout(x, u, t)
+        y = ...
+        return y
+    end
+    ```
+
+!!! warning 
+    New ODE system must be a subtype of `AbstractDiscreteSystem` to function properly.
+
+# Example 
+```jldoctest 
+julia> @def_static_system struct MyDiscreteSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem 
+       α::Float64 = 1. 
+       β::Float64 = 2. 
+       righthandside::RH = (dx, x, u, t, α=α) -> (dx[1] = α * x[1] + u[1](t))
+       readout::RO = (x, u, t) -> x
+       input::IP = Inport(1) 
+       output::OP = Outport(1) 
+       end
+
+julia> ds = MyDiscreteSystem();
+
+julia> ds.input 
+1-element Inport{Inpin{Float64}}:
+ Inpin(eltype:Float64, isbound:false)
+```
 """
 macro def_discrete_system(ex) 
     fields = quote
@@ -60,7 +111,7 @@ The `DiscreteLinearSystem` is represented by the following state and output equa
 ```
 where ``x`` is `state`. `solver` is used to solve the above differential equation.
 """
-@def_ode_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractDiscreteSystem
+@def_discrete_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractDiscreteSystem
     A::Matrix{Float64} = fill(-1., 1, 1)
     B::Matrix{Float64} = fill(0., 1, 1)
     C::Matrix{Float64} = fill(1., 1, 1)

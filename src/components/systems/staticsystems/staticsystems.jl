@@ -18,7 +18,7 @@ where `ex` is the expression to define to define a new AbstractStaticSystem comp
     readout::RO = readout_function  # mandatory field
 end
 ```
-Here, `MySource` has `N` parameters, an `output` port, an `input` port and a `readout` function.
+Here, `MyStaticSystem` has `N` parameters, an `output` port, an `input` port and a `readout` function.
 
 !!! warning 
     `input`, `output` and `readout` are mandatory fields to define a new static system. The rest of the fields are the parameters of the system.

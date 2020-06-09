@@ -29,7 +29,7 @@ t = 0.
 ```
 We are now ready to construct the system `ds`.
 ```@repl discrete_system_ex 
-ds = DiscreteSystem(sfunc, ofunc, x0, t, input, output)
+ds = DiscreteSystem(righthandside=sfunc, readout=ofunc, state=x0, input=input, output=output)
 ```
 To drive `ds`, we need to `launch` it.
 ```@repl discrete_system_ex 

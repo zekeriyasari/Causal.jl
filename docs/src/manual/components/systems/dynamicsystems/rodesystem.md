@@ -56,7 +56,7 @@ output = Outport(2)
 ```
 We are ready to construct the system
 ```@repl rode_system_ex 
-ds = RODESystem(statefunc, outputfunc, x0, t, input, output, solverkwargs=(dt=0.01,))
+ds = RODESystem(righthandside=statefunc, readout=outputfunc, state=x0, input=input, output=output, solverkwargs=(dt=0.01,))
 ```
 Note that `ds` has a solver to solve its state function `statefunc` which is random differential equation. To solve its `statefunc`, the step size of the solver must be specified. See [`Random Differential Equtions`](https://docs.juliadiffeq.org/latest/tutorials/rode_example/) of [`DifferentialEquations `](https://docs.juliadiffeq.org/latest/) package.
 

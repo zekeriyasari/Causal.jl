@@ -2,6 +2,8 @@
 
 This tutorial illustrates model construction and  the relation between models and graphs. A model consists of components and connections. These components and connections can be associated with a signal-flow graph signifying the topology of the model. In the realm of graph theory, components and connections of a model are associated with nodes and branches of the signal-flow graph. As the model is modified by adding or deleting components or connections, the signal-flow graph of the model is modified accordingly to keep track of topological modifications. By associating a signal-flow graph to a model, any graph-theoretical analysis can be performed. An example to such an analysis is the determination and braking of algebraic loops. 
 
+In Jusdl, a model can be constructed either by describing it in one-shot or by gradually modifying it by adding new nodes and branches. To show the relation between models and graphs, we start with the latter.
+
 ## [Modifying Models](@id section_header)
 In this tutorial, we construct the model with the following block diagram
 ```@raw html
@@ -81,25 +83,27 @@ addbranch!(model, :gain => :writer, 1 => 1)
 ```
 
 ## Describing Models
-`@defmacro` can be used for a handy-tool for model construction. The syntax here is 
+The second approach is to describe the whole model. In this approach the model is constructed in single-shot. The syntax here is 
 ```julia 
 @defmodel modelname begin 
     @nodes begin 
         label1 = Component1(args...; kwargs...)     # Node 1
         label2 = Component2(args...; kwargs...)     # Node 2
-                ⋮
+                ⋮                                       ⋮
         
         labelN = ComponentN(args...; kwargs...)     # Node N
     end 
     @branches begin 
-        source_component_label1[src_index_range1] = destination_component_label1[dst_index_range1]
-        source_component_label2[src_index_range2] = destination_component_label1[dst_index_range2]
-            ⋮
-        source_component_labelM[src_index_rangeM] = destination_component_labelM[dst_index_range2]
+        src_label1[src_index1] = dst_label1[dst_range1]     # Branch 1
+        src_label2[src_index2] = dst_label1[dst_range2]     # Branch 2 
+            ⋮                                                   ⋮
+        src_labelM[src_indexM] = dst_labelM[dst_rangeM]     # Branch M
     end
 end 
 ```
-Note that `modelname` is the name of the model to be compiled. The nodes of the model is defined in `@nodes begin ... end` block and the branches of the model is defined in `@branches begin ... end`. For example, the model given above can also be constructed as follows 
+Note that `modelname` is the name of the model to be compiled. The nodes of the model is defined in `@nodes begin ... end` block and the branches of the model is defined in `@branches begin ... end`. 
+
+For example, the model given above can also be constructed as follows 
 ```@repl model_graph_example_def_model_macro
 using Jusdl # hide 
 

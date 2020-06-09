@@ -41,11 +41,7 @@ ss = StaticSystem(readout=g, input=Inport(2), output=Outport(3))
 ```
 Note the construction of input bus `Inport(2)` and output bus `Outport(3)` by recalling that the number of input is 2 and the number of output is 3.
 
-A [`StaticSystem`](@ref) evolves by being triggered through its `trigger` pin. When triggered from its `trigger` pin, a `StaticSystem` reads the current time `t` from its `trigger` pin and computes its output `y` according to its output function `outputfunc` and writes its output `y(t)` to its `output` port (if `output` port exists since `output` port may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` pin is not writeable. 
-```@repl static_system_ex
-ss.trigger.link
-```
-To make `ss` drivable, we need to construct the ports and pins for input-output and signaling. 
+A [`StaticSystem`](@ref) evolves by being triggered through its `trigger` pin. When triggered from its `trigger` pin, a `StaticSystem` reads the current time `t` from its `trigger` pin and computes its output `y` according to its output function `outputfunc` and writes its output `y(t)` to its `output` port (if `output` port exists since `output` port may be nothing depending on the relation defined by `outputfunc`). When constructed, a `StaticSystem` is not ready to be triggered since its `trigger` pin is not writeable. To make `ss` drivable, we need to construct the ports and pins for input-output and signaling. 
 ```@repl static_system_ex 
 oport, iport, trg, hnd = Outport(length(ss.input)), Inport(length(ss.output)), Outpin(), Inpin{Bool}()
 connect!(oport, ss.input) 

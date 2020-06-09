@@ -8,7 +8,7 @@ In this tutorial, we will simulate a very simple model consisting of a generator
 ```
 
 ## Model Simulation
-We construct an empty model and then add nodes and branches to model. See [Modifying Models](@ref section_header) for more detailed information about model construction.
+Let us construct the model first. See [Model Construction](@ref page_header) for more detailed information about model construction.
 ```@example simple_model_ex
 using Jusdl 
 

@@ -1,4 +1,4 @@
-# Model Construction
+# [Model Construction](@id page_header)
 
 This tutorial illustrates model construction and  the relation between models and graphs. A model consists of components and connections. These components and connections can be associated with a signal-flow graph signifying the topology of the model. In the realm of graph theory, components and connections of a model are associated with nodes and branches of the signal-flow graph. As the model is modified by adding or deleting components or connections, the signal-flow graph of the model is modified accordingly to keep track of topological modifications. By associating a signal-flow graph to a model, any graph-theoretical analysis can be performed. An example to such an analysis is the determination and braking of algebraic loops. 
 
@@ -94,14 +94,14 @@ The second approach is to describe the whole model. In this approach the model i
         labelN = ComponentN(args...; kwargs...)     # Node N
     end 
     @branches begin 
-        src_label1[src_index1] = dst_label1[dst_range1]     # Branch 1
-        src_label2[src_index2] = dst_label1[dst_range2]     # Branch 2 
+        src_label1[src_index1] = dst_label1[dst_index1]     # Branch 1
+        src_label2[src_index2] = dst_label1[dst_index2]     # Branch 2 
             ⋮                                                   ⋮
-        src_labelM[src_indexM] = dst_labelM[dst_rangeM]     # Branch M
+        src_labelM[src_indexM] = dst_labelM[dst_indexM]     # Branch M
     end
 end 
 ```
-Note that `modelname` is the name of the model to be compiled. The nodes of the model is defined in `@nodes begin ... end` block and the branches of the model is defined in `@branches begin ... end`. 
+Note that `modelname` is the name of the model to be compiled. The nodes of the model is defined in `@nodes begin ... end` block and the branches of the model is defined in `@branches begin ... end`. The syntax `src_label1[src_index1] = dst_label1[dst_index1]` means that there is a branch between the node labelled with `src_label1` and the node labelled with `dst_label1`.And, this branch connects the pins indexed by `src_index1` of the output port of `src_label1` to the pins indexed by `dst_index1` of the input port of `dst_label1`. The indexing of the pins here is just like any one dimensional array indexing. That is `src_index1`( or `dst_index1`) may be integer, vector of integers, vector of booleans, range, etc.
 
 For example, the model given above can also be constructed as follows 
 ```@repl model_graph_example_def_model_macro

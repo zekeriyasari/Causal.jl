@@ -44,32 +44,61 @@ julia&gt; connect!(ds.handshake, hnd)
 Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; task = launch(ds)
-Task (runnable) @0x00007f144ab8d120
+Task (runnable) @0x00007fe23a486980
 
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (runnable) @0x00007f144864ee60</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve!(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
+Task (runnable) @0x00007fe23311a710</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve!(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
 true</code></pre><p>We can continue to drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
            put!(trg, t)
            take!(hnd)
        end</code></pre><p>After each evolution, <code>ds</code> writes its current output value to its <code>output</code> bus. </p><pre><code class="language-julia-repl">julia&gt; [outbuf(pin.link.buffer) for pin in iport]
 2-element Array{Array{Float64,1},1}:
- [2939.1241153565356, 781.6904730340841, 139.07107466977547, 49.1056255695704, 16.679026079803887, 4.662145131401548, 4.119154596664477, 11.257971779748166, 5.918959872707829, 2.1219518675616946  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
- [7.434008518551281, 17.223580617396912, 29.791559370005803, 34.19846864836127, 6.713708804949634, 3.1454225880056725, 0.5394690537549016, 0.09179190685359191, 0.11435940511699133, 0.21347909753971417  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
-Task (runnable) @0x00007f144ab8d120
+ [80287.95091316482, 186873.5501370028, 133631.4142985521, 23326.254502990836, 8890.226044262707, 2235.186557138665, 447.46360299203803, 96.60914971853703, 15.131995914056658, 2.881298809758192  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ [0.3002300580720215, 0.062407786162837396, 0.015997399695768282, 0.0043668744953231625, 0.012578072301273047, 0.07975608105370385, 0.23269652859248952, 0.11729364387250922, 0.23440117325682858, 0.2511374509502762  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
+Task (runnable) @0x00007fe23a486980
 
 julia&gt; task2
-Task (runnable) @0x00007f144864ee60</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
+Task (runnable) @0x00007fe23311a710</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
 
 julia&gt; put!(ds.output, [NaN, NaN])
 2-element Array{Float64,1}:
  NaN
  NaN</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
-Task (done) @0x00007f144ab8d120
+Task (done) @0x00007fe23a486980
 
 julia&gt; task2
-Task (done) @0x00007f144864ee60</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_rode_system" href="#Jusdl.@def_rode_system"><code>Jusdl.@def_rode_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_rode_system</code></pre><p>Used to define new RODE system types.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/5338b7657bfd9e6b6dc457341ffad9826774bcb9/src/components/systems/dynamicalsystems/rodesystems.jl#L7-L11">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.RODESystem" href="#Jusdl.RODESystem"><code>Jusdl.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(; righthandside, readout, state, input, output)</code></pre><p>Constructs a generic RODE system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.MultiplicativeNoiseLinearSystem" href="#Jusdl.MultiplicativeNoiseLinearSystem"><code>Jusdl.MultiplicativeNoiseLinearSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">MultiplicativeNoiseLinearSystem()</code></pre><p>Constructs a <code>MultiplicativeNoiseLinearSystem</code> with the dynamics </p><div>\[\begin{array}{l}
+Task (done) @0x00007fe23311a710</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_rode_system" href="#Jusdl.@def_rode_system"><code>Jusdl.@def_rode_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_rode_system ex</code></pre><p>where <code>ex</code> is the expression to define to define a new AbstractRODESystem component type. The usage is as follows:</p><pre><code class="language-julia">@def_rode_system struct MyRODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} &lt;: AbstractRODESystem
+    param1::T1 = param1_default                 # optional field 
+    param2::T2 = param2_default                 # optional field 
+    param3::T3 = param3_default                 # optional field
+        ⋮
+    paramN::TN = paramN_default                 # optional field 
+    righthandside::RH = righthandside_default   # mandatory field
+    readout::RO = readout_default               # mandatory field
+    state::ST = state_default                   # mandatory field
+    input::IP = input_default                   # mandatory field
+    output::OP = output_default                 # mandatory field
+end</code></pre><p>Here, <code>MyRODESystem</code> has <code>N</code> parameters. <code>MyRODESystem</code> is represented by the <code>righthandside</code> and <code>readout</code> function. <code>state</code>, <code>input</code> and <code>output</code> is the initial state, initial value of differential variables, vector signifing differetial variables, input port and output port of <code>MyRODESystem</code>.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p><code>righthandside</code> must have the signature </p><pre><code class="language-julia">function righthandside((dx, x, u, t, W, args...; kwargs...)
+    dx .= .... # update dx
+end</code></pre><p>and <code>readout</code> must have the signature </p><pre><code class="language-julia">function readout(x, u, t)
+    y = ...
+    return y
+end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>New RODE system must be a subtype of <code>AbstractRODESystem</code> to function properly.</p></div></div><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; @def_rode_system mutable struct MyRODESystem{RH, RO, ST, IP, OP} &lt;: AbstractRODESystem
+        righthandside::RH = function sfuncdae(out, dx, x, u, t)
+                out[1] = x[1] + 1 - dx[1]
+                out[2] = (x[1] + 1) * x[2] + 2
+            end 
+        readout::RO = (x,u,t) -&gt; x 
+        state::ST = [1., -1]
+        stateder::ST = [2., 0]
+        diffvars::Vector{Bool} = [true, false]
+        input::IP = nothing 
+        output::OP = Outport(1)
+        end
+
+julia&gt; ds = MyRODESystem();</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/688029c128dd9e192d767019465c434c0ac6c6da/src/components/systems/dynamicalsystems/rodesystems.jl#L7-L62">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.RODESystem" href="#Jusdl.RODESystem"><code>Jusdl.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(; righthandside, readout, state, input, output)</code></pre><p>Constructs a generic RODE system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/381693d3dfc9b7072707f6d544f82f6637fc5e7c/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.MultiplicativeNoiseLinearSystem" href="#Jusdl.MultiplicativeNoiseLinearSystem"><code>Jusdl.MultiplicativeNoiseLinearSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">MultiplicativeNoiseLinearSystem()</code></pre><p>Constructs a <code>MultiplicativeNoiseLinearSystem</code> with the dynamics </p><div>\[\begin{array}{l}
     \dot{x} = A x W
 \end{array}
-where `W` is the noise process.\]</div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 16 June 2020 17:31">Tuesday 16 June 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+where `W` is the noise process.\]</div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/381693d3dfc9b7072707f6d544f82f6637fc5e7c/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 16 June 2020 21:53">Tuesday 16 June 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

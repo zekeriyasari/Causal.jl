@@ -14,7 +14,7 @@ Jusdl provides a library that includes some well-known components that are ready
 
 It is very natural that this library may lack some of the components that are wanted to be used by the user. In such a case, Jusdl provides the users with the flexibility to enrich this library. The users can define their new component types, including source, static system, dynamical system, sink and use them with ease. 
 
-## Defining A New Source
+### Defining A New Source
 New source types are defines using [`@def_source`](@ref) macro. Before embarking on defining new source, let us get the necessary information on how to use `@def_source`. This can be can be obtained through its docstrings. 
 ```@repl defining_new_components_ex
 using Jusdl # hide 
@@ -103,7 +103,7 @@ The procedure is again the same for any other component types. The table below l
 
 The steps followed in the previous section are the same to define other component types: start with suitable macro given above, make the newly-defined type a subtype of the corresponding supertype, define the optional fields (if exist) ands define the mandatory fields of the new type (with the default values if necessary).
 
-## Defining New StaticSystem 
+### Defining New StaticSystem 
 Consider the following readout function of the static system to be defined 
 ```math 
 y = u_1 t + a cos(u_2)
@@ -118,7 +118,7 @@ where ``u = [u_1, u_2]`` is the input, ``y`` is the output of the system and ``t
 end
 ```
 
-## Defining New Discrete Dynamical System
+### Defining New Discrete Dynamical System
 The discrete dynamical system given by 
 ```math
 \begin{array}{l}
@@ -138,7 +138,7 @@ can be defined as,
 end
 ```
 
-## Defining New ODE Dynamical System
+### Defining New ODE Dynamical System
 The ODE dynamical system given by 
 ```math
 \begin{array}{l}
@@ -158,7 +158,7 @@ can be defined as,
 end
 ```
 
-## Defining New DAE Dynamical System
+### Defining New DAE Dynamical System
 The DAE dynamical system given by 
 ```math
 \begin{array}
@@ -182,7 +182,7 @@ can be defined as,
 end
 ```
 
-## Defining RODE Dynamical System 
+### Defining RODE Dynamical System 
 The RODE dynamical system given by 
 ```math
 \begin{array}{l}
@@ -209,7 +209,7 @@ can be defined as,
 end
 ```
 
-## Defining SDE Dynamical System 
+### Defining SDE Dynamical System 
 The RODE dynamical system given by 
 ```math
 \begin{array}{l}
@@ -229,7 +229,7 @@ can be defined as,
 end 
 ```
 
-## Defining DDE Dynamical System 
+### Defining DDE Dynamical System 
 The DDE dynamical system given by 
 ```math 
     \begin{array}{l}
@@ -260,7 +260,7 @@ end
 end
 ```
 
-## Defining Sinks 
+### Defining Sinks 
 Say we want a sink type that takes the data flowing through the connections of the model and prints it. This new sink type cane be defined as follows. 
 ```@repl defining_new_components_ex
 @def_sink struct MySink{A} <: AbstractSink

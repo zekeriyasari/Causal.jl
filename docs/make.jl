@@ -16,7 +16,7 @@ makedocs(
             "Model Construction" => "tutorials/model_construction.md",
             "Model Simulation" => "tutorials/model_simulation.md",
             "Algebraic Loops" => "tutorials/algebraic_loops.md",
-            "Defining New Component Types" => "tutorials/defining_new_components.md",
+            "Extending Component Library" => "tutorials/defining_new_components.md",
             "Coupled Systems" => "tutorials/coupled_systems.md",
         ],
         "Manual" => [

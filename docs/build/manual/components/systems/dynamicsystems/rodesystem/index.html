@@ -28,90 +28,48 @@ julia&gt; t = 0.
 julia&gt; output = Outport(2)
 2-element Outport{Outpin{Float64}}:
  Outpin(eltype:Float64, isbound:false)
- Outpin(eltype:Float64, isbound:false)</code></pre><p>We are ready to construct the system</p><pre><code class="language-julia-repl">julia&gt; ds = RODESystem(statefunc, outputfunc, x0, t, input, output, solverkwargs=(dt=0.01,))
-ERROR: MethodError: no method matching RODESystem(::typeof(Main.ex-rode_system_ex.statefunc), ::typeof(Main.ex-rode_system_ex.outputfunc), ::Array{Float64,1}, ::Float64, ::Nothing, ::Outport{Outpin{Float64}}; solverkwargs=(dt = 0.01,))
-Closest candidates are:
-  RODESystem(::RH, ::RO, ::ST, ::IP, ::OP, ::TR, !Matched::HS, !Matched::CB, !Matched::Symbol, !Matched::ID, !Matched::Float64, !Matched::MA, !Matched::MK, !Matched::SA, !Matched::SK, !Matched::AL, !Matched::IT) where {RH, RO, ST, IP, OP, TR, HS, CB, ID, MA, MK, SA, SK, AL, IT} at /home/sari/.julia/dev/Jusdl/src/components/systems/dynamicalsystems/rodesystems.jl:40 got unsupported keyword argument &quot;solverkwargs&quot;</code></pre><p>Note that <code>ds</code> has a solver to solve its state function <code>statefunc</code> which is random differential equation. To solve its <code>statefunc</code>, the step size of the solver must be specified. See <a href="https://docs.juliadiffeq.org/latest/tutorials/rode_example/"><code>Random Differential Equtions</code></a> of <a href="https://docs.juliadiffeq.org/latest/"><code>DifferentialEquations</code></a> package.</p><h2 id="Basic-Operation-of-RODESystem-1"><a class="docs-heading-anchor" href="#Basic-Operation-of-RODESystem-1">Basic Operation of RODESystem</a><a class="docs-heading-anchor-permalink" href="#Basic-Operation-of-RODESystem-1" title="Permalink"></a></h2><p>When a <code>RODESystem</code> is triggered from its <code>trigger</code> link, it read the current time from its <code>trigger</code> link, reads its input (if available, i.e. its input is not nothing), solves its state function, computes its output value and writes its output value its <code>output</code> bus (again, if available, i.e., its output bus is not nothing). To drive a <code>RODESystem</code>, it must be <code>launched</code>. Let us continue with <code>ds</code> constructed in the previous section.</p><pre><code class="language-julia-repl">julia&gt; iport, trg, hnd = Inport(2), Outpin(), Inpin{Bool}()
+ Outpin(eltype:Float64, isbound:false)</code></pre><p>We are ready to construct the system</p><pre><code class="language-julia-repl">julia&gt; ds = RODESystem(righthandside=statefunc, readout=outputfunc, state=x0, input=input, output=output, solverkwargs=(dt=0.01,))
+RODESystem(righthandside:statefunc, readout:outputfunc, state:[1.0, 1.0], t:0.0, input:nothing, output:Outport(numpins:2, eltype:Outpin{Float64}))</code></pre><p>Note that <code>ds</code> has a solver to solve its state function <code>statefunc</code> which is random differential equation. To solve its <code>statefunc</code>, the step size of the solver must be specified. See <a href="https://docs.juliadiffeq.org/latest/tutorials/rode_example/"><code>Random Differential Equtions</code></a> of <a href="https://docs.juliadiffeq.org/latest/"><code>DifferentialEquations</code></a> package.</p><h2 id="Basic-Operation-of-RODESystem-1"><a class="docs-heading-anchor" href="#Basic-Operation-of-RODESystem-1">Basic Operation of RODESystem</a><a class="docs-heading-anchor-permalink" href="#Basic-Operation-of-RODESystem-1" title="Permalink"></a></h2><p>When a <code>RODESystem</code> is triggered from its <code>trigger</code> link, it read the current time from its <code>trigger</code> link, reads its input (if available, i.e. its input is not nothing), solves its state function, computes its output value and writes its output value its <code>output</code> bus (again, if available, i.e., its output bus is not nothing). To drive a <code>RODESystem</code>, it must be <code>launched</code>. Let us continue with <code>ds</code> constructed in the previous section.</p><pre><code class="language-julia-repl">julia&gt; iport, trg, hnd = Inport(2), Outpin(), Inpin{Bool}()
 (Inport(numpins:2, eltype:Inpin{Float64}), Outpin(eltype:Float64, isbound:false), Inpin(eltype:Bool, isbound:false))
 
 julia&gt; connect!(ds.output, iport)
-ERROR: UndefVarError: ds not defined
+2-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
+ Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia&gt; connect!(trg, ds.trigger)
-ERROR: UndefVarError: ds not defined
+Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia&gt; connect!(ds.handshake, hnd)
-ERROR: UndefVarError: ds not defined
+Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; task = launch(ds)
-ERROR: UndefVarError: ds not defined
+Task (runnable) @0x00007fd2d8e9f340
 
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (failed) @0x00007f0fc6ae75b0
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-rode_system_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve!(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
-ERROR: UndefRefError: access to undefined reference</code></pre><p>We can continue to drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
+Task (runnable) @0x00007fd2d8a9b340</code></pre><p>When launched, <code>ds</code> is ready to be driven. We can drive <code>ds</code> by <code>drive(ds, t)</code> or <code>put!(ds.trigger, t)</code> where <code>t</code> is the time until which we will drive <code>ds</code>. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When triggered, <code>ds</code> read the time <code>t</code> from its <code>trigger</code> link, solved its differential equation, computed its value and writes its output value to its <code>output</code> bus. To signal that, the evolution is succeeded, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link which must be taken to further drive <code>ds</code>. (<code>approve!(ds)</code>) can also be used. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
+true</code></pre><p>We can continue to drive <code>ds</code>.</p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
            put!(trg, t)
            take!(hnd)
-       end
-ERROR: UndefRefError: access to undefined reference</code></pre><p>After each evolution, <code>ds</code> writes its current output value to its <code>output</code> bus. </p><pre><code class="language-julia-repl">julia&gt; [outbuf(pin.link.buffer) for pin in iport]
-ERROR: UndefRefError: access to undefined reference</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
-ERROR: UndefVarError: task not defined
+       end</code></pre><p>After each evolution, <code>ds</code> writes its current output value to its <code>output</code> bus. </p><pre><code class="language-julia-repl">julia&gt; [outbuf(pin.link.buffer) for pin in iport]
+2-element Array{Array{Float64,1},1}:
+ [0.010397149341646213, 0.06510825012747236, 0.07475100745245992, 0.030457706109345953, 0.0142950331172425, 0.005119110427421938, 0.003402589553395335, 0.016938194355726507, 0.08764895003547321, 0.21038066753703125  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ [2.454045498153793e-7, 3.1958584063699203e-7, 1.8075826289976368e-6, 1.2703657486015073e-5, 7.642796221366802e-5, 0.00045701489506099624, 0.002860816939397387, 0.005752919928561783, 0.027513569900150928, 0.14827173854051956  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</code></pre><p>When launched, a <code>task</code> was constructed which still running. As long as no exception is thrown during the evolution of <code>ds</code>, the state of <code>task</code> is running which implies <code>ds</code> can be driven. </p><pre><code class="language-julia-repl">julia&gt; task
+Task (runnable) @0x00007fd2d8e9f340
 
 julia&gt; task2
-Task (failed) @0x00007f0fc6ae75b0
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-rode_system_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
+Task (runnable) @0x00007fd2d8a9b340</code></pre><p>To terminate the <code>task</code> safely, <code>ds</code> should be terminated safely. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
 
 julia&gt; put!(ds.output, [NaN, NaN])
-ERROR: UndefVarError: ds not defined</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
-ERROR: UndefVarError: task not defined
+2-element Array{Float64,1}:
+ NaN
+ NaN</code></pre><p>Note that the state of <code>task</code> is <code>done</code> which implies the <code>task</code> has been terminated safely.</p><pre><code class="language-julia-repl">julia&gt; task
+Task (done) @0x00007fd2d8e9f340
 
 julia&gt; task2
-Task (failed) @0x00007f0fc6ae75b0
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-rode_system_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_rode_system" href="#Jusdl.@def_rode_system"><code>Jusdl.@def_rode_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_rode_system</code></pre><p>Used to define new RODE system types.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/26f4452ac4c60c07d4a3309660c084110d44246a/src/components/systems/dynamicalsystems/rodesystems.jl#L7-L11">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.RODESystem" href="#Jusdl.RODESystem"><code>Jusdl.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(; righthandside, readout, state, input, output)</code></pre><p>Constructs a generic RODE system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.MultiplicativeNoiseLinearSystem" href="#Jusdl.MultiplicativeNoiseLinearSystem"><code>Jusdl.MultiplicativeNoiseLinearSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">MultiplicativeNoiseLinearSystem()</code></pre><p>Constructs a <code>MultiplicativeNoiseLinearSystem</code> with the dynamics </p><div>\[\begin{array}{l}
+Task (done) @0x00007fd2d8a9b340</code></pre><h2 id="Full-API-1"><a class="docs-heading-anchor" href="#Full-API-1">Full API</a><a class="docs-heading-anchor-permalink" href="#Full-API-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_rode_system" href="#Jusdl.@def_rode_system"><code>Jusdl.@def_rode_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_rode_system</code></pre><p>Used to define new RODE system types.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/609cb23fbd402ab194de4b60d3b9a522e573ddb8/src/components/systems/dynamicalsystems/rodesystems.jl#L7-L11">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.RODESystem" href="#Jusdl.RODESystem"><code>Jusdl.RODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">RODESystem(; righthandside, readout, state, input, output)</code></pre><p>Constructs a generic RODE system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.MultiplicativeNoiseLinearSystem" href="#Jusdl.MultiplicativeNoiseLinearSystem"><code>Jusdl.MultiplicativeNoiseLinearSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">MultiplicativeNoiseLinearSystem()</code></pre><p>Constructs a <code>MultiplicativeNoiseLinearSystem</code> with the dynamics </p><div>\[\begin{array}{l}
     \dot{x} = A x W
 \end{array}
-where `W` is the noise process.\]</div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 9 June 2020 13:51">Tuesday 9 June 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+where `W` is the noise process.\]</div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../daesystem/">« DAESystem</a><a class="docs-footer-nextpage" href="../sdesystem/">SDESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 16 June 2020 14:25">Tuesday 16 June 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

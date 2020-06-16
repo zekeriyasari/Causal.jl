@@ -6,7 +6,7 @@ Having `launch`ed, a `Writer` is triggered through its `trigger` pin. When trigg
 Let us construct a `Writer`. 
 ```@repl writer_ex
 using Jusdl # hide 
-w = Writer(Inport(), buflen=5)
+w = Writer(input=Inport(), buflen=5)
 ```
 The file of `w` is closed and the `trigger` pin of `w` is not writable. That is, it is not possible to trigger `w` from its `trigger` pin.
 ```@repl writer_ex

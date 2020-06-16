@@ -5,99 +5,74 @@ julia&gt; sfunc(dx,x,u,t) = (dx .= -0.5x)
 sfunc (generic function with 1 method)
 
 julia&gt; ofunc(x, u, t) = x
-ofunc (generic function with 1 method)</code></pre><p>Let us construct the system </p><pre><code class="language-julia-repl">julia&gt; ds = ODESystem(sfunc, ofunc, [1.], 0., Inport(1), Outport(1))
-ERROR: MethodError: no method matching ODESystem(::typeof(Main.ex-ode_ex.sfunc), ::typeof(Main.ex-ode_ex.ofunc), ::Array{Float64,1}, ::Float64, ::Inport{Inpin{Float64}}, ::Outport{Outpin{Float64}})
-Closest candidates are:
-  ODESystem(::RH, ::RO, ::ST, ::IP, ::OP, ::TR, !Matched::HS, !Matched::CB, !Matched::Symbol, !Matched::ID, !Matched::Float64, !Matched::MA, !Matched::MK, !Matched::SA, !Matched::SK, !Matched::AL, !Matched::IT) where {RH, RO, ST, IP, OP, TR, HS, CB, ID, MA, MK, SA, SK, AL, IT} at /home/sari/.julia/dev/Jusdl/src/components/systems/dynamicalsystems/odesystems.jl:101</code></pre><p>Note that <code>ds</code> is a single input single output <code>ODESystem</code> with an initial state of <code>[1.]</code> and initial time <code>0.</code>. To drive, i.e. trigger <code>ds</code>, we need to launch it.</p><pre><code class="language-julia-repl">julia&gt; oport, iport, trg, hnd = Outport(1), Inport(1), Outpin(), Inpin{Bool}()
+ofunc (generic function with 1 method)</code></pre><p>Let us construct the system </p><pre><code class="language-julia-repl">julia&gt; ds = ODESystem(righthandside=sfunc, readout=ofunc, state=[1.], input=Inport(1), output=Outport(1))
+ODESystem(righthandside:sfunc, readout:ofunc, state:[1.0], t:0.0, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))</code></pre><p>Note that <code>ds</code> is a single input single output <code>ODESystem</code> with an initial state of <code>[1.]</code> and initial time <code>0.</code>. To drive, i.e. trigger <code>ds</code>, we need to launch it.</p><pre><code class="language-julia-repl">julia&gt; oport, iport, trg, hnd = Outport(1), Inport(1), Outpin(), Inpin{Bool}()
 (Outport(numpins:1, eltype:Outpin{Float64}), Inport(numpins:1, eltype:Inpin{Float64}), Outpin(eltype:Float64, isbound:false), Inpin(eltype:Bool, isbound:false))
 
 julia&gt; connect!(oport, ds.input)
-ERROR: UndefVarError: ds not defined
+1-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia&gt; connect!(ds.output, iport)
-ERROR: UndefVarError: ds not defined
+1-element Array{Link{Float64},1}:
+ Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia&gt; connect!(trg, ds.trigger)
-ERROR: UndefVarError: ds not defined
+Link(state:open, eltype:Float64, isreadable:false, iswritable:false)
 
 julia&gt; connect!(ds.handshake, hnd)
-ERROR: UndefVarError: ds not defined
+Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; task = launch(ds)
-ERROR: UndefVarError: ds not defined
+Task (runnable) @0x00007fd2d2a664a0
 
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (failed) @0x00007f0fc6ae4010
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-ode_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><p>When launched, <code>ds</code> is ready to driven. <code>ds</code> is driven from its <code>trigger</code> link. Note that the <code>trigger</code> link of <code>ds</code> is writable. </p><pre><code class="language-julia-repl">julia&gt; ds.trigger.link
-ERROR: UndefVarError: ds not defined</code></pre><p>Let us drive <code>ds</code> to the time of <code>t</code> of <code>1</code> second.</p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When driven, <code>ds</code> reads current time of <code>t</code> from its <code>trigger</code> link, reads its input value from its <code>input</code>, solves its differential equation and computes its output values and writes its <code>output</code>. So, for the step to be continued, an input values must be written. Note that the <code>input</code> of <code>ds</code> is writable,</p><pre><code class="language-julia-repl">julia&gt; ds.input[1].link
-ERROR: UndefVarError: ds not defined</code></pre><p>Let us write some value. </p><pre><code class="language-julia-repl">julia&gt; put!(oport, [5.])
+Task (runnable) @0x00007fd2d9588eb0</code></pre><p>When launched, <code>ds</code> is ready to driven. <code>ds</code> is driven from its <code>trigger</code> link. Note that the <code>trigger</code> link of <code>ds</code> is writable. </p><pre><code class="language-julia-repl">julia&gt; ds.trigger.link
+Link(state:open, eltype:Float64, isreadable:false, iswritable:true)</code></pre><p>Let us drive <code>ds</code> to the time of <code>t</code> of <code>1</code> second.</p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)</code></pre><p>When driven, <code>ds</code> reads current time of <code>t</code> from its <code>trigger</code> link, reads its input value from its <code>input</code>, solves its differential equation and computes its output values and writes its <code>output</code>. So, for the step to be continued, an input values must be written. Note that the <code>input</code> of <code>ds</code> is writable,</p><pre><code class="language-julia-repl">julia&gt; ds.input[1].link
+Link(state:open, eltype:Float64, isreadable:false, iswritable:true)</code></pre><p>Let us write some value. </p><pre><code class="language-julia-repl">julia&gt; put!(oport, [5.])
 1-element Array{Float64,1}:
  5.0</code></pre><p>At this point, <code>ds</code> completed its step and put <code>true</code> to its <code>handshake</code> link to signal that its step is succeeded.</p><pre><code class="language-julia-repl">julia&gt; hnd.link
-ERROR: UndefRefError: access to undefined reference</code></pre><p>To complete the step and be ready for another step, we need to approve the step by reading its <code>handshake</code>. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
-ERROR: UndefRefError: access to undefined reference</code></pre><p>At this point, <code>ds</code> can be driven further. </p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
+Link(state:open, eltype:Bool, isreadable:true, iswritable:false)</code></pre><p>To complete the step and be ready for another step, we need to approve the step by reading its <code>handshake</code>. </p><pre><code class="language-julia-repl">julia&gt; take!(hnd)
+true</code></pre><p>At this point, <code>ds</code> can be driven further. </p><pre><code class="language-julia-repl">julia&gt; for t in 2. : 10.
            put!(trg, t)
            put!(oport, [t * 10])
            take!(hnd)
-       end
-ERROR: UndefRefError: access to undefined reference</code></pre><p>Note that all the output value of <code>ds</code> is written to its <code>output</code>bus,</p><pre><code class="language-julia-repl">julia&gt; iport[1].link.buffer
-ERROR: UndefRefError: access to undefined reference</code></pre><p>When we launched <code>ds</code>, we constructed a <code>task</code> and the <code>task</code> is still running.</p><pre><code class="language-julia-repl">julia&gt; task
-ERROR: UndefVarError: task not defined
+       end</code></pre><p>Note that all the output value of <code>ds</code> is written to its <code>output</code>bus,</p><pre><code class="language-julia-repl">julia&gt; iport[1].link.buffer
+64-element Buffer{Cyclic,Float64,1}:
+ 0.00673796499594269
+ 0.01110902273516018
+ 0.018315676429473696
+ 0.03019743608348212
+ 0.04978714003339768
+ 0.08208509196489885
+ 0.13533539576281062
+ 0.22313028059487142
+ 0.36787951505627364
+ 0.60653067653308
+ ⋮
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0</code></pre><p>When we launched <code>ds</code>, we constructed a <code>task</code> and the <code>task</code> is still running.</p><pre><code class="language-julia-repl">julia&gt; task
+Task (runnable) @0x00007fd2d2a664a0
 
 julia&gt; task2
-Task (failed) @0x00007f0fc6ae4010
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-ode_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><p>To terminate the <code>task</code> safely, we need to <code>terminate</code> <code>ds</code> safely.</p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
+Task (runnable) @0x00007fd2d9588eb0</code></pre><p>To terminate the <code>task</code> safely, we need to <code>terminate</code> <code>ds</code> safely.</p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
 
 julia&gt; put!(ds.output, [NaN])
-ERROR: UndefVarError: ds not defined</code></pre><p>Now, the state of the <code>task</code> is done. </p><pre><code class="language-julia-repl">julia&gt; task
-ERROR: UndefVarError: task not defined
+1-element Array{Float64,1}:
+ NaN</code></pre><p>Now, the state of the <code>task</code> is done. </p><pre><code class="language-julia-repl">julia&gt; task
+Task (done) @0x00007fd2d2a664a0
 
 julia&gt; task2
-Task (failed) @0x00007f0fc6ae4010
-UndefRefError: access to undefined reference
-getproperty at ./Base.jl:33 [inlined]
-take! at /home/sari/.julia/dev/Jusdl/src/connections/pin.jl:97 [inlined]
-_broadcast_getindex_evalf at ./broadcast.jl:631 [inlined]
-_broadcast_getindex at ./broadcast.jl:604 [inlined]
-getindex at ./broadcast.jl:564 [inlined]
-macro expansion at ./broadcast.jl:910 [inlined]
-macro expansion at ./simdloop.jl:77 [inlined]
-copyto! at ./broadcast.jl:909 [inlined]
-copyto! at ./broadcast.jl:864 [inlined]
-copy at ./broadcast.jl:840 [inlined]
-materialize at ./broadcast.jl:820 [inlined]
-take!(::Inport{Inpin{Float64}}) at /home/sari/.julia/dev/Jusdl/src/connections/port.jl:178
-macro expansion at ./none:2 [inlined]
-(::Main.ex-ode_ex.var&quot;#1#2&quot;)() at ./task.jl:358</code></pre><p>So, it is not possible to drive <code>ds</code>.</p><h2 id="Mutation-in-State-Function-in-ODESystem-1"><a class="docs-heading-anchor" href="#Mutation-in-State-Function-in-ODESystem-1">Mutation in State Function in ODESystem</a><a class="docs-heading-anchor-permalink" href="#Mutation-in-State-Function-in-ODESystem-1" title="Permalink"></a></h2><p>Consider a system with the following ODE</p><div>\[\begin{array}{l}
+Task (done) @0x00007fd2d9588eb0</code></pre><p>So, it is not possible to drive <code>ds</code>.</p><h2 id="Mutation-in-State-Function-in-ODESystem-1"><a class="docs-heading-anchor" href="#Mutation-in-State-Function-in-ODESystem-1">Mutation in State Function in ODESystem</a><a class="docs-heading-anchor-permalink" href="#Mutation-in-State-Function-in-ODESystem-1" title="Permalink"></a></h2><p>Consider a system with the following ODE</p><div>\[\begin{array}{l}
     \dot{x} = f(x, u, t) \\
     y = g(x, u, t) \\
 \end{array}\]</div><p>where <span>$x \in R^d, y \in R^m, u \in R^p$</span>. To construct and <code>ODESystem</code>,  The signature of the state function <code>statefunc</code> must be of the form </p><pre><code class="language-julia">function statefunc(dx, x, u, t)
@@ -134,7 +109,7 @@ julia&gt; ds = MyODESystem();
 
 julia&gt; ds.input 
 1-element Inport{Inpin{Float64}}:
- Inpin(eltype:Float64, isbound:false)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/26f4452ac4c60c07d4a3309660c084110d44246a/src/components/systems/dynamicalsystems/odesystems.jl#L7-L62">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.ODESystem" href="#Jusdl.ODESystem"><code>Jusdl.ODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">ODESystem(;righthandside, readout, state, input, output)</code></pre><p>Constructs a generic ODE system.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; ds = ODESystem(righthandside=(dx,x,u,t)-&gt;(dx.=-x), readout=(x,u,t)-&gt;x, state=[1.],input=nothing, output=Outport(1));
+ Inpin(eltype:Float64, isbound:false)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/609cb23fbd402ab194de4b60d3b9a522e573ddb8/src/components/systems/dynamicalsystems/odesystems.jl#L7-L62">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.ODESystem" href="#Jusdl.ODESystem"><code>Jusdl.ODESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">ODESystem(;righthandside, readout, state, input, output)</code></pre><p>Constructs a generic ODE system.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; ds = ODESystem(righthandside=(dx,x,u,t)-&gt;(dx.=-x), readout=(x,u,t)-&gt;x, state=[1.],input=nothing, output=Outport(1));
 
 julia&gt; ds.state
 1-element Array{Float64,1}:
@@ -193,4 +168,4 @@ julia&gt; ds.state
     \dot{x}_2 = \gamma (\mu (x_1^2 - 1) x_2 - x_1) + \sum_{j = 1}^3 \theta_{2j} u_j 
 \end{array}\]</div><p>where <span>$\Theta = [\theta_{ij}]$</span> is <code>cplmat</code> and <span>$u = [u_{j}]$</span> is the value of the <code>input</code>. The output function is </p><div>\[    y = g(x, u, t)\]</div><p>where <span>$t$</span> is time <code>t</code>, <span>$y$</span> is the value of the <code>output</code> and <span>$g$</span> is <code>outputfunc</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L26">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.ForcedVanderpolSystem" href="#Jusdl.ForcedVanderpolSystem"><code>Jusdl.ForcedVanderpolSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">ForcedVanderpolSystem()</code></pre><p>Constructs a Vanderpol system driven by its input.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.Integrator" href="#Jusdl.Integrator"><code>Jusdl.Integrator</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">Integrator(state=zeros(0), t=0., modelargs=(), solverargs=(); 
     alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
-    name=Symbol())</code></pre><p>Constructs an integrator whose input output relation is given by </p><div>\[u(t) = ki * \int_{0}^{t} u(\tau) d\tau\]</div><p>where <span>$u(t)$</span> is the input, <span>$y(t)$</span> is the output and <span>$ki$</span> is the integration constant.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../discretesystem/">« DiscreteSystem</a><a class="docs-footer-nextpage" href="../daesystem/">DAESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 9 June 2020 13:51">Tuesday 9 June 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    name=Symbol())</code></pre><p>Constructs an integrator whose input output relation is given by </p><div>\[u(t) = ki * \int_{0}^{t} u(\tau) d\tau\]</div><p>where <span>$u(t)$</span> is the input, <span>$y(t)$</span> is the output and <span>$ki$</span> is the integration constant.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/b8e9a9ecc62ab49003bd4f1834771bdeb8cb1aa2/base/#L0-L10">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../discretesystem/">« DiscreteSystem</a><a class="docs-footer-nextpage" href="../daesystem/">DAESystem »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 16 June 2020 14:25">Tuesday 16 June 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

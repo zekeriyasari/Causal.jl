@@ -44,7 +44,7 @@ output = Outport(1)
 ```
 At this point, we are ready to construct the system `ds`.
 ```@repl sde_system_ex 
-ds = SDESystem(statefunc, g, [1.], 0., input, output)
+ds = SDESystem(righthandside=statefunc, readout=g, state=[1.], input=input, output=output)
 ```
 
 ## Basic Operation of SDESystems 

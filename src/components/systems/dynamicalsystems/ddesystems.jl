@@ -67,7 +67,7 @@ julia> function _delay_feedback_system_rhs(dx, x, h, u, t,
        end
 _delay_feedback_system_rhs (generic function with 3 methods)
 
-julia> @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+julia> @def_dde_system mutable struct MyDDESystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
            constlags::Vector{Float64} = _delay_feedback_system_constlags
            depslags::Nothing = nothing
            righthandside::RH = _delay_feedback_system_rhs

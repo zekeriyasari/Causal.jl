@@ -46,7 +46,7 @@ conslags = [tau]
 ```
 At this point, we are ready to construct the system. 
 ```@repl dde_system_ex 
-ds = DDESystem((statefunc, histfunc), outputfunc, [1.],  0., nothing, Outport())
+ds = DDESystem(righthandside=statefunc, history=histfunc, readout=outputfunc, state=[1.],  input=nothing, output=Outport(), constlags=conslags, depslags=nothing)
 ```
 
 ## Basic Operation of DDESystem 

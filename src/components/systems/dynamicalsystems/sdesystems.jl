@@ -105,11 +105,11 @@ end
 
 Constructs a noisy Lorenz system 
 """
-@def_sde_system mutable struct NoisyLorenzSystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
+@def_sde_system mutable struct NoisyLorenzSystem{DR, DF, RO, IP, OP, ET} <: AbstractSDESystem
     σ::Float64 = 10.
     β::Float64 = 8 / 3
     ρ::Float64 = 28.
-    η::Float64 = 1.
+    η::ET = 1.
     γ::Float64 = 1.
     drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
         dx[1] = σ * (x[2] - x[1])
@@ -129,11 +129,11 @@ end
 
 Constructs a noisy Lorenz system 
 """
-@def_sde_system mutable struct ForcedNoisyLorenzSystem{CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
+@def_sde_system mutable struct ForcedNoisyLorenzSystem{CM, DR, DF, RO, IP, OP, ET} <: AbstractSDESystem
     σ::Float64 = 10.
     β::Float64 = 8 / 3
     ρ::Float64 = 28.
-    η::Float64 = 1.
+    η::ET = 1.
     cplmat::CM = I(3)
     γ::Float64 = 1.
     drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)

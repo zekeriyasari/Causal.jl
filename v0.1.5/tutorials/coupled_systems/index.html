@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Coupled Systems · Jusdl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Jusdl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Jusdl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Modeling and Simulation in Jusdl</span><ul><li><a class="tocitem" href="../../modeling_and_simulation/modeling/">Modeling</a></li><li><a class="tocitem" href="../../modeling_and_simulation/simulation/">Simulation</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../model_construction/">Model Construction</a></li><li><a class="tocitem" href="../model_simulation/">Model Simulation</a></li><li><a class="tocitem" href="../algebraic_loops/">Algebraic Loops</a></li><li><a class="tocitem" href="../defining_new_components/">Extending Component Library</a></li><li class="is-active"><a class="tocitem" href>Coupled Systems</a></li></ul></li><li><span class="tocitem">Manual</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Utilities</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/utilities/callback/">Callback</a></li><li><a class="tocitem" href="../../manual/utilities/buffers/">Buffer</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Connections</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/connections/link/">Links</a></li><li><a class="tocitem" href="../../manual/connections/pin/">Pins</a></li><li><a class="tocitem" href="../../manual/connections/port/">Ports</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Components</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-1"><span class="docs-label">ComponentsBase</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/componentsbase/hierarchy/">Component Type Hierarchy</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/evolution/">Evolution of Components</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/interpolation/">Interpolation</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-2"><span class="docs-label">Sources</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sources/clock/">Clock</a></li><li><a class="tocitem" href="../../manual/components/sources/generators/">Generators</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3-3"><span class="docs-label">Sinks</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sinks/sinks/">Sinks</a></li><li><a class="tocitem" href="../../manual/components/sinks/writer/">Writer</a></li><li><a class="tocitem" href="../../manual/components/sinks/printer/">Printer</a></li><li><a class="tocitem" href="../../manual/components/sinks/scope/">Scope</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4"><span class="docs-label">Systems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-1"><span class="docs-label">StaticSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/staticsystems/staticsystems/">StaticSystems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-2"><span class="docs-label">DynamicSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/discretesystem/">DiscreteSystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/odesystem/">ODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/daesystem/">DAESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/rodesystem/">RODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/sdesystem/">SDESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/ddesystem/">DDESystem</a></li></ul></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Models</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/models/taskmanager/">Task Manager</a></li><li><a class="tocitem" href="../../manual/models/simulation/">Simulation</a></li><li><a class="tocitem" href="../../manual/models/model/">Model</a></li></ul></li><li><a class="tocitem" href="../../manual/plugins/plugins/">Plugins</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Coupled Systems</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Coupled Systems</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/zekeriyasari/Jusdl.jl/blob/master/docs/src/tutorials/coupled_systems.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Coupled-Systems-1"><a class="docs-heading-anchor" href="#Coupled-Systems-1">Coupled Systems</a><a class="docs-heading-anchor-permalink" href="#Coupled-Systems-1" title="Permalink"></a></h1><p>Consider two coupled <a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.LorenzSystem"><code>LorenzSystem</code></a>s. The first system evolves by</p><div>\[\begin{array}{l}
+    \dot{x}_{1,1} = \sigma (x_{1,2} - x_{1,1}) + \epsilon (x_{2,1} - x_{1,1})  \\[0.25cm]
+    \dot{x}_{1,2} = x_{1,1} (\rho - x_{1,3}) - x_{1,2} \\[0.25cm]
+    \dot{x}_{1,3} = x_{1,1} x_{1,2} - \beta x_{1,3}
+\end{array}\]</div><p>and the second one evolves by</p><div>\[\begin{array}{l}
+    \dot{x}_{2,1} = \sigma (x_{2,2} - x_{2,1}) + \epsilon (x_{1,1} - x_{2,1}) \\[0.25cm]
+    \dot{x}_{2,2} = x_{2,1} (\rho - x_{2,3}) - x_{2,2} \\[0.25cm]
+    \dot{x}_{2,3} = x_{2,1} x_{2,2} - \beta x_{2,3} 
+\end{array}\]</div><p>where <span>$x_1 = [x_{1,1}, x_{1,2}, x_{1,3}]$</span>, <span>$x_2 = [x_{2,1}, x_{2,2}, x_{2,3}]$</span> are the state vectors of the first and second system, respectively. The coupled system can be written more compactly as, </p><div>\[\begin{array}{l}
+    \dot{X} = F(X) + \epsilon (A ⊗ P) X 
+\end{array}\]</div><p>where <span>$X = [x_{1}, x_{2}]$</span>, <span>$F(X) = [f(x_{1}), f(x_{2})]$</span>,</p><div>\[    A = \begin{bmatrix}
+            -1 &amp; 1 \\
+            1 &amp; -1 \\
+        \end{bmatrix}\]</div><div>\[    P = \begin{bmatrix}
+            1 &amp; 0 &amp; 0 \\
+            0 &amp; 0 &amp; 0 \\
+            0 &amp; 0 &amp; 0 \\
+        \end{bmatrix}\]</div><p>and <span>$f$</span> is the Lorenz dynamics given by </p><div>\[\begin{array}{l}
+    \dot{x}_1 = \sigma (x_2 - x_1) \\[0.25cm]
+    \dot{x}_2 = x_1 (\rho - x_3) - x_2 \\[0.25cm]
+    \dot{x}_3 = x_1 x_2 - \beta x_3
+\end{array}\]</div><p>The script below constructs and simulates the model</p><pre><code class="language-julia">using Jusdl
+
+# Describe the model
+ε = 10.
+@defmodel model begin
+    @nodes begin
+        ds1 = ForcedLorenzSystem()
+        ds2 = ForcedLorenzSystem()
+        coupler = Coupler(conmat=ε*[-1 1; 1 -1], cplmat=[1 0 0; 0 0 0; 0 0 0])
+        writer = Writer(input=Inport(6))
+    end
+    @branches begin
+        ds1[1:3] =&gt; coupler[1:3]
+        ds2[1:3] =&gt; coupler[4:6]
+        coupler[1:3] =&gt; ds1[1:3]
+        coupler[4:6] =&gt; ds2[1:3]
+        ds1[1:3] =&gt; writer[1:3]
+        ds2[1:3] =&gt; writer[4:6]
+    end
+end
+nothing # hide</code></pre><p>To construct the model, we added <code>ds1</code> and <code>ds2</code> each of which has input ports of length 3 and output port of length 3. To couple them together, we constructed a <code>coupler</code> which has input port of length 6 and output port of length 6. The output port of <code>ds1</code> is connected to the first 3 pins of <code>coupler</code> input port,  and the output of <code>ds2</code> is connected to last 3 pins of <code>coupler</code> input port. Then, the first 3 pins of <code>coupler</code> output is connected to the input port of <code>ds1</code> and last 3 pins of <code>coupler</code> output is connected to the input port of <code>ds2</code>. The block diagram of the model is given below.</p><center>
+    <img src="../../assets/CoupledSystem/coupledsystem.svg" alt="model" width="60%"/>
+</center><p>The the signal-flow graph of the model has 4 directed branches and each of these branches has 3 links. </p><p>It also worths pointing out that the model has two algebraic loops. The first loop consists of <code>ds1</code> and <code>coupler</code>, and the second loop consists of <code>ds2</code> and <code>coupler</code>. During the simulation these loops are broken automatically without requiring any user intervention.</p><p>The model is ready for simulation. The code block below simulates the model and plots the simulation data.</p><pre><code class="language-julia">using Plots
+
+# Simulation settings.
+ti, dt, tf = 0, 0.01, 100.
+
+# Simulate the model
+simulate!(model, ti, dt, tf, withbar=false)
+
+# Read simulation data
+t, x = read(getnode(model, :writer).component)
+
+# Compute errors
+err = x[:, 1] - x[:, 4]
+
+# Plot the results.
+p1 = plot(x[:, 1], x[:, 2], label=&quot;ds1&quot;)
+p2 = plot(x[:, 4], x[:, 5], label=&quot;ds2&quot;)
+p3 = plot(t, err, label=&quot;err&quot;)
+plot(p1, p2, p3, layout=(3, 1))</code></pre><pre><code class="language-none">[ Info: 2020-06-18T14:47:54.704 Started simulation...
+[ Info: 2020-06-18T14:47:54.705 Inspecting model...
+┌ Info: 	The model has algrebraic loops:[[1, 3], [3, 2]]
+└ 		Trying to break these loops...
+[ Info: 	Loop [1, 3] is broken
+[ Info: 	Loop [2, 3] is broken
+[ Info: 2020-06-18T14:47:55.019 Done.
+[ Info: 2020-06-18T14:47:55.019 Initializing the model...
+[ Info: 2020-06-18T14:47:55.123 Done...
+[ Info: 2020-06-18T14:47:56.314 Running the simulation...
+[ Info: 2020-06-18T14:47:58.568 Done...
+[ Info: 2020-06-18T14:47:58.568 Terminating the simulation...
+[ Info: 2020-06-18T14:47:58.574 Done.</code></pre><p><img src="../coupled_systems_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../defining_new_components/">« Extending Component Library</a><a class="docs-footer-nextpage" href="../../manual/utilities/callback/">Callback »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 18 June 2020 14:48">Thursday 18 June 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

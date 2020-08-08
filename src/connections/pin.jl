@@ -160,6 +160,7 @@ true
 ```
 """
 function connect!(outpin::Outpin, inpin::Inpin)
+    isbound(inpin) && (@warn "$inpin is already bound. No new connections."; return)
     isconnected(outpin, inpin) && (@warn "$outpin and $inpin are already connected."; return)
     link = Link{promote_type(eltype(outpin), eltype(inpin))}()
     bind(link, outpin)

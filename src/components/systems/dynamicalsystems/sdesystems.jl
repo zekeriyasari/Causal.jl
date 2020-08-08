@@ -105,7 +105,7 @@ end
 
 Constructs a noisy Lorenz system 
 """
-@def_sde_system mutable struct NoisyLorenzSystem{DR, DF, RO, IP, OP, ET} <: AbstractSDESystem
+@def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
     σ::Float64 = 10.
     β::Float64 = 8 / 3
     ρ::Float64 = 28.
@@ -129,7 +129,7 @@ end
 
 Constructs a noisy Lorenz system 
 """
-@def_sde_system mutable struct ForcedNoisyLorenzSystem{CM, DR, DF, RO, IP, OP, ET} <: AbstractSDESystem
+@def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
     σ::Float64 = 10.
     β::Float64 = 8 / 3
     ρ::Float64 = 28.

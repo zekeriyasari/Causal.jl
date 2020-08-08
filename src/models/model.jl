@@ -174,6 +174,10 @@ Inspects the `model`. If `model` has some inconsistencies such as including alge
 error is thrown.
 """
 function inspect!(model, breakpoints::Vector{Int}=Int[])
+    # Check unbound pins in ports of componensts 
+    checknodeports(model) 
+
+    # Break algebraic loops if there exits. 
     loops = getloops(model)
     if !isempty(loops)
         msg = "\tThe model has algrebraic loops:$(loops)"
@@ -191,6 +195,8 @@ function inspect!(model, breakpoints::Vector{Int}=Int[])
             loops = getloops(model)
         end
     end
+
+    # Return model
     model
 end
 
@@ -365,6 +371,23 @@ function isfeedthrough(component)
         return true 
     end
 end
+
+# Check if components of nodes of the models has unbound pins. In case there are any unbound pins, 
+# the simulation is got stuck since the data flow through an unbound pin is not possible.
+checknodeports(model) = foreach(node -> checkports(node.component), model.nodes)
+function checkports(comp::T) where T  
+    if hasfield(T, :input)
+        idx = unboundpins(comp.input)
+        isempty(idx) || error("Input port of $comp has unbound pins at index $idx")
+    end 
+    if hasfield(T, :output)
+        idx = unboundpins(comp.output)
+        isempty(idx) || error("Output port of $comp has unbound pins at index $idx")
+    end 
+end
+unboundpins(port::AbstractPort) = findall(.!isbound.(port)) 
+unboundpins(port::Nothing) = Int[]
+
 
 ##### Model initialization
 """

@@ -163,9 +163,9 @@ function connect!(outpin::Outpin, inpin::Inpin)
     # NOTE: The connecion of an `Outpin` to multiple `Inpin`s is possible since an `Outpin` may drive multiple 
     # `Inpin`s. However, the connection of multiple `Outpin`s to the same `Inpin` is NOT possible since an `Inpin` 
     # can be driven by a single `Outpin`. 
-    isbound(inpin) && (@warn "$inpin is already bound. No new connections."; return)
+    isbound(inpin) && error("$inpin is already bound. No new connections.")
     isconnected(outpin, inpin) && (@warn "$outpin and $inpin are already connected."; return)
-    
+
     link = Link{promote_type(eltype(outpin), eltype(inpin))}()
     bind(link, outpin)
     bind(link, inpin)

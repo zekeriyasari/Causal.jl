@@ -6,7 +6,7 @@ using Plots
     @nodes begin 
         gen = ConstantGenerator(amplitude=1.) 
         adder = Adder(signs=(+, -)) 
-        ds = ContinuousLinearSystem(state=rand(1))
+        ds = ContinuousLinearSystem(A=fill(-1., 1, 1), state=[1.])
         writer = Writer() 
     end 
     @branches begin 

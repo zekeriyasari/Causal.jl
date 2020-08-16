@@ -14,12 +14,13 @@ abstract type AbstractPin{T} end
 
 Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its links.
 """
-struct Outpin{T} <: AbstractPin{T}
+mutable struct Outpin{T, L<:Link{T}, S<:AbstractVector{L}} <: AbstractPin{T}
+    links::Union{S, Missing}
     id::UUID
-    links::Vector{Link{T}}
-    Outpin{T}() where T = new{T}(uuid4(), Vector{Link{T}}())
+    Outpin{T, L, S}(links) where {T, L, S} = new{T, L, S}(links, uuid4())
 end
-Outpin() = Outpin{Float64}()
+Outpin{T}(links=missing) where T = Outpin{T, Link{T}, Vector{Link{T}}}(links)
+Outpin(links=missing) = Outpin{Float64}(links)
 
 show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbound:$(isbound(outpin)))")
 
@@ -28,12 +29,13 @@ show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbou
 
 Constructs and `InPut` pin. The data flow from `Inpin` is inwards to the pin i.e., data is read from links of `InPort`.
 """
-mutable struct Inpin{T} <: AbstractPin{T}
+mutable struct Inpin{T, L<:Link{T}} <: AbstractPin{T}
+    link::Union{L, Missing}
     id::UUID
-    link::Link{T}
-    Inpin{T}() where T = new{T}(uuid4())
+    Inpin{T,L}(link::Union{L, Missing}) where {T, L} = new{T, L}(link, uuid4())
 end
-Inpin() = Inpin{Float64}()
+Inpin{T}(link=missing) where T = Inpin{T, Link{T}}(link)
+Inpin(link=missing) = Inpin{Float64}(link)
 
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
 
@@ -43,22 +45,27 @@ show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$
 Binds `link` to `pin`. When bound, data written into or read from `pin` is written into or read from `link`.
 """
 bind(link::Link, inpin::Inpin) = (inpin.link = link; link.slaveid = inpin.id)
-bind(link::Link, outpin::Outpin) = (push!(outpin.links, link); link.masterid = outpin.id)
+bind(link::Link, outpin::Outpin) = (outpin.links === missing ? (outpin.links = [link]) : push!(outpin.links, link); link.masterid = outpin.id)
 
 """
     isbound(pin::AbstractPin)
 
 Returns `true` if `outpin` is bound to a `Link`.
 """
-isbound(outpin::Outpin) = length(outpin.links) > 0
-function isbound(inpin::Inpin)
-    try
-        _ = inpin.link
-        return true
-    catch UndefRefError
-        return false
-    end
+function isbound(outpin::Outpin)
+    outpin.links === missing && return false
+    !isempty(outpin.links)
 end
+isbound(inpin::Inpin) = inpin.link !== missing
+# isbound(outpin::Outpin) = length(outpin.links) > 0
+# function isbound(inpin::Inpin)
+#     try
+#         _ = inpin.link
+#         return true
+#     catch UndefRefError
+#         return false
+#     end
+# end
 
 """
     eltype(pin::AbstractPin)
@@ -180,8 +187,9 @@ connect!(outpins, inpins) = connect!([outpins...], [inpins...])
 Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect!`](@ref)
 """
 function disconnect!(outpin::Outpin, inpin::Inpin)
-    deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
-    inpin.link = Link{eltype(inpin)}()
+    outpin.links === missing || deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
+    inpin.link = missing
+    # inpin.link = Link{eltype(inpin)}()
 end
 disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect!.(outpins, inpins); nothing)
 disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])

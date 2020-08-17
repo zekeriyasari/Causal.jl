@@ -14,13 +14,15 @@ abstract type AbstractPin{T} end
 
 Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its links.
 """
-mutable struct Outpin{T, L<:Link{T}, S<:AbstractVector{L}} <: AbstractPin{T}
-    links::Union{S, Missing}
+mutable struct Outpin{T} <: AbstractPin{T}
+    links::Union{Vector{Link{T}}, Missing}
     id::UUID
-    Outpin{T, L, S}(links) where {T, L, S} = new{T, L, S}(links, uuid4())
+    # NOTE: When Outpin is initialized, its links are missing. 
+    # The existance of links of Outpin is used to determine 
+    # whether the Outpin is bound or not.
+    Outpin{T}() where {T} = new{T}(missing, uuid4())
 end
-Outpin{T}(links=missing) where T = Outpin{T, Link{T}, Vector{Link{T}}}(links)
-Outpin(links=missing) = Outpin{Float64}(links)
+Outpin() = Outpin{Float64}()
 
 show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbound:$(isbound(outpin)))")
 
@@ -29,13 +31,14 @@ show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbou
 
 Constructs and `InPut` pin. The data flow from `Inpin` is inwards to the pin i.e., data is read from links of `InPort`.
 """
-mutable struct Inpin{T, L<:Link{T}} <: AbstractPin{T}
-    link::Union{L, Missing}
+mutable struct Inpin{T} <: AbstractPin{T}
+    link::Union{Link{T}, Missing}
     id::UUID
-    Inpin{T,L}(link::Union{L, Missing}) where {T, L} = new{T, L}(link, uuid4())
+    # NOTE: When an Inpin is initialized, its link is missing. 
+    # The state of link of the Inpin is used to decide whether the Inpin is bound or not. 
+    Inpin{T}() where {T} = new{T}(missing, uuid4())
 end
-Inpin{T}(link=missing) where T = Inpin{T, Link{T}}(link)
-Inpin(link=missing) = Inpin{Float64}(link)
+Inpin() = Inpin{Float64}()
 
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
 
@@ -57,15 +60,6 @@ function isbound(outpin::Outpin)
     !isempty(outpin.links)
 end
 isbound(inpin::Inpin) = inpin.link !== missing
-# isbound(outpin::Outpin) = length(outpin.links) > 0
-# function isbound(inpin::Inpin)
-#     try
-#         _ = inpin.link
-#         return true
-#     catch UndefRefError
-#         return false
-#     end
-# end
 
 """
     eltype(pin::AbstractPin)
@@ -138,10 +132,10 @@ put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 
 
 ##### Connecting and disconnecting links
-#
-# This `iterate` function is dummy. It is defined just for `[l...]` to be written.
-#
-iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
+# #
+# # This `iterate` function is dummy. It is defined just for `[l...]` to be written.
+# #
+# iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
 
 """
     connect!(outpin::Link, inpin::Link)
@@ -179,7 +173,6 @@ function connect!(outpin::Outpin, inpin::Inpin)
     return link
 end
 connect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect!.(outpins, inpins)
-connect!(outpins, inpins) = connect!([outpins...], [inpins...])
 
 """
     disconnect!(link1::Link, link2::Link)
@@ -192,7 +185,6 @@ function disconnect!(outpin::Outpin, inpin::Inpin)
     # inpin.link = Link{eltype(inpin)}()
 end
 disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect!.(outpins, inpins); nothing)
-disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])
 
 
 """
@@ -209,14 +201,30 @@ function isconnected(outpin::Outpin, inpin::Inpin)
     end
 end
 isconnected(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = all(isconnected.(outpins, inpins))
-isconnected(outpins, inpins) = isconnected([outpins...], [inpins...])
 
-"""
-    UnconnectedLinkError <: Exception
+# ------------------------ Deprecations  -----------------------
 
-Exception thrown when the links are not connected to each other.
-"""
-struct UnconnectedLinkError <: Exception
-    msg::String
-end
-Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
+#= NOTE:
+The methods 
+
+    connect!(outpins, inpins) = connect!([outpins...], [inpins...])
+    disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])
+    isconnected(outpins, inpins) = isconnected([outpins...], [inpins...])
+
+are ambiguis. Since these methods throws StackOverflowError when called with `outpins` are `Inpin`s and 
+inpins are `Outpin`s. So, there is not need for 
+
+    iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
+
+method-
+=#
+
+# """
+#     UnconnectedLinkError <: Exception
+
+# Exception thrown when the links are not connected to each other.
+# """
+# struct UnconnectedLinkError <: Exception
+#     msg::String
+# end
+# Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")

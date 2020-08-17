@@ -42,7 +42,7 @@ Note that the model consists of connected components. In this example, the compo
 ```julia
 using Jusdl 
 
-# Deifne model 
+# Describe model 
 @defmodel model begin
     @nodes begin 
         gen = SinewaveGenerator(amplitude=1., frequency=1/2π) 

@@ -65,22 +65,22 @@ julia&gt; @doc @def_source
 # 2 methods for type constructor:
 [1] (::Type{Main.ex-defining_new_components_ex.MySource})(; α, β, readout, output, trigger, handshake, callbacks, name, id) in Main.ex-defining_new_components_ex at /home/travis/build/zekeriyasari/Jusdl.jl/src/components/componentsbase/macros.jl:55
 [2] (::Type{Main.ex-defining_new_components_ex.MySource})(α::Float64, β::Float64, readout::RO, output::OP, trigger::TR, handshake::HS, callbacks::CB, name::Symbol, id::ID) where {RO, OP, TR, HS, CB, ID} in Main.ex-defining_new_components_ex at none:2</code></pre><p>The constructor with the keyword arguments is very much easy to uses. </p><pre><code class="language-julia-repl">julia&gt; gen1 = MySource()
-Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;cd20f0d2-b3bb-447d-942e-9f395a209e29&quot;))
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;61044186-e7b8-4a28-a6f2-bb2f8e0abed1&quot;))
 
 julia&gt; gen2 = MySource(α=4.)
-Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;b8c053d9-b14a-4529-9d76-f4b28b49dfd6&quot;))
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;09bdff33-5e59-4ec3-8529-67cfab0ad2c8&quot;))
 
 julia&gt; gen3 = MySource(α=4., β=5.)
-Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;660046b2-fbc6-46d4-be21-631b5b6e9825&quot;))
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;4f6df027-6b56-4f34-87ee-20e0d40ec1c8&quot;))
 
 julia&gt; gen3 = MySource(α=4., β=5., name=:mygen)
-Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, :mygen, UUID(&quot;a076516f-6c7e-4481-ae3a-43ec67a9cb7f&quot;))
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, :mygen, UUID(&quot;d3db146d-12fb-4bd4-aa68-86f5a26432b1&quot;))
 
 julia&gt; gen3.trigger
 Inpin(eltype:Float64, isbound:false)
 
 julia&gt; gen3.id
-UUID(&quot;a076516f-6c7e-4481-ae3a-43ec67a9cb7f&quot;)
+UUID(&quot;d3db146d-12fb-4bd4-aa68-86f5a26432b1&quot;)
 
 julia&gt; gen3.α
 4.0
@@ -92,7 +92,7 @@ julia&gt; gen3.output
 2-element Outport{Outpin{Float64}}:
  Outpin(eltype:Float64, isbound:false)
  Outpin(eltype:Float64, isbound:false)</code></pre><p>An instance works flawlessly as a model component, that is, it can be driven from its <code>trigger</code> pin and signalling cane be carried out from its <code>handshake</code> pin. To see this, let us construct required pins and ports to drive a <code>MySource</code> instance. </p><pre><code class="language-julia-repl">julia&gt; gen = MySource()                # `MySource` instance
-Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;3ad5bb17-ea8d-4ef1-bdad-0eea48f8f621&quot;))
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;674834a6-48c4-4046-9181-2d1913ddf6d3&quot;))
 
 julia&gt; trg = Outpin()                  # To trigger `gen`
 Outpin(eltype:Float64, isbound:false)
@@ -112,7 +112,7 @@ julia&gt; connect!(gen.handshake, hnd);
 julia&gt; connect!(gen.output, iport);
 
 julia&gt; launch(gen)                 # Launch `gen,
-Task (runnable) @0x00007ff1360db5b0</code></pre><p>Now <code>gen</code> can be driven through <code>trg</code> pin. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)       # Drive `gen` for `t=1`.
+Task (runnable) @0x00007f49b4295120</code></pre><p>Now <code>gen</code> can be driven through <code>trg</code> pin. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)       # Drive `gen` for `t=1`.
 
 julia&gt; take!(iport)        # Read output of `gen` from `iport`
 2-element Array{Float64,1}:
@@ -220,4 +220,4 @@ julia&gt; @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP
        end
 
 julia&gt; actionfunc(sink::MySink, t, u) = println(t, u)
-actionfunc (generic function with 1 method)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../algebraic_loops/">« Algebraic Loops</a><a class="docs-footer-nextpage" href="../coupled_systems/">Coupled Systems »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 17 August 2020 20:01">Monday 17 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+actionfunc (generic function with 1 method)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../algebraic_loops/">« Algebraic Loops</a><a class="docs-footer-nextpage" href="../coupled_systems/">Coupled Systems »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 17 August 2020 20:06">Monday 17 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

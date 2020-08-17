@@ -37,12 +37,8 @@ launchport(iport) = @async while true
     all(take!(iport) .=== NaN) && break 
 end
 
-"""
-    equip(comp, kickoff=true) 
-
-Equips `comp` to make it launchable. Equipment is done by constructing and connecting signalling pins (i.e. `trigger` 
-and `handshake`), input and output ports (if necessary) 
-"""
+# Equips `comp` to make it launchable. Equipment is done by constructing and connecting signalling pins (i.e. `trigger` 
+# and `handshake`), input and output ports (if necessary) 
 function equip(comp, kickoff::Bool=true)
     oport = typeof(comp) <: AbstractSource ? 
         nothing : (typeof(comp.input) === nothing  ? nothing : Outport(length(comp.input)))

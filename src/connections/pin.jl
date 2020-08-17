@@ -53,7 +53,7 @@ bind(link::Link, outpin::Outpin) = (outpin.links === missing ? (outpin.links = [
 """
     isbound(pin::AbstractPin)
 
-Returns `true` if `outpin` is bound to a `Link`.
+Returns `true` if `pin` is bound to other pins.
 """
 function isbound(outpin::Outpin)
     outpin.links === missing && return false

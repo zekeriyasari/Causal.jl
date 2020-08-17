@@ -5,13 +5,11 @@
 
     # Construction of Outpin
     op = Outpin()
-    @test isa(op.links, AbstractVector)
-    @test isempty(op.links)
+    @test isa(op.links, Missing)
     @test !isbound(op)
 
     # Construction of Inpin
     ip = Inpin()
-    @test_throws UndefRefError ip.link
     @test !isbound(ip)
 
     # Connection of pins
@@ -28,6 +26,27 @@
     @test_throws Exception connect!(ip, ip2)  # Inpin cannot be connected to Inpin
     @test_throws Exception connect!(ip, op)   # Inpin cannot be connected to Outpin
 
+    op1 = Outpin() 
+    op2 = Outpin() 
+    ip = Inpin()
+    @test_throws MethodError connect!(ip, op1)  # Inpin cannot drive and Outpin 
+    @test_throws MethodError connect!(op1, op2) # Outpoin cannot drive and Outpin 
+    @test !isbound(op1) 
+    @test !isbound(op2) 
+    @test !isbound(ip) 
+    l = connect!(op1, ip)   # Outpin can drive Inpin 
+    @test isbound(op1) 
+    @test isbound(ip) 
+    @test_throws ErrorException connect!(op1, ip)   # Reconnection is not possible 
+    @test_throws ErrorException connect!(op2, ip)   # `ip` is bound. No new connections are allowed. 
+    @test isconnected(op1, ip)
+    disconnect!(op1, ip)
+    @test !isconnected(op1, ip)
+    l = connect!(op2, ip)
+    @test isconnected(op2, ip)
+
+    
+    @test isbound(ip)
     # Connection of multiple Inpins to an Outpin
     op = Outpin()
     ips = [Inpin() for i in 1 : 5]

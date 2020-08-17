@@ -174,6 +174,10 @@ Inspects the `model`. If `model` has some inconsistencies such as including alge
 error is thrown.
 """
 function inspect!(model, breakpoints::Vector{Int}=Int[])
+    # Check unbound pins in ports of componensts 
+    checknodeports(model) 
+
+    # Break algebraic loops if there exits. 
     loops = getloops(model)
     if !isempty(loops)
         msg = "\tThe model has algrebraic loops:$(loops)"
@@ -191,6 +195,8 @@ function inspect!(model, breakpoints::Vector{Int}=Int[])
             loops = getloops(model)
         end
     end
+
+    # Return model
     model
 end
 
@@ -366,6 +372,23 @@ function isfeedthrough(component)
     end
 end
 
+# Check if components of nodes of the models has unbound pins. In case there are any unbound pins, 
+# the simulation is got stuck since the data flow through an unbound pin is not possible.
+checknodeports(model) = foreach(node -> checkports(node.component), model.nodes)
+function checkports(comp::T) where T  
+    if hasfield(T, :input)
+        idx = unboundpins(comp.input)
+        isempty(idx) || error("Input port of $comp has unbound pins at index $idx")
+    end 
+    if hasfield(T, :output)
+        idx = unboundpins(comp.output)
+        isempty(idx) || error("Output port of $comp has unbound pins at index $idx")
+    end 
+end
+unboundpins(port::AbstractPort) = findall(.!isbound.(port)) 
+unboundpins(port::Nothing) = Int[]
+
+
 ##### Model initialization
 """
     initialize!(model::Model)
@@ -373,23 +396,56 @@ end
 Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
 """
 function initialize!(model::Model)
-    pairs = model.taskmanager.pairs
+    taskmanager = model.taskmanager
+    pairs = taskmanager.pairs
     nodes = model.nodes
-    for node in nodes
+
+    # NOTE: Tasks to make the components be triggerable are launched here.
+    # The important point here is that the simulation should be cancelled if an error is thrown in any of the tasks 
+    # launched here. This is done by binding the task to the chnnel of the trigger link of the component. Hrence the 
+    # lifetime of the channel of the link connecting the component to the taskmanger is determined by the lifetime of 
+    # the task launched for the component. To cancel the simulation and report the stacktrace the task is `fetch`ed. 
+    for node in nodes 
         component = node.component
-        pairs[component] = launch(component)
+        link = whichlink(taskmanager, component)  # Link connecting the component to taskmanager. 
+        task = launch(component)    # Task launched to make `componnent` be triggerable.
+        bind(link.channel, task)    # Bind the task to the channel of the link. 
+        pairs[component] = task 
     end
-    isrunning(model.clock) || set!(model.clock)  # Turnon clock internal generator.
+
+    # Turn on clock model clock if it is running. 
+    isrunning(model.clock) || set!(model.clock)  
+    
+    # Open the files, GUI's for sink components. 
     foreach(node -> open(node.component), filter(node->isa(node.component, AbstractSink), model.nodes))
+
+    # Return the model back.
     model
 end
- 
+
+# Find the link connecting `component` to `taskmanager`.
+function whichlink(taskmanager, component)
+    tpin = component.trigger
+    tport = taskmanager.triggerport
+    # NOTE: `component` must be connected to `taskmanager` by a single link which is checked by `only`
+    # `outpin.links` must have just a single link which checked by `only`
+    outpin = filter(pin -> isconnected(pin, tpin), tport) |> only 
+    outpin.links |> only
+end
+
 ##### Model running
 # Copy-paste loop body. See `run!(model, withbar)`.
+# NOTE: We first trigger the component, Then the tasks fo the `taskmanager` is checked. If an error is thrown in one 
+# of the tasks, the simulation is cancelled and stacktrace is printed reporting the error. In order to ensure the 
+# time synchronization between the components of the model, `handshakeport` of the taskmanger is read. When all the 
+# components take step succesfully, then the simulation goes with the next step after calling the callbacks of the 
+# components.
+# Note we first check the tasks of the taskmanager and then read the `handshakeport` of the taskmanager. Otherwise, 
+# the simulation gets stuck without printing the stacktrace if an error occurs in one of the tasks of the taskmanager.
 @def loopbody begin 
     put!(triggerport, fill(t, ncomponents))
-    all(take!(handshakeport)) || @warn "Could not be approved"
     checktaskmanager(taskmanager)          
+    all(take!(handshakeport)) || @warn "Taking step could not be approved."
     applycallbacks(model)
 end
 
@@ -502,9 +558,14 @@ end
 Prints the exceptions of the tasks that are failed during the simulation of `model`.
 """
 function troubleshoot(model::Model)
-    for (comp, task) in  filter(pair -> istaskfailed(pair.second), model.taskmanager.pairs)
-        println("", comp)
-        @error task.exception
+    fails = filter(pair -> istaskfailed(pair.second), model.taskmanager.pairs)
+    if isempty(fails)
+        @info "No failed tasks in $model."
+    else
+        for (comp, task) in fails
+            println("", comp)
+            @error task.exception
+        end
     end
 end
 

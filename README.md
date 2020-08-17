@@ -42,22 +42,29 @@ Note that the model consists of connected components. In this example, the compo
 ```julia
 using Jusdl 
 
-# Construct the model 
-model = Model(clock=Clock(0, 0.01, 10.))
-addnode!(model, FunctionGenerator(sin), label=:gen)
-addnode!(model, Adder((+,-)), label=:adder)
-addnode!(model, ODESystem((dx,x,u,t)->(dx[1]=-x[1]+u[1](t)), (x,u,t) -> x, [1.], 0., Inport(), Outport()), label=:ds)
-addnode!(model, Writer(Inport(2)), label=:writer)
-addbranch!(model, :gen => :adder, 1 => 1)
-addbranch!(model, :adder => :ds, 1 => 1)
-addbranch!(model, :ds => :adder, 1 => 2)
-addbranch!(model, :gen => :writer, 1 => 1)
-addbranch!(model, :ds => :writer, 1 => 2)
+# Deifne model 
+@defmodel model begin
+    @nodes begin 
+        gen = SinewaveGenerator(amplitude=1., frequency=1/2π) 
+        adder = Adder(signs=(+, -)) 
+        ds = ContinuousLinearSystem(A=fill(-1., 1, 1), state=[1.])
+        writer = Writer(input=Inport(2)) 
+    end 
+    @branches begin 
+        gen[1] => adder[1] 
+        adder[1] => ds[1]
+        ds[1] => adder[2] 
+        ds[1] => writer[1]
+        gen[1] => writer[2]
+    end
+end
 
-# Simualate the model 
-sim = simulate!(model)
+# Simulate the model 
+tinit, tsample, tfinal = 0., 0.01, 10. 
+sim = simulate!(model, tinit, tsample, tfinal)
 
 # Read and plot data 
+t, x = read(getnode(model, :writer).component)
 t, x = read(getnode(model, :writer).component)
 using Plots
 plot(t, x[:, 1], label="r(t)", xlabel="t")

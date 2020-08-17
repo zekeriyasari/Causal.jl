@@ -24,6 +24,7 @@ import Base: show, display, write, read, close, setproperty!, mv, cp, open,  ist
     getindex, setindex!, size, isempty
 
 include("utilities/utils.jl")
+export equip
 
 include("utilities/callback.jl")            
 export Callback, 

@@ -14,10 +14,13 @@ abstract type AbstractPin{T} end
 
 Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its links.
 """
-struct Outpin{T} <: AbstractPin{T}
+mutable struct Outpin{T} <: AbstractPin{T}
+    links::Union{Vector{Link{T}}, Missing}
     id::UUID
-    links::Vector{Link{T}}
-    Outpin{T}() where T = new{T}(uuid4(), Vector{Link{T}}())
+    # NOTE: When Outpin is initialized, its links are missing. 
+    # The existance of links of Outpin is used to determine 
+    # whether the Outpin is bound or not.
+    Outpin{T}() where {T} = new{T}(missing, uuid4())
 end
 Outpin() = Outpin{Float64}()
 
@@ -29,9 +32,11 @@ show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbou
 Constructs and `InPut` pin. The data flow from `Inpin` is inwards to the pin i.e., data is read from links of `InPort`.
 """
 mutable struct Inpin{T} <: AbstractPin{T}
+    link::Union{Link{T}, Missing}
     id::UUID
-    link::Link{T}
-    Inpin{T}() where T = new{T}(uuid4())
+    # NOTE: When an Inpin is initialized, its link is missing. 
+    # The state of link of the Inpin is used to decide whether the Inpin is bound or not. 
+    Inpin{T}() where {T} = new{T}(missing, uuid4())
 end
 Inpin() = Inpin{Float64}()
 
@@ -43,22 +48,18 @@ show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$
 Binds `link` to `pin`. When bound, data written into or read from `pin` is written into or read from `link`.
 """
 bind(link::Link, inpin::Inpin) = (inpin.link = link; link.slaveid = inpin.id)
-bind(link::Link, outpin::Outpin) = (push!(outpin.links, link); link.masterid = outpin.id)
+bind(link::Link, outpin::Outpin) = (outpin.links === missing ? (outpin.links = [link]) : push!(outpin.links, link); link.masterid = outpin.id)
 
 """
     isbound(pin::AbstractPin)
 
-Returns `true` if `outpin` is bound to a `Link`.
+Returns `true` if `pin` is bound to other pins.
 """
-isbound(outpin::Outpin) = length(outpin.links) > 0
-function isbound(inpin::Inpin)
-    try
-        _ = inpin.link
-        return true
-    catch UndefRefError
-        return false
-    end
+function isbound(outpin::Outpin)
+    outpin.links === missing && return false
+    !isempty(outpin.links)
 end
+isbound(inpin::Inpin) = inpin.link !== missing
 
 """
     eltype(pin::AbstractPin)
@@ -131,10 +132,10 @@ put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 
 
 ##### Connecting and disconnecting links
-#
-# This `iterate` function is dummy. It is defined just for `[l...]` to be written.
-#
-iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
+# #
+# # This `iterate` function is dummy. It is defined just for `[l...]` to be written.
+# #
+# iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
 
 """
     connect!(outpin::Link, inpin::Link)
@@ -160,14 +161,18 @@ true
 ```
 """
 function connect!(outpin::Outpin, inpin::Inpin)
+    # NOTE: The connecion of an `Outpin` to multiple `Inpin`s is possible since an `Outpin` may drive multiple 
+    # `Inpin`s. However, the connection of multiple `Outpin`s to the same `Inpin` is NOT possible since an `Inpin` 
+    # can be driven by a single `Outpin`. 
+    isbound(inpin) && error("$inpin is already bound. No new connections.")
     isconnected(outpin, inpin) && (@warn "$outpin and $inpin are already connected."; return)
+
     link = Link{promote_type(eltype(outpin), eltype(inpin))}()
     bind(link, outpin)
     bind(link, inpin)
     return link
 end
 connect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect!.(outpins, inpins)
-connect!(outpins, inpins) = connect!([outpins...], [inpins...])
 
 """
     disconnect!(link1::Link, link2::Link)
@@ -175,11 +180,11 @@ connect!(outpins, inpins) = connect!([outpins...], [inpins...])
 Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect!`](@ref)
 """
 function disconnect!(outpin::Outpin, inpin::Inpin)
-    deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
-    inpin.link = Link{eltype(inpin)}()
+    outpin.links === missing || deleteat!(outpin.links, findall(link -> link == inpin.link, outpin.links))
+    inpin.link = missing
+    # inpin.link = Link{eltype(inpin)}()
 end
 disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = (disconnect!.(outpins, inpins); nothing)
-disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])
 
 
 """
@@ -196,14 +201,30 @@ function isconnected(outpin::Outpin, inpin::Inpin)
     end
 end
 isconnected(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = all(isconnected.(outpins, inpins))
-isconnected(outpins, inpins) = isconnected([outpins...], [inpins...])
 
-"""
-    UnconnectedLinkError <: Exception
+# ------------------------ Deprecations  -----------------------
 
-Exception thrown when the links are not connected to each other.
-"""
-struct UnconnectedLinkError <: Exception
-    msg::String
-end
-Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
+#= NOTE:
+The methods 
+
+    connect!(outpins, inpins) = connect!([outpins...], [inpins...])
+    disconnect!(outpins, inpins) = disconnect!([outpins...], [inpins...])
+    isconnected(outpins, inpins) = isconnected([outpins...], [inpins...])
+
+are ambiguis. Since these methods throws StackOverflowError when called with `outpins` are `Inpin`s and 
+inpins are `Outpin`s. So, there is not need for 
+
+    iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
+
+method-
+=#
+
+# """
+#     UnconnectedLinkError <: Exception
+
+# Exception thrown when the links are not connected to each other.
+# """
+# struct UnconnectedLinkError <: Exception
+#     msg::String
+# end
+# Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")

@@ -1,5 +1,7 @@
 # This file includes testset for SDESystem 
 
+import DifferentialEquations: LambaEM
+
 @testset "SDESystemTestSet" begin 
     @info "Running SDESystemTestSet ..."
 

@@ -34,7 +34,9 @@ Throws an error if any of the component task of `tm` is failed. See also: [`Task
 """
 function checktaskmanager(tm::TaskManager)
     for (component, comptask) in tm.pairs
-        checkcomptask(comptask) || (@info "Failed for $component"; fetch(comptask))  # `fetch` is called to print error.
+        # NOTE: If any of the tasks of the taskmanager failes during its computation, the tasks are fetched 
+        # to cancel the simulation and stacktrace is printed to report the error.
+        checkcomptask(comptask) || (@error "Failed for $component"; fetch(comptask))
     end
 end
 

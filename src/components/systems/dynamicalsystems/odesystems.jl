@@ -9,7 +9,7 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractODESystem component type. The usage is as follows:
 ```julia
-@def_ode_system struct MyODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractODESystem
+@def_ode_system mutable struct MyODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractODESystem
     param1::T1 = param1_default             # optional field 
     param2::T2 = param2_default             # optional field 
     param3::T3 = param3_default             # optional field
@@ -40,15 +40,19 @@ Here, `MyODESystem` has `N` parameters. `MyODESystem` is represented by the `rig
     ```
 
 !!! warning 
-    New ODE system must be a subtype of `AbstractODESystem` to function properly.
+    New ODE system must be a subtype of `AbstractODESystem` to function properly. 
+
+!!! warning 
+    New ODE system must be mutable type.
 
 # Example 
 ```jldoctest 
-julia> @def_static_system struct MyODESystem{RH, RO, IP, OP} <: AbstractODESystem 
+julia> @def_ode_system mutable struct MyODESystem{RH, RO, ST, IP, OP} <: AbstractODESystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
        righthandside::RH = (dx, x, u, t, α=α) -> (dx[1] = α * x[1] + u[1](t))
        readout::RO = (x, u, t) -> x
+       state::ST = [1.]
        input::IP = Inport(1) 
        output::OP = Outport(1) 
        end

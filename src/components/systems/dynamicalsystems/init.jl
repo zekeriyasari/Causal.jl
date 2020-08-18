@@ -1,4 +1,4 @@
-# This file includes intregratro construction
+# This file includes intregrator construction
 
 
 function construct_integrator(deproblem, input, righthandside, state, t, modelargs=(), solverargs=(); 

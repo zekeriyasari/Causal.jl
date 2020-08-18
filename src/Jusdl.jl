@@ -54,7 +54,8 @@ export BufferMode,
 
 include("connections/link.jl")
 export Link, 
-    launch
+    launch,
+    refresh!
 
 include("connections/pin.jl")
 export AbstractPin, 

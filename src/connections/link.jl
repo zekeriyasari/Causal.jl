@@ -245,3 +245,10 @@ function launch(link::Link, taskname::Symbol, valrange)
     msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"
     @warn msg
 end
+
+"""
+    refresh!(link::Link) 
+
+Reconstructst the channel of `link` is its channel is closed.
+"""
+refresh!(l::Link{T}) where {T} = (l.channel = Channel{T}(); l)

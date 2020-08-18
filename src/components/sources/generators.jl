@@ -234,7 +234,7 @@ where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
     offset::Float64 = 0.
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude, delay=delay, offset=offset) -> 
-        t - delay >= 0 ? one(t) + offset : zero(t) + offset
+        t - delay >= 0 ? amplitude + offset : offset
 end
 
 

@@ -13,6 +13,7 @@ using Jusdl
     end 
 end 
 
+
 # Multiple simulations. 
 for i in 1 : 5 
     simulate!(model)

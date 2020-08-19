@@ -5,18 +5,18 @@
     r(t) = t \\[0.25cm]
     u(t) = r(t) - y(t) \\[0.25cm]
     y(t) = u(t) 
-\end{array}\]</div><p>Note that there exist an algebraic loop consisting of <code>adder</code> and <code>gain</code>.  Solving this algebraic loop, we have </p><div>\[    y(t) = u(t) = r(t) - y(t) \quad \Rightarrow \quad y(t) = \dfrac{r(t)}{2} = \dfrac{t}{2}\]</div><p>The following script constructs and simulates the model. </p><pre><code class="language-julia">using Jusdl
+\end{array}\]</div><p>Note that there exist an algebraic loop consisting of <code>adder</code> and <code>gain</code>.  Solving this algebraic loop, we have </p><div>\[    y(t) = u(t) = r(t) - y(t) \quad \Rightarrow \quad y(t) = \dfrac{r(t)}{2} = \dfrac{t}{2}\]</div><p>The following script constructs and simulates the model. </p><pre><code class="language-">using Jusdl 
 
 # Describe the model
-@defmodel model begin
+@defmodel model begin 
     @nodes begin
         gen = RampGenerator()
         adder = Adder(signs=(+,-))
         gain = Gain()
-        writerout = Writer()
-        writerin = Writer()
+        writerout = Writer() 
+        writerin = Writer() 
     end
-    @branches begin
+    @branches begin 
         gen[1] =&gt; adder[1]
         adder[1] =&gt; gain[1]
         gain[1] =&gt; adder[2]
@@ -25,44 +25,34 @@
     end
 end
 
-# Simulate the model
+# Simulate the model 
 ti, dt, tf = 0., 1. / 64., 1.
 sim = simulate!(model, ti, dt, tf, withbar=false)
 
-# Read the simulation data and plot
+# Read the simulation data and plot 
 using Plots
 t, y = read(getnode(model, :writerout).component)
 t, r = read(getnode(model, :writerin).component)
-plot(t, r, label=&quot;r(t)&quot;, marker=(:circle, 3))
-plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3))</code></pre><pre><code class="language-none">[ Info: 2020-08-17T20:04:44.001 Started simulation...
-[ Info: 2020-08-17T20:04:44.043 Inspecting model...
-┌ Info: 	The model has algrebraic loops:[[2, 3]]
-└ 		Trying to break these loops...
-[ Info: 	Loop [2, 3] is broken
-[ Info: 2020-08-17T20:04:45.077 Done.
-[ Info: 2020-08-17T20:04:45.077 Initializing the model...
-[ Info: 2020-08-17T20:04:45.406 Done...
-[ Info: 2020-08-17T20:04:50.03 Running the simulation...
-[ Info: 2020-08-17T20:04:58.089 Done...
-[ Info: 2020-08-17T20:04:58.09 Terminating the simulation...
-[ Info: 2020-08-17T20:04:58.268 Done.</code></pre><p><img src="../breaking_algebraic_loops_plot1.svg" alt/></p><h2 id="Breaking-Algebraic-Loops-With-a-Memory-1"><a class="docs-heading-anchor" href="#Breaking-Algebraic-Loops-With-a-Memory-1">Breaking Algebraic Loops With a Memory</a><a class="docs-heading-anchor-permalink" href="#Breaking-Algebraic-Loops-With-a-Memory-1" title="Permalink"></a></h2><p>It is also possible to break algebraic loops by inserting a <a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.Memory"><code>Memory</code></a> component at some point the loop. For example, consider the model consider following the model which is the model in which a memory component is inserted in the feedback path. </p><center>
+plot(t, r, label=&quot;r(t)&quot;, marker=(:circle, 3)) 
+plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3)) 
+savefig(&quot;breaking_algebraic_loops_plot1.svg&quot;); nothing # hide</code></pre><p><img src="breaking_algebraic_loops_plot1.svg" alt/></p><h2 id="Breaking-Algebraic-Loops-With-a-Memory-1"><a class="docs-heading-anchor" href="#Breaking-Algebraic-Loops-With-a-Memory-1">Breaking Algebraic Loops With a Memory</a><a class="docs-heading-anchor-permalink" href="#Breaking-Algebraic-Loops-With-a-Memory-1" title="Permalink"></a></h2><p>It is also possible to break algebraic loops by inserting a <a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.Memory"><code>Memory</code></a> component at some point the loop. For example, consider the model consider following the model which is the model in which a memory component is inserted in the feedback path. </p><center>
     <img src="../../assets/AlgebraicLoopWithMemory/algebraicloopwithmemory.svg" alt="model" width="80%"/>
-</center><p>Note that the input to <code>adder</code> is not <span>$y(t)$</span>, but instead is <span>$\hat{y}(t)$</span> which is one sample delayed form of <span>$y(t)$</span>.  That is, we have, <span>$\hat{y}(t) = y(t - dt)$</span> where <span>$dt$</span> is the step size of the simulation. If <span>$dt$</span> is small enough, <span>$\hat{y}(t) \approx y(t)$</span>.</p><p>The script given below simulates this case. </p><pre><code class="language-julia">using Jusdl
+</center><p>Note that the input to <code>adder</code> is not <span>$y(t)$</span>, but instead is <span>$\hat{y}(t)$</span> which is one sample delayed form of <span>$y(t)$</span>.  That is, we have, <span>$\hat{y}(t) = y(t - dt)$</span> where <span>$dt$</span> is the step size of the simulation. If <span>$dt$</span> is small enough, <span>$\hat{y}(t) \approx y(t)$</span>.</p><p>The script given below simulates this case. </p><pre><code class="language-">using Jusdl 
 
 # Simulation time settings.
 ti, dt, tf = 0., 1. / 64., 1.
 
 # Describe the model
-@defmodel model begin
+@defmodel model begin 
     @nodes begin
         gen = RampGenerator()
         adder = Adder(signs=(+,-))
         gain = Gain()
-        writerout = Writer()
-        writerin = Writer()
+        writerout = Writer() 
+        writerin = Writer() 
         mem = Memory(delay=dt, initial=zeros(1))
     end
-    @branches begin
+    @branches begin 
         gen[1] =&gt; adder[1]
         adder[1] =&gt; gain[1]
         gain[1] =&gt; mem[1]
@@ -72,7 +62,7 @@ ti, dt, tf = 0., 1. / 64., 1.
     end
 end
 
-# Simulate the model
+# Simulate the model 
 sim = simulate!(model, ti, dt, tf, withbar=false)
 
 # Plot the simulation data
@@ -80,34 +70,24 @@ using Plots
 t, r = read(getnode(model, :writerin).component)
 t, y = read(getnode(model, :writerout).component)
 plot(t, r, label=&quot;r(t)&quot;, marker=(:circle, 3))
-plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3))</code></pre><pre><code class="language-none">[ Info: 2020-08-17T20:05:31.092 Started simulation...
-[ Info: 2020-08-17T20:05:31.092 Inspecting model...
-┌ Info: 	The model has algrebraic loops:[[2, 3, 6]]
-└ 		Trying to break these loops...
-[ Info: 	Loop [2, 3, 6] has a Memory component.  The loops is broken
-[ Info: 2020-08-17T20:05:31.17 Done.
-[ Info: 2020-08-17T20:05:31.17 Initializing the model...
-[ Info: 2020-08-17T20:05:31.203 Done...
-[ Info: 2020-08-17T20:05:31.507 Running the simulation...
-[ Info: 2020-08-17T20:05:31.512 Done...
-[ Info: 2020-08-17T20:05:31.512 Terminating the simulation...
-[ Info: 2020-08-17T20:05:31.518 Done.</code></pre><p><img src="../breaking_algebraic_loops_with_memory_plot1.svg" alt/> The fluctuation in <span>$y(t)$</span> because of one-sample-time delay introduced by the <code>mem</code> component is apparent. The smaller the step size is, the smaller the amplitude of the fluctuation  introduced by the <code>mem</code> component. </p><p>One other important issue with using the memory component is that the initial value of <code>mem</code> directly affects the accuracy of the simulation. By solving the loop equation, we know that </p><div>\[    y(t) = \dfrac{r(t)}{2} = \dfrac{t}{2} \quad \Rightarrow \quad y(0) = 0\]</div><p>That is the memory should be initialized with an initial value of zero, which is the case in the script above. To observe that how incorrect initialization of a memory to break an algebraic loop, consider the following example in which memory is initialized randomly. </p><pre><code class="language-julia">using Jusdl
-using Plots
+plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3))
+savefig(&quot;breaking_algebraic_loops_with_memory_plot1.svg&quot;); nothing # hide</code></pre><p><img src="breaking_algebraic_loops_with_memory_plot1.svg" alt/> The fluctuation in <span>$y(t)$</span> because of one-sample-time delay introduced by the <code>mem</code> component is apparent. The smaller the step size is, the smaller the amplitude of the fluctuation  introduced by the <code>mem</code> component. </p><p>One other important issue with using the memory component is that the initial value of <code>mem</code> directly affects the accuracy of the simulation. By solving the loop equation, we know that </p><div>\[    y(t) = \dfrac{r(t)}{2} = \dfrac{t}{2} \quad \Rightarrow \quad y(0) = 0\]</div><p>That is the memory should be initialized with an initial value of zero, which is the case in the script above. To observe that how incorrect initialization of a memory to break an algebraic loop, consider the following example in which memory is initialized randomly. </p><pre><code class="language-">using Jusdl 
+using Plots 
 
 # Simulation time settings.
 ti, dt, tf = 0., 1. / 64., 1.
 
 # Describe the model
-@defmodel model begin
+@defmodel model begin 
     @nodes begin
         gen = RampGenerator()
         adder = Adder(signs=(+,-))
         gain = Gain()
-        writerout = Writer()
-        writerin = Writer()
+        writerout = Writer() 
+        writerin = Writer() 
         mem = Memory(delay=dt, initial=rand(1))
     end
-    @branches begin
+    @branches begin 
         gen[1] =&gt; adder[1]
         adder[1] =&gt; gain[1]
         gain[1] =&gt; mem[1]
@@ -117,23 +97,13 @@ ti, dt, tf = 0., 1. / 64., 1.
     end
 end
 
-# Simulate the model
+# Simulate the model 
 sim = simulate!(model, ti, dt, tf, withbar=false)
 
-# Plot the results
+# Plot the results 
 using Plots
 t, r = read(getnode(model, :writerin).component)
 t, y = read(getnode(model, :writerout).component)
 plot(t, r, label=&quot;r(t)&quot;, marker=(:circle, 3))
-plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3))</code></pre><pre><code class="language-none">[ Info: 2020-08-17T20:05:31.825 Started simulation...
-[ Info: 2020-08-17T20:05:31.825 Inspecting model...
-┌ Info: 	The model has algrebraic loops:[[2, 3, 6]]
-└ 		Trying to break these loops...
-[ Info: 	Loop [2, 3, 6] has a Memory component.  The loops is broken
-[ Info: 2020-08-17T20:05:31.826 Done.
-[ Info: 2020-08-17T20:05:31.826 Initializing the model...
-[ Info: 2020-08-17T20:05:31.826 Done...
-[ Info: 2020-08-17T20:05:31.826 Running the simulation...
-[ Info: 2020-08-17T20:05:31.83 Done...
-[ Info: 2020-08-17T20:05:31.831 Terminating the simulation...
-[ Info: 2020-08-17T20:05:31.835 Done.</code></pre><p><img src="../breaking_algebraic_loops_with_memory_incorrect_plot1.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_simulation/">« Model Simulation</a><a class="docs-footer-nextpage" href="../defining_new_components/">Extending Component Library »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 17 August 2020 20:06">Monday 17 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot!(t, y, label=&quot;y(t)&quot;, marker=(:circle, 3))
+savefig(&quot;breaking_algebraic_loops_with_memory_incorrect_plot1.svg&quot;); nothing # hide</code></pre><p><img src="breaking_algebraic_loops_with_memory_incorrect_plot1.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_simulation/">« Model Simulation</a><a class="docs-footer-nextpage" href="../defining_new_components/">Extending Component Library »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 19 August 2020 18:45">Wednesday 19 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,7 +1,7 @@
 name = "Jusdl"
 uuid = "5fb878b0-68d2-11e9-223c-0f99f93215f8"
 authors = ["Zekeriya Sarı <zekeriya.sari@deu.edu.tr>", "Serkan Günel <serkan.gunel@deu.edu.tr>"]
-version = "0.1.5"
+version = "0.1.6"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"

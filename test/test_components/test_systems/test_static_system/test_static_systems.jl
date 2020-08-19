@@ -219,5 +219,18 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new statik systems 
+    # The type must be a subtype of AbstractStaticSystem
+    @test_throws Exception @eval @def_static_system struct MyStaticSystem{RO, OP} 
+        reaout::RO = (u, t) -> u 
+        output::OP = Outport()
+    end 
+
+    # The type must be a subtype of AbstractStaticSystem
+    @test_throws Exception @eval @def_static_system struct MyStaticSystem{RO, OP} <: MyDummyAbstractStaticSystem
+        reaout::RO = (u, t) -> u 
+        output::OP = Outport()
+    end 
+
     @info "Done StaticSystemTestSet ..."
 end # testset

@@ -93,6 +93,43 @@ import DifferentialEquations: MethodOfSteps, Vern9
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new DDESystem 
+    # The type must be mutable 
+    @test_throws Exception @eval @def_dde_system struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP}
+        constlags::CL 
+        depslags::DL 
+        righthandside::RH 
+        history::HST 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be a subtype of AbstractDAESystem 
+    @test_throws Exception @eval @def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP}
+        constlags::CL 
+        depslags::DL 
+        righthandside::RH 
+        history::HST 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be a subtype of AbstractDAESystem 
+    @test_throws Exception @eval @def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: MyDummyAbstractDDESystem
+        constlags::CL 
+        depslags::DL 
+        righthandside::RH 
+        history::HST 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
     @info "Done DDESystemTestSet ..."
 end  # testset
 

@@ -61,5 +61,34 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test definining new DiscreteSystem 
+
+    # Type must be mutable
+    # The type must be mutable 
+    @test_throws Exception @eval @def_discrete_system struct MyDiscreteSystem{RH, RO, ST, IP, OP}  
+        righthandside::RH
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # Type must be a subtype of AbstractDiscreteSystem
+    @test_throws Exception @eval @def_discrete_system mutable struct MyDiscreteSystem{RH, RO, ST, IP, OP}  
+        righthandside::RH
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    @test_throws Exception @eval @def_discrete_system mutable struct MyDiscreteSystem{RH, RO, ST, IP, OP} <: MyDummyAbstractDiscreteSystem
+        righthandside::RH
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
     @info "Done DiscreteSystemTestSet ..."
 end

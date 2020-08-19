@@ -104,5 +104,10 @@ end  # testset
         output::OP = Outport()
     end
 
+    @test_throws Exception @eval @def_source struct Mygen{RO,OP} <: SomeDummyType
+        readout::RO = t -> sin(t) 
+        output::OP = Outport()
+    end
+
     @info "Done GeneratorsTestSet ..."
 end  # testset

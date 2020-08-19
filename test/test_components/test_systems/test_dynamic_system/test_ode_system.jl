@@ -268,6 +268,34 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new ODE systems 
+    # The type must be mutabe
+    @test_throws Exception @eval @def_ode_system struct ODESystem{RH, RO, ST, IP, OP}
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be a subtype of AbstractODESystem
+    @test_throws Exception @eval @def_ode_system mutable struct ODESystem{RH, RO, ST, IP, OP} 
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be subtype of AbstractODESystem
+    @test_throws Exception @eval @def_ode_system mutable struct ODESystem{RH, RO, ST, IP, OP} <: MyDummyyAbstractODESystem 
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
     @info "Done ODESystemTestSet."
 end  # testset 
 

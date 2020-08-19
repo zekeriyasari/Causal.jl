@@ -99,5 +99,39 @@
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new DAESystems 
+    # Type mest be mutable 
+    @test_throws Exception @eval @def_dae_system struct DAESystem{RH, RO, ST, IP, OP}
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        stateder::ST 
+        diffvars::Vector{Bool}
+        input::IP 
+        output::OP 
+    end
+
+    # The type must be a subtype of AbstractDAESystem
+    @test_throws Exception @eval @def_dae_system mutable struct DAESystem{RH, RO, ST, IP, OP}
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        stateder::ST 
+        diffvars::Vector{Bool}
+        input::IP 
+        output::OP 
+    end
+
+    # The type must be a subtype of AbstractDAESystem
+    @test_throws Exception @eval @def_dae_system mutable struct DAESystem{RH, RO, ST, IP, OP} <: MyDummyAbstractDAESystem
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        stateder::ST 
+        diffvars::Vector{Bool}
+        input::IP 
+        output::OP 
+    end
+
     @info "Done DAESystemTestSet."
 end # testset 

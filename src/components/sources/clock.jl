@@ -14,16 +14,17 @@ Constructs a `Clock` with starting time `t`, final time `tf` and sampling inteva
     When constructed, `Clock` is not running. To take clock ticks from `Clock`, the `Clock` must be setted. See [`take!(clk::Clock)`](@ref) and [`set!`](@ref) 
 """
 mutable struct Clock{T, CB}
-    t::T
-    dt::T
-    tf::T
+    t::T 
+    ti::T 
+    dt::T 
+    tf::T 
     generator::Channel{T}
     paused::Bool
     callbacks::CB
     name::Symbol
     uuid::UUID
-    Clock{T}(t::T, dt::T, tf::T; callbacks::CB=nothing, name=Symbol()) where {T, CB} = 
-        new{T, CB}(t, dt, tf, Channel{T}(0), false, callbacks, name, uuid4())
+    Clock{T}(ti::T, dt::T, tf::T; callbacks::CB=nothing, name=Symbol()) where {T, CB} = 
+        new{T, CB}(ti, ti, dt, tf, Channel{T}(0), false, callbacks, name, uuid4())
 end
 Clock(t::T, dt::T, tf::T; kwargs...) where T = Clock{T}(t, dt, tf; kwargs...)
 Clock(t=0., dt=0.01, tf=1.; kwargs...) = Clock(promote(t, dt, tf)...; kwargs...)
@@ -118,18 +119,20 @@ julia> take!(clk)
 0.0
 ```
 """
-function set!(clk::Clock, t::Real, dt::Real, tf::Real)
-    set!(clk, Generator(t, dt, tf))
+function set!(clk::Clock, t::Real=clk.ti, dt::Real=clk.dt, tf::Real=clk.tf)
+    # set!(clk, Generator(t, dt, tf))
+    clk.generator = Generator(t, dt, tf)
     clk.t = t 
     clk.dt = dt 
     clk.tf = tf
-    clk
-end
-function set!(clk::Clock, generator::Channel=Generator(clk.t, clk.dt, clk.tf)) 
-    clk.generator = generator
     clk.paused = false
     clk
 end
+# function set!(clk::Clock, generator::Channel=Generator(clk.ti, clk.dt, clk.tf)) 
+#     clk.generator = generator
+#     clk.paused = false
+#     clk
+# end
 
 """
     stop!(clk::Clock)

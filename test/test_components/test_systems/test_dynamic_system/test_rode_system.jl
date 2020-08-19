@@ -84,5 +84,33 @@ import DifferentialEquations.RandomEM
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new RODESystem types 
+    # The type must be mutable 
+    @test_throws Exception @eval @def_rode_system struct RODESystem{RH, RO, ST, IP, OP}
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be of type AbstractRODESystem 
+    @test_throws Exception @eval @def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP}
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
+    # The type must be of type AbstractRODESystem 
+    @test_throws Exception @eval @def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: MyDummyAbstractRODESystem
+        righthandside::RH 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP
+    end
+
     @info "Done RODESystemTestSet ..."
 end  # testset 

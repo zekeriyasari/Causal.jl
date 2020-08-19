@@ -98,5 +98,16 @@ end  # testset
     @test_throws Exception sinegen.amplitude = 5.
     @test_throws Exception sqauregen.high = 10.
 
+    # Test redefining new source types. 
+    @test_throws Exception @eval @def_source struct Mygen{RO,OP} 
+        readout::RO = t -> sin(t) 
+        output::OP = Outport()
+    end
+
+    @test_throws Exception @eval @def_source struct Mygen{RO,OP} <: SomeDummyType
+        readout::RO = t -> sin(t) 
+        output::OP = Outport()
+    end
+
     @info "Done GeneratorsTestSet ..."
 end  # testset

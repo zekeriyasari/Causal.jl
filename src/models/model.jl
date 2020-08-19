@@ -177,6 +177,9 @@ function inspect!(model, breakpoints::Vector{Int}=Int[])
     # Check unbound pins in ports of componensts 
     checknodeports(model) 
 
+    # Check links of the model 
+    checkchannels(model)
+
     # Break algebraic loops if there exits. 
     loops = getloops(model)
     if !isempty(loops)
@@ -388,6 +391,25 @@ end
 unboundpins(port::AbstractPort) = findall(.!isbound.(port)) 
 unboundpins(port::Nothing) = Int[]
 
+# Checks if all the channels the links in the model is open. If a link is not open, than 
+# it is not possible to bind a task that reads and writes data from the channel.
+function checkchannels(model)
+    # Check branch links 
+    for branch in model.branches 
+        for link in branch.links 
+            isopen(link) || refresh!(link)
+        end
+    end
+    # Check taskmanager links 
+    for pin in model.taskmanager.triggerport 
+        link = only(pin.links)
+        isopen(link) || refresh!(link) 
+    end
+    for pin in model.taskmanager.handshakeport 
+        link = pin.link
+        isopen(link) || refresh!(link) 
+    end
+end
 
 ##### Model initialization
 """
@@ -414,6 +436,12 @@ function initialize!(model::Model)
     end
 
     # Turn on clock model clock if it is running. 
+    if isoutoftime(model.clock)
+        msg = "Model clock is out of time. Its current time $(model.clock.t) should be less than its final time "
+        msg *= "$(model.clock.tf). Resettting the model clock to its defaults."
+        @warn msg
+        set!(model.clock)
+    end
     isrunning(model.clock) || set!(model.clock)  
     
     # Open the files, GUI's for sink components. 

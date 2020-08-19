@@ -1,4 +1,4 @@
-# This file includes intregratro construction
+# This file includes intregrator construction
 
 
 function construct_integrator(deproblem, input, righthandside, state, t, modelargs=(), solverargs=(); 
@@ -23,4 +23,19 @@ function construct_integrator(deproblem, input, righthandside, state, t, modelar
 
     # Initialize the integrator
     init(problem, alg, solverargs...; save_everystep=false, dense=true, solverkwargs...)
+end
+
+#= This function checks whether the syntax is of the form 
+    
+    @my_macro_to_define_new_dynamical_system mutable struct NewSystem{T, S} <: SuperTypeName 
+        # fields 
+    end 
+    
+    where @my_macro_to_define_new_dynamical_system is any macro used to define new dynamical system such as @def_ode_system, @def_sde_system, etc.   
+=#
+function checksyntax(ex::Expr, supertypename::Symbol)
+    ex.head == :struct && ex.args[1] || 
+        error("Invalid usage. The expression should start with `mutable struct`.\n$ex")
+    ex.args[2].head == :(<:) && ex.args[2].args[2] == supertypename || 
+        error("Invalid usage. The type should be a subtype of $supertypename.\n$ex")
 end

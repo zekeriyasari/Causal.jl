@@ -81,5 +81,36 @@ import DifferentialEquations: LambaEM
     sleep(0.1)
     @test istaskdone(tsk2)
 
+    # Test defining new SDESystem types 
+    # The type must be mutable 
+    @test_throws Exception @eval @def_sde_system struct SDESystem{DR, DF, RO, ST, IP, OP}
+        drift::DR 
+        diffusion::DF 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP 
+    end
+
+    # The type must be subtype of AbstractSDESystem 
+    @test_throws Exception @eval @def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP}
+        drift::DR 
+        diffusion::DF 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP 
+    end
+
+    # The type must be subtype of AbstractSDESystem 
+    @test_throws Exception @eval @def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: MyDummyAbstractSDESystem
+        drift::DR 
+        diffusion::DF 
+        readout::RO 
+        state::ST 
+        input::IP 
+        output::OP 
+    end
+
     @info "Running SDESystemTestSet ..."
 end  # testset

@@ -32,7 +32,7 @@ ERROR: UndefVarError: ds not defined
 julia&gt; task2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (failed) @0x00007f6fb5ae4760
+Task (failed) @0x00007fd438f69fc0
 MethodError: no method matching take!(::Missing)
 Closest candidates are:
   take!(!Matched::Distributed.WorkerPool) at /buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.5/Distributed/src/workerpool.jl:136
@@ -56,7 +56,7 @@ ERROR: MethodError: no method matching iterate(::Missing)
 Closest candidates are:
   iterate(!Matched::Base.RegexMatchIterator) at regex.jl:552
   iterate(!Matched::Base.RegexMatchIterator, !Matched::Any) at regex.jl:552
-  iterate(!Matched::DataStructures.EnumerateAll) at /home/travis/.julia/packages/DataStructures/DLSxi/src/multi_dict.jl:105
+  iterate(!Matched::Combinatorics.FixedPartitions) at /home/travis/.julia/packages/Combinatorics/Udg6X/src/partitions.jl:112
   ...</code></pre><p>After this command, <code>ds</code> reads its time <code>t</code> from its <code>trigger</code> link, solves its state function and computes its output. The calculated output value is written to the buffer of <code>output</code>. To signal that, the step is takes with success, <code>ds</code> writes <code>true</code> to its <code>handshake</code> link. To further drive <code>ds</code>, this <code>handshake</code> link must be read. For this either of the syntax, <code>take!(ds.handshake)</code> or <code>approve!(ds)</code> can be used</p><pre><code class="language-julia-repl">julia&gt; hnd.link
 missing
 
@@ -74,14 +74,14 @@ ERROR: MethodError: no method matching iterate(::Missing)
 Closest candidates are:
   iterate(!Matched::Base.RegexMatchIterator) at regex.jl:552
   iterate(!Matched::Base.RegexMatchIterator, !Matched::Any) at regex.jl:552
-  iterate(!Matched::DataStructures.EnumerateAll) at /home/travis/.julia/packages/DataStructures/DLSxi/src/multi_dict.jl:105
+  iterate(!Matched::Combinatorics.FixedPartitions) at /home/travis/.julia/packages/Combinatorics/Udg6X/src/partitions.jl:112
   ...</code></pre><p>Note that during the evolution, the output of <code>ds</code> is written into the buffers of <code>output</code> bus.</p><pre><code class="language-julia-repl">julia&gt; iport[1].link.buffer
 ERROR: type Missing has no field buffer</code></pre><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The values of the output is written into buffers if the <code>output</code> of the systems is not <code>nothing</code>.</p></div></div><p>When we launched <code>ds</code>, we constructed a <code>task</code> whose state is <code>running</code> which implies that the <code>ds</code> can be drivable. As long as this <code>task</code> is running, <code>ds</code> can be drivable. </p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>The state of the <code>task</code> is different from <code>running</code> in case an exception is thrown. </p></div></div><p>To terminate the <code>task</code> securely, we need to terminate <code>ds</code> securely. To do that, can use <code>terminate!(ds)</code>.</p><pre><code class="language-julia-repl">julia&gt; put!(trg, NaN)
 ERROR: MethodError: no method matching iterate(::Missing)
 Closest candidates are:
   iterate(!Matched::Base.RegexMatchIterator) at regex.jl:552
   iterate(!Matched::Base.RegexMatchIterator, !Matched::Any) at regex.jl:552
-  iterate(!Matched::DataStructures.EnumerateAll) at /home/travis/.julia/packages/DataStructures/DLSxi/src/multi_dict.jl:105
+  iterate(!Matched::Combinatorics.FixedPartitions) at /home/travis/.julia/packages/Combinatorics/Udg6X/src/partitions.jl:112
   ...
 
 julia&gt; put!(ds.output, [NaN])
@@ -89,7 +89,7 @@ ERROR: UndefVarError: ds not defined</code></pre><p>Note that the <code>task</co
 ERROR: UndefVarError: task not defined
 
 julia&gt; task2
-Task (failed) @0x00007f6fb5ae4760
+Task (failed) @0x00007fd438f69fc0
 MethodError: no method matching take!(::Missing)
 Closest candidates are:
   take!(!Matched::Distributed.WorkerPool) at /buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.5/Distributed/src/workerpool.jl:136
@@ -108,15 +108,15 @@ copy at ./broadcast.jl:862 [inlined]
 materialize at ./broadcast.jl:837 [inlined]
 take!(::Inport{Inpin{Float64}}) at /home/travis/build/zekeriyasari/Jusdl.jl/src/connections/port.jl:178
 macro expansion at ./none:2 [inlined]
-(::Main.ex-sde_system_ex.var&quot;#1#2&quot;)() at ./task.jl:356</code></pre><h2 id="Full-API"><a class="docs-heading-anchor" href="#Full-API">Full API</a><a id="Full-API-1"></a><a class="docs-heading-anchor-permalink" href="#Full-API" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_sde_system" href="#Jusdl.@def_sde_system"><code>Jusdl.@def_sde_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_sde_system ex</code></pre><p>where <code>ex</code> is the expression to define to define a new AbstractSDESystem component type. The usage is as follows:</p><pre><code class="language-julia">@def_sde_system struct MySDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} &lt;: AbstractSDESystem
+(::Main.ex-sde_system_ex.var&quot;#1#2&quot;)() at ./task.jl:356</code></pre><h2 id="Full-API"><a class="docs-heading-anchor" href="#Full-API">Full API</a><a id="Full-API-1"></a><a class="docs-heading-anchor-permalink" href="#Full-API" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Jusdl.@def_sde_system" href="#Jusdl.@def_sde_system"><code>Jusdl.@def_sde_system</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@def_sde_system ex</code></pre><p>where <code>ex</code> is the expression to define to define a new AbstractSDESystem component type. The usage is as follows:</p><pre><code class="language-julia">@def_sde_system mutable struct MySDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} &lt;: AbstractSDESystem
     param1::T1 = param1_default                 # optional field 
     param2::T2 = param2_default                 # optional field 
     param3::T3 = param3_default                 # optional field
         ⋮
     paramN::TN = paramN_default                 # optional field 
-    drift::DR = drift_default                   # mandatory field
-    diffusion::DF = diffusion_default           # mandatory field
-    readout::RO = readout_default               # mandatory field
+    drift::DR = drift_function                  # mandatory field
+    diffusion::DF = diffusion_function          # mandatory field
+    readout::RO = readout_functtion             # mandatory field
     state::ST = state_default                   # mandatory field
     input::IP = input_default                   # mandatory field
     output::OP = output_default                 # mandatory field
@@ -127,7 +127,7 @@ end</code></pre><p>and <code>diffusion</code> must have the signature </p><pre><
 end</code></pre><p>and <code>readout</code> must have the signature </p><pre><code class="language-julia">function readout(x, u, t)
     y = ...
     return y
-end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>New SDE system must be a subtype of <code>AbstractSDESystem</code> to function properly.</p></div></div><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; @def_sde_system struct MySDESystem{DR, DF, RO, IP, OP} &lt;: AbstractSDESystem
+end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>New SDE system must be a subtype of <code>AbstractSDESystem</code> to function properly.</p></div></div><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; @def_sde_system mutable struct MySDESystem{DR, DF, RO, IP, OP} &lt;: AbstractSDESystem
            η::Float64 = 1.
            drift::DR = (dx, x, u, t) -&gt; (dx .= x)
            diffusion::DF = (dx, x, u, t, η=η) -&gt; (dx .= η)
@@ -137,4 +137,4 @@ end</code></pre></div></div><div class="admonition is-warning"><header class="ad
            output::OP = Outport(2)
        end
 
-julia&gt; ds = MySDESystem();</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/b1e33baf41bd3ea638c4e76c6efaae67ee9dd79c/src/components/systems/dynamicalsystems/sdesystems.jl#L6-L65">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.SDESystem" href="#Jusdl.SDESystem"><code>Jusdl.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(; drift, diffusion, readout, state, input, output)</code></pre><p>Constructs a SDE system. </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.NoisyLorenzSystem" href="#Jusdl.NoisyLorenzSystem"><code>Jusdl.NoisyLorenzSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">NoisyLorenzSystem()</code></pre><p>Constructs a noisy Lorenz system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.ForcedNoisyLorenzSystem" href="#Jusdl.ForcedNoisyLorenzSystem"><code>Jusdl.ForcedNoisyLorenzSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">NoisyLorenzSystem()</code></pre><p>Constructs a noisy Lorenz system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 20 August 2020 20:37">Thursday 20 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+julia&gt; ds = MySDESystem();</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Jusdl.jl/blob/e804da52710e604bab130ba29ffbd7644ef81cd1/src/components/systems/dynamicalsystems/sdesystems.jl#L6-L65">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.SDESystem" href="#Jusdl.SDESystem"><code>Jusdl.SDESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">SDESystem(; drift, diffusion, readout, state, input, output)</code></pre><p>Constructs a SDE system. </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.NoisyLorenzSystem" href="#Jusdl.NoisyLorenzSystem"><code>Jusdl.NoisyLorenzSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">NoisyLorenzSystem()</code></pre><p>Constructs a noisy Lorenz system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Jusdl.ForcedNoisyLorenzSystem" href="#Jusdl.ForcedNoisyLorenzSystem"><code>Jusdl.ForcedNoisyLorenzSystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">NoisyLorenzSystem()</code></pre><p>Constructs a noisy Lorenz system </p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaLang/julia/blob/96786e22ccabfdafd073122abb1fb69cea921e17/base/#L0-L4">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../rodesystem/">« RODESystem</a><a class="docs-footer-nextpage" href="../ddesystem/">DDESystem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 20 August 2020 20:54">Thursday 20 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

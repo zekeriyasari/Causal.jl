@@ -17,6 +17,11 @@ addons:
 env:
   - GKSwstype="100"
 
+script: # the default script is equivalent to the following
+  - while sleep 30; do echo "still alive"; done &
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
+
 notifications:
   email: false
 
@@ -30,10 +35,9 @@ jobs:
   fast_finish: true
   include:
     - stage: Documentation
-      julia: 1.4
-      script: travis_wait 30 julia --project=docs -e '
-          using Pkg;
-          Pkg.develop(PackageSpec(path=pwd()));
-          Pkg.instantiate();
-          include("docs/make.jl");'
+      julia: 1.5
+      script:
+        - while sleep 30; do echo "still alive"; done & 
+        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
       after_success: skip

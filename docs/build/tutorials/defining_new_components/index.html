@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Extending Component Library · Jusdl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Jusdl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Jusdl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Modeling and Simulation in Jusdl</span><ul><li><a class="tocitem" href="../../modeling_and_simulation/modeling/">Modeling</a></li><li><a class="tocitem" href="../../modeling_and_simulation/simulation/">Simulation</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../model_construction/">Model Construction</a></li><li><a class="tocitem" href="../model_simulation/">Model Simulation</a></li><li><a class="tocitem" href="../algebraic_loops/">Algebraic Loops</a></li><li class="is-active"><a class="tocitem" href>Extending Component Library</a></li><li><a class="tocitem" href="../coupled_systems/">Coupled Systems</a></li></ul></li><li><span class="tocitem">Manual</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Utilities</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/utilities/callback/">Callback</a></li><li><a class="tocitem" href="../../manual/utilities/buffers/">Buffer</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Connections</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/connections/link/">Links</a></li><li><a class="tocitem" href="../../manual/connections/pin/">Pins</a></li><li><a class="tocitem" href="../../manual/connections/port/">Ports</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Components</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-1"><span class="docs-label">ComponentsBase</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/componentsbase/hierarchy/">Component Type Hierarchy</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/evolution/">Evolution of Components</a></li><li><a class="tocitem" href="../../manual/components/componentsbase/interpolation/">Interpolation</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-2"><span class="docs-label">Sources</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sources/clock/">Clock</a></li><li><a class="tocitem" href="../../manual/components/sources/generators/">Generators</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3-3"><span class="docs-label">Sinks</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/sinks/sinks/">Sinks</a></li><li><a class="tocitem" href="../../manual/components/sinks/writer/">Writer</a></li><li><a class="tocitem" href="../../manual/components/sinks/printer/">Printer</a></li><li><a class="tocitem" href="../../manual/components/sinks/scope/">Scope</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4"><span class="docs-label">Systems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><input class="collapse-toggle" id="menuitem-4-3-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-1"><span class="docs-label">StaticSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/staticsystems/staticsystems/">StaticSystems</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-3-4-2"><span class="docs-label">DynamicSystems</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/discretesystem/">DiscreteSystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/odesystem/">ODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/daesystem/">DAESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/rodesystem/">RODESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/sdesystem/">SDESystem</a></li><li><a class="tocitem" href="../../manual/components/systems/dynamicsystems/ddesystem/">DDESystem</a></li></ul></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Models</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/models/taskmanager/">Task Manager</a></li><li><a class="tocitem" href="../../manual/models/simulation/">Simulation</a></li><li><a class="tocitem" href="../../manual/models/model/">Model</a></li></ul></li><li><a class="tocitem" href="../../manual/plugins/plugins/">Plugins</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Extending Component Library</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Extending Component Library</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/zekeriyasari/Jusdl.jl/blob/master/docs/src/tutorials/defining_new_components.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Defining-New-Component-Types-1"><a class="docs-heading-anchor" href="#Defining-New-Component-Types-1">Defining New Component Types</a><a class="docs-heading-anchor-permalink" href="#Defining-New-Component-Types-1" title="Permalink"></a></h1><p>Jusdl provides a library that includes some well-known components that are ready to be used. For example,</p><ul><li><a href="../../manual/components/sources/generators/#Jusdl.FunctionGenerator"><code>FunctionGenerator</code></a>, <a href="../../manual/components/sources/generators/#Jusdl.SinewaveGenerator"><code>SinewaveGenerator</code></a>, <a href="../../manual/components/sources/generators/#Jusdl.SquarewaveGenerator"><code>SquarewaveGenerator</code></a>, <a href="../../manual/components/sources/generators/#Jusdl.RampGenerator"><code>RampGenerator</code></a>, etc. as sources</li><li><a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.StaticSystem"><code>StaticSystem</code></a>, <a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.Adder"><code>Adder</code></a>, <a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.Multiplier"><code>Multiplier</code></a>, <a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.Gain"><code>Gain</code></a>, etc. as static systems</li><li><a href="../../manual/components/systems/dynamicsystems/discretesystem/#Jusdl.DiscreteSystem"><code>DiscreteSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/discretesystem/#Jusdl.DiscreteLinearSystem"><code>DiscreteLinearSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/discretesystem/#Jusdl.HenonSystem"><code>HenonSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/discretesystem/#Jusdl.LogisticSystem"><code>LogisticSystem</code></a>, etc. as dynamical systems represented by discrete difference equations.</li><li><a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.ODESystem"><code>ODESystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.LorenzSystem"><code>LorenzSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.ChenSystem"><code>ChenSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.ChuaSystem"><code>ChuaSystem</code></a>, etc. as dynamical systems represented by ODEs.</li><li><a href="../../manual/components/systems/dynamicsystems/daesystem/#Jusdl.DAESystem"><code>DAESystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/daesystem/#Jusdl.RobertsonSystem"><code>RobertsonSystem</code></a>, etc. as dynamical systems represented by dynamical systems represented by DAEs.</li><li><a href="../../manual/components/systems/dynamicsystems/rodesystem/#Jusdl.RODESystem"><code>RODESystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/rodesystem/#Jusdl.MultiplicativeNoiseLinearSystem"><code>MultiplicativeNoiseLinearSystem</code></a>, etc. as dynamical systems represented by dynamical systems represented by RODEs.</li><li><a href="../../manual/components/systems/dynamicsystems/sdesystem/#Jusdl.SDESystem"><code>SDESystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/sdesystem/#Jusdl.NoisyLorenzSystem"><code>NoisyLorenzSystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/sdesystem/#Jusdl.ForcedNoisyLorenzSystem"><code>ForcedNoisyLorenzSystem</code></a>, etc. as dynamical systems represented by dynamical systems represented by SDEs.</li><li><a href="../../manual/components/systems/dynamicsystems/ddesystem/#Jusdl.DDESystem"><code>DDESystem</code></a>, <a href="../../manual/components/systems/dynamicsystems/ddesystem/#Jusdl.DelayFeedbackSystem"><code>DelayFeedbackSystem</code></a>, etc. as dynamical systems represented by dynamical systems represented by DDEs.</li><li><a href="../../manual/components/sinks/writer/#Jusdl.Writer"><code>Writer</code></a>, <a href="../../manual/components/sinks/printer/#Jusdl.Printer"><code>Printer</code></a>, <a href="../../manual/components/sinks/scope/#Jusdl.Scope"><code>Scope</code></a>, etc. as sinks.</li></ul><p>It is very natural that this library may lack some of the components that are wanted to be used by the user. In such a case, Jusdl provides the users with the flexibility to enrich this library. The users can define their new component types, including source, static system, dynamical system, sink and use them with ease. </p><h3 id="Defining-A-New-Source-1"><a class="docs-heading-anchor" href="#Defining-A-New-Source-1">Defining A New Source</a><a class="docs-heading-anchor-permalink" href="#Defining-A-New-Source-1" title="Permalink"></a></h3><p>New source types are defines using <a href="../../manual/components/sources/generators/#Jusdl.@def_source"><code>@def_source</code></a> macro. Before embarking on defining new source, let us get the necessary information on how to use <code>@def_source</code>. This can be can be obtained through its docstrings. </p><pre><code class="language-julia-repl">julia&gt; using Jusdl # hide
+
+julia&gt; @doc @def_source
+  @def_source ex
+
+  where ex is the expression to define to define a new AbstractSource
+  component type. The usage is as follows:
+
+  @def_source struct MySource{T1,T2,T3,...,TN,OP, RO} &lt;: AbstractSource
+      param1::T1 = param1_default     # optional field
+      param2::T2 = param2_default     # optional field
+      param3::T3 = param3_default     # optional field
+          ⋮
+      paramN::TN = paramN_default     # optional field
+      output::OP = output_default     # mandatory field
+      readout::RO = readout_function  # mandatory field
+  end
+
+  Here, MySource has N parameters, an output port and a readout function.
+
+  │ Warning
+  │
+  │  output and readout are mandatory fields to define a new source.
+  │  The rest of the fields are the parameters of the source.
+
+  │ Warning
+  │
+  │  readout must be a single-argument function, i.e. a fucntion of
+  │  time t.
+
+  │ Warning
+  │
+  │  New source must be a subtype of AbstractSource to function
+  │  properly.
+
+  Example
+  ≡≡≡≡≡≡≡≡≡
+
+  julia&gt; @def_source struct MySource{OP, RO} &lt;: AbstractSource
+         a::Int = 1
+         b::Float64 = 2.
+         output::OP = Outport()
+         readout::RO = t -&gt; (a + b) * sin(t)
+         end
+
+  julia&gt; gen = MySource();
+
+  julia&gt; gen.a
+  1
+
+  julia&gt; gen.output
+  1-element Outport{Outpin{Float64}}:
+   Outpin(eltype:Float64, isbound:false)</code></pre><p>From the docstring, its clear that new types of source can be defined as if we define a new Julia type. The difference is that the <code>struct</code> keyword is preceded by <code>@def_source</code> macro and the new component must be a subtype of <a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractSource"><code>AbstractSource</code></a>. Also from the docstring is that the new type has some optional and mandatory fields. </p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>To define a new source, mandatory fields must be defined. The optional fields are the parameters of the source.</p></div></div><p>For example let us define a new source that generates waveforms of the form. </p><div>\[    y(t) = 
+    \begin{bmatrix}
+        \alpha sin(t) \\ 
+        \beta cos(t)
+    \end{bmatrix}\]</div><p>Here <span>$\alpha$</span> and <span>$beta$</span> is the system parameters. That is, while defining the new source component, <span>$\alpha$</span> and <span>$\beta$</span> are optional fields. <code>readout</code> and <span>$output$</span> are the mandatory field while defining a source. Note from above equation that the output of the new source has two pins. Thus, this new source component type, say <code>MySource</code> is defined as follows. </p><pre><code class="language-julia-repl">julia&gt; @def_source struct MySource{RO, OP} &lt;: AbstractSource
+           α::Float64 = 1.
+           β::Float64 = 2.
+           readout::RO = (t, α=α, β=β) -&gt;  [α*sin(t), β*cos(t)]
+           output::OP = Outport(2)
+       end</code></pre><p>Note that the syntax is very similar to the case in which we define a normal Julia type. We start with <code>struct</code> keyword preceded with <code>@def_source</code> macro. In order for the <code>MySource</code> to work flawlessly, i.e. to be used a model component, it must a subtype of <code>AbstractSource</code>. The <code>readout</code> function of <code>MySource</code> is a function of <code>t</code> and the remaining parameters, i.e., <span>$\alpha$</span> and <span>$\beta$</span>, are passed into as optional arguments to avoid global variables. </p><p>One other important point to note is that the <code>MySource</code> has additional fields that are required for it to work as a regular model component. Let us print all the field names of <code>MySource</code>, </p><pre><code class="language-julia-repl">julia&gt; fieldnames(MySource)
+(:α, :β, :readout, :output, :trigger, :handshake, :callbacks, :name, :id)</code></pre><p>We know that we defined the fields <code>α, β, readout, output</code>, but, the fields <code>trigger, callback, handshake, callbacks, name, id</code> are defined automatically by <code>@def_source</code> macro. </p><p>Since the type <code>MySource</code> has been defined, any instance of it can be constructed. Let us see the constructors first.</p><pre><code class="language-julia-repl">julia&gt; methods(MySource)
+# 2 methods for type constructor:
+[1] (::Type{Main.ex-defining_new_components_ex.MySource})(; α, β, readout, output, trigger, handshake, callbacks, name, id) in Main.ex-defining_new_components_ex at /home/sari/.julia/dev/Jusdl/src/components/componentsbase/macros.jl:55
+[2] (::Type{Main.ex-defining_new_components_ex.MySource})(α::Float64, β::Float64, readout::RO, output::OP, trigger::var&quot;##386&quot;, handshake::var&quot;##387&quot;, callbacks::var&quot;##388&quot;, name::Symbol, id::var&quot;##389&quot;) where {RO, OP, var&quot;##386&quot;, var&quot;##387&quot;, var&quot;##388&quot;, var&quot;##389&quot;} in Main.ex-defining_new_components_ex at none:2</code></pre><p>The constructor with the keyword arguments is very much easy to uses. </p><pre><code class="language-julia-repl">julia&gt; gen1 = MySource()
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;bde4917a-f5f7-467a-add8-60fb523320dd&quot;))
+
+julia&gt; gen2 = MySource(α=4.)
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;5f674e38-b0eb-451b-9839-08e4b2970f74&quot;))
+
+julia&gt; gen3 = MySource(α=4., β=5.)
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;7a6c3d77-842e-4bb3-a020-f3f6cdfd7bcd&quot;))
+
+julia&gt; gen3 = MySource(α=4., β=5., name=:mygen)
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(4.0, 5.0, Main.ex-defining_new_components_ex.var&quot;#3#8&quot;{Float64,Float64}(4.0, 5.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, :mygen, UUID(&quot;470140e1-fd70-4f62-aed5-c5010c0e5041&quot;))
+
+julia&gt; gen3.trigger
+Inpin(eltype:Float64, isbound:false)
+
+julia&gt; gen3.id
+UUID(&quot;470140e1-fd70-4f62-aed5-c5010c0e5041&quot;)
+
+julia&gt; gen3.α
+4.0
+
+julia&gt; gen3.β
+5.0
+
+julia&gt; gen3.output
+2-element Outport{Outpin{Float64}}:
+ Outpin(eltype:Float64, isbound:false)
+ Outpin(eltype:Float64, isbound:false)</code></pre><p>An instance works flawlessly as a model component, that is, it can be driven from its <code>trigger</code> pin and signalling cane be carried out from its <code>handshake</code> pin. To see this, let us construct required pins and ports to drive a <code>MySource</code> instance. </p><pre><code class="language-julia-repl">julia&gt; gen = MySource()                # `MySource` instance
+Main.ex-defining_new_components_ex.MySource{Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64},Outport{Outpin{Float64}},Inpin{Float64},Outpin{Bool},Nothing,Base.UUID}(1.0, 2.0, Main.ex-defining_new_components_ex.var&quot;#2#7&quot;{Float64,Float64}(1.0, 2.0), Outport(numpins:2, eltype:Outpin{Float64}), Inpin(eltype:Float64, isbound:false), Outpin(eltype:Bool, isbound:false), nothing, Symbol(&quot;&quot;), UUID(&quot;ba08d703-b2d1-4d49-b4af-57bcc574d51d&quot;))
+
+julia&gt; trg = Outpin()                  # To trigger `gen`
+Outpin(eltype:Float64, isbound:false)
+
+julia&gt; hnd = Inpin{Bool}()             # To signalling with `gen`
+Inpin(eltype:Bool, isbound:false)
+
+julia&gt; iport = Inport(2)               # To take values out of `gen`
+2-element Inport{Inpin{Float64}}:
+ Inpin(eltype:Float64, isbound:false)
+ Inpin(eltype:Float64, isbound:false)
+
+julia&gt; connect!(trg, gen.trigger);
+
+julia&gt; connect!(gen.handshake, hnd);
+
+julia&gt; connect!(gen.output, iport);
+
+julia&gt; launch(gen)                 # Launch `gen,
+Task (runnable) @0x00007f099b0d2980</code></pre><p>Now <code>gen</code> can be driven through <code>trg</code> pin. </p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)       # Drive `gen` for `t=1`.
+
+julia&gt; take!(iport)        # Read output of `gen` from `iport`
+2-element Array{Float64,1}:
+ 0.8414709848078965
+ 1.0806046117362795
+
+julia&gt; take!(hnd)          # Approve `gen` has taken a step.
+true</code></pre><p>Thus, by using <code>@def_source</code> macro, it is possible for the users to define any type of sources under <code>AbstractSource</code> type and user them without a hassle. </p><p>The procedure is again the same for any other component types. The table below lists the macros that are used to define new component types. </p><table><tr><th style="text-align: right">Macro</th><th style="text-align: right">Component Type</th><th style="text-align: right">Supertype</th><th style="text-align: right">Mandatory Field Names</th></tr><tr><td style="text-align: right"><a href="../../manual/components/sources/generators/#Jusdl.@def_source"><code>@def_source</code></a></td><td style="text-align: right">Source</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractSource"><code>AbstractSource</code></a></td><td style="text-align: right"><code>readout</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/staticsystems/staticsystems/#Jusdl.@def_static_system"><code>@def_static_system</code></a></td><td style="text-align: right">StaticSystem</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractStaticSystem"><code>AbstractStaticSystem</code></a></td><td style="text-align: right"><code>readout</code>, <code>output</code>, <code>input</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/discretesystem/#Jusdl.@def_discrete_system"><code>@def_discrete_system</code></a></td><td style="text-align: right">Discrete Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractDiscreteSystem"><code>AbstractDiscreteSystem</code></a></td><td style="text-align: right"><code>righthandside</code>, <code>readout</code>, <code>state</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/odesystem/#Jusdl.@def_ode_system"><code>@def_ode_system</code></a></td><td style="text-align: right">ODE Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractODESystem"><code>AbstractODESystem</code></a></td><td style="text-align: right"><code>righthandside</code>, <code>readout</code>, <code>state</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/daesystem/#Jusdl.@def_dae_system"><code>@def_dae_system</code></a></td><td style="text-align: right">DAE Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractDAESystem"><code>AbstractDAESystem</code></a></td><td style="text-align: right"><code>righthandside</code>, <code>readout</code>, <code>state</code>, <code>stateder</code>, <code>diffvars</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/rodesystem/#Jusdl.@def_rode_system"><code>@def_rode_system</code></a></td><td style="text-align: right">RODE Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractRODESystem"><code>AbstractRODESystem</code></a></td><td style="text-align: right"><code>righthandside</code>, <code>readout</code>, <code>state</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/sdesystem/#Jusdl.@def_sde_system"><code>@def_sde_system</code></a></td><td style="text-align: right">SDE Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractSDESystem"><code>AbstractSDESystem</code></a></td><td style="text-align: right"><code>drift</code>, <code>diffusion</code>, <code>readout</code>, <code>state</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/systems/dynamicsystems/ddesystem/#Jusdl.@def_dde_system"><code>@def_dde_system</code></a></td><td style="text-align: right">DDE Dynamic System</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractDDESystem"><code>AbstractDDESystem</code></a></td><td style="text-align: right"><code>constlags</code>, <code>depslags</code>, <code>righthandside</code>,  <code>history</code>, <code>readout</code>, <code>state</code>, <code>input</code>, <code>output</code></td></tr><tr><td style="text-align: right"><a href="../../manual/components/sinks/sinks/#Jusdl.@def_sink"><code>@def_sink</code></a></td><td style="text-align: right">Sink</td><td style="text-align: right"><a href="../../manual/components/componentsbase/hierarchy/#Jusdl.AbstractSink"><code>AbstractSink</code></a></td><td style="text-align: right"><code>action</code></td></tr></table><p>The steps followed in the previous section are the same to define other component types: start with suitable macro given above, make the newly-defined type a subtype of the corresponding supertype, define the optional fields (if exist) ands define the mandatory fields of the new type (with the default values if necessary).</p><h3 id="Defining-New-StaticSystem-1"><a class="docs-heading-anchor" href="#Defining-New-StaticSystem-1">Defining New StaticSystem</a><a class="docs-heading-anchor-permalink" href="#Defining-New-StaticSystem-1" title="Permalink"></a></h3><p>Consider the following readout function of the static system to be defined </p><div>\[y = u_1 t + a cos(u_2)\]</div><p>where <span>$u = [u_1, u_2]$</span> is the input, <span>$y$</span> is the output of the system and <span>$t$</span> is time. The system has two inputs and one output. This system can be defined as follows. </p><pre><code class="language-julia-repl">julia&gt; @def_static_system struct MyStaticSystem{RO, IP, OP} &lt;: AbstractStaticSystem
+           a::Float64 = 1.
+           readout::RO = (t, a = a) -&gt; u[1] * t + a * cos(u[2])
+           input::IP = Inport(2)
+           output::OP = Outport(1)
+       end</code></pre><h3 id="Defining-New-Discrete-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-New-Discrete-Dynamical-System-1">Defining New Discrete Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-New-Discrete-Dynamical-System-1" title="Permalink"></a></h3><p>The discrete dynamical system given by </p><div>\[\begin{array}{l}
+x_{k + 1} = α x_k + u_k \\[0.25cm]
+y_k = x_k
+\end{array}\]</div><p>can be defined as, </p><pre><code class="language-julia-repl">julia&gt; @def_discrete_system struct MyDiscreteSystem{RH, RO, IP, OP} &lt;: AbstractDiscreteSystem
+           α::Float64 = 1.
+           β::Float64 = 2.
+           righthandside::RH = (dx, x, u, t, α=α) -&gt; (dx[1] = α * x[1] + u[1](t))
+           readout::RO = (x, u, t) -&gt; x
+           input::IP = Inport(1)
+           output::OP = Outport(1)
+       end
+ERROR: LoadError: Invalid usage. The expression should start with `mutable struct`.
+struct MyDiscreteSystem{RH, RO, IP, OP} &lt;: AbstractDiscreteSystem
+    #= none:2 =#
+    α::Float64 = 1.0
+    #= none:3 =#
+    β::Float64 = 2.0
+    #= none:4 =#
+    righthandside::RH = ((dx, x, u, t, α = α)-&gt;begin
+                #= none:4 =#
+                dx[1] = α * x[1] + (u[1])(t)
+            end)
+    #= none:5 =#
+    readout::RO = ((x, u, t)-&gt;begin
+                #= none:5 =#
+                x
+            end)
+    #= none:6 =#
+    input::IP = Inport(1)
+    #= none:7 =#
+    output::OP = Outport(1)
+end
+in expression starting at none:1</code></pre><h3 id="Defining-New-ODE-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-New-ODE-Dynamical-System-1">Defining New ODE Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-New-ODE-Dynamical-System-1" title="Permalink"></a></h3><p>The ODE dynamical system given by </p><div>\[\begin{array}{l}
+\dot{x} = α x + u \\[0.25cm]
+y = x
+\end{array}\]</div><p>can be defined as, </p><pre><code class="language-julia-repl">julia&gt; @def_ode_system struct MyODESystem{RH, RO, IP, OP} &lt;: AbstractDiscreteSystem
+           α::Float64 = 1.
+           β::Float64 = 2.
+           righthandside::RH = (dx, x, u, t, α=α) -&gt; (dx[1] = α * x[1] + u[1](t))
+           readout::RO = (x, u, t) -&gt; x
+           input::IP = Inport(1)
+           output::OP = Outport(1)
+       end
+ERROR: LoadError: Invalid usage. The expression should start with `mutable struct`.
+struct MyODESystem{RH, RO, IP, OP} &lt;: AbstractDiscreteSystem
+    #= none:2 =#
+    α::Float64 = 1.0
+    #= none:3 =#
+    β::Float64 = 2.0
+    #= none:4 =#
+    righthandside::RH = ((dx, x, u, t, α = α)-&gt;begin
+                #= none:4 =#
+                dx[1] = α * x[1] + (u[1])(t)
+            end)
+    #= none:5 =#
+    readout::RO = ((x, u, t)-&gt;begin
+                #= none:5 =#
+                x
+            end)
+    #= none:6 =#
+    input::IP = Inport(1)
+    #= none:7 =#
+    output::OP = Outport(1)
+end
+in expression starting at none:1</code></pre><h3 id="Defining-New-DAE-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-New-DAE-Dynamical-System-1">Defining New DAE Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-New-DAE-Dynamical-System-1" title="Permalink"></a></h3><p>The DAE dynamical system given by </p><div>\[\begin{array}
+dx = x + 1 \\[0.25cm]
+0 = 2(x + 1) + 2
+\end{array}\]</div><p>can be defined as, </p><pre><code class="language-julia-repl">julia&gt; @def_dae_system mutable struct MyDAESystem{RH, RO, ST, IP, OP} &lt;: AbstractDAESystem
+           righthandside::RH = function sfuncdae(out, dx, x, u, t)
+                   out[1] = x[1] + 1 - dx[1]
+                   out[2] = (x[1] + 1) * x[2] + 2
+               end
+           readout::RO = (x,u,t) -&gt; x
+           state::ST = [1., -1]
+           stateder::ST = [2., 0]
+           diffvars::Vector{Bool} = [true, false]
+           input::IP = nothing
+           output::OP = Outport(1)
+       end</code></pre><h3 id="Defining-RODE-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-RODE-Dynamical-System-1">Defining RODE Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-RODE-Dynamical-System-1" title="Permalink"></a></h3><p>The RODE dynamical system given by </p><div>\[\begin{array}{l}
+\dot{x} = A x W \\[0.25cm]
+y = x 
+\end{array}\]</div><p>where </p><div>\[A = \begin{bmatrix}
+    2 &amp; 0 \\ 
+    0 &amp; -2
+\end{bmatrix}\]</div><p>can be defined as, </p><pre><code class="language-julia-repl">julia&gt; @def_rode_system struct MyRODESystem{RH, RO, IP, OP} &lt;: AbstractRODESystem
+           A::Matrix{Float64} = [2. 0.; 0 -2]
+           righthandside::RH = (dx, x, u, t, W) -&gt; (dx .= A * x * W)
+           readout::RO = (x, u, t) -&gt; x
+           state::Vector{Float64} = rand(2)
+           input::IP = nothing
+           output::OP = Outport(2)
+       end
+ERROR: LoadError: Invalid usage. The expression should start with `mutable struct`.
+struct MyRODESystem{RH, RO, IP, OP} &lt;: AbstractRODESystem
+    #= none:2 =#
+    A::Matrix{Float64} = [2.0 0.0; 0 -2]
+    #= none:3 =#
+    righthandside::RH = ((dx, x, u, t, W)-&gt;begin
+                #= none:3 =#
+                dx .= A * x * W
+            end)
+    #= none:4 =#
+    readout::RO = ((x, u, t)-&gt;begin
+                #= none:4 =#
+                x
+            end)
+    #= none:5 =#
+    state::Vector{Float64} = rand(2)
+    #= none:6 =#
+    input::IP = nothing
+    #= none:7 =#
+    output::OP = Outport(2)
+end
+in expression starting at none:1</code></pre><h3 id="Defining-SDE-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-SDE-Dynamical-System-1">Defining SDE Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-SDE-Dynamical-System-1" title="Permalink"></a></h3><p>The RODE dynamical system given by </p><div>\[\begin{array}{l}
+dx = -x dt + dW \\[0.25cm]
+y = x 
+\end{array}\]</div><p>can be defined as,</p><pre><code class="language-julia-repl">julia&gt; @def_sde_system mutable struct MySDESystem{DR, DF, RO, ST, IP, OP} &lt;: AbstractSDESystem
+           drift::DR = (dx, x, u, t) -&gt; (dx .= -x)
+           diffusion::DF = (dx, x, u, t) -&gt; (dx .= 1)
+           readout::RO = (x, u, t) -&gt; x
+           state::ST = [1.]
+           input::IP = nothing
+           output::OP = Outport(1)
+       end</code></pre><h3 id="Defining-DDE-Dynamical-System-1"><a class="docs-heading-anchor" href="#Defining-DDE-Dynamical-System-1">Defining DDE Dynamical System</a><a class="docs-heading-anchor-permalink" href="#Defining-DDE-Dynamical-System-1" title="Permalink"></a></h3><p>The DDE dynamical system given by </p><div>\[    \begin{array}{l}
+    \dot{x} = -x(t - \tau) \quad t \geq 0 \\
+    x(t) = 1. -\tau \leq t \leq 0 \\
+    \end{array}\]</div><p>can be defined as,</p><pre><code class="language-julia-repl">julia&gt; _delay_feedback_system_cache = zeros(1)
+1-element Array{Float64,1}:
+ 0.0
+
+julia&gt; _delay_feedback_system_tau = 1.
+1.0
+
+julia&gt; _delay_feedback_system_constlags = [1.]
+1-element Array{Float64,1}:
+ 1.0
+
+julia&gt; _delay_feedback_system_history(cache, u, t) = (cache .= 1.)
+_delay_feedback_system_history (generic function with 1 method)
+
+julia&gt; function _delay_feedback_system_rhs(dx, x, h, u, t,
+           cache=_delay_feedback_system_cache, τ=_delay_feedback_system_tau)
+           h(cache, u, t - τ)  # Update cache
+           dx[1] = cache[1] + x[1]
+       end
+_delay_feedback_system_rhs (generic function with 3 methods)
+
+julia&gt; @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} &lt;: AbstractDDESystem
+           constlags::Vector{Float64} = _delay_feedback_system_constlags
+           depslags::Nothing = nothing
+           righthandside::RH = _delay_feedback_system_rhs
+           history::HST = _delay_feedback_system_history
+           readout::RO = (x, u, t) -&gt; x
+           state::Vector{Float64} = rand(1)
+           input::IP = nothing
+           output::OP = Outport(1)
+       end</code></pre><h3 id="Defining-Sinks-1"><a class="docs-heading-anchor" href="#Defining-Sinks-1">Defining Sinks</a><a class="docs-heading-anchor-permalink" href="#Defining-Sinks-1" title="Permalink"></a></h3><p>Say we want a sink type that takes the data flowing through the connections of the model and prints it. This new sink type cane be defined as follows. </p><pre><code class="language-julia-repl">julia&gt; @def_sink struct MySink{A} &lt;: AbstractSink
+           action::A = actionfunc
+       end
+
+julia&gt; actionfunc(sink::MySink, t, u) = println(t, u)
+actionfunc (generic function with 1 method)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../algebraic_loops/">« Algebraic Loops</a><a class="docs-footer-nextpage" href="../coupled_systems/">Coupled Systems »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 20 August 2020 21:33">Thursday 20 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

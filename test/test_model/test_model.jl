@@ -66,7 +66,7 @@
     branch2 = addbranch!(model, 2 => 3, 1 => 1)
     @test branch2.nodepair == (2 => 3)
     @test branch2.indexpair == (1 => 1)
-    @test typeof(branch2.links) <: Link
+    @test typeof(branch2.links) <: Vector{<:Link}
     @test length(model.branches) == 2 
     @test ne(model.graph) == 2 
     branch3 = addbranch!(model, 3 => :writer, 1:2 => 2:3)

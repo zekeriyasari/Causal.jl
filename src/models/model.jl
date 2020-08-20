@@ -18,7 +18,7 @@ show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(no
 
 Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `indexpair` determines the subindices by which the elements of `nodepair` are connected.
 """
-struct Branch{NP, IP, LN}
+struct Branch{NP, IP, LN<:AbstractVector{<:Link}}
     nodepair::NP 
     indexpair::IP 
     links::LN
@@ -133,6 +133,7 @@ Adds `branch` to branched of `model`.
 function addbranch!(model::Model, nodepair::Pair, indexpair::Pair=(:)=>(:))
     srcnode, dstnode = getnode(model, nodepair.first), getnode(model, nodepair.second)
     links = connect!(srcnode.component.output[indexpair.first], dstnode.component.input[indexpair.second])
+    typeof(links) <: AbstractVector{<:Link} || (links = [links])
     srcidx, dstidx = srcnode.idx, dstnode.idx
     branch =  Branch(srcidx => dstidx, indexpair, links)
     push!(model.branches, branch)

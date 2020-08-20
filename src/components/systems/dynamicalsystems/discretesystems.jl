@@ -8,17 +8,17 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractDiscreteSystem component type. The usage is as follows:
 ```julia
-@def_discrete_system struct MyDiscreteSystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDiscreteSystem
-    param1::T1 = param1_default             # optional field 
-    param2::T2 = param2_default             # optional field 
-    param3::T3 = param3_default             # optional field
+@def_discrete_system mutable struct MyDiscreteSystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDiscreteSystem
+    param1::T1 = param1_default                 # optional field 
+    param2::T2 = param2_default                 # optional field 
+    param3::T3 = param3_default                 # optional field
         ⋮
-    paramN::TN = paramN_default             # optional field 
-    righthandside::RH = readout_function    # mandatory field
-    readout::RO = readout_function          # mandatory field
-    state::ST = readout_function            # mandatory field
-    input::IP = input_default               # mandatory field
-    output::OP = output_default             # mandatory field 
+    paramN::TN = paramN_default                 # optional field 
+    righthandside::RH = righthandside_function  # mandatory field
+    readout::RO = readout_function              # mandatory field
+    state::ST = state_default                   # mandatory field
+    input::IP = input_default                   # mandatory field
+    output::OP = output_default                 # mandatory field 
 end
 ```
 Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented by the `righthandside` and `readout` function. `state`, `input` and `output` is the state, input port and output port of `MyDiscreteSystem`.
@@ -43,10 +43,11 @@ Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented b
 
 # Example 
 ```jldoctest 
-julia> @def_static_system struct MyDiscreteSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem 
+julia> @def_discrete_system mutable struct MyDiscreteSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
        righthandside::RH = (dx, x, u, t, α=α) -> (dx[1] = α * x[1] + u[1](t))
+       state::Vector{Float64} = [1.]
        readout::RO = (x, u, t) -> x
        input::IP = Inport(1) 
        output::OP = Outport(1) 

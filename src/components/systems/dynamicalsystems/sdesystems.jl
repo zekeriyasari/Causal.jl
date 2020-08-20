@@ -8,15 +8,15 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractSDESystem component type. The usage is as follows:
 ```julia
-@def_sde_system struct MySDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractSDESystem
+@def_sde_system mutable struct MySDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractSDESystem
     param1::T1 = param1_default                 # optional field 
     param2::T2 = param2_default                 # optional field 
     param3::T3 = param3_default                 # optional field
         ⋮
     paramN::TN = paramN_default                 # optional field 
-    drift::DR = drift_default                   # mandatory field
-    diffusion::DF = diffusion_default           # mandatory field
-    readout::RO = readout_default               # mandatory field
+    drift::DR = drift_function                  # mandatory field
+    diffusion::DF = diffusion_function          # mandatory field
+    readout::RO = readout_functtion             # mandatory field
     state::ST = state_default                   # mandatory field
     input::IP = input_default                   # mandatory field
     output::OP = output_default                 # mandatory field
@@ -50,7 +50,7 @@ Here, `MySDESystem` has `N` parameters. `MySDESystem` is represented by the `dri
 
 # Example 
 ```jldoctest 
-julia> @def_sde_system struct MySDESystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
+julia> @def_sde_system mutable struct MySDESystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
            η::Float64 = 1.
            drift::DR = (dx, x, u, t) -> (dx .= x)
            diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)

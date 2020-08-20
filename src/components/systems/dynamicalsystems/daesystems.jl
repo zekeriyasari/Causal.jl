@@ -10,14 +10,14 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractDAESystem component type. The usage is as follows:
 ```julia
-@def_dae_system struct MyDAESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDAESystem
+@def_dae_system mutable struct MyDAESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDAESystem
     param1::T1 = param1_default                 # optional field 
     param2::T2 = param2_default                 # optional field 
     param3::T3 = param3_default                 # optional field
         ⋮
     paramN::TN = paramN_default                 # optional field 
-    righthandside::RH = righthandside_default   # mandatory field
-    readout::RO = readout_default               # mandatory field
+    righthandside::RH = righthandside_function  # mandatory field
+    readout::RO = readout_function              # mandatory field
     state::ST = state_default                   # mandatory field
     stateder::ST = stateder_default             # mandatory field
     diffvars::Vector{Bool} = diffvars_default   # mandatory field

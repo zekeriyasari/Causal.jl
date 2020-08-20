@@ -8,7 +8,7 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractDDESystem component type. The usage is as follows:
 ```julia
-@def_dde_system struct MyDDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDDESystem
+@def_dde_system mutable struct MyDDESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractDDESystem
     param1::T1 = param1_default                 # optional field 
     param2::T2 = param2_default                 # optional field 
     param3::T3 = param3_default                 # optional field
@@ -16,9 +16,9 @@ where `ex` is the expression to define to define a new AbstractDDESystem compone
     paramN::TN = paramN_default                 # optional field 
     constlags::CL = constlags_default           # mandatory field
     depslags::DL = depslags_default             # mandatory field
-    righthandside::RH = righthandside_default   # mandatory field
-    history::HST = history_default              # mandatory field
-    readout::RO = readout_default               # mandatory field
+    righthandside::RH = righthandside_function  # mandatory field
+    history::HST = history_function             # mandatory field
+    readout::RO = readout_function              # mandatory field
     state::ST = state_default                   # mandatory field
     input::IP = input_defauult                  # mandatory field
     output::OP = output_default                 # mandatory field

@@ -9,14 +9,14 @@ import UUIDs: uuid4
 
 where `ex` is the expression to define to define a new AbstractRODESystem component type. The usage is as follows:
 ```julia
-@def_rode_system struct MyRODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractRODESystem
+@def_rode_system mutable struct MyRODESystem{T1,T2,T3,...,TN,OP,RH,RO,ST,IP,OP} <: AbstractRODESystem
     param1::T1 = param1_default                 # optional field 
     param2::T2 = param2_default                 # optional field 
     param3::T3 = param3_default                 # optional field
         ⋮
     paramN::TN = paramN_default                 # optional field 
-    righthandside::RH = righthandside_default   # mandatory field
-    readout::RO = readout_default               # mandatory field
+    righthandside::RH = righthandside_function  # mandatory field
+    readout::RO = readout_function              # mandatory field
     state::ST = state_default                   # mandatory field
     input::IP = input_default                   # mandatory field
     output::OP = output_default                 # mandatory field
@@ -44,7 +44,7 @@ Here, `MyRODESystem` has `N` parameters. `MyRODESystem` is represented by the `r
 
 # Example 
 ```jldoctest 
-julia> @def_rode_system struct MySystem{RH, RO, IP, OP} <: AbstractRODESystem
+julia> @def_rode_system mutable struct MySystem{RH, RO, IP, OP} <: AbstractRODESystem
            A::Matrix{Float64} = [2. 0.; 0 -2]
            righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
            readout::RO = (x, u, t) -> x 

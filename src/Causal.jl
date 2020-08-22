@@ -2,9 +2,6 @@
 # Julia System Desciption Language
 # 
 module Causal
-
-@warn "Jusdl.jl is being renamed to Causal.jl. For further updates greater than v0.2.2, you will need to add Causal.jl\n"
-
 using UUIDs
 using DifferentialEquations
 using Sundials

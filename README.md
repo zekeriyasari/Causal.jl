@@ -31,14 +31,14 @@ Causal is being registered to the official registry of Julia packages. Until the
 ## A First Look
 
 Consider following simple model.
-```@raw html
+
 <center>
     <img src="docs/src/assets/ReadMeModel/brokenloop.svg"
         alt="Closed Loop System"
         style="float: center; margin-right: 10px;"
         width="75%"/>
 </center>
-```
+
 Note that the model consists of connected components. In this example, the components are the sinusoidal wave generator, an adder, a dynamical system. The writer is included in the model to save simulation data. By using Causal, the model is simulated as follows:
 
 ```julia

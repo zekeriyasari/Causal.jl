@@ -31,7 +31,7 @@ ERROR: UndefVarError: sub not defined
 julia&gt; t2 = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (failed) @0x00007f9a2b1f6bf0
+Task (failed) @0x00007f3fb5b5ae60
 UndefVarError: iport not defined
 macro expansion at ./none:2 [inlined]
 (::Main.ex-subsystem_ex.var&quot;#1#2&quot;)() at ./task.jl:356</code></pre><p><code>sub</code> is ready to be triggered,</p><pre><code class="language-julia-repl">julia&gt; put!(trg, 1.)

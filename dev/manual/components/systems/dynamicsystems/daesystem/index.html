@@ -30,7 +30,7 @@ end</code></pre></div></div><div class="admonition is-warning"><header class="ad
         output::OP = Outport(1)
         end
 
-julia&gt; ds = MyDAESystem();</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Causal.jl/blob/98e12ce8d36db80eb0e4f0d5a129622e6856b9fa/src/components/systems/dynamicalsystems/daesystems.jl#L8-L65">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Causal.DAESystem" href="#Causal.DAESystem"><code>Causal.DAESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">DAESystem(; righthandside, readout, state, stateder, diffvars, input, output)</code></pre><p>Constructs a generic DAE system.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; function sfuncdae(out, dx, x, u, t)
+julia&gt; ds = MyDAESystem();</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Causal.jl/blob/42c60faddac44cee0bc808ecc3cf5fc7398fe22e/src/components/systems/dynamicalsystems/daesystems.jl#L8-L65">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Causal.DAESystem" href="#Causal.DAESystem"><code>Causal.DAESystem</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">DAESystem(; righthandside, readout, state, stateder, diffvars, input, output)</code></pre><p>Constructs a generic DAE system.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; function sfuncdae(out, dx, x, u, t)
            out[1] = x[1] + 1 - dx[1]
            out[2] = (x[1] + 1) * x[2] + 2
        end;

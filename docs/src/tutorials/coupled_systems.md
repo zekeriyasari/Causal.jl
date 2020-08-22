@@ -47,7 +47,7 @@ and ``f`` is the Lorenz dynamics given by
 
 The script below constructs and simulates the model
 ```@example coupled_system
-using Jusdl 
+using Causal 
 
 # Describe the model
 ε = 10.

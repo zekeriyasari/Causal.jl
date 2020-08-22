@@ -1,7 +1,7 @@
-# This file is used for code coverage of Jusdl test suites.
+# This file is used for code coverage of Causal test suites.
 
-# NOTE: Before executing this script, run test suite of Jusdl as 
-# ] test --coverage Jusdl
+# NOTE: Before executing this script, run test suite of Causal as 
+# ] test --coverage Causal
 # 
 
 using Coverage

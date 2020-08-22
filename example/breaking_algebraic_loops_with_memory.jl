@@ -1,6 +1,6 @@
 # This file illustrates the use of memory blocks to break algebraic loops
 
-using Jusdl 
+using Causal 
 using Plots 
 
 # Simualation settings 

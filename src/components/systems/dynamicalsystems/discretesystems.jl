@@ -84,14 +84,14 @@ macro def_discrete_system(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID )= Jusdl.uuid4()
+        id::$(ID )= Causal.uuid4()
         t::Float64 = 0.
         modelargs::$(MA) = () 
         modelkwargs::$(MK) = NamedTuple() 
         solverargs::$(SA) = () 
         solverkwargs::$(SK) = NamedTuple() 
-        alg::$(AL) = Jusdl.FunctionMap()
-        integrator::$(IT) = Jusdl.construct_integrator(Jusdl.DiscreteProblem, input, righthandside, state, t,
+        alg::$(AL) = Causal.FunctionMap()
+        integrator::$(IT) = Causal.construct_integrator(Causal.DiscreteProblem, input, righthandside, state, t,
             modelargs, solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
     end, [TR, HS, CB, ID, MA, MK, SA, SK, AL, IT]
     _append_common_fields!(ex, fields...)

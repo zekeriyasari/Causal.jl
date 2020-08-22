@@ -89,14 +89,14 @@ macro def_dae_system(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
         t::Float64 = 0.
         modelargs::$(MA) = () 
         modelkwargs::$(MK) = NamedTuple() 
         solverargs::$(SA) = () 
         solverkwargs::$(SK) = NamedTuple() 
-        alg::$(AL) = Jusdl.IDA()
-        integrator::$(IT) = Jusdl.construct_integrator(Jusdl.DAEProblem, input, righthandside, state, t, modelargs, 
+        alg::$(AL) = Causal.IDA()
+        integrator::$(IT) = Causal.construct_integrator(Causal.DAEProblem, input, righthandside, state, t, modelargs, 
             solverargs; alg=alg, stateder=stateder, modelkwargs=(; 
             zip((keys(modelkwargs)..., :differential_vars), (values(modelkwargs)..., diffvars))...), 
             solverkwargs=solverkwargs, numtaps=3)

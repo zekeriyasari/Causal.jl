@@ -1,6 +1,6 @@
 # This file simulates a closed system 
 
-using Jusdl 
+using Causal 
 
 # Construct the model 
 @defmodel model begin 

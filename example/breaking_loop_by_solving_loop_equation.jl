@@ -1,6 +1,6 @@
 # This file includes an example file by breaking algebraic loops by solving loop equation numerically.
 
-using Jusdl 
+using Causal 
 using Plots
 
 # Simulation parameter

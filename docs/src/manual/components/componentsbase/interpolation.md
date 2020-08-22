@@ -2,7 +2,7 @@
 
 ## Full API
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["interpolant.jl"]
 Order = [:type, :function]
 ```

@@ -1,4 +1,4 @@
-using Jusdl
+using Causal
 using Plots
 
 # Construct the model

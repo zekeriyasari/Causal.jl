@@ -1,7 +1,7 @@
 # 
 # Julia System Desciption Language
 # 
-module Jusdl
+module Causal
 
 using UUIDs
 using DifferentialEquations

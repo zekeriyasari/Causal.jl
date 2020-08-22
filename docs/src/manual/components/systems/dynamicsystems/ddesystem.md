@@ -24,7 +24,7 @@ As an example, consider a system with the state equation
 ```
 First, we define the history function `histfunc`,
 ```@repl dde_system_ex
-using Jusdl # hide
+using Causal # hide
 const out = zeros(1)
 histfunc(out, u, t) = (out .= 1.);
 ```

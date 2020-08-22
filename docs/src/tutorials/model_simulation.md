@@ -10,7 +10,7 @@ In this tutorial, we will simulate a very simple model consisting of a generator
 ## Model Simulation
 Let us construct the model first. See [Model Construction](@ref page_header) for more detailed information about model construction.
 ```@example simple_model_ex
-using Jusdl 
+using Causal 
 
 # Describe the model 
 @defmodel model begin 
@@ -85,7 +85,7 @@ Consider a larger model whose block diagram is given below
 ```
 The script below illustrates the construction and simulation of this model 
 ```@example large_model 
-using Jusdl 
+using Causal 
 using Plots
 
 # Construct the model 

@@ -9,7 +9,7 @@ During the simulation of a `model`, a [`Simulation`](@ref) object is constructed
 
 ## Full API 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["simulation.jl"]
 Order = [:type, :function]
 ```

@@ -1,6 +1,6 @@
 # Defining New Component Types
 
-Jusdl provides a library that includes some well-known components that are ready to be used. For example,
+Causal provides a library that includes some well-known components that are ready to be used. For example,
 
 * [`FunctionGenerator`](@ref), [`SinewaveGenerator`](@ref), [`SquarewaveGenerator`](@ref), [`RampGenerator`](@ref), etc. as sources
 * [`StaticSystem`](@ref), [`Adder`](@ref), [`Multiplier`](@ref), [`Gain`](@ref), etc. as static systems
@@ -12,12 +12,12 @@ Jusdl provides a library that includes some well-known components that are ready
 * [`DDESystem`](@ref), [`DelayFeedbackSystem`](@ref), etc. as dynamical systems represented by dynamical systems represented by DDEs.
 * [`Writer`](@ref), [`Printer`](@ref), [`Scope`](@ref), etc. as sinks.
 
-It is very natural that this library may lack some of the components that are wanted to be used by the user. In such a case, Jusdl provides the users with the flexibility to enrich this library. The users can define their new component types, including source, static system, dynamical system, sink and use them with ease. 
+It is very natural that this library may lack some of the components that are wanted to be used by the user. In such a case, Causal provides the users with the flexibility to enrich this library. The users can define their new component types, including source, static system, dynamical system, sink and use them with ease. 
 
 ### Defining A New Source
 New source types are defines using [`@def_source`](@ref) macro. Before embarking on defining new source, let us get the necessary information on how to use `@def_source`. This can be can be obtained through its docstrings. 
 ```@repl defining_new_components_ex
-using Jusdl # hide 
+using Causal # hide 
 @doc @def_source
 ```
 From the docstring, its clear that new types of source can be defined as if we define a new Julia type. The difference is that the `struct` keyword is preceded by `@def_source` macro and the new component must be a subtype of [`AbstractSource`](@ref). Also from the docstring is that the new type has some optional and mandatory fields. 

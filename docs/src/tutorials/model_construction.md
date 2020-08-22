@@ -2,7 +2,7 @@
 
 This tutorial illustrates model construction and  the relation between models and graphs. A model consists of components and connections. These components and connections can be associated with a signal-flow graph signifying the topology of the model. In the realm of graph theory, components and connections of a model are associated with nodes and branches of the signal-flow graph. As the model is modified by adding or deleting components or connections, the signal-flow graph of the model is modified accordingly to keep track of topological modifications. By associating a signal-flow graph to a model, any graph-theoretical analysis can be performed. An example to such an analysis is the determination and braking of algebraic loops. 
 
-In Jusdl, a model can be constructed either by describing it in one-shot or by gradually modifying it by adding new nodes and branches. To show the relation between models and graphs, we start with the latter.
+In Causal, a model can be constructed either by describing it in one-shot or by gradually modifying it by adding new nodes and branches. To show the relation between models and graphs, we start with the latter.
 
 ## [Modifying Models](@id section_header)
 In this tutorial, we construct the model with the following block diagram
@@ -20,7 +20,7 @@ and with the following signal-flow graph
 
 Let's start with an empty [`Model`](@ref).
 ```@repl model_graph_example 
-using Jusdl # hide 
+using Causal # hide 
 model = Model()
 ```
 We constructed an empty model, i.e., the model has no components and connections. To modify the model, we need to add components and connections to the model. As the model is grown by adding components and connections, the components and connections are added into the model as nodes and branches (see [`Node`](@ref), [`Branch`](@ref)).  Let's add our first component, a [`SinewaveGenerator`](@ref) to the `model`.
@@ -105,7 +105,7 @@ Note that `modelname` is the name of the model to be compiled. The nodes of the 
 
 For example, the model given above can also be constructed as follows 
 ```@repl model_graph_example_def_model_macro
-using Jusdl # hide 
+using Causal # hide 
 
 @defmodel model begin 
     @nodes begin 

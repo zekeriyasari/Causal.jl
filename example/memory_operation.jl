@@ -1,7 +1,7 @@
 # This file includes an example of memory operation. 
 # In this example `mem` delays its input for one step size time.
 
-using Jusdl 
+using Causal 
 using Plots
 
 # Construct a model

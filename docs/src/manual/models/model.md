@@ -1,14 +1,14 @@
 # Model 
 
 ## Signal-Flow Approach in Modelling 
-Jusdl adopts *signal-flow* approach in systems modelling. In signal-flow approach, a [`Model`](@ref) consists of connected components. The components are data processing units and the behavior, i.e, the mathematical model, of the component determines how the data is processed. Connections connects the components each other and the data is transferred between components by means of connections. The data flow through the connections is unidirectional, i.e., a component is driven by other components that write data to its input bus. 
+Causal adopts *signal-flow* approach in systems modelling. In signal-flow approach, a [`Model`](@ref) consists of connected components. The components are data processing units and the behavior, i.e, the mathematical model, of the component determines how the data is processed. Connections connects the components each other and the data is transferred between components by means of connections. The data flow through the connections is unidirectional, i.e., a component is driven by other components that write data to its input bus. 
 
 ## Construction of Models
 A `Model` consists of connected components. The components of are defined first and the `Model` consisting of these components can be constructed. Or, an empty model can be constructed. 
 
 Let us continue with some examples. We will construct very simple `Model` consisting of a [`SinewaveGenerator`](@ref) and a [`Writer`](@ref). We construct an empty `Model` first, then we add nodes and branches as desired.
 ```@repl model_construction_ex 
-using Jusdl # hide 
+using Causal # hide 
 model = Model() 
 addnode!(model, SinewaveGenerator(), label=:gen)
 addnode!(model, Writer(Inport()), label=:writer)
@@ -49,7 +49,7 @@ After the run stage, the tasks opened in the initialization stage are closed and
 
 ## Full API 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["model.jl"]
 Order = [:type, :function]
 ```

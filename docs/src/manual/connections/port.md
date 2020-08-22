@@ -6,7 +6,7 @@ A `Port` is actually is a bunch of pins (See [Pins](@ref) for mor information on
 A port (both `Inport` and `Outport`) is constructed by specifying its element type `T`, the number of pins `npins` and the buffer length of its pins.
 
 ```@repl port_example_1
-using Jusdl # hide
+using Causal # hide
 Outport{Bool}(5)
 Outport{Int}(2) 
 Outport(3) 
@@ -92,7 +92,7 @@ end
 
 ## Full API 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["port.jl"]
 Order = [:type, :function]
 ```

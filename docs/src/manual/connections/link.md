@@ -5,7 +5,7 @@
 ## Construction of Links 
 The construction of a `Link` is very simple: just specify its buffer length and element type.
 ```@repl 
-using Jusdl # hide 
+using Causal # hide 
 Link{Bool}(5)
 Link{Int}(10)
 Link(5) 
@@ -17,7 +17,7 @@ The data can be read from and written into [`Link`](@ref)s if active tasks are b
 
 Let us first construct a `Link`,
 ```@repl link_writing_ex_1
-using Jusdl # hide
+using Causal # hide
 l = Link(5)
 ```
 `l` is a `Link` with a buffer length of `5` and element type of `Float64`. Not that the `l` is open, but it is not ready for data reading or writing. To write data, we must bound a task that reads the written data.
@@ -56,7 +56,7 @@ end
 
 The case is very similar to read data from `l`. Again, a runnable task is bound the `l` 
 ```@repl link_reading_ex_1
-using Jusdl # hide
+using Causal # hide
 l = Link(5)
 function writer(link::Link, vals)
     for val in vals
@@ -77,7 +77,7 @@ t  # Show that `t` is terminated.
 
 ## Full API 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["link.jl"]
 Order = [:type, :function]
 ```

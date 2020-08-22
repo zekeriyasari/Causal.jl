@@ -5,7 +5,7 @@ When an `ODESystem` is triggered, it reads its current time from its `trigger` l
 
 We first construct an `ODESystem`. Since an `ODESystem` is represented by its state equation and output equation, we need to define those equations.
 ```@repl ode_ex 
-using Jusdl # hide 
+using Causal # hide 
 sfunc(dx,x,u,t) = (dx .= -0.5x)
 ofunc(x, u, t) = x
 ```

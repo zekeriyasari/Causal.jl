@@ -68,7 +68,7 @@ macro def_source(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
     end, [TR, HS, CB, ID]
     _append_common_fields!(ex, fields...)
     deftype(ex)

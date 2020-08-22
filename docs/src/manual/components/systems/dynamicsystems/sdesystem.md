@@ -23,7 +23,7 @@ y = x
 ```
 The state function `statefunc` and the output function `outputfunc` is defined as follows.
 ```@repl sde_system_ex 
-using Jusdl # hide 
+using Causal # hide 
 f(dx, x, u, t) = (dx[1] = -x[1])
 h(dx, x, u, t) = (dx[1] = -x[1])
 ```

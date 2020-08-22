@@ -13,7 +13,7 @@ When a `DiscreteSystem` is triggered from its `trigger` link, it reads current t
 
 We first define state function `sfunc` and output function `ofunc` of the system,
 ```@repl discrete_system_ex 
-using Jusdl # hide 
+using Causal # hide 
 sfunc(dx, x, u, t) = (dx .= -0.5x)
 ofunc(x, u, t) = x
 ```

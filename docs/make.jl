@@ -1,14 +1,14 @@
-using Documenter, Jusdl
+using Documenter, Causal
 # using DocumenterLaTeX
 
-DocMeta.setdocmeta!(Jusdl, :DocTestSetup, :(using Jusdl); recursive=true)
+DocMeta.setdocmeta!(Causal, :DocTestSetup, :(using Causal); recursive=true)
 
 makedocs(
-    modules=[Jusdl], 
-    sitename="Jusdl",
+    modules=[Causal], 
+    sitename="Causal",
     pages=[
         "Home" => "index.md",
-        "Modeling and Simulation in Jusdl" => [
+        "Modeling and Simulation in Causal" => [
             "modeling_and_simulation/modeling.md",
             "modeling_and_simulation/simulation.md",
         ],
@@ -71,7 +71,7 @@ makedocs(
 )
 
 deploydocs(;
-    repo="github.com/zekeriyasari/Jusdl.jl.git",
+    repo="github.com/zekeriyasari/Causal.jl.git",
     devbranch = "master",
     devurl = "dev",
     versions = ["stable" => "v^", "v#.#", "v#.#.#"]

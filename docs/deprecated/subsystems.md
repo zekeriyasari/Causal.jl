@@ -14,7 +14,7 @@ Consider the simple subsystem whose block diagram is given below.
 ```
 We first construct the subsystem.
 ```@example subsystem_tutorial
-using Jusdl
+using Causal
 
 # Construct a subsystem 
 adder = Adder((+,-))

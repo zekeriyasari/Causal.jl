@@ -1,6 +1,6 @@
 # This file is illustrates multiple simulations of a model 
 
-using Jusdl
+using Causal
 
 # Constrcut the model 
 @defmodel model begin 

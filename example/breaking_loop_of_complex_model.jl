@@ -1,6 +1,6 @@
 # This file includes the simulation of a model consisting an algrebraic loop with multiple inneighbor branches joinin an algrebraic loop.
 
-using Jusdl 
+using Causal 
 using Plots
 
 # Construct the model 

@@ -80,14 +80,14 @@ macro def_rode_system(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
         t::Float64 = 0.
         modelargs::$(MA) = () 
         modelkwargs::$(MK) = NamedTuple() 
         solverargs::$(SA) = () 
         solverkwargs::$(SK) = (dt=0.01, ) 
-        alg::$(AL) = Jusdl.RandomEM()
-        integrator::$(IT) = Jusdl.construct_integrator(Jusdl.RODEProblem, input, righthandside, state, t, modelargs, 
+        alg::$(AL) = Causal.RandomEM()
+        integrator::$(IT) = Causal.construct_integrator(Causal.RODEProblem, input, righthandside, state, t, modelargs, 
             solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
     end, [TR, HS, CB, ID, MA, MK, SA, SK, AL, IT]
     _append_common_fields!(ex, fields...)

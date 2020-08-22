@@ -5,7 +5,7 @@ A static system is a system whose output `y` at time `t` depends on the current 
 ```math 
     y = g(u, t)
 ```
-where `g` is the output function `outputfunc`. Note that `outputfunc` is expected to have two inputs, the value `u` of the `input` and the current time `t`. The simulation in `Jusdl` is a clocked-simulation, that is the data flowing through the input and output connections of components is actually sampled at time `t`. Therefore, for example, the system modeled by
+where `g` is the output function `outputfunc`. Note that `outputfunc` is expected to have two inputs, the value `u` of the `input` and the current time `t`. The simulation in `Causal` is a clocked-simulation, that is the data flowing through the input and output connections of components is actually sampled at time `t`. Therefore, for example, the system modeled by
 ```math 
 y(t) = g(u(t),t)
 ```
@@ -32,7 +32,7 @@ For further clarity, let us continue with a case study. Consider the following s
 ```
 Note that the number of inputs is 2 and the number of outputs of is 3. To define such a system, the output function is written as
 ```@repl static_system_ex
-using Jusdl # hide
+using Causal # hide
 g(u, t) = [t * u[1], sin(u[1]), cos(u[2])]
 ```
 Note that the function `g` is defined in such a way that the input value `u` is sampled, which implies `u` is not a vector of function but is a vector of real. Having defined output function `outputfunc`, the system can be constructed. 
@@ -86,7 +86,7 @@ The data written to the `output` of `ss` is also written to the internal buffers
 ```@repl static_system_ex 
 iport[1].link.buffer
 ```
-In addition to the generic [`StaticSystem`](@ref),  `Jusdl` provides some well-known static systems given in the next section.
+In addition to the generic [`StaticSystem`](@ref),  `Causal` provides some well-known static systems given in the next section.
 
 ## Full API 
 ```@docs

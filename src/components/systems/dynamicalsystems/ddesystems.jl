@@ -108,15 +108,15 @@ macro def_dde_system(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
         t::Float64 = 0.
         modelargs::$(MA) = () 
         modelkwargs::$(MK) = NamedTuple() 
         solverargs::$(SA) = () 
         solverkwargs::$(SK) = NamedTuple() 
-        alg::$(AL) = Jusdl.MethodOfSteps(Jusdl.Tsit5())
-        integrator::$(IT) = Jusdl.construct_integrator(
-            Jusdl.DDEProblem, input, (righthandside, history), state, t, modelargs, solverargs; 
+        alg::$(AL) = Causal.MethodOfSteps(Causal.Tsit5())
+        integrator::$(IT) = Causal.construct_integrator(
+            Causal.DDEProblem, input, (righthandside, history), state, t, modelargs, solverargs; 
             alg=alg, modelkwargs=(; 
             zip(
                 (keys(modelkwargs)..., :constant_lags, :dependent_lags), 
@@ -152,10 +152,10 @@ end
 Constructs DelayFeedbackSystem
 """
 @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
-    constlags::Vector{Float64} = Jusdl._delay_feedback_system_constlags
+    constlags::Vector{Float64} = Causal._delay_feedback_system_constlags
     depslags::Nothing = nothing
-    righthandside::RH = Jusdl._delay_feedback_system_rhs
-    history::HST = Jusdl._delay_feedback_system_history
+    righthandside::RH = Causal._delay_feedback_system_rhs
+    history::HST = Causal._delay_feedback_system_history
     readout::RO = (x, u, t) -> x 
     state::Vector{Float64} = rand(1)
     input::IP = nothing 
@@ -167,7 +167,7 @@ _delay_feedback_system_tau = 1.
 _delay_feedback_system_constlags = [1.]
 _delay_feedback_system_history(cache, u, t) = (cache .= 1.)
 function _delay_feedback_system_rhs(dx, x, h, u, t, 
-    cache=Jusdl._delay_feedback_system_cache, τ=Jusdl._delay_feedback_system_tau)
+    cache=Causal._delay_feedback_system_cache, τ=Causal._delay_feedback_system_tau)
     h(cache, u, t - τ)  # Update cache 
     dx[1] = cache[1] + x[1]
 end

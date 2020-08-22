@@ -163,10 +163,10 @@ take!(clk) = 0.0
 take!(clk) = 0.1
 take!(clk) = 0.2
 ┌ Warning: Clock is paused.
-└ @ Jusdl ~/.julia/dev/Jusdl/src/components/sources/clock.jl:61
+└ @ Causal ~/.julia/dev/Causal/src/components/sources/clock.jl:61
 take!(clk) = 0.2
 ┌ Warning: Clock is paused.
-└ @ Jusdl ~/.julia/dev/Jusdl/src/components/sources/clock.jl:61
+└ @ Causal ~/.julia/dev/Causal/src/components/sources/clock.jl:61
 take!(clk) = 0.2
 ```
 """

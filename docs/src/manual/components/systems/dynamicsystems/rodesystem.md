@@ -37,7 +37,7 @@ and with the output function
 ```
 That is, all the state variable are taken as output. The `statefunc` and the `outputfunc` is defined as,
 ```@repl rode_system_ex 
-using Jusdl # hide
+using Causal # hide
 function statefunc(dx, x, u, t, W)
     dx[1] = 2x[1]*sin(W[1] - W[2])
     dx[2] = -2x[2]*cos(W[1] + W[2])

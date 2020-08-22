@@ -1,7 +1,7 @@
-name = "Jusdl"
-uuid = "5fb878b0-68d2-11e9-223c-0f99f93215f8"
+name = "Causal"
+uuid = "c45f814d-238a-4fdc-b3d7-673e55950ac7"
 authors = ["Zekeriya Sarı <zekeriya.sari@deu.edu.tr>", "Serkan Günel <serkan.gunel@deu.edu.tr>"]
-version = "0.2.1"
+version = "0.2.3"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"

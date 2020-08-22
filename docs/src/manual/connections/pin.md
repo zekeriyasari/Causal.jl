@@ -2,14 +2,14 @@
 `Pin`s are building blocks of [Ports](@ref). Pins can be thought of *gates* of components as they are the most primitive type for data transfer inside and outside the components. There are two types of pins: [`Outpin`](@ref) and [`Inpin`](@ref). The data flows from inside of the components to its outside through `Outpin` while data flow from outside of the components to its inside through `Inpin`.
 
 ## Connection and Disconnection of Pins 
-In Jusdl, signal flow modelling approach is adopted(see [Modeling](@ref) and [Simulation](@ref section) for more information on modelling approach in Jusdl). In this approach, the components drive each other and data flow is unidirectional. The unidirectional data movement is carried out though the [`Link`](@ref)s. A `Link` connects `Outpin`s to `Inpin`s, and the data flow is from `Outpin` to `Inpin`.
+In Causal, signal flow modelling approach is adopted(see [Modeling](@ref) and [Simulation](@ref section) for more information on modelling approach in Causal). In this approach, the components drive each other and data flow is unidirectional. The unidirectional data movement is carried out though the [`Link`](@ref)s. A `Link` connects `Outpin`s to `Inpin`s, and the data flow is from `Outpin` to `Inpin`.
 
 !!! note 
     As the data movement is from `Outpin` to `Inpin`, connection of an  `Inpin` to an `Outpin` gives a `MethodError`.
 
 For example, let us construct and `Outpin` and `Inpin`s and connect the together.
 ```@repl pin_example_1
-using Jusdl # hide 
+using Causal # hide 
 op = Outpin() 
 ip = Inpin() 
 link = connect!(op, ip)
@@ -59,7 +59,7 @@ Note that in both of the cases given above the data flow is always from an `Outp
 
 ## Full API 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["pin.jl"]
 Order = [:type, :function]
 ```

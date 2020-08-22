@@ -123,7 +123,7 @@
         ], [
             (σ = 10., β = 8/3, ρ = 28., γ = 1.), 
             (a = 35., b = 3., c = 28., γ = 1.), 
-            (diode = Jusdl.PiecewiseLinearDiode(), α = 15.6, β = 28., γ = 1.),
+            (diode = Causal.PiecewiseLinearDiode(), α = 15.6, β = 28., γ = 1.),
             (a = 0.38, b = 0.3, c = 4.82, γ = 1.)
         ]
         )
@@ -166,7 +166,7 @@
         ], [
             (σ = 10., β = 8/3, ρ = 28., γ = 1.), 
             (a = 35., b = 3., c = 28., γ = 1.), 
-            (diode = Jusdl.PiecewiseLinearDiode(), α = 15.6, β = 28., γ = 1.),
+            (diode = Causal.PiecewiseLinearDiode(), α = 15.6, β = 28., γ = 1.),
             (a = 0.38, b = 0.3, c = 4.82, γ = 1.)
         ]
         )

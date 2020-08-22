@@ -3,10 +3,10 @@
 It this tutorial, we will simulate model consisting a closed loop feedback system. The model has an algebraic loop. 
 
 ## Algebraic Loops
-An algebraic loop is a closed-loop consisting of one or more components whose outputs are directly dependent on their inputs. If algebraic loops exist in a model,  the simulation gets stuck because none of the components in the loop can generate output to break the loop. Such a problem can be broken by rearranging the model without algebraic loops, solving the feed-forward algebraic equation of the loop, or inserting a memory component with a certain initial condition anywhere in the loop. Jusdl provides all these loop-breaking solutions. During the inspection stage,  in case they are detected, all the loops are broken. Otherwise, a report is printed to notify the user to insert memory components to break the loops. 
+An algebraic loop is a closed-loop consisting of one or more components whose outputs are directly dependent on their inputs. If algebraic loops exist in a model,  the simulation gets stuck because none of the components in the loop can generate output to break the loop. Such a problem can be broken by rearranging the model without algebraic loops, solving the feed-forward algebraic equation of the loop, or inserting a memory component with a certain initial condition anywhere in the loop. Causal provides all these loop-breaking solutions. During the inspection stage,  in case they are detected, all the loops are broken. Otherwise, a report is printed to notify the user to insert memory components to break the loops. 
 
 ## Breaking Algebraic Loops Automatically
-Before initializing and running the simulation, Jusdl inspects the model first. See [Simulation Stages](@ref) for more information of simulation stages. In case the they exist in the model, all the algebraic loops are tried to be broken automatically without requiring a user intervention. Consider the following model 
+Before initializing and running the simulation, Causal inspects the model first. See [Simulation Stages](@ref) for more information of simulation stages. In case the they exist in the model, all the algebraic loops are tried to be broken automatically without requiring a user intervention. Consider the following model 
 
 ```@raw html
 <center>
@@ -27,7 +27,7 @@ Note that there exist an algebraic loop consisting of `adder` and `gain`.  Solvi
 ```
 The following script constructs and simulates the model. 
 ```@example breaking_algebraic_loops_ex
-using Jusdl 
+using Causal 
 
 # Describe the model
 @defmodel model begin 
@@ -72,7 +72,7 @@ Note that the input to `adder` is not ``y(t)``, but instead is ``\hat{y}(t)`` wh
 
 The script given below simulates this case. 
 ```@example breaking_algebraic_loops_with_memory 
-using Jusdl 
+using Causal 
 
 # Simulation time settings.
 ti, dt, tf = 0., 1. / 64., 1.
@@ -117,7 +117,7 @@ One other important issue with using the memory component is that the initial va
 ```
 That is the memory should be initialized with an initial value of zero, which is the case in the script above. To observe that how incorrect initialization of a memory to break an algebraic loop, consider the following example in which memory is initialized randomly. 
 ```@example breaking_algebraic_loops_with_memory_incorrect_initialization 
-using Jusdl 
+using Causal 
 using Plots 
 
 # Simulation time settings.

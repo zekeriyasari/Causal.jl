@@ -121,7 +121,7 @@
     nn = length(model.nodes)
     nb = length(model.branches)
     breakernode = breakloop!(model, loop)
-    @test typeof(breakernode.component) <: Jusdl.LoopBreaker
+    @test typeof(breakernode.component) <: Causal.LoopBreaker
     @test breakernode.idx == nn + 1
     @test breakernode.label === nothing
     @test !isconnected(loopcomp.output[1], loopcomp.input[3])
@@ -136,7 +136,7 @@
     comp2 = getnode(model, 3).component
     @test isconnected(comp2.output[1], comp1.input[2])
     newbreakernode = breakloop!(model, loops[1])
-    @test typeof(newbreakernode.component) <: Jusdl.LoopBreaker
+    @test typeof(newbreakernode.component) <: Causal.LoopBreaker
     @test !isconnected(comp2.output[1], comp1.input[2])
 
     # Initializing Model 
@@ -144,7 +144,7 @@
     addnode!(model, SinewaveGenerator())
     addnode!(model, Writer())
     addbranch!(model, 1 => 2)
-    Jusdl.initialize!(model)
+    Causal.initialize!(model)
     @test !isempty(model.taskmanager.pairs)
     @test checktaskmanager(model.taskmanager) === nothing
     @test length(model.taskmanager.pairs) == 2
@@ -161,7 +161,7 @@
 
     # Terminating Model 
     @test !any(istaskdone.(values(model.taskmanager.pairs)))
-    Jusdl.terminate!(model)
+    Causal.terminate!(model)
     @test all(istaskdone.(values(model.taskmanager.pairs)))
 
     # Simulating Model

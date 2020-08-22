@@ -1,4 +1,4 @@
-# This file contains the static systems of Jusdl.
+# This file contains the static systems of Causal.
 
 import UUIDs: uuid4
 
@@ -72,7 +72,7 @@ macro def_static_system(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
     end, [TR, HS, CB, ID]
     _append_common_fields!(ex, fields...)
     deftype(ex)

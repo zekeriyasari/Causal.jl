@@ -1,6 +1,6 @@
 # Simulation of coupled Lorenz systems.
 
-using Jusdl 
+using Causal 
 using Plots
 
 # Construct the model 

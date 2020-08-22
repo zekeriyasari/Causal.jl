@@ -1,4 +1,4 @@
-The Jusdl.jl package is licensed under the MIT "Expat" License:
+The Causal.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: Zekeriya Sarı, Serkan Günel
 >

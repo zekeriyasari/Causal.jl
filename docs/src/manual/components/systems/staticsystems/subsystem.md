@@ -10,7 +10,7 @@ The operation of a `SubSystem` is very similar to that of a [`StaticSystem`](@re
 
 Let us construct a subsystem consisting of a generator and an adder. 
 ```@repl subsystem_ex
-using Jusdl # hide 
+using Causal # hide 
 gen = ConstantGenerator()
 adder = Adder((+,+))
 ```
@@ -54,7 +54,7 @@ sub.components[2].output[1].links[1].buffer[1]
 Note that when `sub` is triggered, `sub` transfer the trigger to all its internal components.
 
 ```@autodocs
-Modules = [Jusdl]
+Modules = [Causal]
 Pages   = ["subsystem.jl"]
 Order = [:type, :function]
 ```

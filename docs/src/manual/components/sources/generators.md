@@ -4,7 +4,7 @@
 An `AbstractSource` is a subtype of `AbstractComponent`. (See [Components](@ref) for more information.) An `AbstractComponent` has `input` port and `output` port for data flow. The `AbstractComponent` reads data from the `input` port and writes data to `output` port. Since the input-output relation of `AbstractSource` depends on just the current time `t`, `Source`s do not have `input` ports since they do not read input values. They just need time `t` to compute its output. During their evolution, an `AbstractComponent` reads time `t` from its `trigger` pins, computes its output according to its output function and writes its computed output to its `output` ports. An `AbstractComponent` also writes `true` to their `handshake` pin to signal that the evolution is succeeded. To further clarify the operation of `AbstractSource`, let us do some examples. 
 
 ```@repl source_ex
-using Jusdl # hide 
+using Causal # hide 
 f(t) = t * exp(t) + sin(t)
 gen = FunctionGenerator(readout=f)
 ```
@@ -52,7 +52,7 @@ When triggered, the output of `gen` is written to its output `gen.output`.
 gen.output[1].links[1].buffer
 ```
 
-`Jusdl` provides some other function generators which are documented in the following section.
+`Causal` provides some other function generators which are documented in the following section.
 
 ## Full API 
 ```@docs

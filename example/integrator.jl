@@ -1,6 +1,6 @@
 # This file simulates an opamp integrator circuit.
 
-using Jusdl
+using Causal
 using Plots 
 
 freq = 5e3

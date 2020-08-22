@@ -1,4 +1,4 @@
-using Jusdl 
+using Causal 
 
 # Deifne model 
 @defmodel model begin

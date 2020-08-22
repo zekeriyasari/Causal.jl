@@ -1,6 +1,6 @@
 # This file illustrates the simulation of feedthrough dynamical system in a unity feedback.
 
-using Jusdl 
+using Causal 
 using Plots
 
 # Construct the model 

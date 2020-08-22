@@ -1,4 +1,4 @@
-# This file constains sink tools for the objects of Jusdl.
+# This file constains sink tools for the objects of Causal.
 
 """
     @def_sink ex 
@@ -58,7 +58,7 @@ macro def_sink(ex)
         handshake::$(HS) = Outpin{Bool}()
         callbacks::$(CB) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Jusdl.uuid4()
+        id::$(ID) = Causal.uuid4()
         input::$(IP) = Inport()
         buflen::Int = 64
         plugin::$(PL) = nothing

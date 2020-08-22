@@ -23,7 +23,7 @@ Causal.jl focusses on effective systems simulations together with online and off
 [1] : [DifferentialEquations.jl](https://docs.juliadiffeq.org/) package is used for differential equation solving.
 
 ## Installation
-Causal is being registered to the official registry of Julia packages. Until the registration finishes, you can install Causal by specifying the full path of its repository. Enter the Pkg REPL by pressing ] from the Julia REPL and then add the Causal:
+Causal is being registered to the official registry of Julia packages. Until the registration is completed, you can install Causal by specifying the full path of its repository. Enter the Pkg REPL by pressing ] from the Julia REPL and then add the Causal:
 ```julia
 ] add https://github.com/zekeriyasari/Causal.jl
 ```

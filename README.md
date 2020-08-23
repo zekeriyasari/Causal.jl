@@ -6,6 +6,8 @@
 [![Codecov](https://codecov.io/gh/zekeriyasari/Causal.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/zekeriyasari/Causal.jl)
 [![Coveralls](https://coveralls.io/repos/github/zekeriyasari/Causal.jl/badge.svg)](https://coveralls.io/github/zekeriyasari/Causal.jl)
 
+**NOTE:** This package was formerly called as Jusdl.jl. v0.2.1 is the last version of Jusdl. No further updates will be available for Jusdl. For further updates, plesase add Causal.jl.
+
 Causal.jl focusses on effective systems simulations together with online and offline data analysis. In Causal, it is possible to simulate discrete time and continuous time, static or dynamical systems. In particular, it is possible to simulate dynamical systems modeled by different types of differential equations such as ODE (Ordinary Differential Equation), Random Ordinary Differential Equation (RODE), SDE (Stochastic Differential Equation), DDE (Delay Differential Equation) and DAE (Differential Algebraic Equation), and discrete difference equations. During the simulation, the data flowing through the links of the model can processed online and specialized analyzes can be performed. These analyzes can also be enriched with plugins that can easily be defined using the standard Julia library or various Julia packages. The simulation is performed by evolving the components of the model individually and in parallel in sampling time intervals. The individual evolution of the components allows the simulation of the models including the components that are represented by different kinds of mathematical equations.
 
 ## Features

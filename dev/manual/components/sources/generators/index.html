@@ -20,12 +20,12 @@ julia&gt; connect!(gen.handshake, hnd)
 Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 
 julia&gt; t = launch(gen)
-Task (runnable) @0x00007fcba09bb5b0
+Task (runnable) @0x00007fdd291e9120
 
 julia&gt; tout = @async while true
            all(take!(iport) .=== NaN) &amp;&amp; break
            end
-Task (runnable) @0x00007fcba1206bf0</code></pre><p>At this moment, <code>gen</code> is ready to be triggered from its <code>trigger</code> link. Note that the trigger link <code>gen.trigger</code> and the output <code>gen.output</code> of <code>gen</code> are writable. </p><pre><code class="language-julia-repl">julia&gt; gen.trigger.link
+Task (runnable) @0x00007fdd2bd0c4f0</code></pre><p>At this moment, <code>gen</code> is ready to be triggered from its <code>trigger</code> link. Note that the trigger link <code>gen.trigger</code> and the output <code>gen.output</code> of <code>gen</code> are writable. </p><pre><code class="language-julia-repl">julia&gt; gen.trigger.link
 Link(state:open, eltype:Float64, isreadable:false, iswritable:true)
 
 julia&gt; gen.output[1].links[1]
@@ -77,7 +77,7 @@ julia&gt; gen.a
 
 julia&gt; gen.output
 1-element Outport{Outpin{Float64}}:
- Outpin(eltype:Float64, isbound:false)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Causal.jl/blob/48c2b196da95095fbb4465b1f4a805329ec2afd0/src/components/sources/generators.jl#L5-L49">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Causal.FunctionGenerator" href="#Causal.FunctionGenerator"><code>Causal.FunctionGenerator</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">FunctionGenerator(; readout, output=Outport())</code></pre><p>Constructs a generic function generator with <code>readout</code> function and <code>output</code> port.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; gen = FunctionGenerator(readout = t -&gt; [t, 2t], output = Outport(2));
+ Outpin(eltype:Float64, isbound:false)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/zekeriyasari/Causal.jl/blob/dd8a2e47dd5d38ae3d88629055c13ef1f9df1a7d/src/components/sources/generators.jl#L5-L49">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Causal.FunctionGenerator" href="#Causal.FunctionGenerator"><code>Causal.FunctionGenerator</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">FunctionGenerator(; readout, output=Outport())</code></pre><p>Constructs a generic function generator with <code>readout</code> function and <code>output</code> port.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl">julia&gt; gen = FunctionGenerator(readout = t -&gt; [t, 2t], output = Outport(2));
 
 julia&gt; gen.readout(1.)
 2-element Array{Float64,1}:

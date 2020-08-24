@@ -103,6 +103,8 @@ export readtime!,
     drive!, 
     approve!
 
+include("components/constants.jl")
+
 include("components/sources/clock.jl")
 export Clock, 
     isrunning, 
@@ -124,7 +126,6 @@ export @def_source,
     StepGenerator,
     ExponentialGenerator,
     DampedExponentialGenerator
-
 
 include("components/systems/staticsystems/staticsystems.jl")
 export @def_static_system,

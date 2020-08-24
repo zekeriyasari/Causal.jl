@@ -195,14 +195,14 @@ $(document).ready(function() {
           q.term(t.toString(), {
             fields: ["title"],
             boost: 100,
-            usePipeline: true,
+            usePipeline: false,
             editDistance: 0,
             wildcard: lunr.Query.wildcard.NONE
           })
           q.term(t.toString(), {
             fields: ["title"],
             boost: 10,
-            usePipeline: true,
+            usePipeline: false,
             editDistance: 2,
             wildcard: lunr.Query.wildcard.NONE
           })

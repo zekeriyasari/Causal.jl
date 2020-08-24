@@ -52,22 +52,22 @@ macro def_sink(ex)
     =#
     ex.args[2].head == :(<:) && ex.args[2].args[2] == :AbstractSink || 
         error("Invalid usage. The type should be a subtype of AbstractSink.\n$ex")
-    TR, HS, CB, ID, IP, PL, TB, DB, SCB = [gensym() for i in 1 : 9]
+    # TR, HS, CB, ID, IP, PL, TB, DB, SCB = [gensym() for i in 1 : 9]
     fields = quote
-        trigger::$(TR) = Inpin()
-        handshake::$(HS) = Outpin{Bool}()
-        callbacks::$(CB) = nothing
+        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
+        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
+        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
         name::Symbol = Symbol()
-        id::$(ID) = Causal.uuid4()
-        input::$(IP) = Inport()
+        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
+        input::$(INPUT_TYPE_SYMBOL) = Inport()
         buflen::Int = 64
-        plugin::$(PL) = nothing
-        timebuf::$(TB) = Buffer(buflen) 
-        databuf::$(DB) = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)
-        sinkcallback::$(SCB) = plugin === nothing ? 
+        plugin::$(PLUGIN_TYPE_SYMBOL) = nothing
+        timebuf::$(TIMEBUF_TYPE_SYMBOL) = Buffer(buflen) 
+        databuf::$(DATABUF_TYPE_SYMBOL) = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)
+        sinkcallback::$(SINK_CALLBACK_TYPE_SYMBOL) = plugin === nothing ? 
             Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
             Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))), true, id)
-    end, [TR, HS, CB, ID, IP, PL, TB, DB, SCB]
+    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, INPUT_TYPE_SYMBOL, PLUGIN_TYPE_SYMBOL, TIMEBUF_TYPE_SYMBOL, DATABUF_TYPE_SYMBOL, SINK_CALLBACK_TYPE_SYMBOL]
     _append_common_fields!(ex, fields...)
     deftype(ex)
 end

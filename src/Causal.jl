@@ -236,6 +236,7 @@ export AbstractPlugin,
     remove, 
     enable, 
     disable, 
-    check
+    check,
+    @def_plugin
 
 end  # module

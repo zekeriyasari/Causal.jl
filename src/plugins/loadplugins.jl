@@ -48,6 +48,17 @@ function add(name::AbstractString, url::AbstractString=remote_repo_url)
     end
 end
 
+macro def_plugin(ex)
+    ex.head == :struct || 
+        error("Invalid usage. The expression should start with `struct`.\n$ex")
+    ex.args[2].head == :(<:) && ex.args[2].args[2] == :AbstractPlugin || 
+        error("Invalid usage. The type should be a subtype of AbstractPlugin.\n$ex")
+    quote 
+        Base.@kwdef $ex
+    end |> esc 
+end
+
+
 # # Includes essential plugins from Causal
 # foreach(include, search(joinpath(@__DIR__, "essentials"), ".jl"))
 

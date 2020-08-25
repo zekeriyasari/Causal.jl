@@ -8,6 +8,6 @@
 *.bbl
 *.blg
 *.emf
-./src/plugins/additionals/
-./example/workspace.jl
-./docs/build/
+src/plugins/additionals/
+example/workspace.jl
+docs/build/

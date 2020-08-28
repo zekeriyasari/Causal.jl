@@ -1,7 +1,6 @@
 # This file includes RODESystems
 
-import DifferentialEquations: RandomEM, RODEProblem
-import UUIDs: uuid4
+export @def_rode_system, RODESystem, MultiplicativeNoiseLinearSystem
 
 
 """
@@ -58,23 +57,18 @@ julia> ds = MySystem();
 """
 macro def_rode_system(ex) 
     checksyntax(ex, :AbstractRODESystem)
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-        t::Float64 = 0.
-        modelargs::$(MODEL_ARGS_TYPE_SYMBOL) = () 
-        modelkwargs::$(MODEL_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        solverargs::$(SOLVER_ARGS_TYPE_SYMBOL) = () 
-        solverkwargs::$(SOLVER_KWARGS_TYPE_SYMBOL) = (dt=0.01, ) 
-        alg::$(ALG_TYPE_SYMBOL) = Causal.RandomEM()
-        integrator::$(INTEGRATOR_TYPE_SYMBOL) = Causal.construct_integrator(Causal.RODEProblem, input, righthandside, state, t, modelargs, 
-            solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, MODEL_ARGS_TYPE_SYMBOL, MODEL_KWARGS_TYPE_SYMBOL, SOLVER_ARGS_TYPE_SYMBOL, SOLVER_KWARGS_TYPE_SYMBOL, ALG_TYPE_SYMBOL, INTEGRATOR_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    appendcommonex!(ex)
+    foreach(nex -> ComponentsBase.appendex!(ex, nex), [
+        :( alg::$ALG_TYPE_SYMBOL = DynamicalSystems.RandomEM() ), 
+        :( integrator::$INTEGRATOR_TYPE_SYMBOL = DynamicalSystems.construct_integrator(
+            DynamicalSystems.RODEProblem, input, righthandside, state, t, modelargs, solverargs; alg=alg, modelkwargs=modelkwargs,
+            solverkwargs = :dt in keys(solverkwargs) ? solverkwargs : 
+                (; zip((keys(solverkwargs)..., :dt), (values(solverkwargs)..., 0.01))...),
+            numtaps=3) ) 
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 ##### Define RODE sytem library 

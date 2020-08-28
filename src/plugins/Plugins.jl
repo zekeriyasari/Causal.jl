@@ -1,4 +1,6 @@
-# This file includes the Plugins module
+module Plugins 
+
+export AbstractPlugin, process, add, remove, enable, disable, check, @def_plugin
 
 abstract type AbstractPlugin end
 
@@ -69,3 +71,4 @@ foreach(include, search(joinpath(@__DIR__, "additionals"), ".jl"))
 user_plugins_path = joinpath(pwd(), "plugins")
 ispath(user_plugins_path) && foreach(include, search(joinpath(user_plugins_path), ".jl"))
 
+end # module 

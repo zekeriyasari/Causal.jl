@@ -1,5 +1,7 @@
 # This file constains the Buffer for data buffering.
 
+export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, 
+    isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
 
 ##### Buffer modes
 """

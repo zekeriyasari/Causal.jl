@@ -1,7 +1,7 @@
 # This file contains SDESystem prototypes
 
-import DifferentialEquations: LambaEM, SDEProblem
-import UUIDs: uuid4
+export @def_sde_system, SDESystem, NoisyLorenzSystem, ForcedNoisyLorenzSystem
+
 
 """
     @def_sde_system ex 
@@ -65,24 +65,15 @@ julia> ds = MySDESystem();
 """
 macro def_sde_system(ex) 
     checksyntax(ex, :AbstractSDESystem)
-    TR, HS, CB, ID, MA, MK, SA, SK, AL, IT = [gensym() for i in 1 : 10]
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-        t::Float64 = 0.
-        modelargs::$(MODEL_ARGS_TYPE_SYMBOL) = () 
-        modelkwargs::$(MODEL_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        solverargs::$(SOLVER_ARGS_TYPE_SYMBOL) = () 
-        solverkwargs::$(SOLVER_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        alg::$(ALG_TYPE_SYMBOL) = Causal.LambaEM{true}()
-        integrator::$(INTEGRATOR_TYPE_SYMBOL) = Causal.construct_integrator(Causal.SDEProblem, input, (drift, diffusion), state, 
-            t, modelargs, solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, MODEL_ARGS_TYPE_SYMBOL, MODEL_KWARGS_TYPE_SYMBOL, SOLVER_ARGS_TYPE_SYMBOL, SOLVER_KWARGS_TYPE_SYMBOL, ALG_TYPE_SYMBOL, INTEGRATOR_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    appendcommonex!(ex)
+    foreach(nex -> ComponentsBase.appendex!(ex, nex), [
+        :( alg::$ALG_TYPE_SYMBOL = DynamicalSystems.LambaEM{true}() ), 
+        :( integrator::$INTEGRATOR_TYPE_SYMBOL = DynamicalSystems.construct_integrator(DynamicalSystems.SDEProblem, input, 
+            (drift, diffusion), state, t, modelargs, solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3) ) 
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 

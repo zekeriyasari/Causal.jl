@@ -1,6 +1,8 @@
 # This file contains the Pins to connect the links
 
 
+export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound
+
 """
     AbstractPin{T} 
 

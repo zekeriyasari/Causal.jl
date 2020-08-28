@@ -25,7 +25,7 @@
     buf = Buffer(5)
     write!(buf, 1.)
     @test !isempty(buf)
-    @test !isfull(buf)
+    @test !Utilities.isfull(buf)
     @test buf.index == 2
     @test buf.state == :nonempty
 
@@ -57,7 +57,7 @@
             write!(buf, [item, item])
         end
         @test outbuf(buf) == [5. 4. 3. 2. 1.; 5. 4. 3. 2. 1.]
-        @test isfull(buf)
+        @test Utilities.isfull(buf)
         @test buf.index == 6
         @test_throws Exception write!(buf, [1., 2.])  # When full, data cannot be written into buffers.
     end
@@ -67,7 +67,7 @@
         write!(buf, [item, item])
     end
     @test outbuf(buf) == [5. 4. 3. 2. 1.; 5. 4. 3. 2. 1.]
-    @test isfull(buf)
+    @test Utilities.isfull(buf)
     @test buf.index == 6
     temp = outbuf(buf)
     write!(buf, [6., 6.])  # When full, data can be written into Cyclic buffers.

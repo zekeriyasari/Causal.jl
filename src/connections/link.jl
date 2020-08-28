@@ -1,5 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
-import Base: put!, take!, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate
+
+export Link, launch, refresh!
 
 """
     Link{T}(ln::Int=64) where {T}

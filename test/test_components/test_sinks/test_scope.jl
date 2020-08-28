@@ -16,7 +16,7 @@
 
     # Driving Scope 
     open(scope)
-    oport, iport, trg, hnd, tsk, tsk2 = prepare(scope)
+    oport, iport, trg, hnd, tsk, tsk2 = equip(scope)
     for t in 1 : 200
         put!(trg, t)
         put!(oport, ones(1) * t)

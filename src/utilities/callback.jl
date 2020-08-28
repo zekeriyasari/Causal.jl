@@ -1,5 +1,7 @@
 # This file constains the callbacks for event monitoring.
 
+export Callback, enable!, disable!, isenabled, applycallbacks
+
 """
     Callback(condition, action)
 

@@ -39,3 +39,20 @@ function checksyntax(ex::Expr, supertypename::Symbol)
     ex.args[2].head == :(<:) && ex.args[2].args[2] == supertypename || 
         error("Invalid usage. The type should be a subtype of $supertypename.\n$ex")
 end
+
+
+function appendcommonex!(ex)
+    foreach(nex -> ComponentsBase.appendex!(ex, nex), [
+    :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+    :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+    :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+    :( name::Symbol = Symbol() ),
+    :( id::$ID_TYPE_SYMBOL = uuid4() ),
+    :( t::Float64 = 0. ),
+    :( modelargs::$MODEL_ARGS_TYPE_SYMBOL = ()  ),
+    :( modelkwargs::$MODEL_KWARGS_TYPE_SYMBOL = NamedTuple()  ), 
+    :( solverargs::$SOLVER_ARGS_TYPE_SYMBOL = ()  ), 
+    :( solverkwargs::$SOLVER_KWARGS_TYPE_SYMBOL = NamedTuple()  ), 
+    ])
+    ex 
+end

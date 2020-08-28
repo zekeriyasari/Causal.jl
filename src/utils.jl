@@ -1,5 +1,7 @@
 # This file includes utiliti functions for Systems module
 
+export equip
+
 macro siminfo(msg...)
     quote
         @info "$(now()) $($msg...)"

@@ -1,5 +1,7 @@
 # This file constains the Clock tools for time synchronization of DsSimulator.
 
+export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
+
 import Base: iterate, take!, length
 
 Generator(t0, dt, tf) = 

@@ -1,7 +1,7 @@
 # This file includes testset for sources.
 
 @testset "ClockTestSet" begin 
-    @info "Running ClockTestSet ..."
+    @info "Running ClockTestSet..."
 
     # Clock construction 
     clk1 = Clock(0., 1., 10.)
@@ -45,7 +45,7 @@ end  # testset
 
 
 @testset "GeneratorsTestSet" begin 
-    @info "Running GeneratorsTestSet ..."
+    @info "Running GeneratorsTestSet..."
     # FunctionGenerator construction
     gen = SinewaveGenerator()
     @test typeof(gen.trigger) == Inpin{Float64} 

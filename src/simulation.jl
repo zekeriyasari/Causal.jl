@@ -1,5 +1,7 @@
 # This file is for Simulation object.
 
+export Simulation, setlogger, closelogger, report
+
 """
     Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", logger=SimpleLogger())
 

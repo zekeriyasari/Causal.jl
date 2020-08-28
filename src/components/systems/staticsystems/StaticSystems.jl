@@ -1,6 +1,16 @@
 # This file contains the static systems of Causal.
 
-import UUIDs: uuid4
+module StaticSystems 
+
+using UUIDs, LinearAlgebra
+using Causal.Connections 
+using Causal.Utilities
+using Causal.Components.ComponentsBase
+import Base.show 
+import UUIDs.uuid4
+
+export @def_static_system
+export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler, Differentiator
 
 """
     @def_static_system ex 
@@ -52,16 +62,16 @@ julia> sys.input
 macro def_static_system(ex) 
     ex.args[2].head == :(<:) && ex.args[2].args[2] in [:AbstractStaticSystem, :AbstractMemory] || 
         error("Invalid usage. The type should be a subtype of AbstractStaticSystem or AbstractMemory.\n$ex")
-
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    foreach(nex -> ComponentsBase.appendex!(ex, nex), [
+        :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+        :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+        :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+        :( name::Symbol = Symbol() ),
+        :( id::$ID_TYPE_SYMBOL = StaticSystems.uuid4() )
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 ##### Define prototipical static systems.
@@ -283,3 +293,5 @@ show(io::IO, ss::Memory) =
     print(io, "Memory(delay:$(ss.delay), numtaps:$(length(ss.timebuf)), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Coupler) = print(io, "Coupler(conmat:$(ss.conmat), cplmat:$(ss.cplmat))")
 show(io::IO, ss::Differentiator) = print(io, "Differentiator(kd:$(ss.kd))")
+
+end # module 

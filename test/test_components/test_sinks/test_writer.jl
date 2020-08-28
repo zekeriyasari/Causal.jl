@@ -56,7 +56,7 @@
     # Driving Writer 
     writer = Writer(input=Inport(3), buflen=10)
     open(writer)
-    oport, iport, trg, hnd, comptask, outtask = prepare(writer)
+    oport, iport, trg, hnd, comptask, outtask = equip(writer)
     for t in 1 : 100 
         put!(trg, t)
         put!(oport, ones(3)*t)

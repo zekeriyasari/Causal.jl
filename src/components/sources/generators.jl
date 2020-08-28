@@ -1,7 +1,8 @@
 # This file contains the function generator tools to drive other tools of DsSimulator.
 
-import UUIDs: uuid4
-
+export @def_source, FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, 
+    TriangularwaveGenerator, ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, 
+    DampedExponentialGenerator
 """
     @def_source ex 
 
@@ -50,15 +51,16 @@ julia> gen.output
 macro def_source(ex) 
     ex.args[2].head == :(<:) && ex.args[2].args[2] == :AbstractSource || 
         error("Invalid usage. The type should be a subtype of AbstractSource.\n$ex")
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    foreach(nex -> ComponentsBase.appendex!(ex, nex), [
+        :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+        :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+        :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+        :( name::Symbol = Symbol() ),
+        :( id::$ID_TYPE_SYMBOL = Sources.uuid4() )
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 

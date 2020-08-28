@@ -15,7 +15,7 @@
     @test typeof(printer.sinkcallback) <: Callback
 
     # Driving Printer 
-    oport, iport, trg, hnd, tsk, tsk2 = prepare(printer)
+    oport, iport, trg, hnd, tsk, tsk2 = equip(printer)
     for t in 1 : 200
         put!(trg, t)
         put!(oport, ones(2) * t)

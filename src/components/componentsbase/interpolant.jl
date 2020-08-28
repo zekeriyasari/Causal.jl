@@ -1,5 +1,7 @@
 # This file includes interpolant for interplation of sampled inputs. 
 
+export Interpolant
+
 """
     Interpolant(tinit, tfinal, coefinit, coeffinal)
 

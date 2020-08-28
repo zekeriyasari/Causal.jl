@@ -1,5 +1,8 @@
 # This file includes the Model object
 
+export @defmodel, Model, inspect!, initialize!, run!, terminate!, simulate!, getloops, breakloop!, Node, Branch, 
+    addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot
+
 """
     Node(component, idx, label)
 

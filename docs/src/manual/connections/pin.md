@@ -59,7 +59,7 @@ Note that in both of the cases given above the data flow is always from an `Outp
 
 ## Full API 
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Connections]
 Pages   = ["pin.jl"]
 Order = [:type, :function]
 ```

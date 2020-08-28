@@ -48,7 +48,6 @@ makedocs(
                 "Systems" => [
                     "StaticSystems" => [
                         "StaticSystems" => "manual/components/systems/staticsystems/staticsystems.md",
-                        # "Subsystem" => "manual/components/systems/staticsystems/subsystem.md",
                     ],
                     "DynamicSystems" => [
                         "DiscreteSystem" => "manual/components/systems/dynamicsystems/discretesystem.md",

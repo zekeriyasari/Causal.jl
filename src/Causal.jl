@@ -11,7 +11,7 @@ using Logging
 using Dates 
 using NLsolve
 using LightGraphs, GraphPlot    
-import Base.show
+import Base: show
 
 include("utilities/Utilities.jl")
 include("connections/Connections.jl")   

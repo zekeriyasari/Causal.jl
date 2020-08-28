@@ -11,21 +11,21 @@ Each `Plugin` must have a `process` function which does the data processing. The
 New plugins can be defined in `Causal` and having they are defined properly they can work just expected. To define a new plugin, we must first define the plugin type 
 ```@repl plugin_ex 
 using Causal # hide 
-struct NewPlugin <: AbstractPlugin
-    # Parameters of NewPlugin
-end
+@def_plugin struct NewPlugin <: AbstractPlugin 
+    # Specify parameters of the plugin 
+    process::PR = x -> x 
+end 
 ```
 
 !!! warning
     Note that to the `NewPlugin` is defined to be a subtype of `AbstractPlugin`. This is important for the `NewPlugin` to work as expected.
 
-Since each plugin must have implement a `process` method, and for that  `Causal.process` function must be imported.
+Since each plugin must have implement a `process` method.
 
 ```@repl plugin_ex
-import Causal.process
-function process(plg::NewPlugin, x)
-    # Define the process according to plg
-end
+@def_plugin struct MyPlugin <: AbstractPlugin 
+    process::PR = x -> x 
+end 
 ```
 At this point, `NewPlugin` is ready to be used. 
 

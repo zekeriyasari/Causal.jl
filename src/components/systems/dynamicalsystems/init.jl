@@ -47,7 +47,7 @@ function appendcommonex!(ex)
     :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
     :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
     :( name::Symbol = Symbol() ),
-    :( id::$ID_TYPE_SYMBOL = uuid4() ),
+    :( id::$ID_TYPE_SYMBOL = DynamicalSystems.uuid4() ),
     :( t::Float64 = 0. ),
     :( modelargs::$MODEL_ARGS_TYPE_SYMBOL = ()  ),
     :( modelkwargs::$MODEL_KWARGS_TYPE_SYMBOL = NamedTuple()  ), 

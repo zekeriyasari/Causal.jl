@@ -46,8 +46,8 @@ evolve!
 ## Taking Steps 
 ```@docs 
 takestep!
-Causal.forwardstep
-Causal.backwardstep
+forwardstep
+backwardstep
 launch(comp::AbstractComponent)
 launch(comp::AbstractSubSystem)
 drive!

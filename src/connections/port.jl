@@ -40,6 +40,7 @@ Outport{T}(numpins::Int=1) where T = Outport([Outpin{T}() for i = 1 : numpins])
 Outport(numpins::Int=1) = Outport{Float64}(numpins)
 
 show(io::IO, outport::Outport) = print(io, "Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
+# display(outport::Outport) = println("Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
 
 """
     Inport{T}(numpins=1) 
@@ -70,6 +71,7 @@ Inport{T}(numpins::Int=1) where T = Inport([Inpin{T}() for i = 1 : numpins])
 Inport(numpins::Int=1) = Inport{Float64}(numpins)
 
 show(io::IO, inport::Inport) = print(io, "Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
+# display(inport::Inport) = println("Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
 
 
 """

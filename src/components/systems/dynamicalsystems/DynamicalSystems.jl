@@ -5,7 +5,7 @@ using UUIDs, LinearAlgebra
 using Causal.Utilities
 using Causal.Connections 
 using Causal.Components.ComponentsBase
-import Base.show 
+import Base: show 
 using DifferentialEquations
 using Sundials
 import DifferentialEquations: FunctionMap, DiscreteProblem

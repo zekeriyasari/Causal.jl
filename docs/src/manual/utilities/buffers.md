@@ -75,7 +75,7 @@ buf[3:5] = [7, 8, 9]
 
 ## Full API
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Utilities]
 Pages   = ["buffer.jl"]
 Order = [:type, :function]
 ```

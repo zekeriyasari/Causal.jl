@@ -67,7 +67,7 @@ Note that `clk` is just iterated.
 
 ## Full API
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Components.Sources]
 Pages   = ["clock.jl"]
 Order = [:type, :function]
 ```

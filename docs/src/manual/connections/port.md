@@ -92,7 +92,7 @@ end
 
 ## Full API 
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Connections]
 Pages   = ["port.jl"]
 Order = [:type, :function]
 ```

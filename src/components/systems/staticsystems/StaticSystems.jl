@@ -2,11 +2,11 @@
 
 module StaticSystems 
 
-using UUIDs, LinearAlgebra
+using UUIDs, LinearAlgebra, Interpolations
 using Causal.Connections 
 using Causal.Utilities
 using Causal.Components.ComponentsBase
-import Base.show 
+import Base: show 
 import UUIDs.uuid4
 
 export @def_static_system

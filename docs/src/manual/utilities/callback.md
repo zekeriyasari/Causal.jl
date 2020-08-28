@@ -45,7 +45,7 @@ Callback
 ```
 
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Utilities]
 Pages   = ["callback.jl"]
 Order = [:type, :function]
 ```

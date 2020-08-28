@@ -1,6 +1,7 @@
 # This file includes stepping of abstract types.
 
-export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, drive!, approve!
+export readtime!, readstate, readinput!, writeoutput!, computeoutput, evolve!, takestep!, forwardstep, backwardstep, 
+    drive!, approve!
 
 ##### Input-Output reading and writing.
 """

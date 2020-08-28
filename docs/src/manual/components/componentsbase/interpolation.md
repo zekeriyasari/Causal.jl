@@ -2,7 +2,7 @@
 
 ## Full API
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Components.ComponentsBase]
 Pages   = ["interpolant.jl"]
 Order = [:type, :function]
 ```

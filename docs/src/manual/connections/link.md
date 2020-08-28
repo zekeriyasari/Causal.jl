@@ -77,7 +77,7 @@ t  # Show that `t` is terminated.
 
 ## Full API 
 ```@autodocs
-Modules = [Causal]
+Modules = [Causal.Connections]
 Pages   = ["link.jl"]
 Order = [:type, :function]
 ```

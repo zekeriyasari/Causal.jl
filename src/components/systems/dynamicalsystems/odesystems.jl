@@ -110,11 +110,13 @@ julia> ds.state
 end
 
 """
-    ContinuousLinearSystem(input, output, modelargs=(), solverargs=(); 
-        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `ContinuousLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`ContinuousLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 The `ContinuousLinearSystem` is represented by the following state and output equations.
 ```math
@@ -141,11 +143,13 @@ end
 
 
 """
-    LorenzSystem(input, output, modelargs=(), solverargs=(); 
-        sigma=10, beta=8/3, rho=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `LorenzSystem` with `input` and `output`. `sigma`, `beta`, `rho` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`LorenzSystem` with `input` and `output`. `sigma`, `beta`, `rho` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 If `input` is `nothing`, the state equation of `LorenzSystem` is 
 ```math
@@ -209,11 +213,13 @@ end
 
 
 """
-    ChenSystem(input, output, modelargs=(), solverargs=(); 
-        a=35, b=3, c=28, gamma=1, outputfunc=allstates, state=rand(3), t=0.,
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `ChenSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`ChenSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 If `input` is `nothing`, the state equation of `ChenSystem` is 
 ```math
@@ -321,11 +327,13 @@ end
 
 
 """
-    ChuaSystem(input, output, modelargs=(), solverargs=(); 
-        diode=PiecewiseLinearDiode(), alpha=15.6, beta=28., gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `ChuaSystem` with `input` and `output`. `diode`, `alpha`, `beta` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`ChuaSystem` with `input` and `output`. `diode`, `alpha`, `beta` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 If `input` is `nothing`, the state equation of `ChuaSystem` is 
 ```math
@@ -388,11 +396,13 @@ end
 
 
 """
-    RosslerSystem(input, output, modelargs=(), solverargs=(); 
-        a=0.38, b=0.3, c=4.82, gamma=1., outputfunc=allstates, state=rand(3), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1., 1.]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `RosllerSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`RosllerSystem` with `input` and `output`. `a`, `b`, `c` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 If `input` is `nothing`, the state equation of `RosslerSystem` is 
 ```math
@@ -455,11 +465,13 @@ end
 
 
 """
-    VanderpolSystem(input, output, modelargs=(), solverargs=(); 
-        mu=5., gamma=1., outputfunc=allstates, state=rand(2), t=0., 
-        alg=ODEAlg, cplmat=diagm([1., 1]), modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `VanderpolSystem` with `input` and `output`. `mu` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`VanderpolSystem` with `input` and `output`. `mu` and `gamma` is the system parameters. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 If `input` is `nothing`, the state equation of `VanderpolSystem` is 
 ```math
@@ -515,11 +527,13 @@ end
   
 
 """
-    Integrator(state=zeros(0), t=0., modelargs=(), solverargs=(); 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=numtaps, callbacks=nothing, 
-        name=Symbol())
+    $(TYPEDEF)
 
-Constructs an integrator whose input output relation is given by 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+Integrator whose input output relation is given by 
 ```math 
 u(t) = k_i * \\int_{0}^{t} u(\\tau) d\\tau
 ```

@@ -5,11 +5,11 @@ export Writer, write!, fwrite!, fread
 """
     $(TYPEDEF) 
 
-`Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
-
 # Fields
 
     $(TYPEDFIELDS)
+
+`Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
 
 !!! note 
     The type of `file` of `Writer` is [`JLD2`](https://github.com/JuliaIO/JLD2.jl).    

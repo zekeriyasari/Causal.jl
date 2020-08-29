@@ -111,9 +111,13 @@ end
 
 
 """
-    Adder(signs=(+,+))
+    $(TYPEDEF)
 
-Construts an `Adder` with input bus `input` and signs `signs`. `signs` is a tuplle of `+` and/or `-`. The output function `g` of `Adder` is of the form,
+# Fields 
+
+    $(TYPEDFIELDS)
+
+An`Adder` with input bus `input` and signs `signs`. `signs` is a tuplle of `+` and/or `-`. The output function `g` of `Adder` is of the form,
 ```math 
     y = g(u, t) =  \\sum_{j = 1}^n s_k u_k
 ```
@@ -136,9 +140,13 @@ end
 
 
 """
-    Multiplier(ops=(*,*))
+    $(TYPEDEF)
 
-Construts an `Multiplier` with input bus `input` and signs `signs`. `signs` is a tuplle of `*` and/or `/`. The output function `g` of `Multiplier` is of the form,
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A `Multiplier` with input bus `input` and signs `signs`. `signs` is a tuplle of `*` and/or `/`. The output function `g` of `Multiplier` is of the form,
 ```math 
     y = g(u, t) =  \\prod_{j = 1}^n s_k u_k
 ```
@@ -168,9 +176,13 @@ end
 
 
 """
-    Gain(input; gain=1.)
+    $(TYPEDEF)
 
-Constructs a `Gain` whose output function `g` is of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A `Gain` whose output function `g` is of the form 
 ```math 
     y = g(u, t) =  K u
 ```
@@ -195,9 +207,13 @@ end
 
 
 """
-    Terminator(input::Inport)
+    $(TYPEDEF)
 
-Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
 @def_static_system struct Terminator{IP, OP, RO} <: AbstractStaticSystem
     input::IP = Inport() 
@@ -207,10 +223,13 @@ end
 
 
 """
-    Memory(delay=1.; initial::AbstractVector{T}=zeros(1), numtaps::Int=5, t0=0., dt=0.01, callbacks=nothing, 
-        name=Symbol()) where T 
+    $(TYPEDEF)
 
-Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. 
 `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, 
 the values from `initial` is returned.
 
@@ -253,9 +272,13 @@ end
 
 
 """
-    Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
+    $(TYPEDEF)
 
-Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and coupling matrix `cplmat` of size ``d \times d``. The output function `g` of `Coupler` is of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+ Coupler from connection matrix `conmat` of size ``n \times n`` and coupling matrix `cplmat` of size ``d \times d``. The output function `g` of `Coupler` is of the form 
 ```math 
     y = g(u, t) = (E \\otimes P) u
 ```
@@ -272,7 +295,11 @@ where ``\\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cpl
 end
 
 """
-    Differentiator(kd=1; callbacks=nothing, name=Symbol())
+        $(TYPEDEF)
+
+# Fields 
+
+    $(TYPEDFIELDS)
 
 Consructs a `Differentiator` whose input output relation is of the form 
 ```math 

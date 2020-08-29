@@ -91,9 +91,13 @@ A generic RODE system
 end
 
 """
-    MultiplicativeNoiseLinearSystem() 
+    $(TYPEDEF)
 
-Constructs a `MultiplicativeNoiseLinearSystem` with the dynamics 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`MultiplicativeNoiseLinearSystem` with the dynamics 
 ```math 
 \\begin{array}{l}
     \\dot{x} = A x W

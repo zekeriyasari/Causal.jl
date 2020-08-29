@@ -5,12 +5,11 @@ export Printer
 """
     $(TYPEDEF) 
 
-`Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
-
 # Fields 
 
     $(FIELDS)
 
+`Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
 """
 @def_sink mutable struct Printer{A} <: AbstractSink 
     action::A = print 

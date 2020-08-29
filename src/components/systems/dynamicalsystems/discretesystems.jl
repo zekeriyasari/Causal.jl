@@ -106,11 +106,13 @@ end
 
 
 """
-    DiscreteLinearSystem(input, output, modelargs=(), solverargs=(); 
-        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+    $(TYPEDEF)
 
-Constructs a `DiscreteLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A `DiscreteLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 The `DiscreteLinearSystem` is represented by the following state and output equations.
 ```math
@@ -137,9 +139,13 @@ end
 
 
 """
-    Henon()
+    $(TYPEDEF)
 
-Constructs a `Henon` system evolving with the dynamics 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`Henon` system evolving with the dynamics 
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = 1 - \\alpha (x_1^2) + x_2 \\[0.25cm]
@@ -163,9 +169,13 @@ Constructs a `Henon` system evolving with the dynamics
 end
 
 """
-    LoziSystem()
+    $(TYPEDEF)
 
-Constructs a `Lozi` system evolving with the dynamics 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`Lozi` system evolving with the dynamics 
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = 1 - \\alpha |x_1| + x_2 \\[0.25cm]
@@ -190,9 +200,13 @@ end
 
 
 """
-    BogdanovSystem() 
+    $(TYPEDEF)
 
-Constructs a Bogdanov system with equations
+# Fields 
+
+    $(TYPEDFIELDS)
+
+Bogdanov system with equations
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = x_1 + \\dot{x}_2 \\[0.25cm]
@@ -218,9 +232,13 @@ end
 
 
 """
-    GingerbreadmanSystem() 
+    $(TYPEDEF)
 
-Constructs a GingerbreadmanSystem with the dynamics 
+# Fields 
+
+    $(TYPEDFIELDS) 
+
+GingerbreadmanSystem with the dynamics 
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = 1 - x_2 + |x_1|\\[0.25cm]
@@ -243,9 +261,13 @@ end
 
 
 """
-    LogisticSystem() 
+    $(TYPEDEF)
 
-Constructs a LogisticSystem with the dynamics 
+# Fields 
+
+    $(TYPEDFIELDS)
+    
+LogisticSystem with the dynamics 
 ```math
 \\begin{array}{l}
     \\dot{x} = r x (1 - x)

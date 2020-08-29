@@ -116,9 +116,13 @@ end
 
 
 """
-    RobertsonSystem() 
+    $(TYPEDEF)
 
-Constructs a Robertson systme with the dynamcis 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+Robertson systme with the dynamcis 
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\[0.25cm]
@@ -145,9 +149,13 @@ Constructs a Robertson systme with the dynamcis
 end
 
 """
-    PendulumSystem() 
+    $(TYPEDEF)
 
-Constructs a Pendulum systme with the dynamics
+# Fields 
+
+    $(TYPEDFIELDS)
+
+Pendulum systme with the dynamics
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = x_3 \\[0.25cm]
@@ -181,9 +189,13 @@ end
 
 
 """
-    RLCSystem() 
+    $(TYPEDEF)
 
-Construsts a RLC system with the dynamics
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A RLC system with the dynamics
 ```math
 \\begin{array}{l}
     \\dot{x}_1 = x_3 \\[0.25cm]

@@ -13,6 +13,9 @@
     @test !iswritable(l)
     @test !isreadable(l)
 
+    # Link construction that carries vectors 
+    l = Link{Vector{Float64}}() 
+
     # More on Buffer construction
     l = Link{Int}(5)
     @test size(l.buffer) == (5,)

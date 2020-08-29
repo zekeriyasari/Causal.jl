@@ -13,13 +13,16 @@
     @test isempty(buf)
     @test buf.state == :empty
     @test size(buf) == (5,)
-    @test isa(buf, AbstractArray)
+    @test isa(buf, AbstractVector)
 
-    # Buffer data length
-    buf = Buffer(5)
-    @test datalength(buf) == 5
-    buf = Buffer(3, 10)
-    @test datalength(buf) == 10
+    # No multidimensional Buffer construction 
+    @test_throws MethodError Buffer(2, 5)
+
+    # # Buffer data length -> `datalength` deprecated.
+    # buf = Buffer(5)
+    # @test datalength(buf) == 5
+    # buf = Buffer(3, 10)
+    # @test datalength(buf) == 10
 
     # Writing values into Buffers
     buf = Buffer(5)
@@ -36,8 +39,8 @@
     @test !isempty(buf)
 
     # More on buffer construction
-    buf = Buffer{Fifo}(Float64, 2, 5)
     buf = Buffer{Fifo}(Float64, 5)
+    buf = Buffer{Fifo}(Vector{Float64}, 5)
     buf = Buffer{Fifo}(5)
     buf = Buffer{Normal}(5)
     buf = Buffer(5)
@@ -52,44 +55,44 @@
 
     # Writing into Buffers with different modes
     for bufmode in [Normal, Lifo, Fifo]
-        buf = Buffer{bufmode}(2, 5)
+        buf = Buffer{bufmode}(Vector{Float64}, 5)
         for item in 1 : 5
             write!(buf, [item, item])
         end
-        @test outbuf(buf) == [5. 4. 3. 2. 1.; 5. 4. 3. 2. 1.]
+        @test buf.output == [[item, item] for item in 5. : -1 : 1.]
         @test Utilities.isfull(buf)
         @test buf.index == 6
         @test_throws Exception write!(buf, [1., 2.])  # When full, data cannot be written into buffers.
     end
 
-    buf = Buffer{Cyclic}(2, 5)
+    buf = Buffer{Cyclic}(Vector{Float64}, 5)
     for item in 1 : 5
         write!(buf, [item, item])
     end
-    @test outbuf(buf) == [5. 4. 3. 2. 1.; 5. 4. 3. 2. 1.]
+    @test buf.output == [[item, item] for item in 5. : -1 : 1.]
     @test Utilities.isfull(buf)
     @test buf.index == 6
-    temp = outbuf(buf)
+    temp = copy(buf.output)
     write!(buf, [6., 6.])  # When full, data can be written into Cyclic buffers.
-    @test outbuf(buf) == hcat([6., 6.], temp[:, 1:end-1])
+    @test buf.output == [[[6., 6.]]; temp[1 : end - 1]]
 
     # Reading from Buffers with different modes
     for bufmode in [Normal, Cyclic]
-        buf = Buffer{bufmode}(5)
-        foreach(item -> write!(buf, item), 1 : 5)
+        bufn = Buffer{bufmode}(5)
+        foreach(item -> write!(bufn, item), 1 : 5)
         for i = 1 : 5
-            @test read(buf) == 5
+            @test read(bufn) == 5
         end
-        @test !isempty(buf)
+        @test !isempty(bufn)
     end
 
-    buf = Buffer{Fifo}(5)
-    foreach(item -> write!(buf, item), 1 : 5)
+    bufm = Buffer{Fifo}(5)
+    foreach(item -> write!(bufm, item), 1 : 5)
     for i = 1 : 5
-        @test read(buf) == i
+        @test read(bufm) == i
     end
-    @test isempty(buf)
-    @test_throws Exception read(buf)  # When buffer is empty, no more reads.
+    @test isempty(bufm)
+    @test_throws Exception read(bufm)  # When buffer is empty, no more reads.
 
     buf = Buffer{Lifo}(5)
     foreach(item -> write!(buf, item), 1 : 5)

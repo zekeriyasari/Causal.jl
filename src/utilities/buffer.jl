@@ -95,6 +95,7 @@ mutable struct Buffer{M<:BufferMode, T} <: AbstractVector{T}
     id::UUID
     Buffer{M}(::Type{T}, sz::Int) where {M,T} = new{M,T}(fill(missing, sz), fill(missing, sz), 1, :empty, uuid4())
 end
+Buffer{M}(sz::Int) where M = Buffer{M}(Float64, sz)
 Buffer(::Type{T}, sz::Int) where {T,N} = Buffer{Cyclic}(T, sz)
 Buffer(sz::Int) = Buffer(Float64, sz)
 

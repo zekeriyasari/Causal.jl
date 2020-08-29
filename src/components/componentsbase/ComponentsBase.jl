@@ -1,3 +1,15 @@
+
+"""
+Base module for `Components` 
+
+# Imports
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module ComponentsBase
 
 using Causal.Utilities

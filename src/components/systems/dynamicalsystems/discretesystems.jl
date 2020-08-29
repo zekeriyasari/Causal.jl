@@ -42,7 +42,7 @@ Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented b
     New discrete system must be a subtype of `AbstractDiscreteSystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_discrete_system mutable struct MyDiscreteSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
@@ -77,12 +77,16 @@ end
 ##### Define Discrete system library
 
 """
-    DiscreteSystem(; righthandside, readout, state, input, output)
+    $(TYPEDEF) 
 
-Constructs a generic discrete system 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+A generic discrete system 
 
 # Example 
-```jldoctest
+```julia
 julia> sfuncdiscrete(dx,x,u,t) = (dx .= 0.5x);
 
 julia> ofuncdiscrete(x, u, t) = x;
@@ -101,7 +105,7 @@ DiscreteSystem(righthandside:sfuncdiscrete, readout:ofuncdiscrete, state:[1.0], 
 end
 
 
-@doc raw"""
+"""
     DiscreteLinearSystem(input, output, modelargs=(), solverargs=(); 
         A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
         alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
@@ -110,12 +114,12 @@ Constructs a `DiscreteLinearSystem` with `input` and `output`. `state` is the in
 
 The `DiscreteLinearSystem` is represented by the following state and output equations.
 ```math
-\begin{array}{l}
-    \dot{x} = A x + B u \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x} = A x + B u \\[0.25cm]
     y = C x + D u 
-\end{array}
+\\end{array}
 ```
-where ``x`` is `state`. `solver` is used to solve the above differential equation.
+where ``x`` is `state`.
 """
 @def_discrete_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractDiscreteSystem
     A::Matrix{Float64} = fill(-1., 1, 1)
@@ -132,15 +136,15 @@ where ``x`` is `state`. `solver` is used to solve the above differential equatio
 end
 
 
-@doc raw"""
+"""
     Henon()
 
 Constructs a `Henon` system evolving with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - \alpha (x_1^2) + x_2 \\[0.25cm]
-    \dot{x}_2 = \beta x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - \\alpha (x_1^2) + x_2 \\[0.25cm]
+    \\dot{x}_2 = \\beta x_1
+\\end{array}
 ```
 """
 @def_discrete_system mutable struct HenonSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
@@ -158,15 +162,15 @@ Constructs a `Henon` system evolving with the dynamics
     output::OP = Outport(2)
 end
 
-@doc raw"""
+"""
     LoziSystem()
 
 Constructs a `Lozi` system evolving with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - \alpha |x_1| + x_2 \\[0.25cm]
-    \dot{x}_2 = \beta x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - \\alpha |x_1| + x_2 \\[0.25cm]
+    \\dot{x}_2 = \\beta x_1
+\\end{array}
 ```
 """
 @def_discrete_system mutable struct LoziSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
@@ -185,15 +189,15 @@ Constructs a `Lozi` system evolving with the dynamics
 end
 
 
-@doc raw"""
+"""
     BogdanovSystem() 
 
 Constructs a Bogdanov system with equations
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_1 + \dot{x}_2 \\[0.25cm]
-    \dot{x}_2 = x_2 + \epsilon + x_2 + k x_1 (x_1 - 1) + \mu  x_1 x_2
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = x_1 + \\dot{x}_2 \\[0.25cm]
+    \\dot{x}_2 = x_2 + \\epsilon + x_2 + k x_1 (x_1 - 1) + \\mu  x_1 x_2
+\\end{array}
 ```
 """
 @def_discrete_system mutable struct BogdanovSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
@@ -213,15 +217,15 @@ Constructs a Bogdanov system with equations
 end
 
 
-@doc raw"""
+"""
     GingerbreadmanSystem() 
 
 Constructs a GingerbreadmanSystem with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - x_2 + |x_1|\\[0.25cm]
-    \dot{x}_2 = x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - x_2 + |x_1|\\[0.25cm]
+    \\dot{x}_2 = x_1
+\\end{array}
 ```
 """
 @def_discrete_system mutable struct GingerbreadmanSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
@@ -238,14 +242,14 @@ Constructs a GingerbreadmanSystem with the dynamics
 end
 
 
-@doc raw"""
+"""
     LogisticSystem() 
 
 Constructs a LogisticSystem with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x} = r x (1 - x)
-\end{array}
+\\begin{array}{l}
+    \\dot{x} = r x (1 - x)
+\\end{array}
 ```
 """
 @def_discrete_system mutable struct LogisticSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem

@@ -4,7 +4,7 @@
 export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound
 
 """
-    AbstractPin{T} 
+    $(TYPEDEF)
 
 Abstract type of `Outpin` and `Inpin`. See also: [`Outpin`](@ref), [`Inpin`](@ref)
 """
@@ -12,9 +12,11 @@ abstract type AbstractPin{T} end
 
 
 """
-    Outpin{T}()
+    $(TYPEDEF) 
 
-Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its links.
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 mutable struct Outpin{T} <: AbstractPin{T}
     links::Union{Vector{Link{T}}, Missing}
@@ -29,7 +31,11 @@ Outpin() = Outpin{Float64}()
 show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbound:$(isbound(outpin)))")
 
 """
-    Inpin{T}()
+    $(TYPEDEF) 
+
+# Fields 
+
+    $(TYPEDFIELDS)
 
 Constructs and `InPut` pin. The data flow from `Inpin` is inwards to the pin i.e., data is read from links of `InPort`.
 """
@@ -45,7 +51,7 @@ Inpin() = Inpin{Float64}()
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
 
 """
-    bind(link::Link, pin)
+    $(SIGNATURES) 
 
 Binds `link` to `pin`. When bound, data written into or read from `pin` is written into or read from `link`.
 """
@@ -53,7 +59,7 @@ bind(link::Link, inpin::Inpin) = (inpin.link = link; link.slaveid = inpin.id)
 bind(link::Link, outpin::Outpin) = (outpin.links === missing ? (outpin.links = [link]) : push!(outpin.links, link); link.masterid = outpin.id)
 
 """
-    isbound(pin::AbstractPin)
+    $(SIGNATURES) 
 
 Returns `true` if `pin` is bound to other pins.
 """
@@ -64,14 +70,14 @@ end
 isbound(inpin::Inpin) = inpin.link !== missing
 
 """
-    eltype(pin::AbstractPin)
+    $(SIGNATURES) 
 
 Returns element typef of pin.
 """
 eltype(pin::AbstractPin{T}) where T = T
 
 """
-    take!(pin::Inpin)
+    $(SIGNATURES) 
 
 Takes data from `pin`. The data is taken from the links of `pin`.
 
@@ -79,7 +85,7 @@ Takes data from `pin`. The data is taken from the links of `pin`.
     To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
 
 # Example 
-```jldoctest
+```julia
 julia> ip = Inpin();
 
 julia> l = Link();
@@ -100,7 +106,7 @@ julia> take!(ip)
 take!(pin::Inpin) = take!(pin.link)
 
 """
-    put!(pin::Outpin, val)
+    $(SIGNATURES) 
 
 Puts `val` to `pin`. `val` is put into the links of `pin`.
 
@@ -108,7 +114,7 @@ Puts `val` to `pin`. `val` is put into the links of `pin`.
     To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
 
 # Example 
-```jldoctest
+```julia
 julia> op = Outpin();
 
 julia> l = Link();
@@ -134,22 +140,13 @@ put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 
 
 ##### Connecting and disconnecting links
-# #
-# # This `iterate` function is dummy. It is defined just for `[l...]` to be written.
-# #
-# iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
-
 """
-    connect!(outpin::Link, inpin::Link)
+    $(SIGNATURES)
 
 Connects `outpin` to `inpin`. When connected, any element that is put into `outpin` is also put into `inpin`. 
 
-    connect!(outpin::AbstractVector{<:Link}, inpin::AbstractVector{<:Link})
-
-Connects each link in `outpin` to each link in `inpin` one by one. See also: [`disconnect!`](@ref)
-
 # Example 
-```jldoctest 
+```julia 
 julia> op, ip = Outpin(), Inpin();
 
 julia> l = connect!(op, ip)
@@ -177,7 +174,7 @@ end
 connect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect!.(outpins, inpins)
 
 """
-    disconnect!(link1::Link, link2::Link)
+    $(SIGNATURES) 
 
 Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect!`](@ref)
 """
@@ -190,7 +187,7 @@ disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) 
 
 
 """
-    isconnected(link1, link2)
+    $(SIGNATURES) 
 
 Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important. 
 See also [`connect!`](@ref), [`disconnect!`](@ref)

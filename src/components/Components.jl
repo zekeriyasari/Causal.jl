@@ -1,6 +1,18 @@
 
+"""
+`Components` module including `Sinks`, `Systems` and `Sinks`.
+
+# Imports
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module Components 
 
+using DocStringExtensions
 using Reexport 
 
 include("componentsbase/ComponentsBase.jl")

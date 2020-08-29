@@ -1,7 +1,17 @@
-# This file contains the static systems of Causal.
+"""
+Includes static system components such as adder, multiplier, gain, etc.
 
+# Imports 
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module StaticSystems 
 
+using DocStringExtensions
 using UUIDs, LinearAlgebra, Interpolations
 using Causal.Connections 
 using Causal.Utilities
@@ -40,7 +50,7 @@ Here, `MyStaticSystem` has `N` parameters, an `output` port, an `input` port and
     New static system must be a subtype of `AbstractStaticSystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_static_system struct MyStaticSystem{IP, OP, RO} <: AbstractStaticSystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
@@ -77,12 +87,16 @@ end
 ##### Define prototipical static systems.
 
 """
-    StaticSystem(; readout, input, output)
+    $(TYPEDEF)
 
-Consructs a generic static system with `readout` function, `input` port and `output` port.
+Generic static system with `readout` function, `input` port and `output` port.
+
+# Fields 
+
+    $(TYPEDFIELDS)
 
 # Example 
-```jldoctest 
+```julia 
 julia> ss = StaticSystem(readout = (t,u) -> u[1] + u[2], input=Inport(2), output=Outport(1));
 
 julia> ss.readout(0., ones(2))
@@ -96,17 +110,17 @@ julia> ss.readout(0., ones(2))
 end
 
 
-@doc raw"""
+"""
     Adder(signs=(+,+))
 
 Construts an `Adder` with input bus `input` and signs `signs`. `signs` is a tuplle of `+` and/or `-`. The output function `g` of `Adder` is of the form,
 ```math 
-    y = g(u, t) =  \sum_{j = 1}^n s_k u_k
+    y = g(u, t) =  \\sum_{j = 1}^n s_k u_k
 ```
 where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`, ``u_k`` is the `k`th value of `input` and ``y`` is the value of `output`. The default value of `signs` is all `+`.
 
 # Example 
-```jldoctest
+```julia
 julia> adder = Adder(signs=(+, +, -));
 
 julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
@@ -121,17 +135,17 @@ true
 end
 
 
-@doc raw"""
+"""
     Multiplier(ops=(*,*))
 
 Construts an `Multiplier` with input bus `input` and signs `signs`. `signs` is a tuplle of `*` and/or `/`. The output function `g` of `Multiplier` is of the form,
 ```math 
-    y = g(u, t) =  \prod_{j = 1}^n s_k u_k
+    y = g(u, t) =  \\prod_{j = 1}^n s_k u_k
 ```
 where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`, ``u_k`` is the `k`th value of `input` and ``y`` is the value of the `output`. The default value of `signs` is all `*`.
 
 # Example 
-```jldoctest
+```julia
 julia> mlt = Multiplier(ops=(*, *, /));
 
 julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
@@ -153,7 +167,7 @@ true
 end
 
 
-@doc raw"""
+"""
     Gain(input; gain=1.)
 
 Constructs a `Gain` whose output function `g` is of the form 
@@ -163,7 +177,7 @@ Constructs a `Gain` whose output function `g` is of the form
 where ``K`` is `gain`, ``u`` is the value of `input` and `y` is the value of `output`.
 
 # Example 
-```jldoctest
+```julia
 julia> K = [1. 2.; 3. 4.];
 
 julia> sfunc = Gain(input=Inport(2), gain=K);
@@ -180,7 +194,7 @@ true
 end
 
 
-@doc raw"""
+"""
     Terminator(input::Inport)
 
 Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
@@ -201,7 +215,7 @@ Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `i
 the values from `initial` is returned.
 
 # Example
-```jldoctest
+```julia
 julia> Memory(delay=0.1)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 
@@ -238,14 +252,14 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
 end 
 
 
-@doc raw"""
+"""
     Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
 
 Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and coupling matrix `cplmat` of size ``d \times d``. The output function `g` of `Coupler` is of the form 
 ```math 
-    y = g(u, t) = (E \otimes P) u
+    y = g(u, t) = (E \\otimes P) u
 ```
-where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
+where ``\\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
 @def_static_system struct Coupler{C1, C2, IP, OP, RO} <: AbstractStaticSystem
     conmat::C1 = [-1. 1; 1. 1.]
@@ -257,14 +271,14 @@ where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplm
         ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )
 end
 
-@doc raw"""
+"""
     Differentiator(kd=1; callbacks=nothing, name=Symbol())
 
 Consructs a `Differentiator` whose input output relation is of the form 
 ```math 
-    y(t) = k_d \dot{u}(t)
+    y(t) = k_d \\dot{u}(t)
 ```
-where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
+where ``u(t)`` is the input and ``y(t)`` is the output and ``k_d`` is the differentiation constant.
 """
 @def_static_system struct Differentiator{IP, OP, RO} <: AbstractStaticSystem 
     kd::Float64 = 1. 

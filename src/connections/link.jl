@@ -3,16 +3,14 @@
 export Link, launch, refresh!
 
 """
-    Link{T}(ln::Int=64) where {T}
+    $(TYPEDEF) 
 
-Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type is `T` and mode is `Cyclic`.
+# Fields 
 
-    Link(ln::Int=64)
-
-Constructs a `Link` with element type `Float64` and buffer length `ln`. The buffer element type is `Float64` and mode is `Cyclic`.
+    $(TYPEDFIELDS) 
 
 # Example
-```jldoctest
+```julia
 julia> l = Link{Int}(5)
 Link(state:open, eltype:Int64, isreadable:false, iswritable:false)
 
@@ -21,7 +19,7 @@ Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 ```
 """
 mutable struct Link{T}
-    buffer::Buffer{Cyclic, T, 1}
+    buffer::Buffer{Cyclic, T}
     channel::Channel{T}
     masterid::UUID
     slaveid::UUID
@@ -35,7 +33,7 @@ show(io::IO, link::Link) = print(io, "Link(state:$(isopen(link) ? :open : :close
     "isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
 
 """
-    eltype(link::Link)
+    $(SIGNATURES) 
 
 Returns element type of `link`.
 """
@@ -43,7 +41,7 @@ eltype(link::Link{T}) where {T} = T
 
 ##### Link reading writing.
 """
-    put!(link::Link, val)
+    $(SIGNATURES) 
 
 Puts `val` to `link`. `val` is handed over to the `channel` of `link`. `val` is also written in to the `buffer` of `link`.
 
@@ -51,7 +49,7 @@ Puts `val` to `link`. `val` is handed over to the `channel` of `link`. `val` is 
     `link` must be writable to put `val`. That is, a runnable task that takes items from the link must be bounded to `link`.
 
 # Example
-```jldoctest
+```julia
 julia> l = Link();
 
 julia> t  = @async while true 
@@ -81,7 +79,7 @@ end
 
 
 """
-    take!(link::Link)
+    $(SIGNATURES) 
 
 Take an element from `link`.
 
@@ -89,7 +87,7 @@ Take an element from `link`.
     `link` must be readable to take value. That is, a runnable task that puts items from the link must be bounded to `link`.
 
 # Example
-```jldoctest
+```julia
 julia> l = Link(5);
 
 julia> t = @async for item in 1. : 5.
@@ -111,7 +109,7 @@ function take!(link::Link)
 end
 
 """
-    close(link)
+    $(SIGNATURES) 
 
 
 Closes `link`. All the task bound the `link` is also terminated safely. When closed, it is not possible to take and put element from the `link`. See also: [`take!(link::Link)`](@ref), [`put!(link::Link, val)`](@ref)
@@ -127,39 +125,39 @@ end
 
 ##### State check of link.
 """
-    isopen(link::Link)
+    $(SIGNATURES) 
 
 Returns `true` if `link` is open. A `link` is open if its `channel` is open.
 """
 isopen(link::Link) = isopen(link.channel) 
 
 """
-    isreadable(link::Link)
+    $(SIGNATURES) 
 
 Returns `true` if `link` is readable. When `link` is readable, data can be read from `link` with `take` function.
 """
 isreadable(link::Link) = length(link.channel.cond_put.waitq) > 0
 
 """
-    writable(link::Link)
+    $(SIGNATURES) 
 
 Returns `true` if `link` is writable. When `link` is writable, data can be written into `link` with `put` function.
 """
 iswritable(link::Link) = length(link.channel.cond_take.waitq) > 0
 
 """
-    isfull(link::Link)
+    $(SIGNATURES) 
 
 Returns `true` if the `buffer` of `link` is full.
 """
 isfull(link::Link) = isfull(link.buffer)
 
-"""
-    snapshot(link::Link)
+# """
+#     $(SIGNATURES) 
 
-Returns all the data of the `buffer` of `link`.
-"""
-snapshot(link::Link) = link.buffer.data
+# Returns all the data of the `buffer` of `link`.
+# """
+# snapshot(link::Link) = link.buffer.data
 
 ##### Launching links.
 
@@ -180,14 +178,14 @@ function putter(link::Link, vals)
 end
 
 """
-    bind(link::Link, task::Task)
+    $(SIGNATURES) 
 
 Binds `task` to `link`. When `task` is done `link` is closed.
 """
 bind(link::Link, task::Task) = bind(link.channel, task)
 
 """
-    collect(link::Link)
+    $(SIGNATURES) 
 
 Collects all the available data on the `link`.
 
@@ -195,7 +193,7 @@ Collects all the available data on the `link`.
     To collect all available data from `link`, a task must be bounded to it.
 
 # Example
-```jldoctest
+```julia
 julia> l = Link();  # Construct a link.
 
 julia> t = @async for item in 1 : 5  # Construct a task
@@ -220,7 +218,7 @@ julia> collect(l)  # Collect remaining data.
 collect(link::Link) = collect(link.channel)
 
 """
-    launch(link::Link)
+    $(SIGNATURES) 
 
 Constructs a `taker` task and binds it to `link`. The `taker` task reads the data and prints an info message until `missing` is read from the `link`.
 """
@@ -231,7 +229,7 @@ function launch(link::Link)
 end
 
 """
-    launch(link:Link, valrange)
+    $(SIGNATURES) 
 
 Constructs a `putter` task and binds it to `link`. `putter` tasks puts the data in `valrange`.
 """
@@ -241,14 +239,8 @@ function launch(link::Link, valrange)
     task
 end
 
-function launch(link::Link, taskname::Symbol, valrange)
-    msg = "`launch(link, taskname, valrange)` has been deprecated."
-    msg *= "Use `launch(link)` to launch taker task, `launch(link, valrange)` to launch putter task"
-    @warn msg
-end
-
 """
-    refresh!(link::Link) 
+    $(SIGNATURES) 
 
 Reconstructst the channel of `link` is its channel is closed.
 """

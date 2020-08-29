@@ -42,7 +42,7 @@ Here, `MyRODESystem` has `N` parameters. `MyRODESystem` is represented by the `r
     New RODE system must be a subtype of `AbstractRODESystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_rode_system mutable struct MySystem{RH, RO, IP, OP} <: AbstractRODESystem
            A::Matrix{Float64} = [2. 0.; 0 -2]
            righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
@@ -74,9 +74,13 @@ end
 ##### Define RODE sytem library 
 
 """
-    RODESystem(; righthandside, readout, state, input, output)
+    $(TYPEDEF)
 
-Constructs a generic RODE system 
+A generic RODE system 
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 @def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
     righthandside::RH 
@@ -86,14 +90,14 @@ Constructs a generic RODE system
     output::OP
 end
 
-@doc raw"""
+"""
     MultiplicativeNoiseLinearSystem() 
 
 Constructs a `MultiplicativeNoiseLinearSystem` with the dynamics 
 ```math 
-\begin{array}{l}
-    \dot{x} = A x W
-\end{array}
+\\begin{array}{l}
+    \\dot{x} = A x W
+\\end{array}
 where `W` is the noise process.
 ```
 """

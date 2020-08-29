@@ -1,5 +1,16 @@
+"""
+Includes static and dynamic system components.
+
+# Imports 
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module Systems 
 
+using DocStringExtensions
 using Reexport 
 
 include("staticsystems/StaticSystems.jl")

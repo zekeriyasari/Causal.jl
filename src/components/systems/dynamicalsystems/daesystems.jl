@@ -43,7 +43,7 @@ Here, `MyDAESystem` has `N` parameters. `MyDAESystem` is represented by the `rig
     New DAE system must be a subtype of `AbstractDAESystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_dae_system mutable struct MyDAESystem{RH, RO, ST, IP, OP} <: AbstractDAESystem
         righthandside::RH = function sfuncdae(out, dx, x, u, t)
                 out[1] = x[1] + 1 - dx[1]
@@ -79,12 +79,16 @@ end
 ##### Defien DAE system library 
 
 """
-    DAESystem(; righthandside, readout, state, stateder, diffvars, input, output)
+    $(TYPEDEF) 
 
-Constructs a generic DAE system.
+A generic DAE system.
+
+# Fields 
+
+    $(TYPEDFIELDS)
 
 # Example
-```jldoctest
+```julia
 julia> function sfuncdae(out, dx, x, u, t)
            out[1] = x[1] + 1 - dx[1]
            out[2] = (x[1] + 1) * x[2] + 2
@@ -111,16 +115,16 @@ DAESystem(righthandside:sfuncdae, readout:ofuncdae, state:[1.0, -1.0], t:0.0, in
 end
 
 
-@doc raw"""
+"""
     RobertsonSystem() 
 
 Constructs a Robertson systme with the dynamcis 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\[0.25cm]
-    \dot{x}_2 = k_1 x_1 - k_2 x_2^2 - k_3 x_2 x_3 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\[0.25cm]
+    \\dot{x}_2 = k_1 x_1 - k_2 x_2^2 - k_3 x_2 x_3 \\[0.25cm]
     1 = x_1 + x_2 + x_3 
-\end{array}
+\\end{array}
 ```
 """
 @def_dae_system mutable struct RobertsonSystem{RH, RO, IP, OP} <: AbstractDAESystem 
@@ -140,18 +144,18 @@ Constructs a Robertson systme with the dynamcis
     output::OP = Outport(2)
 end
 
-@doc raw"""
+"""
     PendulumSystem() 
 
 Constructs a Pendulum systme with the dynamics
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_3 \\[0.25cm]
-    \dot{x}_2 = x_4 \\[0.25cm]
-    \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = x_3 \\[0.25cm]
+    \\dot{x}_2 = x_4 \\[0.25cm]
+    \\dot{x}_3 = -\\dfrac{F}{m l} x_1 \\[0.25cm]
+    \\dot{x}_4 = g \\dfrac{F}{l} x_2 \\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
-\end{array}
+\\end{array}
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """
@@ -176,18 +180,18 @@ where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``
 end
 
 
-@doc raw"""
+"""
     RLCSystem() 
 
 Construsts a RLC system with the dynamics
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_3 \\[0.25cm]
-    \dot{x}_2 = x_4 \\[0.25cm]
-    \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = x_3 \\[0.25cm]
+    \\dot{x}_2 = x_4 \\[0.25cm]
+    \\dot{x}_3 = -\\dfrac{F}{m l} x_1 \\[0.25cm]
+    \\dot{x}_4 = g \\dfrac{F}{l} x_2 \\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
-\end{array}
+\\end{array}
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """

@@ -1,6 +1,18 @@
 
+"""
+`Connections` module including types such as links, pins ans ports to connect the components. 
+
+# Imports
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module Connections 
 
+using DocStringExtensions
 using UUIDs
 using Causal.Utilities
 

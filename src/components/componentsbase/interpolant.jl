@@ -3,9 +3,11 @@
 export Interpolant
 
 """
-    Interpolant(tinit, tfinal, coefinit, coeffinal)
+    $(TYPEDEF)
 
-Constructs a linnear interpolant that interpolates between the poinsts `(tinit, coefinit)` and `(tfinal, coeffinal)`.
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 mutable struct Interpolant{TMB, INB, ITP}
     timebuf::TMB
@@ -23,11 +25,16 @@ show(io::IO, interpolant::Interpolant) = print(io, "Interpolant(timebuf:$(interp
     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
 
 # Callling interpolant.
+"""
+    $(SIGNATURES)
+
+Returns interpolant fucntion at index `idx`.
+"""
 getindex(interpolant::Interpolant, idx::Int) = interpolant.itp[idx]
 
 # Update of interpolant. That is, reinterpolation. 
 """
-    update!(intepolant) 
+    $(SIGNATURES)
 
 Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
 """

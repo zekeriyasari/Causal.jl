@@ -1,7 +1,17 @@
-# 
-# Julia System Desciption Language
-# 
 module Causal
+
+using DocStringExtensions
+
+"""
+    A modeling and simulation framework a causal models.
+
+# Exports 
+    $(EXPORTS)
+
+# Imports
+    $(IMPORTS)
+"""
+Causal
 
 using Reexport 
 using UUIDs

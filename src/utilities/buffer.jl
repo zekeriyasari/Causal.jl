@@ -1,62 +1,63 @@
 # This file constains the Buffer for data buffering.
 
 export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, 
-    isfull, ishit, content, mode, snapshot, datalength, inbuf, outbuf
+    isfull, ishit, content, mode 
 
 ##### Buffer modes
 """
-    BufferMode 
+    $(TYPEDEF)
 
 Abstract type for buffer mode. Subtypes of `BufferMode` is `CyclicMode` and `LinearMode`.
 """
 abstract type BufferMode end
 
 """
-    CyclicMode <: BufferMode
+    $(TYPEDEF)
 
 Abstract type of cyclic buffer modes. See [`Cyclic`](@ref)
 """
 abstract type CyclicMode <: BufferMode end 
 
 """
-    LinearMode <: BufferMode 
+    $(TYPEDEF)
 
 Abstract type of linear buffer modes. See [`Normal`](@ref), [`Lifo`](@ref), [`Fifo`](@ref)
 """
 abstract type LinearMode <: BufferMode end  
 
 """
-    Cyclic <: CyclicMode
+    $(TYPEDEF)
 
 Cyclic buffer mode. The data is written to buffer until the buffer is full. When the buffer is full, new data is written by overwriting the data available in the buffer starting from the beginning of the buffer. When the buffer is read, the element written last is returned and the returned element is not deleted from the buffer.
 """
 struct Cyclic <: CyclicMode end 
 
 """
-    Normal <: LinearMode
+    $(TYPEDEF)
 
 LinearMode buffer mode. The data is written to buffer until the buffer is full. When it is full, no more data is written to the buffer. When read, the data written last is returned and the returned data is not deleted from the internal container of the buffer. 
 """
 struct Normal <: LinearMode end
 
 """
-    Lifo <: LinearMode
+    $(TYPEDEF)
 
 Lifo (Last-in-first-out) buffer mode. This type of buffer is a *last-in-first-out* buffer. Data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the last element written into buffer is returned. The returned element is deleted from the buffer.
 """
 struct Lifo <: LinearMode end 
 
 """
-    Fifo <: LinearMode
+    $(TYPEDEF)
 
 Fifo (First-in-last-out) buffer mode. This type of buffer is a *first-in-first-out* buffer. The data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first element written into the buffer is returned. The returned element is deleted from the buffer. 
 """
 struct Fifo <: LinearMode end 
 
+const BufferDataType{T} = Vector{Union{Missing, T}} where T
 
 ##### Buffer
 """
-    Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T}
+    $(TYPEDEF)
 
 Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to read from and written into the `Buffer`.  There exists for different buffer modes: 
 
@@ -70,24 +71,12 @@ Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of 
 
 The default mode for `Buffer` is `Cyclic` and default element type is `Float64`.
 
-    Buffer{M}(sz::Int...) where {M, T}
+# Fields 
 
-Constructs a `Buffer` of size `sz` and with element type of `T` and mode `M`.
-
-    Buffer(dtype::Type{T}, sz::Int...) where T
-
-Constructs a `Buffer` of size `sz` and element type `T`. The mode of buffer is `Cyclic`.
-
-    Buffer(sz::Int...)  
-
-Constructs a `Buffer` of size `sz` with mode `Cyclic` and element type of `Float64`.
-
-    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real}
-
-Constructs a `Buffer` with `data`.
+    $(TYPEDFIELDS)
 
 # Example 
-```jldoctest 
+```julia 
 julia> buf = Buffer(5)
 5-element Buffer{Cyclic,Float64,1}
 
@@ -98,88 +87,54 @@ julia> buf = Buffer{Lifo}(collect(reshape(1:8, 2, 4)))
 2×4 Buffer{Lifo,Int64,2}
 ```
 """
-mutable struct Buffer{M<:BufferMode, T, N} <: AbstractArray{T, N}
-    internals::Vector{Array{T, N}}
-    src::Int 
-    dst::Int
+mutable struct Buffer{M<:BufferMode, T} <: AbstractVector{T}
+    input::BufferDataType{T}
+    output::BufferDataType{T}
     index::Int 
     state::Symbol 
     id::UUID
-    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = new{M, T, ndims(data)}([copy(data), data], 1, 2, 1, :empty, uuid4())
+    Buffer{M}(::Type{T}, sz::Int) where {M,T} = new{M,T}(fill(missing, sz), fill(missing, sz), 1, :empty, uuid4())
 end
-Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T} = Buffer{M}(zeros(T, sz...)) 
-Buffer{M}(sz::Int...) where {M, T} = Buffer{M}(zeros(Float64, sz...)) 
-Buffer(dtype::Type{T}, sz::Int...) where T  = Buffer{Cyclic}(dtype, sz...)
-Buffer(sz::Int...) = Buffer(Float64, sz...)
+Buffer(::Type{T}, sz::Int) where {T,N} = Buffer{Cyclic}(T, sz)
+Buffer(sz::Int) = Buffer(Float64, sz)
 
 show(io::IO, buf::Buffer)= print(io, 
     "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
-# display(buf::Buffer) = println( 
-#     "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
-
-function swapinternals(buf::Buffer) 
-    temp = buf.src 
-    buf.src = buf.dst 
-    buf.dst = temp
-end
-
-"""
-    inbuf(buf::Buffer)
-
-Returns the element of `internals` of `buf` that is used to input data to `buf`. See also [`outbuf`][@ref)
-"""
-inbuf(buf::Buffer) = buf.internals[buf.src]
-
-"""
-    outbuf(buf::Buffer)
-
-Returns the element of `intervals` of `buf` that is used to take data out of `buf`. See also: [`inbuf`](@ref)
-"""
-outbuf(buf::Buffer) = buf.internals[buf.dst]
 
 ##### Buffer info.
 """
-    mode(buf::Buffer)
+    $(SIGNATURES) 
 
 Returns buffer mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 """
-mode(buf::Buffer{M, T, N}) where {M, T, N} = M
+mode(buf::Buffer{M, T}) where {M, T} = M
+
+"""
+    $(SIGNATURES) 
+
+Swaps `input` and `output` of `buffer`.
+"""
+function swap!(buf::Buffer)
+    hold = buf.output 
+    buf.output = buf.input 
+    buf.input = hold 
+end
 
 ##### AbstractArray interface.
 """
-    datalength(buf::Buffer)
-
-Returns the maximum number of data that can be hold in `buf`.
-
-# Example
-```jldoctest
-julia> buf = Buffer(5);
-
-julia> datalength(buf)
-5
-
-julia> buf2 = Buffer(2, 10);
-
-julia> datalength(buf2)
-10
-```
-"""
-datalength(buf::Buffer{M, T, N}) where {M, T, N} = N == 1 ? size(buf, 1) : size(buf, 2)
-
-"""
-    size(buf::Buffer)
+    $(SIGNATURES) 
 
 Returns the size of `buf`.
 """
-size(buf::Buffer) = size(outbuf(buf))
+size(buf::Buffer) = size(buf.input)
 
 """
-    getindex(buf::Buffer, idx::Vararg{Int, N})
+    $(SIGNATURES) 
 
 Returns an element from `buf` at index `idx`. Same as `buf[idx]`
 
 # Example
-```jldoctest
+```julia
 julia> buf = Buffer(2, 5);  # Construct a buffer.
 
 julia> write!(buf, reshape(2 : 2 : 20, 2, 5))  # Write data into buffer.
@@ -199,15 +154,15 @@ julia> buf[:, 2]
  16.0
 ```
 """
-getindex(buf::Buffer, idx::Vararg{Int, N}) where N = getindex(outbuf(buf), idx...)
+getindex(buf::Buffer, idx::Vararg{Int, N}) where N = buf.output[idx...]
 
 """
-    setindex!(buf::Buffer, val, idx)
+    $(SIGNATURES) 
 
 Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`.
 
 # Example
-```jldoctest
+```julia
 julia> buf = Buffer(2, 5);
 
 julia> buf[1] = 1
@@ -227,30 +182,30 @@ julia> buf.internals
  [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
 ```
 """
-setindex!(buf::Buffer, item, idx::Vararg{Int, N}) where N = setindex!(inbuf(buf), item, idx...)
+setindex!(buf::Buffer, val, idx::Vararg{Int, N}) where N = (buf.input[idx...] = val)
 
 ##### Buffer state control and check.
 """
-    isempty(buf::Buffer)
+    $(SIGNATURES) 
 
 Returns `true` if the index of `buf` is 1.
 """
 isempty(buf::Buffer) = buf.state == :empty
 
 """
-    isfull(buf::Buffer)
+    $SIGNATURES)
 
 Returns `true` if the index of `buf` is equal to the length of `buf`.
 """
-isfull(buf::Buffer) = buf.state == :full
+isfull(buf::Buffer) = buf.state == :full 
 
 """
-    ishit(buf::Buffer)
+    $(SIGNATURES) 
 
 Returns true when `buf` index is an integer multiple of datalength of `buf`. 
 
 # Example
-```jldoctest
+```julia
 julia> buf = Buffer(3);
 
 julia> for val in 1 : 7
@@ -266,21 +221,20 @@ ishit(buf) = true
 ishit(buf) = false
 ```
 """
-ishit(buf::Buffer) = buf.index % datalength(buf) == 1
+ishit(buf::Buffer) = buf.index % length(buf) == 1
 
 #
 # `setproperty!` function is used to keep track of buffer status. 
 # The tracking is done through the updates of `index` of buffer. 
 #
-function setproperty!(buf::Buffer, name::Symbol, val::Int)
-    if name == :index
+function setproperty!(buf::Buffer, name::Symbol, val::Int) 
+    if name == :index 
         val < 1 && error("Buffer index cannot be less than 1.")
         setfield!(buf, name, val)
         if val == 1
             buf.state = :empty
-        elseif val > datalength(buf)
+        elseif val > length(buf)
             buf.state = :full
-            # mode(buf) == Cyclic && setfield!(buf, :index, %(buf.index, datalength(buf)))
         else
             buf.state = :nonempty
         end
@@ -291,27 +245,15 @@ end
 
 ##### Writing into buffers
 """
-    write!(buf::Buffer{M, <:Real, 1}, val::Real) where {M}
+    $(SIGNATURES) 
 
 Writes `val` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 2}, val::AbstractVector{<:Real}) where {M}
-
-Writes `val` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M}
-
-Writes each element of `vals` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 2}, vals::AbstractMatrix{<:Real}) where {M}
-
-Writes each column of `vals` into `buf`.
 
 !!! warning
     Buffer mode determines how data is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
-```jldoctest
+```julia
 julia> buf = Buffer(5)
 5-element Buffer{Cyclic,Float64,1}
 
@@ -341,34 +283,24 @@ julia> buf.internals
  [2.0 1.0 … 0.0 0.0; 2.0 1.0 … 0.0 0.0]
 ```
 """
-function write!(buf::Buffer, val) end 
-write!(buf::Buffer{M, <:Real, 1}, val::Real) where {M} = _write!(buf, val)
-write!(buf::Buffer{M, <:Real, 2}, val::AbstractVector{<:Real}) where {M} = _write!(buf, val)
-write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M} = foreach(val -> _write!(buf, val), vals)
-write!(buf::Buffer{M, <:Real, 2}, vals::AbstractMatrix{<:Real}) where {M} = foreach(val -> _write!(buf, val), eachcol(vals))
-function _write!(buf::Buffer, val)
+function write!(buf::Buffer, val)
     checkstate(buf)
-    ibuf = inbuf(buf)
-    obuf = outbuf(buf)
-    rotate(ibuf, obuf, 1)
-    writeitem(ibuf, val)
+    circshift!(buf.input, buf.output, 1)
+    buf.input[1] = val 
+    swap!(buf) 
     buf.index += 1
-    swapinternals(buf)
     val
 end
-# writeitem(buf::Buffer{M, T, 1}, val) where {M, T} = (buf[buf.index] = val; buf.index += 1)
-writeitem(buf::AbstractArray{T, 1}, val) where {T} = buf[1] = val 
-writeitem(buf::AbstractArray{T, 2}, val) where {T} = buf[:, 1] = val
 checkstate(buf::Buffer) = mode(buf) != Cyclic && isfull(buf) && error("Buffer is full")
 
 ##### Reading from buffers
 """
-    read(buf::Buffer)
+    $(SIGNATURES) 
 
 Reads an element from `buf`. Reading is performed according to the mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
-```jldoctest
+```julia
 julia> buf = Buffer(3)
 3-element Buffer{Cyclic,Float64,1}
 
@@ -394,82 +326,69 @@ julia> for i = 1 : 3
 (read(buf), buf.internals) = (6.0, [[0.0, 0.0, 0.0, 0.0, 0.0], [4.0, 2.0, 0.0, 0.0, 0.0]])
 ```
 """
-function read(buf::Buffer)
-    isempty(buf) && error("Buffer is empty.")
-    val = _read(buf)
-    val
-end
-function _read(buf::Buffer{Fifo, T, N}) where {T, N}
-    obuf = outbuf(buf)
-    val = readitem(obuf, buf.index - 1)
+read(buf::Buffer) = isempty(buf) ? error("Buffer is empty") : _read(buf)
+_read(buf::Buffer{Cyclic,T}) where T = buf[1] 
+_read(buf::Buffer{Normal,T}) where T = buf[1] 
+function _read(buf::Buffer{Fifo, T}) where T
     buf.index -= 1
-    insertzero(obuf, buf.index)
+    val = buf[buf.index] 
+    buf.output[buf.index] = missing
     val
 end
-function _read(buf::Buffer{Lifo, T, N}) where {T, N}
-    obuf = outbuf(buf)
-    ibuf = inbuf(buf)
-    val = readitem(obuf, 1)
-    rotate(ibuf, obuf, -1)
-    buf.index -= 1
-    swapinternals(buf)
+function _read(buf::Buffer{Lifo, T}) where T 
+    val = buf[1]
+    buf.output[1] = missing 
+    circshift!(buf.input, buf.output, -1)
+    swap!(buf)
+    buf.index -= 1  
     val
 end
-function _read(buf::Buffer{M, T, N}) where {M<:Union{Normal, Cyclic}, T, N}
-    readitem(outbuf(buf), 1)
-end
-readitem(buf::AbstractArray{T, 1}, idx::Int) where {T} = buf[idx]
-readitem(buf::AbstractArray{T, 2}, idx::Int) where {T} = buf[:, idx]
-insertzero(buf::AbstractArray{T, 1}, idx::Int) where {T} = buf[idx] = zero(T)
-insertzero(buf::AbstractArray{T, 2}, idx::Int) where {T} = buf[:, idx] = zeros(T, size(buf, 1))
-rotate(ibuf::AbstractArray{T, 1}, obuf::AbstractArray{T, 1}, idx::Int) where {T} = circshift!(ibuf, obuf, idx)
-rotate(ibuf::AbstractArray{T, 2}, obuf::AbstractArray{T, 2}, idx::Int) where {T} = circshift!(ibuf, obuf, (0, idx))
 
-##### Accessing buffer internals
-"""
-    content(buf, [flip=true])
+# ##### Accessing buffer internals
+# """
+#     content(buf, [flip=true])
 
-Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
+# Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
 
-# Example
-```jldoctest
-julia> buf = Buffer(5);
+# # Example
+# ```julia
+# julia> buf = Buffer(5);
 
-julia> write!(buf, 1:3)
+# julia> write!(buf, 1:3)
 
-julia> content(buf, flip=false)
-3-element Array{Float64,1}:
- 3.0
- 2.0
- 1.0
+# julia> content(buf, flip=false)
+# 3-element Array{Float64,1}:
+#  3.0
+#  2.0
+#  1.0
 
-julia> buf = Buffer(2, 5);
+# julia> buf = Buffer(2, 5);
 
-julia> write!(buf, reshape(1:10, 2, 5))
+# julia> write!(buf, reshape(1:10, 2, 5))
 
-julia> content(buf)
-2×5 Array{Float64,2}:
- 1.0  3.0  5.0  7.0   9.0
- 2.0  4.0  6.0  8.0  10.0
-```
-"""
-function content(buf::Buffer; flip::Bool=true)
-    bufdim = ndims(buf)
-    if isfull(buf)
-        val = outbuf(buf)
-    else
-        val = bufdim == 1 ? buf[1 : buf.index - 1] : buf[:, 1 : buf.index - 1]
-    end
-    if flip 
-        return bufdim == 1 ? reverse(val, dims=1) : reverse(val, dims=2)
-    else
-        return val
-    end
-end
+# julia> content(buf)
+# 2×5 Array{Float64,2}:
+#  1.0  3.0  5.0  7.0   9.0
+#  2.0  4.0  6.0  8.0  10.0
+# ```
+# """
+# function content(buf::Buffer; flip::Bool=true)
+#     bufdim = ndims(buf)
+#     if isfull(buf)
+#         val = outbuf(buf)
+#     else
+#         val = bufdim == 1 ? buf[1 : buf.index - 1] : buf[:, 1 : buf.index - 1]
+#     end
+#     if flip 
+#         return bufdim == 1 ? reverse(val, dims=1) : reverse(val, dims=2)
+#     else
+#         return val
+#     end
+# end
 
-"""
-    snapshot(buf::Buffer)
+# """
+#     snapshot(buf::Buffer)
 
-Returns all elements in `buf`. See also: [`content`](@ref)
-"""
-snapshot(buf::Buffer) = outbuf(buf)
+# Returns all elements in `buf`. See also: [`content`](@ref)
+# """
+# snapshot(buf::Buffer) = outbuf(buf)

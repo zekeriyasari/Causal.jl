@@ -3,13 +3,13 @@
 export TaskManager, checktaskmanager
 
 """
-    TaskManager(pairs)
+    $(TYPEDEF) 
 
-Constructs a `TaskManager` with `pairs`. `pairs` is a dictionary whose keys are components and values are component tasks. Component tasks are constructed correponding to the components. A `TaskManager` is used to keep track of the component task launched corresponding to components.
+A `TaskManager` with `pairs`. `pairs` is a dictionary whose keys are components and values are component tasks. Component tasks are constructed correponding to the components. A `TaskManager` is used to keep track of the component task launched corresponding to components.
 
-    TaskManager()
+# Fields 
 
-Constructs a `TaskManager` with empty `pairs`.
+    $(TYPEDFIELDS)
 ```
 """
 mutable struct TaskManager{T, S, IP, OP, CB}

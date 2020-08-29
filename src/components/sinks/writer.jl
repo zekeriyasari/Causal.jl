@@ -3,9 +3,13 @@
 export Writer, write!, fwrite!, fread
 
 """
-    Writer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
-        path=joinpath(tempdir(), string(name))) 
-Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
+    $(TYPEDEF) 
+
+`Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
+
+# Fields
+
+    $(TYPEDFIELDS)
 
 !!! note 
     The type of `file` of `Writer` is [`JLD2`](https://github.com/JuliaIO/JLD2.jl).    
@@ -22,7 +26,7 @@ end
 show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
 
 """
-    write!(writer, td, xd)
+    $(SIGNATURES)
 
 Writes `xd` corresponding to `xd` to the file of `writer`.
 
@@ -50,17 +54,23 @@ julia> w.file[string(0.)]
 ```
 """
 write!(writer::Writer, td, xd) = fwrite!(writer.file, td, xd)
+
+"""
+    $(SIGNATURES)
+
+Writes `xd` corresponding to `td` to the `file`.
+"""
 fwrite!(file, td, xd) = file[string(td)] = xd
 
 """
-    read(writer::Writer, flatten=false)
+    $(SIGNATURES)
 
 Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is also flattened.
 """
 read(writer::Writer; flatten=true) = fread(writer.file.path, flatten=flatten)
 
 """
-    fread(path::String)
+    $(SIGNATURES)
 
 Reads the content of `jld2` file and returns the sorted file content. 
 """
@@ -83,7 +93,7 @@ end
 flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
 
 """
-    mv(writer::Writer, dst; force::Bool=false)
+    $(SIGNATURES)
 
 Moves the file of `writer` to `dst`. If `force` is `true`, the if `dst` is not a valid path, it is forced to be constructed.
 
@@ -113,7 +123,7 @@ function mv(writer::Writer, dst; force::Bool=false)
 end
 
 """
-    cp(writer::Writer, dst; force=false, follow_symlinks=false)
+    $(SIGNATURES)
 
 Copies the file of `writer` to `dst`. If `force` is `true`, the if `dst` is not a valid path, it is forced to be constructed. If `follow_symlinks` is `true`, symbolinks are followed.
 
@@ -141,14 +151,14 @@ function cp(writer::Writer, dst; force=false, follow_symlinks=false)
 end
 
 """ 
-    open(writer::Writer)
+    $(SIGNATURES)
 
 Opens `writer` by opening the its `file` in  `read/write` mode. When `writer` is not openned, it is not possible to write data in `writer`. See also [`close(writer::Writer)`](@ref)
 """
 open(writer::Writer) = (writer.file = jldopen(writer.file.path, "a"); writer)
 
 """
-    close(writer::Writer)
+    $(SIGNATURES)
 
 Closes `writer` by closing its `file`. When `writer` is closed, it is not possible to write data in `writer`. See also [`open(writer::Writer)`](@ref)
 """

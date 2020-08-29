@@ -3,6 +3,7 @@
 export @def_source, FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, 
     TriangularwaveGenerator, ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, 
     DampedExponentialGenerator
+
 """
     @def_source ex 
 
@@ -30,7 +31,7 @@ Here, `MySource` has `N` parameters, an `output` port and a `readout` function.
     New source must be a subtype of `AbstractSource` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_source struct MySource{OP, RO} <: AbstractSource
        a::Int = 1 
        b::Float64 = 2. 
@@ -66,12 +67,14 @@ end
 
 ##### Define Sources library
 """
-    FunctionGenerator(; readout, output=Outport()) 
+    $(TYPEDEF)
 
-Constructs a generic function generator with `readout` function and `output` port.
+# Fields 
+
+    $(TYPEDFIELDS)
 
 # Example 
-```jldoctest 
+```julia 
 julia> gen = FunctionGenerator(readout = t -> [t, 2t], output = Outport(2));
 
 julia> gen.readout(1.)
@@ -85,14 +88,18 @@ julia> gen.readout(1.)
     output::OP = Outport(1)    
 end
 
- @doc raw"""
-    SinewaveGenerator(;amplitude=1., frequency=1., phase=0., delay=0., offset=0.)
+"""
+    $(TYPEDEF)
 
-Constructs a `SinewaveGenerator` with output of the form
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`SinewaveGenerator` generates output of the form
 ```math 
-    x(t) = A sin(2 \pi f  (t - \tau) + \phi) + B
+    x(t) = A sin(2 \\pi f  (t - \\tau) + \\phi) + B
 ```
-where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi`` is `phase` and ``B`` is `offset`.
+where ``A`` is `amplitude`, ``f`` is `frequency`, ``\\tau`` is `delay` and ``\\phi`` is `phase` and ``B`` is `offset`.
 """
 @def_source struct SinewaveGenerator{RO, OP} <: AbstractSource
     amplitude::Float64 = 1.
@@ -106,14 +113,18 @@ where ``A`` is `amplitude`, ``f`` is `frequency`, ``\tau`` is `delay` and ``\phi
 end
 
 
-@doc raw"""
-    DampedSinewaveGenerator(;amplitude=1., decay=-0.5, frequency=1., phase=0., delay=0., offset=0.)
+"""
+    $(TYPEDEF)
 
-Constructs a `DampedSinewaveGenerator` which generates outputs of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`DampedSinewaveGenerator` generates outputs of the form 
 ```math 
-    x(t) = A e^{\alpha t} sin(2 \pi f (t - \tau) + \phi) + B
+    x(t) = A e^{\\alpha t} sin(2 \\pi f (t - \\tau) + \\phi) + B
 ```
-where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`` is `phase`, ``\tau`` is `delay` and ``B`` is `offset`.
+where ``A`` is `amplitude`, ``\\alpha`` is `decay`, ``f`` is `frequency`, ``\\phi`` is `phase`, ``\\tau`` is `delay` and ``B`` is `offset`.
 """
 @def_source struct DampedSinewaveGenerator{RO, OP} <: AbstractSource
     amplitude::Float64 = 1. 
@@ -128,17 +139,21 @@ where ``A`` is `amplitude`, ``\alpha`` is `decay`, ``f`` is `frequency`, ``\phi`
 end
 
 
-@doc raw"""
-    SquarewaveGenerator(;level1=1., level2=0., period=1., duty=0.5, delay=0.)
+"""
+    $(TYPEDEF)
 
-Constructs a `SquarewaveGenerator` with output of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+    `SquarewaveGenerator` generates output of the form 
 ```math 
-    x(t) = \left\{\begin{array}{lr}
-	A_1 + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\
-	A_2 + B,  &  (k + \alpha) T + \tau \leq t \leq (k + 1) T + \tau	
-	\end{array} \right. \quad k \in Z
+    x(t) = \\left\\{\\begin{array}{lr}
+	A_1 + B, &  kT + \\tau \\leq t \\leq (k + \\alpha) T + \\tau \\
+	A_2 + B,  &  (k + \\alpha) T + \\tau \\leq t \\leq (k + 1) T + \\tau	
+	\\end{array} \\right. \\quad k \\in Z
 ```
-where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
+where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` is `duty`. 
 """
 @def_source struct SquarewaveGenerator{OP, RO} <: AbstractSource
     high::Float64 = 1. 
@@ -152,17 +167,21 @@ where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\tau`` is 
 end
 
 
-@doc raw"""
-    TriangularwaveGenerator(;amplitude=1, period=1, duty=0.5, delay=0, offset=0)
+"""
+    $(TYPEDEF)
 
-Constructs a `TriangularwaveGenerator` with output of the form
+# Fields 
+
+    $(TYPEDFIELDS)
+
+    `TriangularwaveGenerator` generates output of the form
 ```math 
-    x(t) = \left\{\begin{array}{lr}
-	\dfrac{A t}{\alpha T} + B, &  kT + \tau \leq t \leq (k + \alpha) T + \tau \\[0.25cm]
-	\dfrac{A (T - t)}{T (1 - \alpha)} + B,  &  (k + \alpha) T + \tau \leq t \leq (k + 1) T + \tau	
-	\end{array} \right. \quad k \in Z
+    x(t) = \\begin{cases}
+    \\dfrac{A t}{\\alpha T} + B & kT + \\tau \\leq t \\leq (k + \\alpha) T + \\tau \\
+    \\dfrac{A (T - t)}{T (1 - \\alpha)} + B & (k + \\alpha) T + \\tau \\leq t \\leq (k + 1) T + \\tau
+    \\end{cases} \\quad k \\in Z
 ```
-where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is `duty`. 
+where ``A`` is `amplitude`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` is `duty`. 
 """
 @def_source struct TriangularwaveGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 =  1. 
@@ -186,10 +205,14 @@ where ``A`` is `amplitude`, ``T`` is `period`, ``\tau`` is `delay` ``\alpha`` is
 end
 
 
-@doc raw"""
-    ConstantGenerator(;amplitude=1.)
+"""
+    $(TYPEDEF)
 
-Constructs a `ConstantGenerator` with output of the form
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`ConstantGenerator` generates output of the form
 ```math 
     x(t) = A
 ```
@@ -202,14 +225,18 @@ where ``A`` is `amplitude.
 end
 
 
-@doc raw"""
-    RampGenerator(;scale=1, delay=0.)
+"""
+    $(TYPEDEF)
 
-Constructs a `RampGenerator` with output of the form
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`RampGenerator` generates output of the form
 ```math 
-    x(t) = \alpha (t - \tau)
+    x(t) = \\alpha (t - \\tau)
 ```
-where ``\alpha`` is the `scale` and ``\tau`` is `delay`.
+where ``\\alpha`` is the `scale` and ``\\tau`` is `delay`.
 """
 @def_source struct RampGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1.
@@ -220,17 +247,21 @@ where ``\alpha`` is the `scale` and ``\tau`` is `delay`.
 end
 
 
-@doc raw"""
-    StepGenerator(;amplitude=1, delay=0, offset=0)
+"""
+    $(TYPEDEF)
 
-Constructs a `StepGenerator` with output of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`StepGenerator` generates output of the form 
 ```math
-    x(t) = \left\{\begin{array}{lr}
-	B, &  t \leq \tau  \\
-	A + B,  &  t > \tau
-	\end{array} \right.
+    x(t) = \\left\\{\\begin{array}{lr}
+	B, &  t \\leq \\tau  \\
+	A + B,  &  t > \\tau
+	\\end{array} \\right.
 ```
-where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
+where ``A`` is `amplitude`, ``B`` is the `offset` and ``\\tau`` is the `delay`.
 """
 @def_source struct StepGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 = 1. 
@@ -242,14 +273,18 @@ where ``A`` is `amplitude`, ``B`` is the `offset` and ``\tau`` is the `delay`.
 end
 
 
-@doc raw"""
-    ExponentialGenerator(;scale=1, decay=-1, delay=0.)
+"""
+    $(TYPEDEF)
 
-Constructs an `ExponentialGenerator` with output of the form
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`ExponentialGenerator` generates output of the form
 ```math 
-    x(t) = A e^{\alpha (t - \tau)}
+    x(t) = A e^{\\alpha (t - \\tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay` and ``\tau`` is `delay`.
+where ``A`` is `scale`, ``\\alpha`` is `decay` and ``\\tau`` is `delay`.
 """
 @def_source struct ExponentialGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1. 
@@ -261,14 +296,18 @@ where ``A`` is `scale`, ``\alpha`` is `decay` and ``\tau`` is `delay`.
 end
 
 
-@doc raw"""
-    DampedExponentialGenerator(;scale=1, decay=-1, delay=0.)
+"""
+    $(TYPEDEF)
 
-Constructs an `DampedExponentialGenerator` with outpsuts of the form 
+# Fields 
+
+    $(TYPEDFIELDS)
+
+`DampedExponentialGenerator` generates outputs of the form 
 ```math 
-    x(t) = A (t - \tau) e^{\alpha (t - \tau)}
+    x(t) = A (t - \\tau) e^{\\alpha (t - \\tau)}
 ```
-where ``A`` is `scale`, ``\alpha`` is `decay`, ``\tau`` is `delay`.
+where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
 """
 @def_source struct DampedExponentialGenerator{OP, RO} <: AbstractSource
     scale::Float64 = 1.
@@ -279,7 +318,6 @@ where ``A`` is `scale`, ``\alpha`` is `decay`, ``\tau`` is `delay`.
     readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> 
         scale * (t - delay) * exp(decay * (t - delay)) + offset
 end
-
 
 ##### Pretty-Printing of generators.
 

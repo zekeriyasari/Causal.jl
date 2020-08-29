@@ -2,18 +2,15 @@
 
 export Clock, isrunning, ispaused, isoutoftime, set!, stop!, pause!
 
-import Base: iterate, take!, length
-
 Generator(t0, dt, tf) = 
     Channel{promote_type(typeof(t0),typeof(dt),typeof(tf))}(channel -> foreach(t -> put!(channel, t), t0:dt:tf))
 
 """
-    Clock(t::Real, dt::Real, tf::Real)
+    $(TYPEDEF) 
 
-Constructs a `Clock` with starting time `t`, final time `tf` and sampling inteval `dt`. When iterated, the `Clock` returns its current time. 
+# Fields 
 
-!!! warning 
-    When constructed, `Clock` is not running. To take clock ticks from `Clock`, the `Clock` must be setted. See [`take!(clk::Clock)`](@ref) and [`set!`](@ref) 
+    $(TYPEDFIELDS)
 """
 mutable struct Clock{T, CB}
     t::T 
@@ -36,12 +33,12 @@ show(io::IO, clk::Clock) = print(io,
 
 ##### Reading from clock
 """
-    take!(clk::Clock)
+    $(SIGNATURES)
 
 Takes a values from `clk`.
 
 # Example 
-```jldoctest
+```julia
 julia> clk = Clock(0., 0.1, 0.5)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
 
@@ -83,21 +80,21 @@ end
 
 ##### Clock state check 
 """
-    isrunning(clk::Clock)
+    $(SIGNATURES)
 
 Returns `true` if `clk` if `clk` is running.
 """
 isrunning(clk::Clock) = isready(clk.generator)
 
 """
-    ispaused(clk::Clock)
+    $(SIGNATURES)
 
 Returns `true` if `clk` is paused. When paused, the currnent time of `clk` is not advanced. See also [`pause!(clk::Clock)`](@ref)
 """
 ispaused(clk::Clock) = clk.paused
 
 """
-    isoutoftime(clk::Clock)
+    $(SIGNATURES)
 
 Returns `true` if `clk` is out of time, i.e., the current time of `clk` exceeds its final time. 
 """
@@ -105,12 +102,12 @@ isoutoftime(clk::Clock) = clk.t >= clk.tf
 
 ##### Controlling clock.
 """
-    set(clk::Clock, t::Real, dt::Real, tf::Real)
+    $(SIGNATURES)
 
 Sets `clk` for current clock time `t`, sampling time `dt` and final time `tf`. After the set,  it is possible to take clock tick from `clk`. See also [`take!(clk::Clock)`](@ref)
 
 # Example 
-```jldoctest
+```julia
 julia> clk = Clock(0., 0.1, 0.5)
 Clock(t:0.0, dt:0.1, tf:0.5, paused:false, isrunning:false)
 
@@ -137,7 +134,7 @@ end
 # end
 
 """
-    stop!(clk::Clock)
+    $(SIGNATURES)
 
 Unsets `clk`. After the stpp, it is possible to take clock ticks from `clk`. See also [`take!(clk::Clock)`](@ref)
 """
@@ -147,7 +144,7 @@ function stop!(clk::Clock)
 end
 
 """ 
-    pause!(clk::Clock)
+    $(SIGNATURES)
 
 Pauses `clk`. When paused, the current time of `clk` does not advance.
 
@@ -176,12 +173,12 @@ pause!(clk::Clock) = (clk.paused = true; clk)
 
 ##### Iterating clock.
 """
-    iterate(clk::Clock[, t=clk.t)
+    $(SIGNATURES)
 
 Iterationk interface for `clk`. `clk` can be iterated in a loop.
 
 # Example
-```jldoctest
+```julia
 julia> clk = Clock(0., 0.1, 0.3);
 
 julia> set!(clk)
@@ -199,5 +196,5 @@ t = 0.3
 iterate(clk::Clock, t=clk.t) = isready(clk.generator) ? (take!(clk), clk.t) : nothing
 
 ##### ProgressMeter interface.
-### This `length` method is implemented for [ProgressMeter](https://github.com/timholy/ProgressMeter.jl)
+# NOTE: This `length` method is implemented for [ProgressMeter](https://github.com/timholy/ProgressMeter.jl)
 length(clk::Clock) = length(clk.t:clk.dt:clk.tf)

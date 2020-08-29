@@ -45,7 +45,7 @@ Here, `MyDDESystem` has `N` parameters. `MyDDESystem` is represented by the `rig
     New DDE system must be a subtype of `AbstractDDESystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> _delay_feedback_system_cache = zeros(1)
 1-element Array{Float64,1}:
  0.0
@@ -103,9 +103,13 @@ end
 ##### Define DDE system library.
 
 """
-    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output) 
+    $(TYPEDEF)
 
-Construct a generic DDE system 
+A generic DDE system 
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 @def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
     constlags::CL 
@@ -119,9 +123,11 @@ Construct a generic DDE system
 end
 
 """
-    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output)
+    $(TYPEDEF) 
 
-Constructs DelayFeedbackSystem
+# Fields 
+
+    $(FIELDS)
 """
 @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
     constlags::Vector{Float64} = Causal._delay_feedback_system_constlags

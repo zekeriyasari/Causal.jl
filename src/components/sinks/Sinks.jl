@@ -1,7 +1,19 @@
 # This file constains sink tools for the objects of Causal.
 
+"""
+Includes sink components that sinks data such as writer, scope, printer.
+
+# Imports 
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module Sinks 
 
+using DocStringExtensions
 using Plots, JLD2, DataStructures, UUIDs
 using Causal.Utilities
 using Causal.Connections 
@@ -36,7 +48,7 @@ Here, `MySink` has `N` parameters and `action` function
     New static system must be a subtype of `AbstractSink` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_sink struct MySink{A} <: AbstractSink 
        action::A = actionfunc
        end

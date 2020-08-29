@@ -1,4 +1,18 @@
+
+"""
+Includes plugin tools for sinks 
+
+# Imports 
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module Plugins 
+
+using DocStringExtensions
 
 export AbstractPlugin, process, add, remove, enable, disable, check, @def_plugin
 
@@ -50,6 +64,20 @@ function add(name::AbstractString, url::AbstractString=remote_repo_url)
     end
 end
 
+"""
+    @def_plugin ex 
+
+Defines new plugin. The syntax is as follows. 
+
+```julia 
+@def_plugin struct NewPlugin <: AbstractPlugin 
+    param1::P1 = param1_default     # Optional field 
+        ⋮                                ⋮
+    param1::PN = param1_default     # Optional field 
+    process::PR = process_default   # Mandatory field
+end  
+```
+"""
 macro def_plugin(ex)
     ex.head == :struct || 
         error("Invalid usage. The expression should start with `struct`.\n$ex")

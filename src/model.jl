@@ -4,9 +4,12 @@ export @defmodel, Model, inspect!, initialize!, run!, terminate!, simulate!, get
     addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot
 
 """
-    Node(component, idx, label)
+    $(TYPEDEF) 
 
-Constructs a model `Node` with `component`. `idx` is the index and `label` is label of `Node`.
+Components are added to [`Model`](@ref) in the form of `Nodes`. A `Node` is a model component with index `idx` and component `component`.
+
+# Fields 
+    $(TYPEDFIELDS)
 """
 struct Node{CP, L}
     component::CP 
@@ -17,9 +20,13 @@ end
 show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(node.idx), label:$(node.label))")
 
 """ 
-    Branch(nodepair, indexpair, links)
+    $(TYPEDEF) 
 
-Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `indexpair` determines the subindices by which the elements of `nodepair` are connected.
+`Branch` are connections added to [`Model`](@ref). When nodesof a model are connected to each other with `Branches`.
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 struct Branch{NP, IP, LN<:AbstractVector{<:Link}}
     nodepair::NP 
@@ -31,13 +38,13 @@ show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), in
     "links:$(branch.links))")
 
 """
-    Model(components::AbstractVector)
+    $(TYPEDEF)
 
-Constructs a `Model` whose with components `components` which are of type `AbstractComponent`.
+`Model`s are connected components ready for simulation [`simulate!`](@ref).
 
-    Model()
+# Fields 
 
-Constructs a `Model` with empty components. After the construction, components can be added to `Model`.
+    $(TYPEDFIELDS)
 
 !!! warning
     `Model`s are units that can be simulated. As the data flows through the branches i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate!`](@ref)
@@ -66,12 +73,12 @@ show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), "
 
 ##### Addinng nodes and branches.
 """
-    addnode!(model, component; label=nothing)
+    $(SIGNATURES)
 
 Adds a node to `model`. Component is `component` and `label` is `label` the label of node. Returns added node.
 
 # Example 
-```jldoctest 
+```julia 
 julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
@@ -89,16 +96,12 @@ function addnode!(model::Model, component::AbstractComponent; label=nothing)
 end
 
 """
-    getnode(model, idx::Int) 
+    $(SIGNATURES)
 
-Returns node of `model` whose index is `idx`.
-
-    getnode(model, label)
-
-Returns node of `model` whose label is `label`.
+Returns node of `model` whose index is `idx`
 
 # Example
-```jldoctest
+```julia
 julia> model = Model()
 Model(numnodes:0, numedges:0, timesettings=(0.0, 0.01, 1.0))
 
@@ -129,7 +132,7 @@ function register(taskmanager, component)
 end
 
 """
-    addbranch!(model::Model, branch::Branch)
+    $(SIGNATURES)
 
 Adds `branch` to branched of `model`.
 """
@@ -144,18 +147,19 @@ function addbranch!(model::Model, nodepair::Pair, indexpair::Pair=(:)=>(:))
     branch
 end
 
+"""
+    $(SIGNATURES)
+
+Returns branch of the `model` that connects the node pair `nodepair`.
+"""
 getbranch(model::Model, nodepair::Pair{Int, Int}) = filter(branch -> branch.nodepair == nodepair, model.branches)[1]
 getbranch(model::Model, nodepair::Pair{Symbol, Symbol}) = 
     getbranch(model, getnode(model, nodepair.first).idx => getnode(model, nodepair.second).idx)
 
 """
-    deletebranch!(model::Model, branch::Branch)
+    $(SIGNATURES)
 
-Deletes `branch` from branched of `model`.
-
-    deletebranch!(model::Model, srcnode::Node, dstnode::Node) 
-
-Deletes branch between `srcnode` and `dstnode` of the `model`.
+Deletes `branch` from branches of `model`.
 """
 function deletebranch!(model::Model, nodepair::Pair{Int, Int})
     srcnode, dstnode = getnode(model, nodepair.first), getnode(model, nodepair.second)
@@ -172,7 +176,7 @@ deletebranch!(model::Model, nodepair::Pair{Symbol, Symbol}) =
 
 ##### Model inspection.
 """
-    inspect!(model::Model)
+    $(SIGNATURES)
 
 Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and 
 error is thrown.
@@ -210,7 +214,7 @@ end
 hasmemory(model, loop) = any([getnode(model, idx).component isa Memory for idx in loop])
 
 """
-    getloops(model)
+    $(SIGNATURES)
 
 Returns idx of nodes that constructs algrebraic loops.
 """
@@ -225,7 +229,7 @@ end
 
 
 """
-    breakloop!(model, loop, breakpoint=length(loop))
+    $(SIGNATURES)
 
 Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by inserting a `Memory` at the `breakpoint` 
 of loop.
@@ -417,7 +421,7 @@ end
 
 ##### Model initialization
 """
-    initialize!(model::Model)
+    $(SIGNATURES)
 
 Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
 """
@@ -482,7 +486,7 @@ end
 end
 
 """
-    run!(model::Model, withbar::Bool=true)
+    $(SIGNATURES)
 
 Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clock`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar indicating the simulation status is displayed on the console.
 
@@ -507,7 +511,7 @@ end
 # release(model::Model) = foreach(release, model.nodes)
 
 """
-    terminate!(model::Model)
+    $(SIGNATURES)
 
 Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
 """
@@ -548,8 +552,7 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints:
 end
 
 """
-    simulate!(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
-        logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
+    $(SIGNATURES)
 
 Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar indicating the simualation status is displayed on the console.
 """
@@ -570,7 +573,7 @@ function simulate!(model::Model; simdir::String=tempdir(), simprefix::String="Si
 end
 
 """ 
-    simulate!(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
+    $(SIGNATURES)
 
 Simulates the `model` starting from the initial time `t0` until the final time `tf` with the sampling interval of `tf`. For `kwargs` are 
 
@@ -585,7 +588,7 @@ end
 
 #### Troubleshooting 
 """
-    troubleshoot(model) 
+    $(SIGNATURES)
 
 Prints the exceptions of the tasks that are failed during the simulation of `model`.
 """
@@ -603,7 +606,7 @@ end
 
 ##### Plotting signal flow of the model 
 """
-    signalflow(model, args...; kwargs...)
+    $(SIGNATURES)
 
 Plots the signal flow of `model`. `args` and `kwargs` are passed into [`gplot`](https://github.com/JuliaGraphs/GraphPlot.jl) function.
 """

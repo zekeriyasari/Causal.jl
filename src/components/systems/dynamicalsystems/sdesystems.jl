@@ -49,7 +49,7 @@ Here, `MySDESystem` has `N` parameters. `MySDESystem` is represented by the `dri
     New SDE system must be a subtype of `AbstractSDESystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_sde_system mutable struct MySDESystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
            η::Float64 = 1.
            drift::DR = (dx, x, u, t) -> (dx .= x)
@@ -80,9 +80,13 @@ end
 ##### Define SDE system library
 
 """
-    SDESystem(; drift, diffusion, readout, state, input, output) 
+    $(TYPEDEF)
 
-Constructs a SDE system. 
+Generic SDE system. 
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 @def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
     drift::DR 
@@ -93,10 +97,14 @@ Constructs a SDE system.
     output::OP 
 end
 
-@doc raw"""
-    NoisyLorenzSystem() 
+"""
+    $(TYPEDEF)
 
-Constructs a noisy Lorenz system 
+Generic noisy Lorenz system
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 @def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
     σ::Float64 = 10.
@@ -117,10 +125,14 @@ Constructs a noisy Lorenz system
     output::OP = Outport(3) 
 end  
 
-@doc raw"""
-    NoisyLorenzSystem() 
+"""
+    $(TYPEDEF)
 
-Constructs a noisy Lorenz system 
+A forced noisy Lorenz system.
+
+# Fields 
+
+    $(TYPEDFIELDS)
 """
 @def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
     σ::Float64 = 10.

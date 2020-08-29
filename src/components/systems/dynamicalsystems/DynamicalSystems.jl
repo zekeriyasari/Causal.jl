@@ -1,6 +1,17 @@
+"""
+Includes dynamic system components that are represented by ordinary, random ordinary, stochastic, delay differential equations,  differential algebraic equations and discrete difference equations. 
 
+# Imports 
+
+    $(IMPORTS) 
+
+# Exports 
+
+    $(EXPORTS)
+"""
 module DynamicalSystems 
 
+using DocStringExtensions
 using UUIDs, LinearAlgebra
 using Causal.Utilities
 using Causal.Connections 

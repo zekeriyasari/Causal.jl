@@ -3,7 +3,11 @@
 export Callback, enable!, disable!, isenabled, applycallbacks
 
 """
-    Callback(condition, action)
+    $(TYPEDEF)
+
+# Fields 
+
+    $(TYPEDFIELDS)
 
 Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument function. The `condition` returns `true` if the condition it checks occurs, otherwise, it returns `false`. `action` performs the specific action for which the `Callback` is constructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
 
@@ -36,21 +40,21 @@ show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), ac
 
 ##### Callback controls
 """
-    enable!(clb::Callback)
+    $(SIGNATURES) 
 
 Enables `clb`.
 """
 enable!(clb::Callback) = clb.enabled = true
 
 """
-    disable!(clb::Callback)
+    $(SIGNATURES) 
 
 Disables `clb`.
 """
 disable!(clb::Callback) = clb.enabled = false
 
 """
-    isenabled(clb::Callback)
+    $(SIGNATURES) 
 
 Returns `true` if `clb` is enabled. Otherwise, returns `false`.
 """
@@ -63,7 +67,7 @@ isenabled(clb::Callback) = clb.enabled
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
 
 """
-    applycallbacks(obj)
+    $(SIGNATURES) 
 
 Calls the callbacks of `obj` if the callbacks are not nothing.
 

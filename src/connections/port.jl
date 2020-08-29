@@ -3,7 +3,7 @@
 export AbstractPort, Inport, Outport, datatype
 
 """
-    AbstractPort{P}
+    $(TYPEDEF)
 
 Abstract type of [`Outport`](@ref) and [`Inport`](@ref). See also: [`Outport`](@ref), [`Inport`](@ref).
 """
@@ -11,15 +11,17 @@ abstract type AbstractPort{P} <: AbstractVector{P} end
 
 
 """
-    Outport{T}(numpins=1) 
+    $(TYPEDEF)
 
-Constructs an `Outport` with `numpins` [`Outpin`](@ref).
+# Fields 
+
+    $(TYPEDFIELDS)
 
 !!! warning
     Element type of an `Outport` must be `Outpin`. See also [`Outpin`](@ref)
 
 # Example 
-```jldoctest
+```julia
 julia> Outport{Int}(2)
 2-element Outport{Outpin{Int64}}:
  Outpin(eltype:Int64, isbound:false)
@@ -43,15 +45,17 @@ show(io::IO, outport::Outport) = print(io, "Outport(numpins:$(length(outport)), 
 # display(outport::Outport) = println("Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
 
 """
-    Inport{T}(numpins=1) 
+    $(TYPEDEF) 
 
-Constructs an `Inport` with `numpins` [`Inpin`](@ref).
+# Fields 
+
+    $(TYPEDFIELDS)
 
 !!! warning
     Element type of an `Inport` must be `Inpin`. See also [`Inpin`](@ref)
 
 # Example 
-```jldoctest
+```julia
 julia> Inport{Int}(2)
 2-element Inport{Inpin{Int64}}:
  Inpin(eltype:Int64, isbound:false)
@@ -75,7 +79,7 @@ show(io::IO, inport::Inport) = print(io, "Inport(numpins:$(length(inport)), elty
 
 
 """
-    datatype(port::AbstractPort)
+    $(SIGNATURES)
 
 Returns the data type of `port`.
 """
@@ -83,19 +87,19 @@ datatype(port::AbstractPort{<:AbstractPin{T}}) where T = T
 
 ##### AbstractVector interface
 """
-    size(port::AbstractPort)
+    $(SIGNATURES)
 
 Retruns size of `port`.
 """
 size(port::AbstractPort) = size(port.pins)
 
 """
-    getindex(port::AbstractPort, idx::Vararg{Int, N}) where N 
+    $(SIGNATURES)
 
 Returns elements from `port` at index `idx`. Same as `port[idx]`.
 
 # Example
-```jldoctest
+```julia
 julia> op = Outport(3)
 3-element Outport{Outpin{Float64}}:
  Outpin(eltype:Float64, isbound:false)
@@ -118,12 +122,12 @@ julia> op[:]
 getindex(port::AbstractPort, idx::Vararg{Int, N}) where N = port.pins[idx...]
 
 """
-    setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N 
+    $(SIGNATURES)
 
 Sets `item` to `port` at index `idx`. Same as `port[idx] = item`.
 
 # Example
-```jldoctest
+```julia
 julia> op = Outport(3)
 3-element Outport{Outpin{Float64}}:
  Outpin(eltype:Float64, isbound:false)
@@ -146,7 +150,7 @@ setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N = port.pins[idx
 
 ##### Reading from and writing into from buses
 """
-    take!(inport::Inport)
+    $(SIGNATURES)
 
 Takes an element from `inport`. Each link of the `inport` is a read and a vector containing the results is returned.
 
@@ -154,7 +158,7 @@ Takes an element from `inport`. Each link of the `inport` is a read and a vector
     The `inport` must be readable to be read. That is, there must be a runnable tasks bound to links of the `inport` that writes data to `inport`.
 
 # Example 
-```jldoctest 
+```julia 
 julia> op, ip = Outport(), Inport()
 (Outport(numpins:1, eltype:Outpin{Float64}), Inport(numpins:1, eltype:Inpin{Float64}))
 
@@ -178,7 +182,7 @@ julia> take!(ip)
 take!(inport::Inport) = take!.(inport[:])
 
 """
-    put!(outport::Outport, vals)
+    $(SIGNATURES)
 
 Puts `vals` to `outport`. Each item in `vals` is putted to the `links` of the `outport`.
 
@@ -186,7 +190,7 @@ Puts `vals` to `outport`. Each item in `vals` is putted to the `links` of the `o
     The `outport` must be writable to be read. That is, there must be a runnable tasks bound to links of the `outport` that reads data from `outport`.
 
 # Example
-```jldoctest
+```julia
 julia> op, ip = Outport(), Inport() 
 (Outport(numpins:1, eltype:Outpin{Float64}), Inport(numpins:1, eltype:Inpin{Float64}))
 
@@ -217,7 +221,7 @@ end
 
 ##### Interconnection of busses.
 """
-    similar(port, numpins::Int=length(outport)) where {P<:Outpin{T}} where {T}
+    $(SIGNATURES)
 
 Returns a new port that is similar to `port` with the same element type. The number of links in the new port is `nlinks` and data buffer length is `ln`.
 """

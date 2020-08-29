@@ -75,10 +75,10 @@ macro def_sink(ex)
         :( buflen::Int = 64 ), 
         :( plugin::$PLUGIN_TYPE_SYMBOL = nothing ), 
         :( timebuf::$TIMEBUF_TYPE_SYMBOL = Buffer(buflen)  ), 
-        :( databuf::$DATABUF_TYPE_SYMBOL = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)  ), 
+        :( databuf::$DATABUF_TYPE_SYMBOL = Buffer(datatype(input), buflen)  ), 
         :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = plugin === nothing ? 
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))), true, 
+            Callback(sink->ishit(databuf), sink->action(sink, timebuf.output, databuf.output), true, id) :
+            Callback(sink->ishit(databuf), sink->action(sink, timebuf.output, plugin.process(databuf.output)), true, 
             id) ), 
         ])
     quote 

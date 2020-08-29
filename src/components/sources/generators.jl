@@ -109,7 +109,7 @@ where ``A`` is `amplitude`, ``f`` is `frequency`, ``\\tau`` is `delay` and ``\\p
     offset::Float64 = 0.
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude, frequency=frequency, delay=delay, offset=offset) ->
-        [amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset]
+        amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset
 end
 
 
@@ -135,7 +135,7 @@ where ``A`` is `amplitude`, ``\\alpha`` is `decay`, ``f`` is `frequency`, ``\\ph
     offset::Float64 = 0.
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude, decay=decay, frequency=frequency, phase=phase, delay=delay, offset=offset) ->
-        [amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset]
+        amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset
 end
 
 
@@ -163,7 +163,7 @@ where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\\tau`` is
     delay::Float64 = 0. 
     output::OP = Outport()
     readout::RO = (t, high=high, low=low, period=period, duty=duty, delay=delay) -> 
-        [t <= delay ? low : ( ((t - delay) % period <= duty * period) ? high : low )]
+        t <= delay ? low : ( ((t - delay) % period <= duty * period) ? high : low )
 end
 
 
@@ -192,13 +192,13 @@ where ``A`` is `amplitude`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` 
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude, period=period, duty=duty, delay=delay, offset=offset) -> begin 
         if t <= delay
-            return [offset]
+            return offset
         else
             t = (t - delay) % period 
             if t <= duty * period
-                [amplitude / (duty * period) * t + offset]
+                amplitude / (duty * period) * t + offset
             else
-                [(amplitude * (period - t)) / (period * (1 - duty)) + offset]
+                (amplitude * (period - t)) / (period * (1 - duty)) + offset
             end
         end
     end
@@ -221,7 +221,7 @@ where ``A`` is `amplitude.
 @def_source struct ConstantGenerator{OP, RO} <: AbstractSource
     amplitude::Float64 = 1. 
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude) -> [amplitude]
+    readout::RO = (t, amplitude=amplitude) -> amplitude
 end
 
 
@@ -243,7 +243,7 @@ where ``\\alpha`` is the `scale` and ``\\tau`` is `delay`.
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, scale=scale, delay=delay, offset=offset) ->  [scale * (t - delay) + offset]
+    readout::RO = (t, scale=scale, delay=delay, offset=offset) ->  scale * (t - delay) + offset
 end
 
 
@@ -269,7 +269,7 @@ where ``A`` is `amplitude`, ``B`` is the `offset` and ``\\tau`` is the `delay`.
     offset::Float64 = 0.
     output::OP = Outport()
     readout::RO = (t, amplitude=amplitude, delay=delay, offset=offset) -> 
-        [t - delay >= 0 ? amplitude + offset : offset]
+        t - delay >= 0 ? amplitude + offset : offset
 end
 
 
@@ -292,7 +292,7 @@ where ``A`` is `scale`, ``\\alpha`` is `decay` and ``\\tau`` is `delay`.
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> [scale * exp(decay * (t - delay)) + offset]
+    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> scale * exp(decay * (t - delay)) + offset
 end
 
 
@@ -316,7 +316,7 @@ where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
     offset::Float64 = 0.
     output::OP = Outport()
     readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> 
-        [scale * (t - delay) * exp(decay * (t - delay)) + offset]
+        scale * (t - delay) * exp(decay * (t - delay)) + offset
 end
 
 ##### Pretty-Printing of generators.

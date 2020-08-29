@@ -41,8 +41,44 @@ Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Oth
 """
 function writeoutput!(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    typeof(comp.output) <: Outport ? put!(comp.output, out) : nothing
+    typeof(comp.output) <: Outport ? put!(comp.output, wrap(out)) : nothing
+    # NOTE: When `out` is of type `Tuple`, then the output port of `comp` is greater than one. So data must be wrapped 
+    # to be written to the output port. See `wrap` 
 end
+
+#= 
+# Component readout function return Float64. The output port has one pin of type Float64.
+julia> out = 1.;    
+
+julia> Causal.Components.ComponentsBase.wrap(out)
+1-element Array{Float64,1}:
+ 1.0
+
+ # Component readout function return Vector{Float64}. The output port has one pin of type Vector{Float64}
+ julia> out = [1., 2.]; 
+
+julia> Causal.Components.ComponentsBase.wrap(out)
+1-element Array{Array{Float64,1},1}:
+ [1.0, 2.0]
+
+ # Component readout function return Tuple{Float64}. The output port has two pins of type Float64
+ julia> out = 1., 2.;   
+
+julia> Causal.Components.ComponentsBase.wrap(out)
+2-element Array{Float64,1}:
+ 1.0
+ 2.0
+
+# Component readout function return Tuple{Vector{Float64}}. The output port has two pins of type Vector{Float64} 
+julia> out = [1., 2.], [3.,4];
+
+julia> Causal.Components.ComponentsBase.wrap(out)
+2-element Array{Array{Float64,1},1}:
+ [1.0, 2.0]
+ [3.0, 4.0]
+=#
+wrap(out::Tuple) = [out...] 
+wrap(out) = [out]
 
 """
     $(SIGNATURES)
@@ -74,7 +110,12 @@ Evolves `comp` with the current input `u` and `t`.
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
-evolve!(comp::AbstractSink, u, t) = (write!(comp.timebuf, t); write!(comp.databuf, u); comp.sinkcallback(comp); nothing)
+evolve!(comp::AbstractSink, u, t) = (
+    # NOTE: Note the use of `only`. When the input ports are read, we have one-length input `u`. The reason of being 
+    # 1-length is that `u` is actully sampled input at time `t`. Before writing `u` into the `databuf` of `writer` 
+    # we take its one-and-only-one element using `only` function.
+    write!(comp.timebuf, t); write!(comp.databuf, only(u)); comp.sinkcallback(comp); nothing
+    )
 function evolve!(comp::AbstractStaticSystem, u, t)
     if typeof(comp) <: AbstractMemory 
         timebuf = comp.timebuf 

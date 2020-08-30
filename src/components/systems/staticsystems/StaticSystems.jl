@@ -244,12 +244,12 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
 """
 @def_static_system struct Memory{D, IN, TB, DB, IP, OP, RO} <: AbstractMemory
     delay::D = 1.
-    initial::IN = zeros(1)
+    initial::IN = 0.
     numtaps::Int = 5
     timebuf::TB = Buffer(numtaps)
-    databuf::DB = length(initial) == 1 ? Buffer(numtaps) : Buffer(length(initial), numtaps)
-    input::IP = Inport(length(initial))
-    output::OP = Outport(length(initial))
+    databuf::DB = Buffer(typeof(initial), numtaps)
+    input::IP = Inport{typeof(initial)}()
+    output::OP = Outport{typeof(initial)}()
     readout::RO = (u, t, delay=delay, initial=initial, numtaps=numtaps, timebuf=timebuf, databuf=databuf) -> begin 
         if t <= delay
             return initial
@@ -259,12 +259,12 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
             if length(tt) == 1
                 return uu[1]
             end
-            if ndims(databuf) == 1
+            if eltype(uu) <: AbstractVector
+                itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(hcat(uu...)))
+                return map(f -> f(t - delay), itp)
+            else
                 itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
                 return itp(t - delay)
-            else
-                itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(uu))
-                return map(f -> f(t - delay), itp)
             end
         end
     end

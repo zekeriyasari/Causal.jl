@@ -41,9 +41,9 @@ Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Oth
 """
 function writeoutput!(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    typeof(comp.output) <: Outport ? put!(comp.output, wrap(out)) : nothing
     # NOTE: When `out` is of type `Tuple`, then the output port of `comp` is greater than one. So data must be wrapped 
     # to be written to the output port. See `wrap` 
+    typeof(comp.output) <: Outport ? put!(comp.output, wrap(out)) : nothing
 end
 
 #= 
@@ -123,7 +123,7 @@ function evolve!(comp::AbstractStaticSystem, u, t)
         timebuf = comp.timebuf 
         databuf = comp.databuf
         write!(timebuf, t)
-        write!(databuf, u)
+        write!(databuf, copy(only(u)))
     end
 end
 function evolve!(comp::AbstractDynamicSystem, u, t)
@@ -146,7 +146,7 @@ update_interpolator!(interp::Nothing) = nothing
 update_interpolator!(interp::Nothing, u, t) = nothing
 function update_interpolator!(interp::Interpolant, u, t)
     write!(interp.timebuf, t)
-    write!(interp.databuf, u)
+    write!(interp.databuf, copy(only(u)))
     update!(interp)
 end
 

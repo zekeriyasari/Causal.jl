@@ -207,8 +207,8 @@ LorenzSystem that is driven by its inputs.
     end
     readout::RO = (x, u, t) -> x
     state::Vector{Float64} = rand(3)
-    input::IP = Inport(3)
-    output::OP = Outport(3) 
+    input::IP = Inport{Vector{Float64}}()
+    output::OP = Outport{Vector{Float64}}() 
 end  
 
 

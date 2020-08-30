@@ -345,47 +345,38 @@ function _read(buf::Buffer{Lifo, T}) where T
     val
 end
 
-# ##### Accessing buffer internals
-# """
-#     content(buf, [flip=true])
+##### Accessing buffer internals
+"""
+    content(buf, [flip=true])
 
-# Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
+Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
 
-# # Example
-# ```julia
-# julia> buf = Buffer(5);
+# Example
+```julia
+julia> buf = Buffer(5);
 
-# julia> write!(buf, 1:3)
+julia> write!(buf, 1:3)
 
-# julia> content(buf, flip=false)
-# 3-element Array{Float64,1}:
-#  3.0
-#  2.0
-#  1.0
+julia> content(buf, flip=false)
+3-element Array{Float64,1}:
+ 3.0
+ 2.0
+ 1.0
 
-# julia> buf = Buffer(2, 5);
+julia> buf = Buffer(2, 5);
 
-# julia> write!(buf, reshape(1:10, 2, 5))
+julia> write!(buf, reshape(1:10, 2, 5))
 
-# julia> content(buf)
-# 2×5 Array{Float64,2}:
-#  1.0  3.0  5.0  7.0   9.0
-#  2.0  4.0  6.0  8.0  10.0
-# ```
-# """
-# function content(buf::Buffer; flip::Bool=true)
-#     bufdim = ndims(buf)
-#     if isfull(buf)
-#         val = outbuf(buf)
-#     else
-#         val = bufdim == 1 ? buf[1 : buf.index - 1] : buf[:, 1 : buf.index - 1]
-#     end
-#     if flip 
-#         return bufdim == 1 ? reverse(val, dims=1) : reverse(val, dims=2)
-#     else
-#         return val
-#     end
-# end
+julia> content(buf)
+2×5 Array{Float64,2}:
+ 1.0  3.0  5.0  7.0   9.0
+ 2.0  4.0  6.0  8.0  10.0
+```
+"""
+function content(buf::Buffer; flip::Bool=true)
+    val = isfull(buf) ? buf[:] :  buf[1 : buf.index - 1]
+    flip ? reverse(val) : val 
+end
 
 # """
 #     snapshot(buf::Buffer)

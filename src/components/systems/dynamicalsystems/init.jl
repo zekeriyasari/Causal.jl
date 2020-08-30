@@ -4,7 +4,18 @@
 function construct_integrator(deproblem, input, righthandside, state, t, modelargs=(), solverargs=(); 
     alg=nothing, stateder=state, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=3)
     # If needed, construct interpolant for input.
-    interpolant = input === nothing ? nothing : Interpolant(numtaps, length(input))
+    interpolant = 
+        if input === nothing
+            nothing  
+        else
+            T = datatype(input)
+            timebuf = Buffer(numtaps)
+            databuf = Buffer(T, numtaps)
+            # write!(timebuf, t)
+            # NOTE: Initially write some dummy data for interpolation.
+            # T <: AbstractVector ? write!(databuf, zeros(eltype(T), 1)) : write!(databuf, zero(T))
+            Interpolant(timebuf, databuf)
+        end
 
     # Construct the problem 
     if deproblem == SDEProblem 

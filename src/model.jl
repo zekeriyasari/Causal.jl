@@ -1,7 +1,7 @@
 # This file includes the Model object
 
 export @defmodel, Model, inspect!, initialize!, run!, terminate!, simulate!, getloops, breakloop!, Node, Branch, 
-    addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot
+    addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot, onestep!
 
 """
     $(TYPEDEF) 
@@ -182,9 +182,10 @@ Inspects the `model`. If `model` has some inconsistencies such as including alge
 error is thrown.
 """
 function inspect!(model, breakpoints::Vector{Int}=Int[])
-    # Check unbound pins in ports of componensts 
+    # Check unbound pins in ports of components
     checknodeports(model) 
 
+    # FIXME: For resimulatio, clear the current time of dynamical systems. 
     # Check links of the model 
     checkchannels(model)
 
@@ -468,6 +469,32 @@ function whichlink(taskmanager, component)
     outpin = filter(pin -> isconnected(pin, tpin), tport) |> only 
     outpin.links |> only
 end
+
+"""
+    $(SIGNATURES)
+
+Takes one step for model for model initialization. After the initialization the data one the branches are cleaned back.
+"""
+function onestep!(model)
+    # Take one step 
+    taskmanager = model.taskmanager
+    triggerport = taskmanager.triggerport
+    handshakeport = taskmanager.handshakeport
+    ti = model.clock.t
+    n = length(triggerport)
+    checktaskmanager(taskmanager)    # Check before step.           
+    put!(triggerport, fill(ti, n))
+    checktaskmanager(taskmanager)    # Check after step.
+    all(take!(handshakeport)) || @warn "Taking step could not be approved."
+    applycallbacks(model)
+
+    # Clean model branches 
+    foreach(branch -> foreach(link -> clean!(link), branch.links), model.branches)
+    
+    # Return model
+    model 
+end
+
 
 ##### Model running
 # Copy-paste loop body. See `run!(model, withbar)`.

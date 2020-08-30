@@ -1,7 +1,7 @@
 # This file constains the Buffer for data buffering.
 
 export BufferMode, LinearMode, CyclicMode, Buffer, Normal, Cyclic, Fifo, Lifo, write!, 
-    isfull, ishit, content, mode 
+    isfull, ishit, content, mode, clean!
 
 ##### Buffer modes
 """
@@ -376,6 +376,18 @@ julia> content(buf)
 function content(buf::Buffer; flip::Bool=true)
     val = isfull(buf) ? buf[:] :  buf[1 : buf.index - 1]
     flip ? reverse(val) : val 
+end
+
+"""
+    $(SIGNATURES)
+
+Cleans the contents of `buf`.
+"""
+function clean!(buf::Buffer)
+    buf.input .= missing
+    buf.output .= missing
+    buf.index = 1 
+    buf
 end
 
 # """

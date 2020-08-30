@@ -15,6 +15,7 @@ module Connections
 using DocStringExtensions
 using UUIDs
 using Causal.Utilities
+import Causal.Utilities: clean!
 
 import Base: put!, take!, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate,   
     size, getindex, setindex!, display

@@ -1,7 +1,7 @@
 # This file includes the Model object
 
 export @defmodel, Model, inspect!, initialize!, run!, terminate!, simulate!, getloops, breakloop!, Node, Branch, 
-    addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot, initbuffers!
+    addnode!, getnode, addbranch!, getbranch, deletebranch!, signalflow, troubleshoot
 
 """
     $(TYPEDEF) 
@@ -475,32 +475,31 @@ end
 
 Takes one step for model for model initialization. After the initialization the data one the branches are cleaned back.
 """
-function initbuffers!(model)
-    # Take one step 
+function init_interpolant_buffers!(model)
+    onestep!(model)
+    cleanbranches!(model)
+    cleanbuffers!(model)
+    model 
+end
+
+function onestep!(model)
     taskmanager = model.taskmanager
     triggerport = taskmanager.triggerport
     handshakeport = taskmanager.handshakeport
     clock = model.clock
-    # NOTE: We need at least two steps for fill the interpolation buffers. Do not iterate model.clock in order not to 
-    # modify the model clock.
-    for ti in [clock.t, clock.t + clock.dt]  
-        n = length(triggerport)
-        checktaskmanager(taskmanager)    # Check before step.           
-        put!(triggerport, fill(ti, n))
-        checktaskmanager(taskmanager)    # Check after step.
-        all(take!(handshakeport)) || @warn "Taking step could not be approved."
-        applycallbacks(model)
-    end
-
-    # Clean model branches 
-    foreach(branch -> foreach(link -> clean!(link), branch.links), model.branches)
-
-    # TODO: Clean alll the internal buffers, (components: Memory, DynamicalSystem(Intepolant buffers), Sink buffers)
-    error("Do not forget to clean all the buffers in the model")
-    
-    # Return model
-    model 
+    ti  = clock.t  
+    n = length(triggerport)
+    checktaskmanager(taskmanager)    # Check before step.           
+    put!(triggerport, fill(ti, n))
+    checktaskmanager(taskmanager)    # Check after step.
+    all(take!(handshakeport)) || @warn "Taking step could not be approved."
+    applycallbacks(model)
 end
+cleanbranches!(model) = foreach(branch -> foreach(link -> clean!(link), branch.links), model.branches)
+cleanbuffers!(model) = foreach(node -> _clean_component_buffers!(node.component), 
+    filter(node -> !isa(node.component, AbstractDynamicSystem), model.nodes))
+_clean_component_buffers!(comp) = (foreach(idx -> clean!(getfield(comp, idx)), 
+    findall(T -> (T <: Buffer), typeof(comp).parameters)); model)
 
 ##### Model running
 # Copy-paste loop body. See `run!(model, withbar)`.
@@ -527,6 +526,10 @@ Runs the `model` by triggering the components of the `model`. This triggering is
     The `model` must first be initialized to be run. See also: [`initialize!`](@ref).
 """
 function run!(model::Model, withbar::Bool=true)
+    # Initilize the interpolation buffers before running the simulation 
+    init_interpolant_buffers!(model)
+
+    # Run the simulation. 
     taskmanager = model.taskmanager
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
     ncomponents = length(model.nodes)

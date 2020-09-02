@@ -39,7 +39,7 @@ getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]
 const ScalarInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractInterpolation}
 const VectorInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractVector{<:AbstractInterpolation}}
 
-torange(val) = range(val[1], val[end], length=length(val))
+torange(t) = range(t[1], t[end], length=length(t))
 
 """
     $(SIGNATURES)

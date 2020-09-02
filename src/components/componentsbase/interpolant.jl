@@ -2,77 +2,53 @@
 
 export Interpolant
 
-mutable struct Interpolant{TT, DT, IT}
-    timebuf::TT
-    databuf::DT
-    itp::IT
-    function Interpolant(timebuf, databuf)
-        tt = content(timebuf) 
-        uu = content(databuf)
-        itp = eltype(uu) <: AbstractVector ? vectorinterp(tt, uu) : scalarinterp(tt, uu)
+"""
+    $(TYPEDEF) 
+
+Interpolant that interpolates the data in `timebuf` and `databuf`
+
+# Fields 
+
+    $(TYPEDFIELDS)
+"""
+mutable struct Interpolant{T1, T2, T3}
+    timebuf::T1 
+    databuf::T2
+    itp::T3
+    function Interpolant(timebuf, databuf) 
+        T1, T2 = eltype(timebuf), eltype(databuf) 
+        t = range(zero(T1), one(T1), length=3)
+        itp = if T2 <: Real 
+            u = zeros(T2, 3)
+            CubicSplineInterpolation(t, u, extrapolation_bc=Line())
+        else
+            u = fill(zeros(eltype(T2), 3), length(databuf))
+            map(row -> CubicSplineInterpolation(t, row, extrapolation_bc=Line()), eachcol(hcat(u...)))
+        end
         new{typeof(timebuf), typeof(databuf), typeof(itp)}(timebuf, databuf, itp)
-    end
-end  
+    end 
+end 
+
+
+# Syntax for u(t) 
+(interp::Interpolant)(t) = interp.itp(t)
+
+# Syntax for u[idx](t)
+getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]
 
 const ScalarInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractInterpolation}
 const VectorInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractVector{<:AbstractInterpolation}}
 
-scalarinterp(tt, uu) = CubicSplineInterpolation(getranges(tt, uu)...; extrapolation_bc=Line())
-vectorinterp(tt, uu) = (@show uu; map(row -> scalarinterp(tt, row), eachrow(hcat(uu...))))
+torange(val) = range(val[1], val[end], length=length(val))
 
-update!(interp::ScalarInterpolant) = 
-    (interp.itp = scalarinterp(content(interp.timebuf),content(interp.databuf)); interp)
-update!(interp::VectorInterpolant) = 
-    (interp.itp = vectorinterp(content(interp.timebuf), content(interp.databuf)); interp)
+"""
+    $(SIGNATURES)
 
-function getranges(tt, uu)
-    length(tt) < 2 && return (range(tt[1], length=2, step=eps()), range(uu[1], length=2, step=eps()))
-    return range(tt[1], tt[end], length=length(tt)), uu
-end
-
-
-# """
-#     $(TYPEDEF)
-
-# # Fields 
-
-#     $(TYPEDFIELDS)
-# """
-# mutable struct Interpolant{TT, DT, IT}
-#     timebuf::TT
-#     databuf::DT 
-#     itp::IT
-#     function Interpolant(timebuf, databuf) 
-#         isempty(timebuf) && error("$timebuf is empty")
-#         isempty(databuf) && error("$databuf is empty")
-#         itp = getinterp(content(timebuf), content(databuf))
-#         new{typeof(timebuf), typeof(databuf), typeof(itp)}(timebuf, databuf, itp)
-#     end
-# end 
-
-# getinterp(tt, uu::AbstractVector{T}) where T <: Union{Missing, <:Real} = 
-#     CubicSplineInterpolation(getranges(tt, uu)...; extrapolation_bc=Line())
-# getinterp(tt, uu::AbstractVector{T}) where T<:Union{Missing, <:AbstractVector} = 
-#     map(row -> getinterp(tt, row), eachrow(uu))
-
-# show(io::IO, interpolant::Interpolant) = print(io, "Interpolant(timebuf:$(interpolant.timebuf), ", 
-#     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
-
-# # Callling interpolant.
-# """
-#     $(SIGNATURES)
-
-# Returns interpolant fucntion at index `idx`.
-# """
-# getindex(interpolant::Interpolant, idx::Int) = interpolant.itp[idx]
-
-# # Update of interpolant. That is, reinterpolation. 
-# """
-#     $(SIGNATURES)
-
-# Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
-# """
-# update!(interpolant::Interpolant{T1, <:AbstractVector, T2}) where {T1,T2} = interpolant.itp[1] = _update!(interpolant)
-# update!(interpolant::Interpolant{T1, <:AbstractMatrix, T2}) where {T1,T2} = interpolant.itp = _update!(interpolant)
-# _update!(interpolant) = getinterp(content(interpolant.timebuf, flip=true), content(interpolant.databuf, flip=true))
-
+Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
+"""
+update!(interp::Interpolant) = (interp.itp = getinterp(interp); interp)
+getinterp(interp::ScalarInterpolant) = 
+    CubicSplineInterpolation(torange(content(interp.timebuf)), content(interp.databuf), extrapolation_bc=Line()) 
+getinterp(interp::VectorInterpolant) = map(eachrow(hcat(content(interp.databuf)...))) do row 
+        CubicSplineInterpolation(torange(content(interp.timebuf)), row, extrapolation_bc=Line())
+    end

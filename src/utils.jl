@@ -47,9 +47,9 @@ and `handshake`), input and output ports (if necessary)
 """
 function equip(comp, kickoff::Bool=true)
     oport = typeof(comp) <: AbstractSource ? 
-        nothing : (typeof(comp.input) === nothing  ? nothing : Outport(length(comp.input)))
+        nothing : (typeof(comp.input) === nothing  ? nothing : Outport{datatype(comp.input)}(length(comp.input)))
     iport = typeof(comp) <: AbstractSink ?  
-        nothing : (typeof(comp.output) === nothing ? nothing : Inport(length(comp.output)))
+        nothing : (typeof(comp.output) === nothing ? nothing : Inport{datatype(comp.output)}(length(comp.output)))
     trg = Outpin()
     hnd = Inpin{Bool}()
     oport === nothing || connect!(oport, comp.input)
@@ -61,5 +61,15 @@ function equip(comp, kickoff::Bool=true)
     else 
         comptask, outputtask = nothing, nothing
     end
-    oport, iport, trg, hnd, comptask, outputtask
+    
+    # oport, iport, trg, hnd, comptask, outputtask
+    # Return a NamedTuple instead 
+    (
+        writing_port = oport, 
+        reading_port = iport, 
+        trigger = trg, 
+        handshake = hnd, 
+        component_task = comptask, 
+        reading_port_task = outputtask 
+    )
 end

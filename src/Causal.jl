@@ -16,12 +16,12 @@ Causal
 using Reexport 
 using UUIDs
 using JLD2
-using ProgressMeter
 using Logging 
 using Dates 
 using NLsolve
 using LightGraphs, GraphPlot    
 import Base: show
+import ProgressMeter: @showprogress
 
 include("utilities/Utilities.jl")
 include("connections/Connections.jl")   

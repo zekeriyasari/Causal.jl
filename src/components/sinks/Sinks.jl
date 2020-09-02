@@ -20,6 +20,7 @@ using Causal.Connections
 using Causal.Components.ComponentsBase
 import Base: show, print, close, open, read, mv, cp
 import Causal.Utilities: write!
+import Causal.Components.ComponentsBase: update!
 import FileIO: load
 import UUIDs.uuid4
 

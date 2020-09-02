@@ -11,9 +11,6 @@ function construct_integrator(deproblem, input, righthandside, state, t, modelar
             T = datatype(input)
             timebuf = Buffer(numtaps)
             databuf = Buffer(T, numtaps)
-            # write!(timebuf, t)
-            # NOTE: Initially write some dummy data for interpolation.
-            # T <: AbstractVector ? write!(databuf, zeros(eltype(T), 1)) : write!(databuf, zero(T))
             Interpolant(timebuf, databuf)
         end
 

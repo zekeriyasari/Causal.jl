@@ -1,6 +1,6 @@
 # This file contains the links to connect together the tools of DsSimulator.
 
-export Link, launch, refresh!
+export Link, launch, refresh!, ScalarLink, VectorLink
 
 """
     $(TYPEDEF) 
@@ -31,6 +31,11 @@ Link(ln::Int=64) = Link{Float64}(ln)
 
 show(io::IO, link::Link) = print(io, "Link(state:$(isopen(link) ? :open : :closed), eltype:$(eltype(link)), ", 
     "isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
+
+
+# Some short hand notations 
+const ScalarLink = Link{Float64}
+const VectorLink = Link{Vector{Float64}}
 
 """
     $(SIGNATURES) 

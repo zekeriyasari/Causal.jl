@@ -1,7 +1,8 @@
 # This file contains the Pins to connect the links
 
 
-export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound
+export AbstractPin, Outpin, Inpin, connect!, disconnect!, isconnected, isbound, 
+    ScalarInpin, VectorInpin, ScalarOutpin, VectorOutpin
 
 """
     $(TYPEDEF)
@@ -49,6 +50,14 @@ end
 Inpin() = Inpin{Float64}()
 
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
+
+
+# Some short-hand notations 
+const ScalarInpin = Inpin{Float64}
+const VectorInpin = Inpin{Vector{Float64}}
+const ScalarOutpin = Outpin{Float64} 
+const VectorOutpin = Outpin{Vector{Float64}}
+
 
 """
     $(SIGNATURES) 

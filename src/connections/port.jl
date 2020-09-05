@@ -1,6 +1,7 @@
 # This file contains the Port tool for connecting the tools of Causal
 
-export AbstractPort, Inport, Outport, datatype
+export AbstractPort, Inport, Outport, datatype, 
+    ScalarInport, ScalarOutport, VectorInport, VectorOutport
 
 """
     $(TYPEDEF)
@@ -76,6 +77,12 @@ Inport(numpins::Int=1) = Inport{Float64}(numpins)
 
 show(io::IO, inport::Inport) = print(io, "Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
 # display(inport::Inport) = println("Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
+
+# Some short hand notations 
+const ScalarInport = Inport{Float64}
+const VectorInport = Inport{Vector{Float64}}
+const ScalarOutport = Outport{Float64}
+const VectorOutport = Outport{Vector{Float64}}
 
 
 """

@@ -85,7 +85,7 @@ julia> gen.readout(1.)
 """
 @def_source struct FunctionGenerator{RO, OP} <: AbstractSource 
     readout::RO 
-    output::OP = Outport(1)    
+    output::OP = Outport{typeof(readout(0.))}()  
 end
 
 """

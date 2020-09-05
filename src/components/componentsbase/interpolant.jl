@@ -36,8 +36,7 @@ end
 # Syntax for u[idx](t)
 getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]
 
-const ScalarInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractInterpolation}
-const VectorInterpolant = Interpolant{T1, T2, T3} where {T1, T2, T3<:AbstractVector{<:AbstractInterpolation}}
+perturb(u) = [u[1], u[1] .+ eps()]
 
 torange(t) = range(t[1], t[end], length=length(t))
 
@@ -46,9 +45,14 @@ torange(t) = range(t[1], t[end], length=length(t))
 
 Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
 """
-update!(interp::Interpolant) = (interp.itp = getinterp(interp); interp)
-getinterp(interp::ScalarInterpolant) = 
-    CubicSplineInterpolation(torange(content(interp.timebuf)), content(interp.databuf), extrapolation_bc=Line()) 
-getinterp(interp::VectorInterpolant) = map(eachrow(hcat(content(interp.databuf)...))) do row 
-        CubicSplineInterpolation(torange(content(interp.timebuf)), row, extrapolation_bc=Line())
+function update!(interp::Interpolant) 
+    t = content(interp.timebuf)
+    u = content(interp.databuf)
+    length(t) == 1 && (t = perturb(t); u = perturb(u))
+    interp.itp = getinterp(t, u)
+    interp
+end
+getinterp(t, u::AbstractVector{<:Real}) = CubicSplineInterpolation(torange(t), u, extrapolation_bc=Line()) 
+getinterp(t, u::AbstractVector{<:AbstractVector}) =  map(eachrow(hcat(u...))) do row 
+        CubicSplineInterpolation(torange(t), row, extrapolation_bc=Line())
     end

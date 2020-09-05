@@ -456,6 +456,9 @@ function initialize!(model::Model)
     # Open the files, GUI's for sink components. 
     foreach(node -> open(node.component), filter(node->isa(node.component, AbstractSink), model.nodes))
 
+    # # Initilize the interpolation buffers before running the simulation 
+    # initinterps!(model)
+
     # Return the model back.
     model
 end
@@ -475,31 +478,57 @@ end
 
 Takes one step for model for model initialization. After the initialization the data one the branches are cleaned back.
 """
-function init_interpolant_buffers!(model)
-    onestep!(model)
+function initinterps!(model)
+    initstep!(model)
     cleanbranches!(model)
     cleanbuffers!(model)
     model 
 end
 
-function onestep!(model)
+"""
+    $(SIGNATURES) 
+
+Takes a single step to initialize the buffers of interpolants. 
+"""
+function initstep!(model)
     taskmanager = model.taskmanager
     triggerport = taskmanager.triggerport
     handshakeport = taskmanager.handshakeport
     clock = model.clock
-    ti  = clock.t  
-    n = length(triggerport)
     checktaskmanager(taskmanager)    # Check before step.           
-    put!(triggerport, fill(ti, n))
+    put!(triggerport, fill(clock.t, length(triggerport)))
     checktaskmanager(taskmanager)    # Check after step.
     all(take!(handshakeport)) || @warn "Taking step could not be approved."
     applycallbacks(model)
 end
+
+"""
+    $(SIGNATURES)
+
+Cleans all the buffers in the connections of `model`.
+"""
 cleanbranches!(model) = foreach(branch -> foreach(link -> clean!(link), branch.links), model.branches)
-cleanbuffers!(model) = foreach(node -> _clean_component_buffers!(node.component), 
-    filter(node -> !isa(node.component, AbstractDynamicSystem), model.nodes))
-_clean_component_buffers!(comp) = (foreach(idx -> clean!(getfield(comp, idx)), 
-    findall(T -> (T <: Buffer), typeof(comp).parameters)); model)
+
+"""
+    $(SIGNATURES)
+
+Cleans all buffers of the components of `model` if the component is not of type AbstractDynamicSystem
+"""
+function cleanbuffers!(model)
+    nodes = model.nodes 
+    foreach(node -> cleancompbufs!(node.component), filter(node -> !isa(node.component, AbstractDynamicSystem), nodes))
+    model
+end
+
+"""
+    $(SIGNATURES)
+
+Cleans the buffers of `comp`. 
+"""
+function cleancompbufs!(comp::T) where T
+    foreach(name -> (field = getfield(comp, name); field isa Buffer && clean!(field)), fieldnames(T)) 
+    comp
+end
 
 ##### Model running
 # Copy-paste loop body. See `run!(model, withbar)`.
@@ -526,10 +555,6 @@ Runs the `model` by triggering the components of the `model`. This triggering is
     The `model` must first be initialized to be run. See also: [`initialize!`](@ref).
 """
 function run!(model::Model, withbar::Bool=true)
-    # Initilize the interpolation buffers before running the simulation 
-    init_interpolant_buffers!(model)
-
-    # Run the simulation. 
     taskmanager = model.taskmanager
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
     ncomponents = length(model.nodes)
@@ -753,7 +778,7 @@ macro defmodel(name, ex)
                     addbranch!($name, src.args[1] => dst.args[1], src.args[2] => dst.args[2])
                 end
             else 
-                error("Ambbiuos connection. Specify the indexes explicitely.")
+                error("Ambigiuos connection. Specify the indexes explicitely.")
             end
         end
     end |> esc

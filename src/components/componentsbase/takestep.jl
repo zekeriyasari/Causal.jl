@@ -129,12 +129,11 @@ end
 function evolve!(comp::AbstractDynamicSystem, u, t)
     # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
     # Thus, there will be no evolution in such a case.
-    integrator = comp.integrator
-    interpolator = integrator.sol.prob.p
-    update_interpolator!(interpolator, u, t)
+    updateinterp!(comp.interpolant, u, t)
     comp.t == t && return comp.state  
-
+    
     # Advance the system and update the system.
+    integrator = comp.integrator
     step!(integrator, t - comp.t, true)
     comp.t = integrator.t
     comp.state = integrator.u
@@ -142,9 +141,9 @@ function evolve!(comp::AbstractDynamicSystem, u, t)
     # Return comp state
     return comp.state
 end
-update_interpolator!(interp::Nothing) = nothing
-update_interpolator!(interp::Nothing, u, t) = nothing
-function update_interpolator!(interp::Interpolant, u, t)
+updateinterp!(interp::Nothing) = nothing
+updateinterp!(interp::Nothing, u, t) = nothing
+function updateinterp!(interp::Interpolant, u, t)
     write!(interp.timebuf, t)
     write!(interp.databuf, copy(only(u)))
     update!(interp)

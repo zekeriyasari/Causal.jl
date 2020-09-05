@@ -22,6 +22,7 @@ using NLsolve
 using LightGraphs, GraphPlot    
 import Base: show
 import ProgressMeter: @showprogress
+import DifferentialEquations: reinit!
 
 include("utilities/Utilities.jl")
 include("connections/Connections.jl")   
@@ -32,6 +33,8 @@ include("plugins/Plugins.jl")
 @reexport using .Connections
 @reexport using .Components
 @reexport using .Plugins
+
+import .Utilities: clean!
 
 include("utils.jl")
 include("taskmanager.jl")

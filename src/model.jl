@@ -518,9 +518,8 @@ function resetdynamicalsystems!(model)
     t = model.clock.ti
     for comp in filter(comp -> comp isa AbstractDynamicSystem, getfield.(model.nodes, :component))
         comp.t != t && (comp.t = t) 
-        typeof(comp.input) === nothing || (
-            interp = comp.interpolant; clean!(interp.timebuf); clean!(interp.databuf); reinit!(comp.integrator)
-            )
+        reinit!(comp.integrator)
+        comp.input === nothing || (interp = comp.interpolant; clean!(interp.timebuf); clean!(interp.databuf))
     end
     model
 end

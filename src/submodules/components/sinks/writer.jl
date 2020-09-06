@@ -79,10 +79,12 @@ function fread(path::String; flatten=false)
     data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
     if flatten
         t = vcat(reverse.(keys(data), dims=1)...)
-        if typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractVector, T3}
-            x = vcat(reverse.(values(data), dims=1)...)
-        elseif typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractMatrix, T3}
-            x = collect(hcat(reverse.(values(data), dims=2)...)')
+        val = collect(values(data))
+        if eltype(val) <: Tuple 
+            res = vcat([reverse(hcat(val[i]...), dims=1) for i in 1 : length(val)]...)
+            x = tuple([res[:, i] for i in 1 : size(res, 2)]...)
+        else
+            x = vcat(reverse.(val, dims=1)...)
         end
         return t, x
     else

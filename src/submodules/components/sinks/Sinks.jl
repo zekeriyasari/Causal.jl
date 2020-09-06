@@ -17,6 +17,7 @@ using DocStringExtensions
 using Plots, JLD2, DataStructures, UUIDs
 using Causal.Utilities
 using Causal.Connections 
+using Causal.Plugins 
 using Causal.Components.ComponentsBase
 import Base: show, print, close, open, read, mv, cp
 import Causal.Utilities: write!
@@ -76,16 +77,33 @@ macro def_sink(ex)
         :( buflen::Int = 64 ), 
         :( plugin::$PLUGIN_TYPE_SYMBOL = nothing ), 
         :( timebuf::$TIMEBUF_TYPE_SYMBOL = Buffer(buflen)  ), 
-        :( databuf::$DATABUF_TYPE_SYMBOL = Buffer(datatype(input), buflen)  ), 
-        :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = plugin === nothing ? 
-            Callback(sink->ishit(databuf), sink->action(sink, timebuf.output, databuf.output), true, id) :
-            Callback(sink->ishit(databuf), sink->action(sink, timebuf.output, plugin.process(databuf.output)), true, 
-            id) ), 
+        :( databuf::$DATABUF_TYPE_SYMBOL = Sinks.construct_sink_buffers(input, buflen) ), 
+        :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = 
+            Sinks.construct_sink_callback(databuf, timebuf, plugin, action, id) ), 
         ])
     quote 
         Base.@kwdef $ex 
     end |> esc 
 end
+
+function construct_sink_buffers(input, buflen)
+    T = datatype(input) 
+    n = length(input) 
+    n == 1 ? Buffer(T, buflen) : [Buffer(T, buflen) for i in 1 : n]
+end
+
+construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, databuf.output), true, id)
+
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, tuple([buf.output for buf in databuf]...)), true, id)
+
+construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(databuf.output)), true, id) 
+
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(tuple([buf.output for buf in databuf]...))), 
+    true, id) 
 
 include("writer.jl")
 include("printer.jl")

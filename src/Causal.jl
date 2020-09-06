@@ -25,14 +25,14 @@ import ProgressMeter: @showprogress
 import DifferentialEquations: reinit!
 
 include("submodules/utilities/Utilities.jl")
+include("submodules/plugins/Plugins.jl")
 include("submodules/connections/Connections.jl")   
 include("submodules/components/Components.jl")
-include("submodules/plugins/Plugins.jl")
 
 @reexport using .Utilities
+@reexport using .Plugins
 @reexport using .Connections
 @reexport using .Components
-@reexport using .Plugins
 
 import .Utilities: clean!
 

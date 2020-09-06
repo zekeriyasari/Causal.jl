@@ -110,14 +110,19 @@ Evolves `comp` with the current input `u` and `t`.
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
-evolve!(comp::AbstractSink, u, t) = (
+function evolve!(comp::AbstractSink, u, t)
     # NOTE: Note the use of `only`. When the input ports are read, we have one-length input `u`. The reason of being 
     # 1-length is that `u` is actully sampled input at time `t`. Before writing `u` into the `databuf` of `writer` 
     # we take its one-and-only-one element using `only` function. 
     # WARNING: A sink component can only be connected to a single connection. 
-    # TODO:For multiple connections, sink components neeed multiple data buffers. 
-    write!(comp.timebuf, t); write!(comp.databuf, copy(only(u))); comp.sinkcallback(comp); nothing
-    )
+    write!(comp.timebuf, t)
+    writebuf!(comp.databuf, copy(u))
+    comp.sinkcallback(comp)
+    nothing
+end
+writebuf!(buffer::AbstractVector{<:Buffer}, u) = for (buf, item) in zip(buffer, u) write!(buf, item) end
+writebuf!(buffer::Buffer, u) = write!(buffer, only(u))
+
 function evolve!(comp::AbstractStaticSystem, u, t) 
     if typeof(comp) <: AbstractMemory 
         timebuf = comp.timebuf 

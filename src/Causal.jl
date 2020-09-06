@@ -24,10 +24,10 @@ import Base: show
 import ProgressMeter: @showprogress
 import DifferentialEquations: reinit!
 
-include("utilities/Utilities.jl")
-include("connections/Connections.jl")   
-include("components/Components.jl")
-include("plugins/Plugins.jl")
+include("submodules/utilities/Utilities.jl")
+include("submodules/connections/Connections.jl")   
+include("submodules/components/Components.jl")
+include("submodules/plugins/Plugins.jl")
 
 @reexport using .Utilities
 @reexport using .Connections
@@ -36,9 +36,18 @@ include("plugins/Plugins.jl")
 
 import .Utilities: clean!
 
-include("utils.jl")
-include("taskmanager.jl")
-include("simulation.jl")
-include("model.jl")
+include("modeling/model.jl")
+include("modeling/defmodel.jl")
+include("modeling/modification.jl")
+include("modeling/visualization.jl")
+
+include("simulation/taskmanager.jl")
+include("simulation/simulation.jl")
+include("simulation/simulate.jl")
+include("simulation/troubleshoot.jl")
+include("simulation/stages/inspect.jl")
+include("simulation/stages/initialize.jl")
+include("simulation/stages/run.jl")
+include("simulation/stages/terminate.jl")
 
 end  # module

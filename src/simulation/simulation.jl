@@ -1,6 +1,5 @@
-# This file is for Simulation object.
 
-export Simulation, setlogger, closelogger, report
+export Simulation
 
 """
     $(TYPEDEF) 

@@ -31,7 +31,9 @@ Returns the input value of `comp` if the `input` of `comp` is `Inport`. Otherwis
 """
 function readinput!(comp::AbstractComponent)
     typeof(comp) <: AbstractSource && return nothing
-    typeof(comp.input) <: Inport ? take!(comp.input) : nothing
+    input = comp.input 
+    # When the length of the input is one, we unwrap the read value with `only`.
+    typeof(input) <: Inport ? (length(input) == 1 ? only(take!(input)) : take!(input)) : nothing
 end
 
 """
@@ -41,44 +43,11 @@ Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Oth
 """
 function writeoutput!(comp::AbstractComponent, out)
     typeof(comp) <: AbstractSink && return nothing  
-    # NOTE: When `out` is of type `Tuple`, then the output port of `comp` is greater than one. So data must be wrapped 
-    # to be written to the output port. See `wrap` 
-    typeof(comp.output) <: Outport ? put!(comp.output, wrap(out)) : nothing
+    # NOTE: When output has single pin, we wrap the output as [out].
+    output = comp.output  
+    typeof(output) <: Outport ? ( length(output) == 1 ? put!(output, [out]) : put!(output, out) ) : nothing
 end
 
-#= 
-# Component readout function return Float64. The output port has one pin of type Float64.
-julia> out = 1.;    
-
-julia> Causal.Components.ComponentsBase.wrap(out)
-1-element Array{Float64,1}:
- 1.0
-
- # Component readout function return Vector{Float64}. The output port has one pin of type Vector{Float64}
- julia> out = [1., 2.]; 
-
-julia> Causal.Components.ComponentsBase.wrap(out)
-1-element Array{Array{Float64,1},1}:
- [1.0, 2.0]
-
- # Component readout function return Tuple{Float64}. The output port has two pins of type Float64
- julia> out = 1., 2.;   
-
-julia> Causal.Components.ComponentsBase.wrap(out)
-2-element Array{Float64,1}:
- 1.0
- 2.0
-
-# Component readout function return Tuple{Vector{Float64}}. The output port has two pins of type Vector{Float64} 
-julia> out = [1., 2.], [3.,4];
-
-julia> Causal.Components.ComponentsBase.wrap(out)
-2-element Array{Array{Float64,1},1}:
- [1.0, 2.0]
- [3.0, 4.0]
-=#
-wrap(out::Tuple) = [out...] 
-wrap(out) = [out]
 
 """
     $(SIGNATURES)
@@ -110,25 +79,19 @@ Evolves `comp` with the current input `u` and `t`.
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
-function evolve!(comp::AbstractSink, u, t)
-    # NOTE: Note the use of `only`. When the input ports are read, we have one-length input `u`. The reason of being 
-    # 1-length is that `u` is actully sampled input at time `t`. Before writing `u` into the `databuf` of `writer` 
-    # we take its one-and-only-one element using `only` function. 
-    # WARNING: A sink component can only be connected to a single connection. 
-    write!(comp.timebuf, t)
-    writebuf!(comp.databuf, copy(u))
+function evolve!(comp::AbstractSink, u, t) 
+    timebuf = comp.timebuf
+    databuf = comp.databuf 
+    write!(timebuf, t)
+    length(comp.input) == 1 ? write!(databuf, u) : for (buf, item) in zip(databuf, u) write!(buf, item) end
     comp.sinkcallback(comp)
     nothing
 end
-writebuf!(buffer::AbstractVector{<:Buffer}, u) = for (buf, item) in zip(buffer, u) write!(buf, item) end
-writebuf!(buffer::Buffer, u) = write!(buffer, only(u))
 
 function evolve!(comp::AbstractStaticSystem, u, t) 
     if typeof(comp) <: AbstractMemory 
-        timebuf = comp.timebuf 
-        databuf = comp.databuf
-        write!(timebuf, t)
-        write!(databuf, copy(only(u)))
+        write!(comp.timebuf, t)
+        write!(comp.databuf, u)
     end
 end
 function evolve!(comp::AbstractDynamicSystem, u, t)
@@ -141,7 +104,7 @@ function evolve!(comp::AbstractDynamicSystem, u, t)
     integrator = comp.integrator
     step!(integrator, t - comp.t, true)
     comp.t = integrator.t
-    comp.state = integrator.u
+    comp.state = copy(integrator.u) # Isolate integrator state from comp state by using `copy`.
 
     # Return comp state
     return comp.state
@@ -150,7 +113,7 @@ updateinterp!(interp::Nothing) = nothing
 updateinterp!(interp::Nothing, u, t) = nothing
 function updateinterp!(interp::Interpolant, u, t)
     write!(interp.timebuf, t)
-    write!(interp.databuf, copy(only(u)))
+    write!(interp.databuf, u)
     update!(interp)
 end
 

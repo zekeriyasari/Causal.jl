@@ -25,5 +25,6 @@ include("hierarchy.jl")
 include("interpolant.jl")
 include("macros.jl")
 include("takestep.jl")
+include("equip.jl")
 
 end 

@@ -1,0 +1,11 @@
+\documentclass[convert={density=900,size=1080x800,outext=.png}]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+
+\begin{document}
+    \begin{tikzpicture}[every node/.style={font=\Huge}]
+        \node [](p){\includegraphics{error_raw.png}};
+        \node [xshift=0.75cm, yshift=-5.5cm]{$t$};
+        \node [xshift=-10cm, yshift=0.25cm]{$MSE$};
+    \end{tikzpicture}
+\end{document}

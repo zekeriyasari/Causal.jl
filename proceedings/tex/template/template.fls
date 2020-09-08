@@ -1,0 +1,7 @@
+PWD /home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template
+INPUT /etc/texmf/web2c/texmf.cnf
+INPUT /usr/share/texmf/web2c/texmf.cnf
+INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
+INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
+INPUT /home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex
+OUTPUT /home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.log

@@ -1,0 +1,145 @@
+\appendix 
+
+\begin{lstlisting}[caption={Program using Causal.jl for the simulation of the system in Figure \ref{fig: coupled model}. Plots.jl is used to plot the simulation data while FFTW.jl is used to compute the FFT of the simulation data \cite{plots, fftw}.}, label={lst: coupled codes}, language=Julia]
+using Causal, Plots, FFTW
+
+# Define ODE system type under AbstractODESystem
+@def_ode_system mutable struct ODESys{RH, RO, IP, OP} <: AbstractODESystem
+    righthandside::RH = function fode(dx, x, u, t, a=35., b=3., c=28.)
+        dx[1] = a * (x[2] - x[1])
+        dx[2] = (c - a) * x[1] + c * x[2] - x[1] * x[3]
+        dx[3] = x[1] * x[2] - b * x[3]
+    end
+    readout::RO = (x, u, t) -> x 
+    state::Vector{Float64} = rand(3)
+    input::IP = nothing
+    output::OP = Outport(3)
+end
+
+# Define SDE system type under AbstractSDESystem
+@def_sde_system mutable struct SDESys{DR, DF, RO, IP, OP} <: AbstractSDESystem
+    drift::DR = function fsde(dx, x, u, t, a=35., b=3., c=28.)
+        dx[1] = a * (x[2] - x[1]) + u[1](t)
+        dx[2] = (c - a) * x[1] + c * x[2] - x[1] * x[3] + u[2](t)
+        dx[3] = x[1] * x[2] - b * x[3] + u[3](t)
+    end
+    diffusion::DF = (dx, x, u, t, η=10.) -> (dx .= η) 
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3)
+    output::OP = Outport(3)
+end
+
+# Define Gain system type under AbstractStaticSystem
+@def_static_system struct GainSys{RO,IP,OP} <: AbstractStaticSystem 
+    readout::RO = (u,t, ϵ=0.1) -> ϵ * u 
+    input::IP = Inport(3)
+    output::OP = Outport(3)
+end 
+
+# Define plugin type under AbstractPlugin
+@def_plugin struct FFTPlug{PR} <: AbstractPlugin 
+    process::PR = x -> fft(x, 2)    # Computes FFT of the data `x`
+end 
+
+# Construct model
+@defmodel model begin 
+    @nodes begin 
+        odeds = ODESys()    # Add odeds component  
+        gain = GainSys()    # Add gain  component   
+        sdeds = SDESys()    # Add sde components
+        writer1 = Writer(input=Inport(3))                   # Add writer without plugin
+        writer2 = Writer(input=Inport(3))                   # Add writer without plugin
+        writer3 = Writer(input=Inport(3), plugin=FFTPlug()) # Add writer with `FFTPlug` plugin
+    end
+    @branches begin 
+        odeds => gain       # Add connection from `odeds` to `gain`.
+        gain => sdeds       # Add connection from `gain` to `sdeds`.
+        odeds => writer1    # Add connection from `odeds` to `writer1`.
+        sdeds => writer2    # Add connection from `sdeds` to `writer2`.
+        odeds => writer3    # Add connection from `odeds` to `writer3`.
+    end 
+end 
+
+# Simulate model 
+sim = simulate!(model, 0, 0.001, 100) # Simulate from 0 to 100 seconds with a step size of 0.001 seconds
+
+# Plot simulation data 
+t, x1 = read(getnode(model, :writer1).component)
+t, x2 = read(getnode(model, :writer2).component)
+x3 = read(getnode(model, :writer3).component, flatten=false)
+plot(x1[:, 1], x1[:, 2], subplot=1, label="")
+plot(x2[:, 1], x2[:, 2], subplot=2, label="")   
+println(x3)  
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Program using Causal.jl for the simulation of the system in Figure \ref{fig: network graph}. Plots.jl is used to plot the simulation data while LightGraphs.jl is used to construct the connectiviy matrix of the network topology \cite{plots, lightgraphs}}, label={lst: network codes}, language=Julia]
+using Causal, Plots
+using LightGraphs: watts_strogatz, laplacian_matrix
+
+# Define DynamicSystem type under AbstractODESystem
+@def_ode_system mutable struct DynamicSystem{RH, RO, IP, OP} <: AbstractODESystem
+    righthandside::RH = function f(dx, x, u, t, σ=10., β=8/3, ρ=28)
+        dx[1] = σ * (x[2] - x[1]) + u[1](t)
+        dx[2] = x[1] * (ρ - x[3]) - x[2] + u[2](t)
+        dx[3] = x[1] * x[2] - β * x[3] + u[3](t)
+    end
+    readout::RO = (x, u, t) -> x
+    state::Vector{Float64} = rand(3)
+    input::IP = Inport(3)
+    output::OP = Outport(3) 
+end  
+
+# Define Coupler type under AbstractStaticSystem
+@def_static_system struct CouplerSystem{ET, CT, IP, OP, RO} <: AbstractStaticSystem
+    E::ET
+    P::CT
+    input::IP = Inport(size(E, 1) * size(P, 1))
+    output::OP = Outport(size(E, 1) * size(P, 1))
+    readout::RO =  (u, t, E=E, P=P) ->  kron(E, P) * u
+end
+
+# Construct network parameters 
+n = 50      # Number of nodes 
+d = 3       # Dimension of each node
+ϵ = 20.     # Coupling strength 
+components = [DynamicSystem() for i in 1 : n]
+E = ϵ * collect(-laplacian_matrix(watts_strogatz(n, 10, 0.5)))  # Connectivity matrix of network topology
+P = [1 0 0; 0 0 0; 0 0 0]   # Systems are coupled by their first state variable.
+
+# Construct model 
+model = Model() 
+
+# Add components
+for (i, component) in enumerate(components)
+    addnode!(model, component, label=Symbol("node$i"))
+end
+addnode!(model, CouplerSystem(E=E, P=P), label=Symbol("coupler"))
+addnode!(model, Writer(input=Inport(n * d)), label=Symbol("writer"))
+
+# Add connections
+m = n + 1
+for (j, k) in zip(1:n, map(i -> i : i + d - 1, 1 : d : n * d))
+    addbranch!(model, j => m, 1 : d => k)
+    addbranch!(model, m => j, k => 1 : d)
+end
+p = n + 2
+for (j, k) in zip(1:n, map(i -> i : i + d - 1, 1 : d : n * d))
+    addbranch!(model, j => p, 1 : d => k)
+end
+
+# Simulate model 
+sim = simulate!(model, 0, 0.001, 100.)
+
+# Read and plot the simulation data 
+t, x = read(getnode(model, :writer).component)
+
+# Compute mean square error
+mse = sqrt.(sum(diff(x[:, 1 : d : end],dims=2).^2/n, dims=2))
+
+# Plot results
+k = 3000 
+plot(t, x[:, 1] , label="")
+plot(x[:, 1], x[:,2], label="")
+plot(t[1:k], mse[1:k], label="")
+\end{lstlisting}

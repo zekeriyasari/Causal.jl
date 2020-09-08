@@ -1,0 +1,33 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.8.11)  8 SEP 2020 10:07
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex
+(/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex
+LaTeX2e <2017-04-15>
+Babel <3.18> and hyphenation patterns for 84 language(s) loaded.
+
+! LaTeX Error: File `juliacon.cls' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: cls)
+
+Enter file name: 
+/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex:4: Emergency stop.
+<read *> 
+         
+l.4 \setcounter
+               {page}{1}^^M
+*** (cannot \read from terminal in nonstop modes)
+
+ 
+Here is how much of TeX's memory you used:
+ 11 strings out of 492982
+ 501 string characters out of 6134896
+ 54326 words of memory out of 5000000
+ 3674 multiletter control sequences out of 15000+600000
+ 3640 words of font info for 14 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 10i,0n,7p,129b,8s stack positions out of 5000i,500n,10000p,200000b,80000s
+/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex:4:  ==> Fatal error occurred, no output PDF file produced!

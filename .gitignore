@@ -1,13 +1,6 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
-*.aux
-*.pdf
-*.log
-*.png
-*.bbl
-*.blg
-*.emf
 src/plugins/additionals/
 example/workspace.jl
 docs/build/

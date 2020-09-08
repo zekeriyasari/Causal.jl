@@ -1,0 +1,45 @@
+
+\documentclass{juliacon}
+\setcounter{page}{1}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usepackage{cite}
+
+\title{Causal.jl:\\A Modeling and Simulation Framework for Causal Models}
+
+\author[1]{Zekeriya Sarı}
+\author[1]{Serkan Günel}
+\affil[1]{Department of Electrical and Electronics Engineering, Dokuz Eylül University, İzmir, Turkey}
+
+\keywords{System Modeling, Causal Modeling, System Simulation, Dynamical Systems, Julia Programming Language}
+
+\hypersetup{
+pdftitle = {Causal.jl: A Modeling and Simulation Framework for Causal Models},
+pdfsubject = {JuliaCon 2020 Proceedings},
+pdfauthor = {1st author, 2nd author, 3rd author},
+pdfkeywords = {System Simulation, System Modeling, Dynamical Systems, Julia Programming Language},
+}
+
+\hypersetup{
+  colorlinks   = true,  % Colours links instead of ugly boxes
+  urlcolor     = black,  % Colour for external hyperlinks
+  linkcolor    = black,   % Colour of internal links
+  citecolor   = black     % Colour of citations
+}
+
+\begin{document}
+    \maketitle
+    \input{sections/abstract.tex}
+    \input{sections/introduction.tex}
+    \input{sections/modelling_and_simulation.tex}
+    \input{sections/illustrative_examples.tex}
+    \input{sections/conlusion.tex}
+    \input{sections/acknowledgements.tex}
+    \bibliographystyle{juliacon}
+    % \nocite{*}
+    \bibliography{Refs}
+    \onecolumn
+    \input{sections/appendix.tex}
+\end{document}

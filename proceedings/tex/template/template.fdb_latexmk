@@ -1,0 +1,14 @@
+# Fdb version 3
+["pdflatex"] 1599548860 "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex" "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.pdf" "template" 1599548861
+  "/etc/texmf/web2c/texmf.cnf" 1568277373 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.aux" 1599548860 8 a94a2480d3289e625eea47cd1b285758 ""
+  "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.tex" 1599548830 17375 93a77bf92edc8bcaaba0857f2ff8a54b ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1520210507 32485 c64754543d8ac501bea6e75e209ea521 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1520210507 32485 c64754543d8ac501bea6e75e209ea521 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1597128658 4132775 2bd2516c8104af2a20ab36296d0606ed ""
+  "juliacon.cls" 0 -1 0 ""
+  "template.tex" 1599548830 17375 93a77bf92edc8bcaaba0857f2ff8a54b ""
+  (generated)
+  "template.log"
+  "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.pdf"
+  "/home/sari/Documents/Phd/Conferences/JuliaCon2020/juliacon_article/template/template.log"

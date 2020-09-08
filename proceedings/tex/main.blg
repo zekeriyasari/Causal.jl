@@ -1,6 +1,6 @@
 This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
-The top-level auxiliary file: paper.aux
+The top-level auxiliary file: main.aux
 The style file: juliacon.bst
 Database file #1: Refs.bib
 Warning--to sort, need author or key in simulink
@@ -12,7 +12,7 @@ Warning--there's a number but no series in giorgidze2009higher
 Warning--empty journal in pfeiffer2012pysimulator
 You've used 19 entries,
             2118 wiz_defined-function locations,
-            599 strings with 7451 characters,
+            599 strings with 7449 characters,
 and the built_in function-call counts, 5469 in all, are:
 = -- 537
 > -- 232

@@ -3,7 +3,7 @@
 
 require 'yaml'
 
-metadata = YAML.load_file('paper.yml')
+metadata = YAML.load_file('main.yml')
 
 for k in ["title", "authors", "affiliations", "keywords", "bibliography"]
 	raise "Key #{k} not present in metadata" unless metadata.keys().include?(k)

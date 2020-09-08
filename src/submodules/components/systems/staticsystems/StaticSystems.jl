@@ -134,7 +134,7 @@ true
 @def_static_system struct Adder{S, IP, OP, RO} <: AbstractStaticSystem 
     signs::S = (+, +)
     input::IP = Inport(length(signs))
-    output::OP = Outport()
+    output::OP = Outport{datatype(input)}()
     readout::RO = (u, t, signs=signs) -> sum([sign(val) for (sign, val) in zip(signs, u)])
 end
 
@@ -163,7 +163,7 @@ true
 @def_static_system struct Multiplier{S, IP, OP, RO} <: AbstractStaticSystem
     ops::S = (*,*)
     input::IP = Inport(length(ops))
-    output::OP = Outport()
+    output::OP = Outport{datatype(input)}()
     readout::RO = (u, t, ops=ops) -> begin 
         ops = ops
         val = 1
@@ -201,7 +201,7 @@ true
 @def_static_system struct Gain{G, IP, OP, RO} <: AbstractStaticSystem
     gain::G = 1.
     input::IP = Inport() 
-    output::OP = Outport(length(gain * zeros(length(input)))) 
+    output::OP = Outport{datatype(input)}(length(gain * zeros(length(input)))) 
     readout::RO = (u, t, gain=gain) -> gain * u
 end
 

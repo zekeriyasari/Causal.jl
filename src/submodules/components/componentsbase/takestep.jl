@@ -104,7 +104,7 @@ function evolve!(comp::AbstractDynamicSystem, u, t)
     integrator = comp.integrator
     step!(integrator, t - comp.t, true)
     comp.t = integrator.t
-    comp.state = copy(integrator.u) # Isolate integrator state from comp state by using `copy`.
+    comp.state = deepcopy(integrator.u) # Isolate integrator state from comp state by using `copy`.
 
     # Return comp state
     return comp.state

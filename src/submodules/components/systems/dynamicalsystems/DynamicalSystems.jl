@@ -27,9 +27,9 @@ import Sundials: IDA
 import DifferentialEquations: RandomEM, RODEProblem
 import DifferentialEquations: MethodOfSteps
 import Base: getproperty
+import Causal.Components: righthandside, readout 
 
-
-function construct_integrator(deproblem, input, righthandside, state, t, modelargs=(), solverargs=(); 
+function construct_integrator(deproblem, input, state, t, modelargs=(), solverargs=(); 
     alg=nothing, stateder=state, modelkwargs=NamedTuple(), solverkwargs=NamedTuple(), numtaps=3)
     # If needed, construct interpolant for input.
     interpolant = 

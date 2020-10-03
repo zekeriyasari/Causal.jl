@@ -14,14 +14,15 @@ a `Scope` with input bus `input`. `buflen` is the length of the internal buffer 
 !!! warning 
     When initialized, the `plot` of `Scope` is closed. See [`open(sink::Scope)`](@ref) and [`close(sink::Scope)`](@ref).
 """
-@def_sink mutable struct Scope{A, PA, PK, PLT} <: AbstractSink
-    action::A = update!
+@def_sink mutable struct Scope{PA, PK, PLT} <: AbstractSink
     pltargs::PA = () 
     pltkwargs::PK = NamedTuple()
     plt::PLT = plot(pltargs...; pltkwargs...)
 end
 
 show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
+
+action(scope::Scope, t, u) = update!(scope, t, u)
 
 """
     $(SIGNATURES)

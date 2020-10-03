@@ -24,6 +24,7 @@ import Causal.Utilities: write!
 import Causal.Components.ComponentsBase: update!
 import FileIO: load
 import UUIDs.uuid4
+import Causal.Components: action
 
 export @def_sink
 
@@ -79,7 +80,7 @@ macro def_sink(ex)
         :( timebuf::$TIMEBUF_TYPE_SYMBOL = Buffer(buflen)  ), 
         :( databuf::$DATABUF_TYPE_SYMBOL = Sinks.construct_sink_buffers(input, buflen) ), 
         :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = 
-            Sinks.construct_sink_callback(databuf, timebuf, plugin, action, id) ), 
+            Sinks.construct_sink_callback(databuf, timebuf, plugin, id) ), 
         ])
     quote 
         Base.@kwdef $ex 
@@ -92,16 +93,16 @@ function construct_sink_buffers(input, buflen)
     n == 1 ? Buffer(T, buflen) : [Buffer(T, buflen) for i in 1 : n]
 end
 
-construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = 
+construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, id) = 
     Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, databuf.output), true, id)
 
-construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) = 
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, id) = 
     Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, hcat([buf.output for buf in databuf]...)), true, id)
 
-construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = 
+construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, id) = 
     Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(databuf.output)), true, id) 
 
-construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) = 
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, id) = 
     Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(hcat([buf.output for buf in databuf]...))), 
     true, id) 
 

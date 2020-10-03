@@ -100,61 +100,61 @@ macro def_dde_system(ex)
     end |> esc 
 end
 
-##### Define DDE system library.
+# ##### Define DDE system library.
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-A generic DDE system 
+# A generic DDE system 
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
-"""
-@def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
-    constlags::CL 
-    depslags::DL 
-    righthandside::RH 
-    history::HST 
-    readout::RO 
-    state::ST 
-    input::IP 
-    output::OP
-end
+#     $(TYPEDFIELDS)
+# """
+# @def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
+#     constlags::CL 
+#     depslags::DL 
+#     righthandside::RH 
+#     history::HST 
+#     readout::RO 
+#     state::ST 
+#     input::IP 
+#     output::OP
+# end
 
-"""
-    $(TYPEDEF) 
+# """
+#     $(TYPEDEF) 
 
-# Fields 
+# # Fields 
 
-    $(FIELDS)
-"""
-@def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
-    constlags::Vector{Float64} = Causal._delay_feedback_system_constlags
-    depslags::Nothing = nothing
-    righthandside::RH = Causal._delay_feedback_system_rhs
-    history::HST = Causal._delay_feedback_system_history
-    readout::RO = (x, u, t) -> x 
-    state::Vector{Float64} = rand(1)
-    input::IP = nothing 
-    output::OP = Outport(1)
-end
+#     $(FIELDS)
+# """
+# @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+#     constlags::Vector{Float64} = Causal._delay_feedback_system_constlags
+#     depslags::Nothing = nothing
+#     righthandside::RH = Causal._delay_feedback_system_rhs
+#     history::HST = Causal._delay_feedback_system_history
+#     readout::RO = (x, u, t) -> x 
+#     state::Vector{Float64} = rand(1)
+#     input::IP = nothing 
+#     output::OP = Outport(1)
+# end
 
-_delay_feedback_system_cache = zeros(1)
-_delay_feedback_system_tau = 1.
-_delay_feedback_system_constlags = [1.]
-_delay_feedback_system_history(cache, u, t) = (cache .= 1.)
-function _delay_feedback_system_rhs(dx, x, h, u, t, 
-    cache=Causal._delay_feedback_system_cache, τ=Causal._delay_feedback_system_tau)
-    h(cache, u, t - τ)  # Update cache 
-    dx[1] = cache[1] + x[1]
-end
+# _delay_feedback_system_cache = zeros(1)
+# _delay_feedback_system_tau = 1.
+# _delay_feedback_system_constlags = [1.]
+# _delay_feedback_system_history(cache, u, t) = (cache .= 1.)
+# function _delay_feedback_system_rhs(dx, x, h, u, t, 
+#     cache=Causal._delay_feedback_system_cache, τ=Causal._delay_feedback_system_tau)
+#     h(cache, u, t - τ)  # Update cache 
+#     dx[1] = cache[1] + x[1]
+# end
 
-##### Pretty-printing
+# ##### Pretty-printing
 
-show(io::IO, ds::DDESystem) = print(io, 
-    "DDESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ", 
-    "input:$(ds.input), output:$(ds.output))")
-show(io::IO, ds::DelayFeedbackSystem) = print(io, 
-    "DelayFeedbackSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+# show(io::IO, ds::DDESystem) = print(io, 
+#     "DDESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ", 
+#     "input:$(ds.input), output:$(ds.output))")
+# show(io::IO, ds::DelayFeedbackSystem) = print(io, 
+#     "DelayFeedbackSystem(state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

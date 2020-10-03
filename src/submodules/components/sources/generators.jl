@@ -66,27 +66,27 @@ end
 
 
 ##### Define Sources library
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
+#     $(TYPEDFIELDS)
 
-# Example 
-```julia 
-julia> gen = FunctionGenerator(readout = t -> [t, 2t], output = Outport(2));
+# # Example 
+# ```julia 
+# julia> gen = FunctionGenerator(readout = t -> [t, 2t], output = Outport(2));
 
-julia> gen.readout(1.)
-2-element Array{Float64,1}:
- 1.0
- 2.0
-```
-"""
-@def_source struct FunctionGenerator{RO, OP} <: AbstractSource 
-    readout::RO 
-    output::OP = Outport{typeof(readout(0.))}()  
-end
+# julia> gen.readout(1.)
+# 2-element Array{Float64,1}:
+#  1.0
+#  2.0
+# ```
+# """
+# @def_source struct FunctionGenerator{RO, OP} <: AbstractSource 
+#     readout::RO 
+#     output::OP = Outport{typeof(readout(0.))}()  
+# end
 
 """
     $(TYPEDEF)
@@ -101,15 +101,16 @@ end
 ```
 where ``A`` is `amplitude`, ``f`` is `frequency`, ``\\tau`` is `delay` and ``\\phi`` is `phase` and ``B`` is `offset`.
 """
-@def_source struct SinewaveGenerator{RO, OP} <: AbstractSource
+@def_source mutable struct SinewaveGenerator{OP} <: AbstractSource
     amplitude::Float64 = 1.
     frequency::Float64 = 1. 
     phase::Float64 = 0. 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude, frequency=frequency, delay=delay, offset=offset) ->
-        amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset
+end
+function readout(gen::SinewaveGenerator, t)
+    gen.amplitude * sin(2 * pi * gen.frequency * (t - gen.delay) + gen.phase) + gen.offset
 end
 
 
@@ -126,7 +127,7 @@ end
 ```
 where ``A`` is `amplitude`, ``\\alpha`` is `decay`, ``f`` is `frequency`, ``\\phi`` is `phase`, ``\\tau`` is `delay` and ``B`` is `offset`.
 """
-@def_source struct DampedSinewaveGenerator{RO, OP} <: AbstractSource
+@def_source mutable struct DampedSinewaveGenerator{OP} <: AbstractSource
     amplitude::Float64 = 1. 
     decay::Float64 = 0.5 
     frequency::Float64 = 1. 
@@ -134,9 +135,10 @@ where ``A`` is `amplitude`, ``\\alpha`` is `decay`, ``f`` is `frequency`, ``\\ph
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude, decay=decay, frequency=frequency, phase=phase, delay=delay, offset=offset) ->
-        amplitude * exp(decay * t) * sin(2 * pi * frequency * (t - delay)) + offset
 end
+function readout(gen::DampedSinewaveGenerator, t)
+    gen.amplitude * exp(gen.decay * t) * sin(2 * pi * gen.frequency * (t - gen.delay)) + gen.offset
+end 
 
 
 """
@@ -155,15 +157,16 @@ end
 ```
 where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` is `duty`. 
 """
-@def_source struct SquarewaveGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct SquarewaveGenerator{OP} <: AbstractSource
     high::Float64 = 1. 
     low::Float64 = 0. 
     period::Float64 = 1. 
     duty::Float64 = 0.5
     delay::Float64 = 0. 
     output::OP = Outport()
-    readout::RO = (t, high=high, low=low, period=period, duty=duty, delay=delay) -> 
-        t <= delay ? low : ( ((t - delay) % period <= duty * period) ? high : low )
+end
+function readout(gen::SquarewaveGenerator, t)
+    t <= gen.delay ? gen.low : ( ((t - gen.delay) % gen.period <= gen.duty * gen.period) ? gen.high : gen.low )
 end
 
 
@@ -183,23 +186,23 @@ end
 ```
 where ``A`` is `amplitude`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` is `duty`. 
 """
-@def_source struct TriangularwaveGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct TriangularwaveGenerator{OP} <: AbstractSource
     amplitude::Float64 =  1. 
     period::Float64 = 1. 
     duty::Float64 = 0.5 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude, period=period, duty=duty, delay=delay, offset=offset) -> begin 
-        if t <= delay
-            return offset
+end
+function readout(gen::TriangularwaveGenerator, t)
+    if t <= gen.delay
+        return gen.offset
+    else
+        t = (t - gen.delay) % gen.period 
+        if t <= gen.duty * gen.period
+            gen.amplitude / (gen.duty * gen.period) * t + gen.offset
         else
-            t = (t - delay) % period 
-            if t <= duty * period
-                amplitude / (duty * period) * t + offset
-            else
-                (amplitude * (period - t)) / (period * (1 - duty)) + offset
-            end
+            (gen.amplitude * (gen.period - t)) / (gen.period * (1 - gen.duty)) + gen.offset
         end
     end
 end
@@ -218,11 +221,11 @@ end
 ```
 where ``A`` is `amplitude.
 """
-@def_source struct ConstantGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct ConstantGenerator{OP} <: AbstractSource
     amplitude::Float64 = 1. 
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude) -> amplitude
 end
+readout(gen::ConstantGenerator, t) =  gen.amplitude
 
 
 """
@@ -238,13 +241,13 @@ end
 ```
 where ``\\alpha`` is the `scale` and ``\\tau`` is `delay`.
 """
-@def_source struct RampGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct RampGenerator{OP} <: AbstractSource
     scale::Float64 = 1.
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, scale=scale, delay=delay, offset=offset) ->  scale * (t - delay) + offset
 end
+readout(gen::RampGenerator, t) =  gen.scale * (t - gen.delay) + gen.offset
 
 
 """
@@ -263,14 +266,13 @@ end
 ```
 where ``A`` is `amplitude`, ``B`` is the `offset` and ``\\tau`` is the `delay`.
 """
-@def_source struct StepGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct StepGenerator{OP} <: AbstractSource
     amplitude::Float64 = 1. 
     delay::Float64 = 0. 
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, amplitude=amplitude, delay=delay, offset=offset) -> 
-        t - delay >= 0 ? amplitude + offset : offset
 end
+readout(gen::StepGenerator, t) = t - gen.delay >= 0 ? gen.amplitude + gen.offset : gen.offset
 
 
 """
@@ -286,14 +288,14 @@ end
 ```
 where ``A`` is `scale`, ``\\alpha`` is `decay` and ``\\tau`` is `delay`.
 """
-@def_source struct ExponentialGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct ExponentialGenerator{OP} <: AbstractSource
     scale::Float64 = 1. 
     decay::Float64 = -1. 
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> scale * exp(decay * (t - delay)) + offset
 end
+readout(gen::ExponentialGenerator, t) = gen.scale * exp(gen.decay * (t - gen.delay)) + gen.offset
 
 
 """
@@ -309,20 +311,19 @@ end
 ```
 where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
 """
-@def_source struct DampedExponentialGenerator{OP, RO} <: AbstractSource
+@def_source mutable struct DampedExponentialGenerator{OP} <: AbstractSource
     scale::Float64 = 1.
     decay::Float64 = -1. 
     delay::Float64 = 0.
     offset::Float64 = 0.
     output::OP = Outport()
-    readout::RO = (t, scale=scale, decay=decay, delay=delay, offset=offset) -> 
-        scale * (t - delay) * exp(decay * (t - delay)) + offset
 end
+readout(gen::DampedExponentialGenerator, t) =  gen.scale*(t - gen.delay) * exp(gen.decay*(t - gen.delay)) + gen.offset
 
 ##### Pretty-Printing of generators.
 
-show(io::IO, gen::FunctionGenerator) = print(io, 
-    "FunctionGenerator(readout:$(gen.readout),  output:$(gen.output))")
+# show(io::IO, gen::FunctionGenerator) = print(io, 
+#     "FunctionGenerator(readout:$(gen.readout),  output:$(gen.output))")
 show(io::IO, gen::SinewaveGenerator) = print(io, 
     "SinewaveGenerator(amp:$(gen.amplitude), freq:$(gen.frequency), phase:$(gen.phase), ",
     "offset:$(gen.offset), delay:$(gen.delay))")

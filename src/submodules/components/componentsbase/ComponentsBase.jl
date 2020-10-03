@@ -19,6 +19,7 @@ using Interpolations
 import Causal.Connections: launch
 import DifferentialEquations: step!
 import Base: getindex, show
+import Causal.Components: readout
 
 include("constants.jl")
 include("hierarchy.jl")

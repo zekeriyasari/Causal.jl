@@ -11,9 +11,10 @@ export Printer
 
 `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
 """
-@def_sink mutable struct Printer{A} <: AbstractSink 
-    action::A = print 
+@def_sink mutable struct Printer <: AbstractSink 
 end
+
+action(printer::Printer, t, u) = print(printer, t, u)
 
 show(io::IO, printer::Printer) = print(io, "Printer(nin:$(length(printer.input)))")
 

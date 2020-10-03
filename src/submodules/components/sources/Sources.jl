@@ -18,6 +18,7 @@ using Causal.Components.ComponentsBase
 using UUIDs
 import Base: iterate, take!, length, show
 import UUIDs: uuid4
+import Causal.Components: readout
 
 include("clock.jl")
 include("generators.jl")

@@ -18,6 +18,7 @@ using Causal.Utilities
 using Causal.Components.ComponentsBase
 import Base: show 
 import UUIDs.uuid4
+import Causal.Components: readout
 
 export @def_static_system
 export StaticSystem, Adder, Multiplier, Gain, Terminator, Memory, Coupler, Differentiator
@@ -86,28 +87,28 @@ end
 
 ##### Define prototipical static systems.
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-Generic static system with `readout` function, `input` port and `output` port.
+# Generic static system with `readout` function, `input` port and `output` port.
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
+#     $(TYPEDFIELDS)
 
-# Example 
-```julia 
-julia> ss = StaticSystem(readout = (t,u) -> u[1] + u[2], input=Inport(2), output=Outport(1));
+# # Example 
+# ```julia 
+# julia> ss = StaticSystem(readout = (t,u) -> u[1] + u[2], input=Inport(2), output=Outport(1));
 
-julia> ss.readout(0., ones(2))
-2.0
-```
-"""
-@def_static_system struct StaticSystem{RO, IP, OP} <: AbstractStaticSystem
-    readout::RO 
-    input::IP 
-    output::OP
-end
+# julia> ss.readout(0., ones(2))
+# 2.0
+# ```
+# """
+# @def_static_system struct StaticSystem{RO, IP, OP} <: AbstractStaticSystem
+#     readout::RO 
+#     input::IP 
+#     output::OP
+# end
 
 
 """
@@ -131,12 +132,12 @@ julia> adder.readout([3, 4, 5], 0.) == 3 + 4 - 5
 true
 ```
 """
-@def_static_system struct Adder{S, IP, OP, RO} <: AbstractStaticSystem 
+@def_static_system mutable struct Adder{S, IP, OP} <: AbstractStaticSystem 
     signs::S = (+, +)
     input::IP = Inport(length(signs))
     output::OP = Outport()
-    readout::RO = (u, t, signs=signs) -> sum([sign(val) for (sign, val) in zip(signs, u)])
 end
+readout(ss::Adder, u, t) = sum([sign(val) for (sign, val) in zip(ss.signs, u)])
 
 
 """
@@ -160,18 +161,18 @@ julia> mlt.readout([3, 4, 5], 0.) == 3 * 4 / 5
 true
 ```
 """
-@def_static_system struct Multiplier{S, IP, OP, RO} <: AbstractStaticSystem
+@def_static_system mutable struct Multiplier{S, IP, OP} <: AbstractStaticSystem
     ops::S = (*,*)
     input::IP = Inport(length(ops))
     output::OP = Outport()
-    readout::RO = (u, t, ops=ops) -> begin 
-        ops = ops
-        val = 1
-        for i = 1 : length(ops)
-            val = ops[i](val, u[i])
-        end
-        val
+end
+function readout(ss::Multiplier, u, t) 
+    ops = ss.ops
+    val = 1
+    for i = 1 : length(ops)
+        val = ops[i](val, u[i])
     end
+    val
 end
 
 
@@ -198,12 +199,12 @@ julia> sfunc.readout([1., 2.], 0.) == K * [1., 2.]
 true
 ```
 """
-@def_static_system struct Gain{G, IP, OP, RO} <: AbstractStaticSystem
+@def_static_system mutable struct Gain{G, IP, OP} <: AbstractStaticSystem
     gain::G = 1.
     input::IP = Inport() 
     output::OP = Outport(length(gain * zeros(length(input)))) 
-    readout::RO = (u, t, gain=gain) -> gain * u
 end
+readout(ss::Gain, u, t) = ss.gain * u
 
 
 """
@@ -215,11 +216,11 @@ end
 
 `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
 """
-@def_static_system struct Terminator{IP, OP, RO} <: AbstractStaticSystem
+@def_static_system struct Terminator{IP, OP} <: AbstractStaticSystem
     input::IP = Inport() 
     output::OP = nothing
-    readout::RO = nothing
 end 
+readout(ss::Terminator, u, t) = nothing
 
 
 """
@@ -242,7 +243,7 @@ julia> Memory(delay=0.1, numtaps=5)
 Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-@def_static_system struct Memory{D, IN, TB, DB, IP, OP, RO} <: AbstractMemory
+@def_static_system mutable struct Memory{D, IN, TB, DB, IP, OP} <: AbstractMemory
     delay::D = 1.
     initial::IN = 0.
     numtaps::Int = 5
@@ -250,25 +251,25 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
     databuf::DB = Buffer(typeof(initial), numtaps)
     input::IP = Inport{typeof(initial)}()
     output::OP = Outport{typeof(initial)}()
-    readout::RO = (u, t, delay=delay, initial=initial, numtaps=numtaps, timebuf=timebuf, databuf=databuf) -> begin 
-        if t <= delay
-            return initial
+end 
+function readout(mem::Memory, u, t) 
+    if t <= mem.delay
+        return mem.initial
+    else
+        tt = content(mem.timebuf, flip=false)
+        uu = content(mem.databuf, flip=false)
+        if length(tt) == 1
+            return uu[1]
+        end
+        if eltype(uu) <: AbstractVector
+            itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(hcat(uu...)))
+            return map(f -> f(t - delay), itp)
         else
-            tt = content(timebuf, flip=false)
-            uu = content(databuf, flip=false)
-            if length(tt) == 1
-                return uu[1]
-            end
-            if eltype(uu) <: AbstractVector
-                itp = map(row -> CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(row), extrapolation_bc=Line()), eachrow(hcat(uu...)))
-                return map(f -> f(t - delay), itp)
-            else
-                itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
-                return itp(t - delay)
-            end
+            itp = CubicSplineInterpolation(range(tt[end], tt[1], length=length(tt)), reverse(uu), extrapolation_bc=Line())
+            return itp(t - delay)
         end
     end
-end 
+end
 
 
 """
@@ -284,15 +285,17 @@ end
 ```
 where ``\\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
 """
-@def_static_system struct Coupler{C1, C2, IP, OP, RO} <: AbstractStaticSystem
+@def_static_system mutable struct Coupler{C1, C2, IP, OP} <: AbstractStaticSystem
     conmat::C1 = [-1. 1; 1. 1.]
     cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
     input::IP = Inport(size(conmat, 1) * size(cplmat, 1))
     output::OP = Outport(size(conmat, 1) * size(cplmat, 1))
-    readout::RO = typeof(conmat) <: AbstractMatrix{<:Real} ? 
-        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u ) : 
-        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )
 end
+function readout(ss::Coupler, u, t)
+    typeof(ss.conmat) <: AbstractMatrix{<:Real} ? 
+        kron(ss.conmat, ss.cplmat) * u  : 
+        kron(map(f -> f(t), ss.conmat), ss.cplmat) * u 
+end 
 
 """
         $(TYPEDEF)
@@ -307,25 +310,22 @@ Consructs a `Differentiator` whose input output relation is of the form
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``k_d`` is the differentiation constant.
 """
-@def_static_system struct Differentiator{IP, OP, RO} <: AbstractStaticSystem 
+@def_static_system mutable struct Differentiator{IP, OP} <: AbstractStaticSystem 
     kd::Float64 = 1. 
-    t::Float64 = zeros(0.)
-    u::Float64 = zeros(0.)
+    t::Float64 = 0.
+    u::Float64 = 0.
     input::IP = Inport()
     output::OP = Outport()
-    readout::RO = (uu, tt, t=t, u=u, kd=kd) -> begin
-        val = only(uu)
-        sst = t[1]
-        ssu = u[1]
-        out = tt ≤ sst ? ssu : (val - ssu) / (tt - sst)
-        t .= t
-        u .= val
-        kd * out 
-    end
+end
+function readout(ss::Differentiator, u, t)
+    out = t ≤ ss.t ? ss.u : (u - ss.u) / (t - ss.t)
+    ss.t = t
+    ss.u = u
+    kd * out 
 end
 
 ##### Pretty-printing
-show(io::IO, ss::StaticSystem) = print(io,"StaticSystem(readout:$(ss.readout), input:$(ss.input), output:$(ss.output))")
+# show(io::IO, ss::StaticSystem) = print(io,"StaticSystem(readout:$(ss.readout), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Adder) = print(io, "Adder(signs:$(ss.signs), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Multiplier) = print(io, "Multiplier(ops:$(ss.ops), input:$(ss.input), output:$(ss.output))")
 show(io::IO, ss::Gain) = print(io, "Gain(gain:$(ss.gain), input:$(ss.input), output:$(ss.output))")

@@ -55,12 +55,12 @@ end
 Computes the output of `comp` according to its `readout` if `readout` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
 """
 function computeoutput end
-computeoutput(comp::AbstractSource, x, u, t) = comp.readout(t)
+computeoutput(comp::AbstractSource, x, u, t) = readout(comp, t)
 computeoutput(comp::AbstractStaticSystem, x, u, t) =  
-    typeof(comp.readout) <: Nothing ? nothing : comp.readout(u, t)
+    typeof(comp.output) <: Nothing ? nothing : readout(comp, u, t)
 function computeoutput(comp::AbstractDynamicSystem, x, u, t)
-    typeof(comp.readout) <: Nothing && return nothing
-    typeof(u) <: Nothing ? comp.readout(x, u, t) : comp.readout(x, map(uu -> t -> uu, u), t) 
+    typeof(comp.output) <: Nothing && return nothing
+    typeof(u) <: Nothing ? readout(comp, x, u, t) : readout(comp, x, map(uu -> t -> uu, u), t) 
 end
 computeoutput(comp::AbstractSink, x, u, t) = nothing
 

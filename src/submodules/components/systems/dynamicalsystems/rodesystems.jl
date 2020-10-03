@@ -71,52 +71,52 @@ macro def_rode_system(ex)
     end |> esc 
 end
 
-##### Define RODE sytem library 
+# ##### Define RODE sytem library 
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-A generic RODE system 
+# A generic RODE system 
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
-"""
-@def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
-    righthandside::RH 
-    readout::RO 
-    state::ST 
-    input::IP 
-    output::OP
-end
+#     $(TYPEDFIELDS)
+# """
+# @def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
+#     righthandside::RH 
+#     readout::RO 
+#     state::ST 
+#     input::IP 
+#     output::OP
+# end
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
+#     $(TYPEDFIELDS)
 
-`MultiplicativeNoiseLinearSystem` with the dynamics 
-```math 
-\\begin{array}{l}
-    \\dot{x} = A x W
-\\end{array}
-where `W` is the noise process.
-```
-"""
-@def_rode_system mutable struct MultiplicativeNoiseLinearSystem{RH, RO, IP, OP} <: AbstractRODESystem
-    A::Matrix{Float64} = [2. 0.; 0 -2]
-    righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
-    readout::RO = (x, u, t) -> x 
-    state::Vector{Float64} = rand(2) 
-    input::IP = nothing 
-    output::OP = Outport(2)
-end
+# `MultiplicativeNoiseLinearSystem` with the dynamics 
+# ```math 
+# \\begin{array}{l}
+#     \\dot{x} = A x W
+# \\end{array}
+# where `W` is the noise process.
+# ```
+# """
+# @def_rode_system mutable struct MultiplicativeNoiseLinearSystem{RH, RO, IP, OP} <: AbstractRODESystem
+#     A::Matrix{Float64} = [2. 0.; 0 -2]
+#     righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
+#     readout::RO = (x, u, t) -> x 
+#     state::Vector{Float64} = rand(2) 
+#     input::IP = nothing 
+#     output::OP = Outport(2)
+# end
 
-##### Pretty printing 
-show(io::IO, ds::RODESystem) = print(io, 
-    "RODESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
-show(io::IO, ds::MultiplicativeNoiseLinearSystem) = print(io, 
-    "MultiplicativeNoiseLinearSystem(A:$(ds.A), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+# ##### Pretty printing 
+# show(io::IO, ds::RODESystem) = print(io, 
+#     "RODESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+# show(io::IO, ds::MultiplicativeNoiseLinearSystem) = print(io, 
+#     "MultiplicativeNoiseLinearSystem(A:$(ds.A), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 

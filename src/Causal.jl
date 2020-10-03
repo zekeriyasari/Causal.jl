@@ -35,6 +35,7 @@ include("submodules/components/Components.jl")
 @reexport using .Components
 
 import .Utilities: clean!
+import .Components: righthandside, readout, action 
 
 include("modeling/model.jl")
 include("modeling/defmodel.jl")

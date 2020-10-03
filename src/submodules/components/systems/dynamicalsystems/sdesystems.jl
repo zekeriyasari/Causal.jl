@@ -77,92 +77,92 @@ macro def_sde_system(ex)
 end
 
 
-##### Define SDE system library
+# ##### Define SDE system library
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-Generic SDE system. 
+# Generic SDE system. 
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
-"""
-@def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
-    drift::DR 
-    diffusion::DF 
-    readout::RO 
-    state::ST 
-    input::IP 
-    output::OP 
-end
+#     $(TYPEDFIELDS)
+# """
+# @def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
+#     drift::DR 
+#     diffusion::DF 
+#     readout::RO 
+#     state::ST 
+#     input::IP 
+#     output::OP 
+# end
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-Generic noisy Lorenz system
+# Generic noisy Lorenz system
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
-"""
-@def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
-    σ::Float64 = 10.
-    β::Float64 = 8 / 3
-    ρ::Float64 = 28.
-    η::ET = 1.
-    γ::Float64 = 1.
-    drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
-        dx[1] = σ * (x[2] - x[1])
-        dx[2] = x[1] * (ρ - x[3]) - x[2]
-        dx[3] = x[1] * x[2] - β * x[3]
-        dx .*= γ
-    end
-    diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
-    readout::RO = (x, u, t) -> x
-    state::Vector{Float64} = rand(3)
-    input::IP = nothing 
-    output::OP = Outport(3) 
-end  
+#     $(TYPEDFIELDS)
+# """
+# @def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
+#     σ::Float64 = 10.
+#     β::Float64 = 8 / 3
+#     ρ::Float64 = 28.
+#     η::ET = 1.
+#     γ::Float64 = 1.
+#     drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
+#         dx[1] = σ * (x[2] - x[1])
+#         dx[2] = x[1] * (ρ - x[3]) - x[2]
+#         dx[3] = x[1] * x[2] - β * x[3]
+#         dx .*= γ
+#     end
+#     diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+#     readout::RO = (x, u, t) -> x
+#     state::Vector{Float64} = rand(3)
+#     input::IP = nothing 
+#     output::OP = Outport(3) 
+# end  
 
-"""
-    $(TYPEDEF)
+# """
+#     $(TYPEDEF)
 
-A forced noisy Lorenz system.
+# A forced noisy Lorenz system.
 
-# Fields 
+# # Fields 
 
-    $(TYPEDFIELDS)
-"""
-@def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
-    σ::Float64 = 10.
-    β::Float64 = 8 / 3
-    ρ::Float64 = 28.
-    η::ET = 1.
-    cplmat::CM = I(3)
-    γ::Float64 = 1.
-    drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
-        dx[1] = σ * (x[2] - x[1])
-        dx[2] = x[1] * (ρ - x[3]) - x[2]
-        dx[3] = x[1] * x[2] - β * x[3]
-        dx .*= γ
-        dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
-    end
-    diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
-    readout::RO = (x, u, t) -> x
-    state::Vector{Float64} = rand(3)
-    input::IP = Inport(3) 
-    output::OP = Outport(3) 
-end  
+#     $(TYPEDFIELDS)
+# """
+# @def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
+#     σ::Float64 = 10.
+#     β::Float64 = 8 / 3
+#     ρ::Float64 = 28.
+#     η::ET = 1.
+#     cplmat::CM = I(3)
+#     γ::Float64 = 1.
+#     drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
+#         dx[1] = σ * (x[2] - x[1])
+#         dx[2] = x[1] * (ρ - x[3]) - x[2]
+#         dx[3] = x[1] * x[2] - β * x[3]
+#         dx .*= γ
+#         dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
+#     end
+#     diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+#     readout::RO = (x, u, t) -> x
+#     state::Vector{Float64} = rand(3)
+#     input::IP = Inport(3) 
+#     output::OP = Outport(3) 
+# end  
 
 
-##### Pretty printing 
-show(io::IO, ds::SDESystem) = print(io, 
-    "SDESystem(drift:$(ds.drift), diffusion:$(ds.diffusion), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ",
-    "input:$(ds.input), output:$(ds.output))")
-show(io::IO, ds::NoisyLorenzSystem) = print(io, 
-    "NoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
-    "input:$(ds.input), output:$(ds.output))")
-show(io::IO, ds::ForcedNoisyLorenzSystem) = print(io, 
-    "ForcedNoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), cplmat:$(ds.cplmat), ", 
-    "state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+# ##### Pretty printing 
+# show(io::IO, ds::SDESystem) = print(io, 
+#     "SDESystem(drift:$(ds.drift), diffusion:$(ds.diffusion), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), ",
+#     "input:$(ds.input), output:$(ds.output))")
+# show(io::IO, ds::NoisyLorenzSystem) = print(io, 
+#     "NoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), state:$(ds.state), t:$(ds.t), ",
+#     "input:$(ds.input), output:$(ds.output))")
+# show(io::IO, ds::ForcedNoisyLorenzSystem) = print(io, 
+#     "ForcedNoisyLorenzSystem(σ:$(ds.σ), β:$(ds.β), ρ:$(ds.ρ), η:$(ds.η), γ:$(ds.γ), cplmat:$(ds.cplmat), ", 
+#     "state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")

@@ -17,11 +17,12 @@ export Writer, write!, fwrite!, fread
 !!! warning 
     When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
 """
-@def_sink mutable struct Writer{A, FL} <: AbstractSink
-    action::A = write!
+@def_sink mutable struct Writer{FL} <: AbstractSink
+    # action::A = write!
     path::String = joinpath(tempdir(), string(uuid4()))
     file::FL = (f = jldopen(path, "w"); close(f); f)
 end
+action(writer::Writer, t, u) = write!(writer, t, u)
 
 show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
 

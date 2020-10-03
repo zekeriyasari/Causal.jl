@@ -135,12 +135,7 @@ true
 @def_static_system mutable struct Adder{S, IP, OP} <: AbstractStaticSystem 
     signs::S = (+, +)
     input::IP = Inport(length(signs))
-<<<<<<< HEAD
     output::OP = Outport()
-=======
-    output::OP = Outport{datatype(input)}()
-    readout::RO = (u, t, signs=signs) -> sum([sign(val) for (sign, val) in zip(signs, u)])
->>>>>>> modular
 end
 readout(ss::Adder, u, t) = sum([sign(val) for (sign, val) in zip(ss.signs, u)])
 
@@ -169,7 +164,6 @@ true
 @def_static_system mutable struct Multiplier{S, IP, OP} <: AbstractStaticSystem
     ops::S = (*,*)
     input::IP = Inport(length(ops))
-<<<<<<< HEAD
     output::OP = Outport()
 end
 function readout(ss::Multiplier, u, t) 
@@ -177,16 +171,6 @@ function readout(ss::Multiplier, u, t)
     val = 1
     for i = 1 : length(ops)
         val = ops[i](val, u[i])
-=======
-    output::OP = Outport{datatype(input)}()
-    readout::RO = (u, t, ops=ops) -> begin 
-        ops = ops
-        val = 1
-        for i = 1 : length(ops)
-            val = ops[i](val, u[i])
-        end
-        val
->>>>>>> modular
     end
     val
 end
@@ -218,12 +202,7 @@ true
 @def_static_system mutable struct Gain{G, IP, OP} <: AbstractStaticSystem
     gain::G = 1.
     input::IP = Inport() 
-<<<<<<< HEAD
     output::OP = Outport(length(gain * zeros(length(input)))) 
-=======
-    output::OP = Outport{datatype(input)}(length(gain * zeros(length(input)))) 
-    readout::RO = (u, t, gain=gain) -> gain * u
->>>>>>> modular
 end
 readout(ss::Gain, u, t) = ss.gain * u
 

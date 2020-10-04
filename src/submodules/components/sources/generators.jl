@@ -2,7 +2,7 @@
 
 export @def_source, FunctionGenerator, SinewaveGenerator, DampedSinewaveGenerator, SquarewaveGenerator, 
     TriangularwaveGenerator, ConstantGenerator, RampGenerator, StepGenerator, ExponentialGenerator, 
-    DampedExponentialGenerator, PCM
+    DampedExponentialGenerator
 
 """
     @def_source ex 
@@ -319,34 +319,6 @@ where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
         scale * (t - delay) * exp(decay * (t - delay)) + offset
 end
 
-"""
-    $(TYPEDEF)
-
-Pulse Code Modulator (PCM) that generates random pulses.
-
-# Fields 
-
-    $(TYPEDFIELDS)
-
-"""
-@def_source struct PCM{OP, RO} <: AbstractSource 
-    t0::Float64 = 0.
-    bits::Vector{Bool} = rand(Bool, 10)
-    high::Float64 = 1. 
-    low::Float64 = 0. 
-    period::Float64 = 1.
-    duty::Float64 = 0.5
-    output::OP = Outport()
-    readout::RO = function pcm(t, t0=t0, bits=bits, high=high, low=low, period=period, duty=duty)
-        ti = (t - t0) 
-        n = length(bits)
-        tf = n * period 
-        idx = ti == tf ? n : findlast(ti .≥  (0 : n) * period)
-        induty = ti % period ≤ period * duty
-        bits[idx] ? (induty ? low : high) : (induty ? high : low)
-    end
-end
-
 ##### Pretty-Printing of generators.
 
 show(io::IO, gen::FunctionGenerator) = print(io, 
@@ -372,5 +344,3 @@ show(io::IO, gen::ExponentialGenerator) = print(io,
     "ExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay), delay:$(gen.delay))")
 show(io::IO, gen::DampedExponentialGenerator) = print(io, 
     "DampedExponentialGenerator(scale:$(gen.scale), decay:$(gen.decay), delay:$(gen.delay))")
-show(io::IO, gen::PCM) = print(io, 
-    "PCM(high:$(gen.high), low:$(gen.low), period:$(gen.period), duty:$(gen.duty))")

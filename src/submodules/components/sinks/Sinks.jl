@@ -93,16 +93,16 @@ function construct_sink_buffers(input, buflen)
 end
 
 construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = 
-    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, databuf.output), true, id)
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), reverse(databuf.output)), true, id)
 
 construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) = 
-    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, hcat([buf.output for buf in databuf]...)), true, id)
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), hcat([reverse(buf.output) for buf in databuf]...)), true, id)
 
 construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = 
-    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(databuf.output)), true, id) 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(reverse(databuf.output))), true, id) 
 
 construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) = 
-    Callback(sink->ishit(timebuf), sink->action(sink, timebuf.output, plugin.process(hcat([buf.output for buf in databuf]...))), 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(hcat([reverse(buf.output) for buf in databuf]...))), 
     true, id) 
 
 include("writer.jl")

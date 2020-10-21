@@ -1,0 +1,18 @@
+title: "Causal.jl:\\\\A Modeling and Simulation Framework for Causal Models"
+keywords:
+  - System Modeling
+  - Causal Modeling 
+  - System Simulation
+  - Dynamical Systems 
+  - Julia Programming Language
+authors:
+  - name: Zekeriya Sarı
+    orcid: 0000-0003-4070-9666
+    affiliation: 1
+  - name: Serkan Günel
+    affiliation: 1
+affiliations:
+  - name: Deparment of Electrical and Electronics Engineering, Dokuz Eylül University, İzmir, TURKEY
+    index: 1
+date: 21 October 2019
+bibliography: ref.bib

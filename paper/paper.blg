@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: paper.aux
+The style file: juliacon.bst
+Database file #1: ref.bib.bib
+Warning--to sort, need author or key in simulink
+Warning--to sort, need author or key in causal
+Warning--to sort, need author or key in julialang
+Warning--to sort, need author or key in fftw
+Warning--to sort, need author or key in plots
+Warning--there's a number but no series in giorgidze2009higher
+Warning--empty journal in pfeiffer2012pysimulator
+You've used 19 entries,
+            2118 wiz_defined-function locations,
+            599 strings with 7454 characters,
+and the built_in function-call counts, 5469 in all, are:
+= -- 537
+> -- 232
+< -- 4
++ -- 97
+- -- 76
+* -- 335
+:= -- 872
+add.period$ -- 55
+call.type$ -- 19
+change.case$ -- 93
+chr.to.int$ -- 0
+cite$ -- 26
+duplicate$ -- 217
+empty$ -- 476
+format.name$ -- 76
+if$ -- 1180
+int.to.chr$ -- 0
+int.to.str$ -- 19
+missing$ -- 14
+newline$ -- 93
+num.names$ -- 28
+pop$ -- 130
+preamble$ -- 1
+purify$ -- 75
+quote$ -- 0
+skip$ -- 165
+stack$ -- 0
+substring$ -- 259
+swap$ -- 46
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 74
+warning$ -- 7
+while$ -- 45
+width$ -- 21
+write$ -- 193
+(There were 7 warnings)

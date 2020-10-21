@@ -1,0 +1,106 @@
+\documentclass[margin=5mm]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+
+\usetikzlibrary{calc, positioning}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{matrix}
+\usetikzlibrary{shadows}
+\usepgflibrary{shapes.misc}
+\usepgflibrary{{shapes.geometric}}
+
+\pgfdeclarelayer{shadow} 
+\pgfsetlayers{shadow,main}
+\def\shadowradius{3pt}
+
+
+\def\mw{1.25cm}
+\def\mh{1cm}
+\def\trianglecoordinate{2mm}
+
+\newcommand\drawshadowbis[1]{
+    \begin{pgfonlayer}{shadow}
+        \fill[inner color=black,outer color=white] ($(#1.south west)$) circle (\shadowradius);
+        \fill[inner color=black ,outer color=white] ($(#1.north west)$) circle (\shadowradius);
+        \fill[inner color=black ,outer color=white] ($(#1.south east)$) circle (\shadowradius);
+        \fill[inner color=black,outer color=white] ($(#1.north east)$) circle (\shadowradius);
+        \fill[ top color=black, bottom color=white] ($(#1.south west)+((0,-\shadowradius)$) rectangle ($(#1.south east)$);
+        \fill[left color=black,right color=white] ($(#1.south east)$) rectangle ($(#1.north east)+((\shadowradius,0)$);
+        \fill[bottom color=black,top color=white] ($(#1.north west)$) rectangle ($(#1.north east)+((0,\shadowradius)$);
+        \fill[right color=black,left color=white] ($(#1.south west)$) rectangle ($(#1.north west)+(-\shadowradius,0)$);
+    \end{pgfonlayer}
+    }
+
+\tikzstyle{component} = [draw, fill=white, minimum width=\mw, minimum height=\mh, align=center]
+
+\tikzset{
+    border/.style = { 
+        draw, rectangle, minimum width=\mw, minimum height=\mh, ultra thick, align=center
+    },
+    Component/.pic = {
+        \node [border, font=\large](-edge){#1}; 
+        \draw[thick] ([xshift=\trianglecoordinate] -edge.south) -- ([yshift=\trianglecoordinate] -edge.south);
+        \draw[thick] ([xshift=-\trianglecoordinate] -edge.south) -- ([yshift=\trianglecoordinate] -edge.south);
+        \draw[thick] (-edge.south) |- ++(-3mm, -4mm) node[xshift=-2mm, yshift=-1mm] {T}; 
+    },
+}
+
+\tikzset{
+    clockborder/.style = { 
+        trapezium, trapezium angle=60, minimum width=1cm, draw, ultra thick
+    },
+    Clock/.pic = {
+        \node [clockborder, shape border rotate=-180](-clockedge){#1};
+        \draw[very thick] (-clockedge.east) -- ++(2cm, 0cm);
+        \def\sft{0.5}
+        \foreach \x in {0, 0.5, 1, 1.5}{
+            \draw[very thick] (\x + \sft, 0.1) -| ++(0.25cm, 0.25cm) -| ++ (0.25cm, -0.25cm);
+        }
+    },
+}
+
+\begin{document}
+    \begin{tikzpicture}[every node/.style={font=\Large}]
+        % Place the blocks 
+        \matrix (m) [matrix of nodes, ampersand replacement=\&, column sep = 2cm, row sep = -0.75cm, nodes={anchor=center}]{
+            \draw pic (ds1) {Component={node $1$}}; \& \&  \\
+            \draw node[]{\huge $\vdots$}; \& \draw pic (ss0) {Component={coupler}}; \&  \\
+            \draw pic (dsn) {Component={node $n$}}; \& \& \\
+             \& \draw pic (kutuk) {Component={writer}}; \& \\
+        };
+        % Draw connections 
+        \begin{scope}[line width=1.5mm, >={Triangle[width=3mm,length=3mm]}]
+            \draw[-] (ds1-edge.east) -- ++(1cm, 0cm) coordinate(a);
+            \draw[-] (dsn-edge.east) -- ++(1cm, 0cm) coordinate(b);
+            \draw[->] ([yshift=0.75mm] a) |- ([yshift=0.4cm] ss0-edge.west);
+            \draw[->] ([yshift=-0.75mm] b) |- ([yshift=-0.4cm] ss0-edge.west);
+            \draw (ss0-edge.west) node [xshift=-0.75cm, yshift=0.1cm]{\huge $\vdots$};
+            \draw (ss0-edge.east) node [xshift=0.75cm, yshift=0.1cm]{\huge $\vdots$};
+            \draw[-] ([yshift=0.4cm] ss0-edge.east) -- ++(0.5cm, 0cm) coordinate(c);
+            \draw[-] ([yshift=-0.4cm] ss0-edge.east) -- ++(0.5cm, 0cm) coordinate(d);
+            \draw[->] ([yshift=-0.75mm] c) |- ++(1cm, 0.75cm)  node[anchor=west]{$u_1$};
+            \draw[->] ([yshift=0.75mm] d) |- ++ (1cm, -0.75cm)  node[anchor=west]{$u_n$};
+            \draw[-] (ds1-edge.east) -- ++(0.75cm, 0cm) coordinate(e);
+            \draw[-] (dsn-edge.east) -- ++(0.25cm, 0cm) coordinate(f);
+            \draw[->] (e) |- ([yshift=0.4cm] kutuk-edge.west);
+            \draw[->] (f) |- ([yshift=-0.4cm] kutuk-edge.west);
+            \draw (kutuk-edge.west) node [xshift=-0.75cm, yshift=0.1cm]{\huge $\vdots$};
+            \draw[->] ([xshift=-1cm] ds1-edge.west) node[anchor=east]{$u_1$} -- (ds1-edge.west);
+            \draw[->] ([xshift=-1cm] dsn-edge.west) node[anchor=east]{$u_n$} -- (dsn-edge.west);
+            % \draw[->] (c.east) -- ([xshift=1cm] c) node[anchor=west]{$u_1$};
+            % \draw[->] (ssn-edge.east) -- ([xshift=1cm] ssn-edge.east) node[anchor=west]{$u_n$};
+        \end{scope}
+
+        % Draw rectangle for network
+        \draw[thick, dashed] ([xshift=-2cm, yshift=0.25cm] ds1-edge.north west) rectangle ([xshift=2.5cm, yshift=-1.25cm] kutuk-edge.south east);
+
+        % \Place clock 
+        \begin{scope}[shift={(-5cm, -2.25cm)}]
+            \draw pic(clk) {Clock={T}} ;
+        \end{scope}
+
+        %  Draw rectangle 
+        % \draw[dashed, thick] ([xshift=-0.5*\mw, yshift=-0.25*\mh] clk-clockedge.south west) rectangle ([xshift=1*\mw, yshift=0.5*\mh] ss1-edge.north east);
+        \draw (clk-clockedge.east) node[yshift=0*\mh, xshift=5.75*\mw]{model};
+    \end{tikzpicture}
+\end{document}

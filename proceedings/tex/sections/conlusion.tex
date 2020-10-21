@@ -1,8 +1,0 @@
-\section{Conclusion}
-In this paper, we introduced Causal.jl. In Causal.jl, the simulation is performed by evolving the components according to their mathematical equations between the sampling intervals in parallel and independently. The components can be static or dynamical or represented by mathematical equations having continuous or discrete-time variables. The simulation of the models consisting of components defined by ordinary, random ordinary, stochastic, delay differential, differential-algebraic, or difference equations is possible. It is not an obligation to describe all the model components with the same type of mathematical equation.
-
-The data flowing through the connections can be directly recorded or visualized during the simulation. In addition to the offline analyzes, with user-defined plugins, it is also possible to carry out online data analysis such as extracting statistical or spectral properties, applying different signal processing techniques, etc. 
-
-The model components evolve in parallel and simultaneously. The tasks of the Julia programming language is used for this parallel evolution. The tasks allow switching between the evolution of the components during the simulation. Using the Julia programming language's distributed computing tools, it is possible to distribute computation workload on multiple processors.
-
-Especially when considering extensive system networks consisting of thousands of system nodes, it is an important advantage that the system models can be created easily and quickly, that such models can be simulated in multiple microprocessor cores with distributed programming tools and that the proposed tool can provide this with an easy syntax.

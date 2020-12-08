@@ -99,7 +99,7 @@ Progress: 100%|█████████████████████�
         width="75%"/>
 </center>
 
-For more information about how to use Causal, see its [documentation](https://zekeriyasari.github.io/Causal.jl/) .
+For more information about how to use Causal, see its [documentation](https://zekeriyasari.github.io/Causal.jl/dev/) .
 
 ## Contribution 
 Any form of contribution is welcome. Please feel free to open an [issue](https://github.com/zekeriyasari/Causal.jl/issues) for bug reports, feature requests, new ideas and suggestions etc., or to send a pull request for any bug fixes.

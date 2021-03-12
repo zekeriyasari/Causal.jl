@@ -11,3 +11,7 @@
 src/plugins/additionals/
 example/workspace.jl
 docs/build/
+.DS_Store
+/Manifest.toml
+/dev/
+/docs/site/

@@ -68,20 +68,23 @@ A static system is described by a readout equation solely. When triggered, a sta
 \subsection{Ports and Connections}
 A port is a bunch of pins to which the connections are bound. There are two types of pins: an output pin that transfers data from the inside of the component to its outside, and an input pin that transfers data from the outside of the component to its inside. There are two types of ports: an output port that consists of output pins and an input port that consists of input pins.
 
-\begin{figure}
-    \centering
-    \subfloat[]{\includegraphics[width=0.225\linewidth]{figures/Tasks/reader_task.pdf} \label{subfig: reader task}} \hfil 
-    \subfloat[]{\includegraphics[width=0.225\linewidth]{figures/Tasks/writer_task.pdf} \label{subfig: writer task}} \hfil 
-    \subfloat[]{\includegraphics[width=0.4\linewidth]{figures/Tasks/reader_writer_task.pdf} \label{subfig: reader writer task}} 
-    \caption{\protect\subref{subfig: reader task} A readable connection, \protect\subref{subfig: writer task} A writable connection, \protect\subref{subfig: reader writer task} A readable and writable connection}
-    \label{fig: tasks}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \subfloat[]{\includegraphics[width=0.225\linewidth]{figures/Tasks/reader_task.pdf} \label{subfig: reader task}} \hfil 
+%     \subfloat[]{\includegraphics[width=0.225\linewidth]{figures/Tasks/writer_task.pdf} \label{subfig: writer task}} \hfil 
+%     \subfloat[]{\includegraphics[width=0.4\linewidth]{figures/Tasks/reader_writer_task.pdf} \label{subfig: reader writer task}} 
+%     \caption{\protect\subref{subfig: reader task} A readable connection, \protect\subref{subfig: writer task} A writable connection, \protect\subref{subfig: reader writer task} A readable and writable connection}
+%     \label{fig: tasks}
+% \end{figure}
 
-The data transferred to a port are transferred to its connections. The data transfer through the connections is performed over the links of the connections. The links are built on top Julia channels. The data written to(read from) a link is written to(read from) its channel. Running Julia tasks bound to the channels must exist for the data to flow through these channels. Julia tasks are the control flow features that allow calculations to be flexibly suspended and maintained without directly communicating the task scheduler of the operating system\cite{julialang}. The communication and the data exchange between the tasks are carried out through Julia's channels to which they are bound.
+The data transferred to a port are transferred to its connections. The data transfer through the connections is performed over the links of the connections. The links are built on top of unbuffered Julia channels. The data written to(read from) a link is written to(read from) its channel. Running Julia tasks bound to the channels must exist for the data to flow through these channels. Julia tasks are the control flow features that allow calculations to be flexibly suspended and maintained without directly communicating the task scheduler of the operating system\cite{julialang}. The communication and the data exchange between the tasks are carried out through Julia's channels to which they are bound.
 
-Figure \ref{fig: tasks} depicts the tasks that must be bound to a connection to make it readable, writable, and both readable and writable, symbolically. The writer(the reader) task is the task that writes(reads) data to(from) the connection. A running writer task must be bound to the connection on the opposite side to read data from one side of a connection. This connection is called a readable connection. Similarly, to write data to one side of a connection, a running reader task must be bound to the connection at the other side. This connection is called a writable connection. If both running writer and reader tasks are bound to both sides of a connection, then the data can both be read from and written to the connection. Such a connection is called a readable and writable connection. The dataflow through a connection is only allowed if the connection is both readable and writable connection. The data read from a readable connection is the data written to the connection by the writer task of the connection. If the data have not been written to the connection by its writer task during a reading process yet, then reading does not occur, and the writer task is waited to put data to the connection. Similarly, if the data on a connection has not been read from the connection by its reader task during a writing process yet, then the reader task is waited to take data from the connection.
+% Figure \ref{fig: tasks} depicts the tasks that must be bound to a connection to make it readable, writable, and both readable and writable, symbolically. The writer(the reader) task is the task that writes(reads) data to(from) the connection. A running writer task must be bound to the connection on the opposite side to read data from one side of a connection. This connection is called a readable connection. Similarly, to write data to one side of a connection, a running reader task must be bound to the connection at the other side. This connection is called a writable connection. If both running writer and reader tasks are bound to both sides of a connection, then the data can both be read from and written to the connection. Such a connection is called a readable and writable connection. The dataflow through a connection is only allowed if the connection is both readable and writable connection. The data read from a readable connection is the data written to the connection by the writer task of the connection. If the data have not been written to the connection by its writer task during a reading process yet, then reading does not occur, and the writer task is waited to put data to the connection. Similarly, if the data on a connection has not been read from the connection by its reader task during a writing process yet, then the reader task is waited to take data from the connection.
 
 In the modeling approach adopted, the components reading data from a connection are driven by other components writing data to the connection. Therefore, all of the model's connections must be readable and writable so that data can flow through the connections. This necessitates that all the connections of the model must be connected to a component from both ends. Otherwise, the simulation gets stuck and does not terminate.
+
+There exist other tools developed in Julia for parallel execution of computations. Dagger.jl is such an example of those tools \cite{dagger}. Dagger.jl distributes the computations that can be represented by a directed acyclic graph (DAG) to available worker processes to execute them in parallel. A DAG is a directed graph with no directed cycles (loops). The DAG modeling approach brings restrictions to the simulation of the models that include loops, which is a case commonly encountered e.g. in feedback control systems. However, Causal.jl is capable of simulating the systems that include loops in their models. 
+
 
 \subsection{Simulation}
 A model to be simulated consists of components connected to each other and a time reference. The time reference is used to sample the continuous-time signals flowing through the model's connections and trigger the components. The simulation is performed by triggering the components with pulses generated by the time reference of the model at sampling time instants. When triggered, the components evolve to compute their outputs.
@@ -131,7 +134,7 @@ The sampled values are interpolated for a duration of one sampling period so tha
     \label{fig: coupled model}
 \end{figure}
 
-In Causal.jl, it is possible to simulate models that include components represented by different types of equations. In Figure \ref{fig: coupled model} is given such an example model.`odeds` is a dynamical system represented by the ordinary differential equation in (\ref{eq: coupled ode}) where where $x_1, y_1, z_1$ are the state variables and $a=35, b=3, c = 28$ are system parameters.
+In Causal.jl, it is possible to simulate models that include components represented by different types of equations. In Figure \ref{fig: coupled model} is given such an example model. \texttt{odeds} is a dynamical system represented by the ordinary differential equation in (\ref{eq: coupled ode}) where where $x_1, y_1, z_1$ are the state variables and $a=35, b=3, c = 28$ are system parameters.
 \begin{equation}
     \begin{split}
         \dot{x}_1 &= a (y_1 - x_1) \\
@@ -140,7 +143,7 @@ In Causal.jl, it is possible to simulate models that include components represen
     \end{split}
     \label{eq: coupled ode}
 \end{equation}
-`sdsds` is dynamical system that is represented by the stochastic differential equation in (\ref{eq: coupled sde}) where $x_2, y_2, z_2$ are the state variables, $u=[u_1,u_2, u_3]$ is the input, $\eta$ is noise strength, $W_t$ is the Wiener process corresponding to the noise and $a, b, c$ are the same as those in (\ref{eq: coupled ode}).
+\texttt{sdeds} is dynamical system that is represented by the stochastic differential equation in (\ref{eq: coupled sde}) where $x_2, y_2, z_2$ are the state variables, $u=[u_1,u_2, u_3]$ is the input, $\eta$ is noise strength, $W_t$ is the Wiener process corresponding to the noise and $a, b, c$ are the same as those in (\ref{eq: coupled ode}).
 \begin{equation}
     \begin{split}
         dx_2 &= (a (y_1 - x_1) + u_1) dt + \eta dW_t \\
@@ -149,19 +152,19 @@ In Causal.jl, it is possible to simulate models that include components represen
     \end{split}
     \label{eq: coupled sde}
 \end{equation}
-`gain` is a static system whose input output relation is given in (\ref{eq: gain}) where $u, y, \epsilon$ are the input, output and gain coefficient of the system. 
+\texttt{gain} is a static system whose input output relation is given in (\ref{eq: gain}) where $u, y, \epsilon$ are the input, output and gain coefficient of the system. 
 \begin{equation}
     y = \epsilon u
     \label{eq: gain}
 \end{equation}
-`writer1` and `writer2` are used to record the outputs of `odeds` and `sdeds`, respectively, while `writer3` is used to record the fast Fourier transform(FFT) of the data flowing out of `odeds`\cite{proakis2004digital}. 
+\texttt{writer1} and \texttt{writer2} are used to record the outputs of \texttt{odeds} and \texttt{sdeds}, respectively, while \texttt{writer3} is used to record the fast Fourier transform(FFT) of the data flowing out of \texttt{odeds}\cite{proakis2004digital}. 
 
-Being a domain-specific-language, Causal.jl provides a syntax for handy model construction. The program written using Causal.jl to construct and simulate the model in Figure \ref{fig: coupled model} is given in Listing \ref{lst: coupled codes}. The program first starts with the type definitions of the components `odeds`, `sdeds`, and `gain`, together with their fields' default values. Note that the types of components are defined as subtypes of the corresponding abstract component types, which shows how the user-defined component types can enrich the standard library of Causal.jl. `writer1` and `writer2` are used directly to record the data without further processing, so they do not need additional data processing plugins.
-On the other hand, rather than directly recording the data, `writer3` is used to process the data online, so it needs an additional plugin. `FFTPlug` is defined for this purpose, and `writer3` is equipped with an instance. For the sake of this example, we used the `fft` function \cite{fftw}. The model is constructed and simulated for $100$ seconds with a step size of $0.001$ seconds. After the simulation, the data in `write1` and `writer2` are read back and plotted in Figure \ref{fig: coupled simulation results}. From Figure \ref{subfig: coupled simulation sde}, the presence of the noise is apparent in the trajectory of `sdeds`. 
+Being a domain-specific-language, Causal.jl provides a syntax for handy model construction. The program written using Causal.jl to construct and simulate the model in Figure \ref{fig: coupled model} is given in Listing \ref{lst: coupled codes}. The program first starts with the type definitions of the components \texttt{odeds}, \texttt{sdeds}, and \texttt{gain}, together with their fields' default values. Note that the types of components are defined as subtypes of the corresponding abstract component types, which shows how the user-defined component types can enrich the standard library of Causal.jl. \texttt{writer1} and \texttt{writer2} are used directly to record the data without further processing, so they do not need additional data processing plugins.
+On the other hand, rather than directly recording the data, \texttt{writer3} is used to process the data online, so it needs an additional plugin. \texttt{FFTPlug} is defined for this purpose, and \texttt{writer3} is equipped with an instance. For the sake of this example, we used the \texttt{fft} function \cite{fftw}. The model is constructed and simulated for $15$ seconds with a step size of $0.001$ seconds. After the simulation, the data in \texttt{write1} and \texttt{writer2} are read back and plotted in Figure \ref{fig: coupled simulation results}. From Figure \ref{subfig: coupled simulation sde}, the presence of the noise is apparent in the trajectory of {\texttt{sdeds}. 
 
 The individual evolution of components makes it possible to simulate such models that include components represented by different equations. 
 
-Causal.jl adopts a causal modeling approach in which the data flow through the connections is unidirectional. Components that write data to a connection drives other components that read data from the same connection. Thus, the topological structure of a model can be extracted by following the components that read data from the connections bound to the output ports of model components.
+Causal.jl adopts a causal modeling approach in which the data flow through the connections is unidirectional. Components that write data to a connection drives other components that read data from the same connection. Thus, the dependency structure of a model can be extracted by following the components that read data from the connections bound to the output ports of model components.
 
 The order in which the connections are specified is arbitrary. One does not need to follow the true data flow directions through the connections. Therefore, complex topologies with many components can be defined concisely.
 
@@ -183,7 +186,7 @@ The order in which the connections are specified is arbitrary. One does not need
             \end{tikzpicture}
         \label{subfig: coupled simulation sde}
     }
-    \caption{\protect\subref{subfig: coupled simulation ode} $x_1 - y_1$ trajectory of `odeds`. \protect\subref{subfig: coupled simulation sde} $x_2 - y_2$ trajectory of `sdeds`.}
+    \caption{\protect\subref{subfig: coupled simulation ode} $x_1 - y_1$ trajectory of \texttt{odeds}. \protect\subref{subfig: coupled simulation sde} $x_2 - y_2$ trajectory of \texttt{sdeds}.}
     \label{fig: coupled simulation results}
 \end{figure}
 
@@ -195,10 +198,10 @@ In Causal.jl, its is possible to simulate large scale complex models consisting 
 \end{equation}
 where 
 \begin{equation}
-    \bm{u}_i = \sum_{i = 1}^n \epsilon_{ij} \bm{P} \bm{x}_j, \quad i = 1, \ldots, n,
+    \bm{u}_i = \sum_{i = 1}^n \epsilon_{ij} \bm{\Gamma} \bm{x}_j, \quad i = 1, \ldots, n,
     \label{eq: network node inputs}
 \end{equation}
-$n$ is the number of nodes, $\bm{x}_i \in \mathbb{R}^d$ is the state vector of node $i$, $f: \mathbb{R} \mapsto \mathbb{R}^d$ is the function corresponding to the individual node dynamics, $\epsilon_{ij} \geq 0 $ is the coupling strength between the nodes $i$ and $j$. The diagonal matrix $\bm{P} = diag(p_1, \ldots, p_d)$ determines by which state variables the nodes are connected to each other. The matrix $\bm{E} = [\epsilon_{ij}] \in \mathbb{R}^{n, n}, \; \epsilon_{ij} = \epsilon_{ji} \geq 0, \; \sum_{j = 1}^n \epsilon_{ij} = 0, i = 1, \ldots, n$ determines the network topology: if $\epsilon_{ij} > 0$, there is a connection between the nodes $i$ and $j$, if $\epsilon_{ij} = 0$, there is no connection between the nodes $i$ and $j$.
+$n$ is the number of nodes, $\bm{x}_i \in \mathbb{R}^d$ is the state vector of node $i$, $f: \mathbb{R} \mapsto \mathbb{R}^d$ is the function corresponding to the individual node dynamics, $\epsilon_{ij} \geq 0 $ is the coupling strength between the nodes $i$ and $j$. The diagonal matrix $\bm{\Gamma} = diag(\gamma_1, \gamma_2,  \ldots, \gamma_d)$ determines by which state variables the nodes are connected to each other. The matrix $\bm{E} = [\epsilon_{ij}] \in \mathbb{R}^{n, n}, \; \epsilon_{ij} = \epsilon_{ji} \geq 0, \; \sum_{j = 1}^n \epsilon_{ij} = 0, i = 1, \ldots, n$ determines the network topology: if $\epsilon_{ij} > 0$, there is a connection between the nodes $i$ and $j$, if $\epsilon_{ij} = 0$, there is no connection between the nodes $i$ and $j$.
 
 In the network given in Figure \ref{fig: network graph}, $n=50$,  $f$ is the Lorenz dynamics given by,
 \begin{equation}
@@ -208,16 +211,16 @@ In the network given in Figure \ref{fig: network graph}, $n=50$,  $f$ is the Lor
         \dot{x}_{i,3} &= x_{i, 1} x_{i, 2} - \beta x_{i, 3}
     \end{split}
 \end{equation}
-where $\sigma=10, \beta=8/3, \rho=28$ are system parameters, $\bm{P} = diag(1, 0, 0)$. The network has Wattz-Strogatz topology that has a vertex degree of $10$ and that is randomized with a probability of $0.5$\cite{watts1998collective}.
+where $\sigma=10, \beta=8/3, \rho=28$ are system parameters, $\bm{\Gamma} = diag(1, 0, 0)$. The network has Wattz-Strogatz topology that has a vertex degree of $10$ and that is randomized with a probability of $0.5$\cite{watts1998collective}.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{figures/Networks/wattz_strogatz.pdf}    
-    \caption{A network consisting of identical dynamical system nodes The spheres and the line segments represent the dynamical system nodes and the connection between them, respectively.}
+    \includegraphics[width=\linewidth]{figures/Networks/wattz_strogatz.pdf}    
+    \caption{A network consisting of identical dynamical system nodes. The spheres and the line segments represent the dynamical system nodes and the connection between them, respectively.}
     \label{fig: network graph}
 \end{figure}
 
-The model in Figure \ref{fig: network graph} is given in Figure \ref{fig: network model}. `node $k$` for $k =1, \ldots, n$ correspond to the dynamical system nodes of the network.  From (\ref{eq: network equation}) and (\ref{eq: network node inputs}), we see that the states of the nodes are taken as their outputs, weighted by the coupling strengths and fed back to their inputs. Hence, `coupler` is used to construct the weighted outputs. `writer` records the nodes' outputs. The model has algebraic loops $L_k$ for $k = 1, \ldots, n$, where the algebraic loop $L_k$ consists of `node $k$` and `coupler`. 
+The model in Figure \ref{fig: network graph} is given in Figure \ref{fig: network model}. \texttt{node $k$} for $k =1, \ldots, n$ correspond to the dynamical system nodes of the network.  From (\ref{eq: network equation}) and (\ref{eq: network node inputs}), we see that the states of the nodes are taken as their outputs, weighted by the coupling strengths and fed back to their inputs. Hence, \texttt{coupler} is used to construct the weighted outputs. \texttt{writer} records the nodes' outputs. The model has algebraic loops $L_k$ for $k = 1, \ldots, n$, where the algebraic loop $L_k$ consists of \texttt{node $k$} and \texttt{coupler}. 
 
 \begin{figure}
     \centering
@@ -343,14 +346,14 @@ end
 end 
 
 # Simulate model 
-sim = simulate!(model, 0, 0.001, 100) # Simulate from 0 to 100 seconds with a step size of 0.001 seconds
+sim = simulate!(model, 0, 0.001, 15) # Simulate from 0 to 15 seconds with a step size of 0.001 seconds
 
 # Plot simulation data 
 t, x1 = read(getnode(model, :writer1).component)
 t, x2 = read(getnode(model, :writer2).component)
 x3 = read(getnode(model, :writer3).component, flatten=false)
-plot(x1[:, 1], x1[:, 2], subplot=1, label="")
-plot(x2[:, 1], x2[:, 2], subplot=2, label="")   
+plot(x1[:, 1], x1[:, 2])
+plot(x2[:, 1], x2[:, 2])   
 println(x3)  
 \end{lstlisting}
 

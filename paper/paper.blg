@@ -1,54 +1,55 @@
-This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
-Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: paper.aux
 The style file: juliacon.bst
-Database file #1: ref.bib.bib
+Database file #1: ref.bib
 Warning--to sort, need author or key in simulink
 Warning--to sort, need author or key in causal
 Warning--to sort, need author or key in julialang
+Warning--to sort, need author or key in dagger
 Warning--to sort, need author or key in fftw
 Warning--to sort, need author or key in plots
 Warning--there's a number but no series in giorgidze2009higher
 Warning--empty journal in pfeiffer2012pysimulator
-You've used 19 entries,
+You've used 20 entries,
             2118 wiz_defined-function locations,
-            599 strings with 7454 characters,
-and the built_in function-call counts, 5469 in all, are:
-= -- 537
-> -- 232
+            603 strings with 7576 characters,
+and the built_in function-call counts, 5632 in all, are:
+= -- 553
+> -- 233
 < -- 4
-+ -- 97
++ -- 98
 - -- 76
-* -- 335
-:= -- 872
-add.period$ -- 55
-call.type$ -- 19
-change.case$ -- 93
+* -- 341
+:= -- 890
+add.period$ -- 57
+call.type$ -- 20
+change.case$ -- 96
 chr.to.int$ -- 0
-cite$ -- 26
-duplicate$ -- 217
-empty$ -- 476
+cite$ -- 28
+duplicate$ -- 224
+empty$ -- 499
 format.name$ -- 76
-if$ -- 1180
+if$ -- 1221
 int.to.chr$ -- 0
-int.to.str$ -- 19
+int.to.str$ -- 20
 missing$ -- 14
-newline$ -- 93
+newline$ -- 97
 num.names$ -- 28
-pop$ -- 130
+pop$ -- 138
 preamble$ -- 1
-purify$ -- 75
+purify$ -- 77
 quote$ -- 0
-skip$ -- 165
+skip$ -- 172
 stack$ -- 0
-substring$ -- 259
-swap$ -- 46
+substring$ -- 264
+swap$ -- 47
 text.length$ -- 4
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 74
-warning$ -- 7
+type$ -- 78
+warning$ -- 8
 while$ -- 45
-width$ -- 21
-write$ -- 193
-(There were 7 warnings)
+width$ -- 22
+write$ -- 201
+(There were 8 warnings)

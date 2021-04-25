@@ -21,6 +21,10 @@ Plots.jl - powerful convenience for julia visualizations and data analysis.
 Simulink-simulation and model-based design.
 "\url{https://www.mathworks.com/products/simulink.html}", 2020.
 
+\bibitem{dagger}
+Dagger.jl - a framework for out-of-core and parallel execution.
+"\url{https://github.com/JuliaParallel/Dagger.jl}", 2021.
+
 \bibitem{bezanson2017julia}
 Jeff Bezanson, Alan Edelman, Stefan Karpinski, and Viral~B Shah.
 Julia: A fresh approach to numerical computing.

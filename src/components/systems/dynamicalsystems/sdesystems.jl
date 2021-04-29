@@ -49,7 +49,7 @@ Here, `MySDESystem` has `N` parameters. `MySDESystem` is represented by the `dri
     New SDE system must be a subtype of `AbstractSDESystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_sde_system mutable struct MySDESystem{DR, DF, RO, IP, OP} <: AbstractSDESystem
            η::Float64 = 1.
            drift::DR = (dx, x, u, t) -> (dx .= x)
@@ -65,24 +65,15 @@ julia> ds = MySDESystem();
 """
 macro def_sde_system(ex) 
     checksyntax(ex, :AbstractSDESystem)
-    TR, HS, CB, ID, MA, MK, SA, SK, AL, IT = [gensym() for i in 1 : 10]
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-        t::Float64 = 0.
-        modelargs::$(MODEL_ARGS_TYPE_SYMBOL) = () 
-        modelkwargs::$(MODEL_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        solverargs::$(SOLVER_ARGS_TYPE_SYMBOL) = () 
-        solverkwargs::$(SOLVER_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        alg::$(ALG_TYPE_SYMBOL) = Causal.LambaEM{true}()
-        integrator::$(INTEGRATOR_TYPE_SYMBOL) = Causal.construct_integrator(Causal.SDEProblem, input, (drift, diffusion), state, 
-            t, modelargs, solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, MODEL_ARGS_TYPE_SYMBOL, MODEL_KWARGS_TYPE_SYMBOL, SOLVER_ARGS_TYPE_SYMBOL, SOLVER_KWARGS_TYPE_SYMBOL, ALG_TYPE_SYMBOL, INTEGRATOR_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    appendcommonex!(ex)
+    foreach(nex -> appendex!(ex, nex), [
+        :( alg::$ALG_TYPE_SYMBOL = Causal.LambaEM{true}() ), 
+        :( integrator::$INTEGRATOR_TYPE_SYMBOL = Causal.construct_integrator(Causal.SDEProblem, input, 
+            (drift, diffusion), state, t, modelargs, solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3) ) 
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 

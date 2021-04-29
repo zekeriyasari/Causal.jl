@@ -29,7 +29,7 @@ Here, `MySource` has `N` parameters, an `output` port and a `readout` function.
     New source must be a subtype of `AbstractSource` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_source struct MySource{OP, RO} <: AbstractSource
        a::Int = 1 
        b::Float64 = 2. 
@@ -50,15 +50,16 @@ julia> gen.output
 macro def_source(ex) 
     ex.args[2].head == :(<:) && ex.args[2].args[2] == :AbstractSource || 
         error("Invalid usage. The type should be a subtype of AbstractSource.\n$ex")
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    foreach(nex -> appendex!(ex, nex), [
+        :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+        :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+        :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+        :( name::Symbol = Symbol() ),
+        :( id::$ID_TYPE_SYMBOL = Causal.uuid4() )
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 

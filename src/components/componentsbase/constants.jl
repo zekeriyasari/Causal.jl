@@ -1,6 +1,6 @@
-# This file includes the type symbols of the fields to be added to the user defined components. 
 
 # NOTE: This is one-time defines to avoid name name conflicts with the user defined type names. 
+
 
 # `trigger` field  type symbol. Common to all AbstractComponent
 const TRIGGER_TYPE_SYMBOL = gensym() 

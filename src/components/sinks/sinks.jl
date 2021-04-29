@@ -23,7 +23,7 @@ Here, `MySink` has `N` parameters and `action` function
     New static system must be a subtype of `AbstractSink` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_sink struct MySink{A} <: AbstractSink 
        action::A = actionfunc
        end
@@ -40,26 +40,45 @@ julia> sink.action(sink, ones(2), ones(2) * 2)
 macro def_sink(ex) 
     ex.args[2].head == :(<:) && ex.args[2].args[2] == :AbstractSink || 
         error("Invalid usage. The type should be a subtype of AbstractSink.\n$ex")
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-        input::$(INPUT_TYPE_SYMBOL) = Inport()
-        buflen::Int = 64
-        plugin::$(PLUGIN_TYPE_SYMBOL) = nothing
-        timebuf::$(TIMEBUF_TYPE_SYMBOL) = Buffer(buflen) 
-        # TIP: Since column-wise reading and writing data is more performant, we construct buffers of the form 
-        # Buffer(d, l) where d is the dimension and l is the length of buffer. 
-        databuf::$(DATABUF_TYPE_SYMBOL) = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen)
-        sinkcallback::$(SINK_CALLBACK_TYPE_SYMBOL) = plugin === nothing ? 
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))), true, id)
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, INPUT_TYPE_SYMBOL, PLUGIN_TYPE_SYMBOL, TIMEBUF_TYPE_SYMBOL, DATABUF_TYPE_SYMBOL, SINK_CALLBACK_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    foreach(nex -> appendex!(ex, nex), [
+        :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+        :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+        :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+        :( name::Symbol = Symbol() ),
+        :( id::$ID_TYPE_SYMBOL = Causal.uuid4() ),
+        :( input::$INPUT_TYPE_SYMBOL = Inport() ),
+        :( buflen::Int = 64 ), 
+        :( plugin::$PLUGIN_TYPE_SYMBOL = nothing ), 
+        :( timebuf::$TIMEBUF_TYPE_SYMBOL = Buffer(buflen)  ), 
+        :( databuf::$DATABUF_TYPE_SYMBOL = Causal.construct_sink_buffers(input, buflen) ), 
+        :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = 
+            Causal.construct_sink_callback(databuf, timebuf, plugin, action, id) ), 
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
+
+# FIXME: Buffer types are not compatible for callbacks. Revise the buffer types. 
+# FIXME: When this bug is fixed, revise also the read method to read data files. 
+function construct_sink_buffers(input, buflen)
+    T = datatype(input) 
+    n = length(input) 
+    n == 1 ? Buffer(T, buflen) : [Buffer(T, buflen) for i in 1 : n]
+end
+
+construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), reverse(databuf.output)), true, id)
+
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), hcat([reverse(buf.output) for buf in databuf]...)), true, id)
+
+construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(reverse(databuf.output))), true, id) 
+
+construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) = 
+    Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(hcat([reverse(buf.output) for buf in databuf]...))), 
+    true, id) 
 
 
 ##### Define sink library

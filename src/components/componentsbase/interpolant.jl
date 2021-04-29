@@ -21,7 +21,12 @@ show(io::IO, interpolant::Interpolant) = print(io, "Interpolant(timebuf:$(interp
     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
 
 # Callling interpolant.
-getindex(interpolant::Interpolant, idx::Int) = interpolant.itp[idx]
+# Syntax for u(t) 
+(interp::Interpolant)(t) = interp.itp(t)
+
+# Syntax for u[idx](t)
+getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]
+
 
 # Update of interpolant. That is, reinterpolation. 
 """

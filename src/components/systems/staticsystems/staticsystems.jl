@@ -30,7 +30,7 @@ Here, `MyStaticSystem` has `N` parameters, an `output` port, an `input` port and
     New static system must be a subtype of `AbstractStaticSystem` to function properly.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_static_system struct MyStaticSystem{IP, OP, RO} <: AbstractStaticSystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
@@ -52,16 +52,16 @@ julia> sys.input
 macro def_static_system(ex) 
     ex.args[2].head == :(<:) && ex.args[2].args[2] in [:AbstractStaticSystem, :AbstractMemory] || 
         error("Invalid usage. The type should be a subtype of AbstractStaticSystem or AbstractMemory.\n$ex")
-
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    foreach(nex -> appendex!(ex, nex), [
+        :( trigger::$TRIGGER_TYPE_SYMBOL = Inpin() ),
+        :( handshake::$HANDSHAKE_TYPE_SYMBOL = Outpin{Bool}() ),
+        :( callbacks::$CALLBACKS_TYPE_SYMBOL = nothing ),
+        :( name::Symbol = Symbol() ),
+        :( id::$ID_TYPE_SYMBOL = Causal.uuid4() )
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 ##### Define prototipical static systems.

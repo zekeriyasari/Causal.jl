@@ -46,7 +46,7 @@ Here, `MyODESystem` has `N` parameters. `MyODESystem` is represented by the `rig
     New ODE system must be mutable type.
 
 # Example 
-```jldoctest 
+```julia 
 julia> @def_ode_system mutable struct MyODESystem{RH, RO, IP, OP} <: AbstractODESystem 
        α::Float64 = 1. 
        β::Float64 = 2. 
@@ -66,23 +66,16 @@ julia> ds.input
 """
 macro def_ode_system(ex) 
     checksyntax(ex, :AbstractODESystem)
-    fields = quote
-        trigger::$(TRIGGER_TYPE_SYMBOL) = Inpin()
-        handshake::$(HANDSHAKE_TYPE_SYMBOL) = Outpin{Bool}()
-        callbacks::$(CALLBACKS_TYPE_SYMBOL) = nothing
-        name::Symbol = Symbol()
-        id::$(ID_TYPE_SYMBOL) = Causal.uuid4()
-        t::Float64 = 0.
-        modelargs::$(MODEL_ARGS_TYPE_SYMBOL) = () 
-        modelkwargs::$(MODEL_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        solverargs::$(SOLVER_ARGS_TYPE_SYMBOL) = () 
-        solverkwargs::$(SOLVER_KWARGS_TYPE_SYMBOL) = NamedTuple() 
-        alg::$(ALG_TYPE_SYMBOL) = Causal.Tsit5()
-        integrator::$(INTEGRATOR_TYPE_SYMBOL) = Causal.construct_integrator(Causal.ODEProblem, input, righthandside, state, t, modelargs, 
-            solverargs; alg=alg, modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3)
-    end, [TRIGGER_TYPE_SYMBOL, HANDSHAKE_TYPE_SYMBOL, CALLBACKS_TYPE_SYMBOL, ID_TYPE_SYMBOL, MODEL_ARGS_TYPE_SYMBOL, MODEL_KWARGS_TYPE_SYMBOL, SOLVER_ARGS_TYPE_SYMBOL, SOLVER_KWARGS_TYPE_SYMBOL, ALG_TYPE_SYMBOL, INTEGRATOR_TYPE_SYMBOL]
-    _append_common_fields!(ex, fields...)
-    deftype(ex)
+    appendcommonex!(ex)
+    foreach(nex -> appendex!(ex, nex), [
+        :( alg::$ALG_TYPE_SYMBOL = Causal.Tsit5() ), 
+        :( integrator::$INTEGRATOR_TYPE_SYMBOL = Causal.construct_integrator(
+            Causal.ODEProblem, input, righthandside, state, t, modelargs, solverargs; alg=alg, 
+            modelkwargs=modelkwargs, solverkwargs=solverkwargs, numtaps=3) ) 
+        ])
+    quote 
+        Base.@kwdef $ex 
+    end |> esc 
 end
 
 

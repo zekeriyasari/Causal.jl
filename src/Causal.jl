@@ -20,7 +20,7 @@ using LibGit2
 using DocStringExtensions
 import GraphPlot.gplot
 import FileIO: load
-import Base: show, display, write, read, close, setproperty!, mv, cp, open,  istaskdone, istaskfailed, 
+import Base: show, display, write, read, close, setproperty!, getproperty,  mv, cp, open,  istaskdone, istaskfailed, 
     getindex, setindex!, size, isempty
 
 include("utilities/utils.jl")
@@ -72,6 +72,33 @@ export AbstractPort,
     Outport, 
     datatype
 
+include("plugins/loadplugins.jl")
+export AbstractPlugin, 
+    process,
+    add, 
+    remove, 
+    enable, 
+    disable, 
+    check,
+    @def_plugin
+
+include("components/componentsbase/constants.jl")
+export TRIGGER_TYPE_SYMBOL, 
+    HANDSHAKE_TYPE_SYMBOL, 
+    CALLBACKS_TYPE_SYMBOL, 
+    ID_TYPE_SYMBOL, 
+    MODEL_ARGS_TYPE_SYMBOL, 
+    MODEL_KWARGS_TYPE_SYMBOL, 
+    SOLVER_ARGS_TYPE_SYMBOL, 
+    SOLVER_KWARGS_TYPE_SYMBOL, 
+    ALG_TYPE_SYMBOL, 
+    INPUT_TYPE_SYMBOL, 
+    INTEGRATOR_TYPE_SYMBOL, 
+    PLUGIN_TYPE_SYMBOL, 
+    TIMEBUF_TYPE_SYMBOL, 
+    DATABUF_TYPE_SYMBOL, 
+    SINK_CALLBACK_TYPE_SYMBOL
+
 include("components/componentsbase/hierarchy.jl")
 export AbstractComponent, 
     AbstractSource, 
@@ -102,8 +129,6 @@ export readtime!,
     takestep!, 
     drive!, 
     approve!
-
-include("components/constants.jl")
 
 include("components/sources/clock.jl")
 export Clock, 
@@ -230,15 +255,5 @@ export @defmodel,
     deletebranch!, 
     signalflow,
     troubleshoot
-
-include("plugins/loadplugins.jl")
-export AbstractPlugin, 
-    process,
-    add, 
-    remove, 
-    enable, 
-    disable, 
-    check,
-    @def_plugin
 
 end  # module

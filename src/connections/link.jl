@@ -252,3 +252,11 @@ end
 Reconstructst the channel of `link` is its channel is closed.
 """
 refresh!(l::Link{T}) where {T} = (l.channel = Channel{T}(); l)
+
+"""
+    $(SIGNATURES)
+
+Cleans the data on `link`. 
+"""
+clean!(link::Link) = (clean!(link.buffer); link)
+

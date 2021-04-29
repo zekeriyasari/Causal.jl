@@ -471,3 +471,15 @@ end
 Returns all elements in `buf`. See also: [`content`](@ref)
 """
 snapshot(buf::Buffer) = outbuf(buf)
+
+"""
+    $(SIGNATURES)
+
+Cleans the contents of `buf`.
+"""
+function clean!(buf::Buffer)
+    buf.internals[1] .= 0.
+    buf.internals[2] .= 0.
+    buf.index = 1 
+    buf
+end

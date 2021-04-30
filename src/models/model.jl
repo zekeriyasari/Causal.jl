@@ -517,7 +517,10 @@ function cleannodes!(model)
 end
 
 function cleancomponent!(comp::T) where T
+    # Clean all internal buffers 
     foreach(name -> (field = getfield(comp, name); field isa Buffer && clean!(field)), fieldnames(T))
+    # If comp is a Writer, renew the file.
+    comp isa Writer && (close(comp); open(comp, "w"); close(comp))
     comp 
 end 
 

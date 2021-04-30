@@ -96,8 +96,13 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 """
 @def_sink mutable struct Writer{A, FL} <: AbstractSink
     action::A = write!
-    path::String = joinpath(tempdir(), string(uuid4()))
-    file::FL = (f = jldopen(path, "w"); close(f); f)
+    path::String = joinpath(tempdir(), string(uuid4()) * ".jld2") 
+    file::FL = (
+        endswith(path,".jld2") || error("Currenly only jld2 file format is used.");
+        f = jldopen(path, "w"); 
+        close(f); 
+        f
+    )
 end
 
 """
@@ -220,11 +225,11 @@ function cp(writer::Writer, dst; force=false, follow_symlinks=false)
 end
 
 """ 
-    open(writer::Writer)
+    open(writer::Writer, model::String="a")
 
 Opens `writer` by opening the its `file` in  `read/write` mode. When `writer` is not openned, it is not possible to write data in `writer`. See also [`close(writer::Writer)`](@ref)
 """
-open(writer::Writer) = (writer.file = jldopen(writer.file.path, "a"); writer)
+open(writer::Writer, mode::String="a") = (writer.file = jldopen(writer.file.path, mode); writer)
 
 """
     close(writer::Writer)

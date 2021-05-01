@@ -1,8 +1,7 @@
 # Causal
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://zekeriyasari.github.io/Causal.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://zekeriyasari.github.io/Causal.jl/dev)
-[![Build Status](https://travis-ci.com/zekeriyasari/Causal.jl.svg?branch=master)](https://travis-ci.com/zekeriyasari/Causal.jl)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/zekeriyasari/Causal.jl?svg=true)](https://ci.appveyor.com/project/zekeriyasari/Causal-jl)
+[![CI](https://github.com/zekeriyasari/Causal.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/zekeriyasari/Causal.jl/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/zekeriyasari/Causal.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/zekeriyasari/Causal.jl)
 [![Coveralls](https://coveralls.io/repos/github/zekeriyasari/Causal.jl/badge.svg)](https://coveralls.io/github/zekeriyasari/Causal.jl)
 [![version](https://juliahub.com/docs/Causal/version.svg)](https://juliahub.com/ui/Packages/Causal/aS0XM)

@@ -100,5 +100,9 @@ Progress: 100%|█████████████████████�
 
 For more information about how to use Causal, see its [documentation](https://zekeriyasari.github.io/Causal.jl/dev/) .
 
+## JuliaCon2020 Talk
+
+[![Everything Is AWESOME](https://img.youtube.com/vi/VTn8j-HDzIQ/0.jpg)](https://www.youtube.com/watch?v=VTn8j-HDzIQ "Everything Is AWESOME")
+
 ## Contribution 
 Any form of contribution is welcome. Please feel free to open an [issue](https://github.com/zekeriyasari/Causal.jl/issues) for bug reports, feature requests, new ideas and suggestions etc., or to send a pull request for any bug fixes.

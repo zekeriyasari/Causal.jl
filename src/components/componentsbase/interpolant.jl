@@ -21,8 +21,8 @@ show(io::IO, interpolant::Interpolant) = print(io, "Interpolant(timebuf:$(interp
     "databuf:$(interpolant.databuf), itp:$(interpolant.itp))")
 
 # Callling interpolant.
-# Syntax for u(t) 
-(interp::Interpolant)(t) = interp.itp(t)
+# Syntax for u(t).
+(interp::Interpolant)(t) = ndims(buf) == 1 ? interp.itp(t) : map(f -> f(t), interp.itp)
 
 # Syntax for u[idx](t)
 getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]

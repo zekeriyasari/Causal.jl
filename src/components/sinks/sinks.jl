@@ -153,16 +153,25 @@ function fread(path::String; flatten=false)
     data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
     if flatten
         t = vcat(reverse.(keys(data), dims=1)...)
-        if typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractVector, T3}
+        T = _getelytpe(data)
+        if T <: AbstractVector
             x = vcat(reverse.(values(data), dims=1)...)
-        elseif typeof(data) <: SortedDict{T1, T2, T3} where {T1, T2<:AbstractMatrix, T3}
+            return t, x 
+        elseif T <: AbstractMatrix
             x = collect(hcat(reverse.(values(data), dims=2)...)')
+            return t, x
+        else 
+            msg = "Data cannot be read from the file."
+            msg *= "Expected element type AbstractVector or AbstractMatrix, "
+            msg *= "got $T instead." 
+            error(msg)
         end
-        return t, x
     else
         return data
     end
 end
+
+_getelytpe(data::SortedDict{T1, T2, T3}) where {T1, T2, T3} = T2
 
 flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
 

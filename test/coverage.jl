@@ -2,7 +2,7 @@
 
 # NOTE: Before executing this script, run test suite of Causal as 
 # ] test --coverage Causal
-# 
+#  
 
 using Coverage
 

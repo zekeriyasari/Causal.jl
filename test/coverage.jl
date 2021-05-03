@@ -2,8 +2,8 @@
 
 # NOTE: Before executing this script, run test suite of Causal as 
 # ] test --coverage Causal
-#  
-
+# 
+nothing
 using Coverage
 
 # process '*.cov' files

@@ -39,26 +39,23 @@ Constructs a `Model` with empty components. After the construction, components c
 !!! warning
     `Model`s are units that can be simulated. As the data flows through the branches i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate!`](@ref)
 """
-struct Model{GR, ND, BR, CK, TM, CB}
+struct Model{GR, ND, BR, TM, CB}
     graph::GR
     nodes::ND
     branches::BR 
-    clock::CK
     taskmanager::TM
     callbacks::CB
     name::Symbol
     id::UUID
-    function Model(nodes::AbstractVector=[], branches::AbstractVector=[]; 
-        clock=Clock(0, 0.01, 1.), callbacks=nothing, name=Symbol())
+    function Model(nodes::AbstractVector=[], branches::AbstractVector=[]; callbacks=nothing, name=Symbol())
         graph = SimpleDiGraph()
         taskmanager = TaskManager()
-        new{typeof(graph), typeof(nodes), typeof(branches), typeof(clock), typeof(taskmanager),
-            typeof(callbacks)}(graph, nodes, branches, clock, taskmanager, callbacks, name, uuid4())
+        new{typeof(graph), typeof(nodes), typeof(branches), typeof(taskmanager),
+            typeof(callbacks)}(graph, nodes, branches, taskmanager, callbacks, name, uuid4())
     end
 end
 
-show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), ",
-    "numedges:$(length(model.branches)), timesettings=($(model.clock.t), $(model.clock.dt), $(model.clock.tf)))")
+show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), numedges:$(length(model.branches)))")
 
 
 ##### Addinng nodes and branches.
@@ -433,7 +430,7 @@ end
 
 Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
 """
-function initialize!(model::Model)
+function initialize!(model::Model, clock::Clock)
     # NOTE: Tasks to make the components be triggerable are launched here.
     # The important point here is that the simulation should be cancelled if an error is thrown in any of the tasks 
     # launched here. This is done by binding the task to the chnnel of the trigger link of the component. Hrence the 
@@ -441,8 +438,8 @@ function initialize!(model::Model)
     # the task launched for the component. To cancel the simulation and report the stacktrace the task is `fetch`ed. 
     bind!(model)
 
-    # Turn on clock model clock if it is running. 
-    initclock!(model)
+    # Reset dynamical systems 
+    resetdynamicalsystems!(model, clock)
 
     # Clean the model 
     clean!(model)
@@ -482,17 +479,17 @@ function opensinks!(model::Model)
     model 
 end 
 
-# Initialze model clock 
-function initclock!(model::Model)
-    if isoutoftime(model.clock)
-        msg = "Model clock is out of time. Its current time $(model.clock.t) should be less than its final time "
-        msg *= "$(model.clock.tf). Resettting the model clock to its defaults."
-        @warn msg
-        set!(model.clock)
-    end
-    isrunning(model.clock) || set!(model.clock)  
-    model
-end
+# # Initialze model clock 
+# function initclock!(model::Model)
+#     if isoutoftime(model.clock)
+#         msg = "Model clock is out of time. Its current time $(model.clock.t) should be less than its final time "
+#         msg *= "$(model.clock.tf). Resettting the model clock to its defaults."
+#         @warn msg
+#         set!(model.clock)
+#     end
+#     isrunning(model.clock) || set!(model.clock)  
+#     model
+# end
 
 """
     $(SIGNATURES)
@@ -502,7 +499,6 @@ Cleans the buffers of the links of the connections, internal buffers of componen
 function clean!(model::Model)
     cleanbranches!(model)
     cleannodes!(model)
-    resetdynamicalsystems!(model)
     model 
 end
 
@@ -524,8 +520,11 @@ function cleancomponent!(comp::T) where T
     comp 
 end 
 
-function resetdynamicalsystems!(model)
-    t = model.clock.ti
+function resetdynamicalsystems!(model::Model, clock::Clock)
+    # Iterate model clock for the first time. Set the current time of dynamical systems to the initial time of clock.
+    iter = iterate(clock) 
+    iter === nothing && error("Simulation clock is not iterable.")
+    t, _ = iter 
     for comp in filter(comp -> comp isa AbstractDynamicSystem, getfield.(model.nodes, :component))
         comp.t != t && (comp.t = t) 
         reinit!(comp.integrator)
@@ -558,40 +557,32 @@ Runs the `model` by triggering the components of the `model`. This triggering is
 !!! warning 
     The `model` must first be initialized to be run. See also: [`initialize!`](@ref).
 """
-function run!(model::Model, withbar::Bool=true)
+function run!(model::Model, clock::Clock, withbar::Bool=true)
     taskmanager = model.taskmanager
     triggerport, handshakeport = taskmanager.triggerport, taskmanager.handshakeport
     ncomponents = length(model.nodes)
-    clock = model.clock
-    withbar ? (@showprogress clock.dt for t in clock @loopbody end) : (for t in clock @loopbody end)
+    T = typeof(clock.generator)
+    withbar && hasmethod(length, Tuple{T}) ? (@showprogress for t in clock @loopbody end) : (for t in clock @loopbody end)
     model
 end
 
 # ##### Model termination
-# """ 
-#     release(model::Model)
-
-# Releaes the each component of `model`, i.e., the input and output bus of each component is released.
-# """
-# release(model::Model) = foreach(release, model.nodes)
-
 """
     terminate!(model::Model)
 
 Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
 """
-function terminate!(model::Model)
+function terminate!(model::Model, clock::Clock)
     taskmanager = model.taskmanager
     tasks = unwrap(collect(values(taskmanager.pairs)), Task, depth=length(taskmanager.pairs))
     any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, length(model.nodes)))
-    isrunning(model.clock) && stop!(model.clock)
     model
 end
 
 
 ##### Model simulation.
 function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints::Vector{Int})
-    model = sim.model
+    model, clock = sim.model, sim.clock
     @siminfo "Started simulation..."
     sim.state = :running
 
@@ -600,17 +591,17 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints:
     @siminfo "Done."
 
     @siminfo "Initializing the model..."
-    initialize!(model)
+    initialize!(model, clock)
     @siminfo "Done..."
 
     @siminfo "Running the simulation..."
-    run!(model, withbar)
+    run!(model, clock, withbar)
     sim.state = :done
     sim.retcode = :success
     @siminfo "Done..."
     
     @siminfo "Terminating the simulation..."
-    terminate!(model)
+    terminate!(model, clock)
     @siminfo "Done."
 
     reportsim && report(sim)
@@ -623,13 +614,21 @@ end
 
 Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar indicating the simualation status is displayed on the console.
 """
-function simulate!(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
-    logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true, 
-    breakpoints::Vector{Int}=Int[])
+function simulate!(model::Model, clock::Clock; 
+                   simdir::String=tempdir(), 
+                   simprefix::String="Simulation-", 
+                   simname=string(uuid4()),
+                   logtofile::Bool=false, 
+                   loglevel::LogLevel=Logging.Info, 
+                   reportsim::Bool=false, 
+                   withbar::Bool=true, 
+                   breakpoints::Vector{Int}=Int[])
     
     # Construct a Simulation
-    sim = Simulation(model, simdir=simdir, simprefix=simprefix, simname=simname)
-    sim.logger = logtofile ? SimpleLogger(open(joinpath(sim.path, "simlog.log"), "w+"), loglevel) : ConsoleLogger(stderr, loglevel)
+    sim = Simulation(model, clock, simdir=simdir, simprefix=simprefix, simname=simname)
+    sim.logger = logtofile ? 
+        SimpleLogger(open(joinpath(sim.path, "simlog.log"), "w+"), loglevel) : 
+        ConsoleLogger(stderr, loglevel)
 
     # Simualate the modoel
     with_logger(sim.logger) do
@@ -648,10 +647,7 @@ Simulates the `model` starting from the initial time `t0` until the final time `
 * `reportsim::Bool`: If `true`, `model` components are written files after the simulation. When this file is read back, the model components can be consructed back with their status at the end of the simulation.
 * `simdir::String`: The path of the directory in which simulation file are recorded. 
 """
-function simulate!(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
-    set!(model.clock, t0, dt, tf)
-    simulate!(model; kwargs...)
-end
+simulate!(model::Model, ti::Real, dt::Real, tf::Real; kwargs...) = simulate!(model, Clock(ti:dt:tf); kwargs...)
 
 #### Troubleshooting 
 """

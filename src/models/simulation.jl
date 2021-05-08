@@ -5,20 +5,24 @@
 
 Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `simname` is the name of the `Simulation` and `simprefix` is the prefix of the name of the `Simulation`. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
 """
-mutable struct Simulation{MD}
+mutable struct Simulation{MD, CK}
     model::MD
+    clock::CK 
     path::String
     logger::Union{SimpleLogger, ConsoleLogger}
     state::Symbol
     retcode::Symbol
     name::String
-    function Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", 
-        logger=SimpleLogger())
+    function Simulation(model, clock; 
+                        simdir=tempdir(), 
+                        simname=string(uuid4()), 
+                        simprefix="Simulation-", 
+                        logger=SimpleLogger())
         name = simprefix * simname  # `get_instant()` may be used for time-based paths names.
         path = joinpath(simdir, name)
         ispath(path) || mkpath(path)
         check_writer_files(model, path, force=true)
-        new{typeof(model)}(model, path, logger, :idle, :unknown, name)
+        new{typeof(model), typeof(clock)}(model, clock, path, logger, :idle, :unknown, name)
     end
 end
 

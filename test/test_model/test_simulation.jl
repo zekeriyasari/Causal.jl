@@ -5,9 +5,10 @@
 
     # Simulation construction 
     model = Model()
+    clock = Clock(0 : 0.01 : 1.)
     simname = string(uuid4())
     simdir = tempdir()
-    sim = Simulation(model, simdir=simdir, simname=simname, logger=SimpleLogger())
+    sim = Simulation(model, clock, simdir=simdir, simname=simname, logger=SimpleLogger())
     @test sim.model === model
     @test startswith(basename(sim.path), "Simulation-")
     @test sim.path == joinpath(simdir, "Simulation-" * simname)
@@ -17,13 +18,14 @@
 
     # Check Writer files 
     model = Model()
+    clock = Clock(0. : 0.01 : 1.)
     addnode!(model, SinewaveGenerator(), label=:gen)
     addnode!(model, Writer(), label=:writer)
     addbranch!(model, :gen => :writer)
     dname1 = dirname(getnode(model, :writer).component.file.path)
     simname = string(uuid4())
     simdir = tempdir()
-    sim = Simulation(model, simdir=simdir, simname=simname)
+    sim = Simulation(model, clock, simdir=simdir, simname=simname)
     @test dirname(getnode(model, :writer).component.file.path) == sim.path
     @test dname1 != sim.path
 

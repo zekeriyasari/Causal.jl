@@ -479,18 +479,6 @@ function opensinks!(model::Model)
     model 
 end 
 
-# # Initialze model clock 
-# function initclock!(model::Model)
-#     if isoutoftime(model.clock)
-#         msg = "Model clock is out of time. Its current time $(model.clock.t) should be less than its final time "
-#         msg *= "$(model.clock.tf). Resettting the model clock to its defaults."
-#         @warn msg
-#         set!(model.clock)
-#     end
-#     isrunning(model.clock) || set!(model.clock)  
-#     model
-# end
-
 """
     $(SIGNATURES)
 
@@ -572,7 +560,7 @@ end
 
 Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
 """
-function terminate!(model::Model, clock::Clock)
+function terminate!(model::Model)
     taskmanager = model.taskmanager
     tasks = unwrap(collect(values(taskmanager.pairs)), Task, depth=length(taskmanager.pairs))
     any(istaskstarted.(tasks)) && put!(taskmanager.triggerport, fill(NaN, length(model.nodes)))
@@ -601,7 +589,7 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints:
     @siminfo "Done..."
     
     @siminfo "Terminating the simulation..."
-    terminate!(model, clock)
+    terminate!(model)
     @siminfo "Done."
 
     reportsim && report(sim)

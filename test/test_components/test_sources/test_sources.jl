@@ -4,41 +4,35 @@
     @info "Running ClockTestSet ..."
 
     # Clock construction 
-    clk1 = Clock(0., 1., 10.)
-    clk2 = Clock(0., 1, 10)
-    clk3 = Clock(0, 1, 10)
-    @test eltype(clk1.t) == Float64
-    @test eltype(clk2.t) == Float64
-    @test eltype(clk3.t) == Int
+    Clock(0 : 1) 
+    Clock(0. : 2. : 10.) 
+    Clock(sort(rand(10)))
+    Clock(
+        Channel(0) do ch 
+            for t in 1 : 10 
+                put!(ch, t)
+            end 
+        end 
+    )
+    Clock(0, 2, 10)
 
     # Check Clock defaults.
-    clk = clk1
-    @test clk.t == 0.
-    @test clk.dt == 1.
-    @test clk.tf == 10.
-    @test typeof(clk.generator) == Channel{Float64}
-    @test clk.generator.sz_max == 0
-    @test !ispaused(clk) 
-    @test !isrunning(clk)
-
-    # Set Clock
-    set!(clk)
-    @test isrunning(clk)
-
-    # Taking values from clk 
-    clk = Clock(0., 1., 10.)
-    set!(clk)
-    @test [take!(clk) for i in 0 : 10] == collect(Float64, 0:10)
-    @test isoutoftime(clk)
+    clk = Clock(0. : 5.)
+    vals = Float64[]
+    for val in clk 
+        push!(vals, val) 
+    end
+    @test vals == collect(0. : 5.)
 
     # Pausing Clock 
-    clk = set!(Clock(0., 1, 10))
-    @test take!(clk) == 0
-    @test take!(clk) == 1.
-    pause!(clk)
-    for i = 1 : 10
-        @test take!(clk) == 1.
-    end
+    clk = Clock(0 : 1 : 10)
+    item, state = iterate(clk) 
+    @test (item, state) == (0, 0) 
+    item, state = iterate(clk, state) 
+    @test (item, state) == (1, 1) 
+    pause!(clk) 
+    iter = iterate(clk)
+    @test iter === nothing
 
     @info "Done ClockTestSet."
 end  # testset

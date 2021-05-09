@@ -8,9 +8,6 @@
     @test isempty(model.nodes)
     @test isempty(model.branches)
     @test isempty(model.taskmanager.pairs)
-    @test model.clock.t == 0.
-    @test model.clock.dt == 0.01
-    @test model.clock.tf == 1.
     @test typeof(model.graph) <: SimpleDiGraph
     @test nv(model.graph) == 0
     @test ne(model.graph) == 0
@@ -141,10 +138,11 @@
 
     # Initializing Model 
     model = Model()
+    clock = Clock(0 : 0.01 : 1.)
     addnode!(model, SinewaveGenerator())
     addnode!(model, Writer())
     addbranch!(model, 1 => 2)
-    Causal.initialize!(model)
+    Causal.initialize!(model, clock)
     @test !isempty(model.taskmanager.pairs)
     @test checktaskmanager(model.taskmanager) === nothing
     @test length(model.taskmanager.pairs) == 2
@@ -153,9 +151,8 @@
 
     # Running Model 
     ti, dt, tf =  0., 0.01, 10.
-    set!(model.clock, ti, dt, tf)
-    run!(model)
-    @test isoutoftime(model.clock)
+    clock = Clock(ti, dt, tf)
+    run!(model, clock)
     @test isapprox(read(getbranch(model, 1 => 2).links[1].buffer), sin(2 * pi * tf))
     @test read(getnode(model, 2).component.timebuf) == tf
 
@@ -166,17 +163,17 @@
 
     # Simulating Model
     model = Model()  
+    clock = Clock(0 : 0.01 : 1.)
     addnode!(model, FunctionGenerator(readout=t -> [sin(t), cos(t)], output=Outport(2)), label=:gen)
     addnode!(model, Adder(), label=:adder)
     addnode!(model, Writer(), label=:writer)
     addbranch!(model, :gen => :adder)
     addbranch!(model, :adder => :writer)
-    sim = simulate!(model)
+    sim = simulate!(model, clock)
     @test typeof(sim) <: Simulation 
     @test sim.model === model
     @test sim.retcode == :success
     @test sim.state == :done
-    @test isoutoftime(model.clock)
     @test all(istaskdone.(values(model.taskmanager.pairs)))
 
     @info "Done ModelTestSet."

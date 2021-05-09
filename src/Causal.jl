@@ -131,13 +131,7 @@ export readtime!,
     approve!
 
 include("components/sources/clock.jl")
-export Clock, 
-    isrunning, 
-    ispaused, 
-    isoutoftime, 
-    set!, 
-    stop!, 
-    pause!
+export Clock, pause!
 
 include("components/sources/generators.jl")
 export @def_source,

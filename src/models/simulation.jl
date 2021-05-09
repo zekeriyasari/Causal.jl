@@ -81,6 +81,7 @@ function report(simulation::Simulation)
         simreport["path"] = simulation.path
         simreport["state"] = simulation.state
         simreport["retcode"] = simulation.retcode
+        simreport["clock"] = simulation.clock
         
         # Save simulation model components.
         model = simulation.model
@@ -89,7 +90,6 @@ function report(simulation::Simulation)
         model_group = JLD2.Group(simreport, "model")
         model_group["id"] = string(simulation.model.id)
         model_group["name"] = string(simulation.model.name)
-        model_group["clock"] = simulation.model.clock
         model_group["callbacks"] = simulation.model.callbacks
         model_blocks_group = JLD2.Group(simreport, "components")
         for component in filter(component->!isa(component, Writer), components)

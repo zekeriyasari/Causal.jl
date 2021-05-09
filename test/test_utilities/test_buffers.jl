@@ -68,7 +68,7 @@
     end
     @test outbuf(buf) == [5. 4. 3. 2. 1.; 5. 4. 3. 2. 1.]
     @test isfull(buf)
-    @test buf.index == 6
+    @test buf.index == 1
     temp = outbuf(buf)
     write!(buf, [6., 6.])  # When full, data can be written into Cyclic buffers.
     @test outbuf(buf) == hcat([6., 6.], temp[:, 1:end-1])

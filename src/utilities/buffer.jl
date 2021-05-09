@@ -264,7 +264,8 @@ ishit(buf) = true
 ishit(buf) = false
 ```
 """
-ishit(buf::Buffer) = buf.index % datalength(buf) == 1
+ishit(buf::Buffer) = buf.state == :full
+# ishit(buf::Buffer) = buf.index % datalength(buf) == 1
 
 #
 # `setproperty!` function is used to keep track of buffer status. 
@@ -272,13 +273,17 @@ ishit(buf::Buffer) = buf.index % datalength(buf) == 1
 #
 function setproperty!(buf::Buffer, name::Symbol, val::Int)
     if name == :index
+        buflen = datalength(buf)
         val < 1 && error("Buffer index cannot be less than 1.")
         setfield!(buf, name, val)
         if val == 1
             buf.state = :empty
-        elseif val > datalength(buf)
+        elseif val > buflen
             buf.state = :full
-            # mode(buf) == Cyclic && setfield!(buf, :index, %(buf.index, datalength(buf)))
+            if mode(buf) == Cyclic 
+                newidx = buflen == 1 ? 1 : (buf.index % buflen)
+                setfield!(buf, :index, newidx)
+            end 
         else
             buf.state = :nonempty
         end

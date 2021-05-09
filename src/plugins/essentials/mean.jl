@@ -2,11 +2,17 @@
 using Statistics 
 
 """
-    Mean(dims::Int)
+   $TYPEDEF
 
-Constructs a `Mean` plugin. The [`process(plg::Mean, x)`](@ref) function takes the mean of the input data `x` along dimension `dims`.
+Constructs a `Mean` plugin. The [`process(plg::Mean, x)`](@ref) function takes the mean of the input data `x` along dimension
+`dims`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct Mean <: AbstractPlugin
+    "Dimension"
     dims::Int
 end
 Mean(;dims::Int=1) = Mean(dims)
@@ -14,7 +20,7 @@ Mean(;dims::Int=1) = Mean(dims)
 show(io::IO, plg::Mean) = print(io, "Mean(dims:$(plg.dims))")
 
 """
-    process(plg::Mean, x)
+    $SIGNATURES
 
 Returns the means of `x` along the dimension `plg.dims`.
 

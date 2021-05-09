@@ -3,60 +3,69 @@
 
 ##### Buffer modes
 """
-    BufferMode 
+    $TYPEDEF
 
 Abstract type for buffer mode. Subtypes of `BufferMode` is `CyclicMode` and `LinearMode`.
 """
 abstract type BufferMode end
 
 """
-    CyclicMode <: BufferMode
+    $TYPEDEF
 
 Abstract type of cyclic buffer modes. See [`Cyclic`](@ref)
 """
 abstract type CyclicMode <: BufferMode end 
 
 """
-    LinearMode <: BufferMode 
+    $TYPEDEF
 
 Abstract type of linear buffer modes. See [`Normal`](@ref), [`Lifo`](@ref), [`Fifo`](@ref)
 """
 abstract type LinearMode <: BufferMode end  
 
 """
-    Cyclic <: CyclicMode
+    $TYPEDEF
 
-Cyclic buffer mode. The data is written to buffer until the buffer is full. When the buffer is full, new data is written by overwriting the data available in the buffer starting from the beginning of the buffer. When the buffer is read, the element written last is returned and the returned element is not deleted from the buffer.
+Cyclic buffer mode. The data is written to buffer until the buffer is full. When the buffer is full, new data is written by
+overwriting the data available in the buffer starting from the beginning of the buffer. When the buffer is read, the element
+written last is returned and the returned element is not deleted from the buffer.
 """
 struct Cyclic <: CyclicMode end 
 
 """
-    Normal <: LinearMode
+    $TYPEDEF
 
-LinearMode buffer mode. The data is written to buffer until the buffer is full. When it is full, no more data is written to the buffer. When read, the data written last is returned and the returned data is not deleted from the internal container of the buffer. 
+LinearMode buffer mode. The data is written to buffer until the buffer is full. When it is full, no more data is written to
+the buffer. When read, the data written last is returned and the returned data is not deleted from the internal container of
+the buffer. 
 """
 struct Normal <: LinearMode end
 
 """
-    Lifo <: LinearMode
+    $TYPEDEF
 
-Lifo (Last-in-first-out) buffer mode. This type of buffer is a *last-in-first-out* buffer. Data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the last element written into buffer is returned. The returned element is deleted from the buffer.
+Lifo (Last-in-first-out) buffer mode. This type of buffer is a *last-in-first-out* buffer. Data is written to the buffer
+until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the last
+element written into buffer is returned. The returned element is deleted from the buffer.
 """
 struct Lifo <: LinearMode end 
 
 """
-    Fifo <: LinearMode
+    $TYPEDEF
 
-Fifo (First-in-last-out) buffer mode. This type of buffer is a *first-in-first-out* buffer. The data is written to the buffer until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first element written into the buffer is returned. The returned element is deleted from the buffer. 
+Fifo (First-in-last-out) buffer mode. This type of buffer is a *first-in-first-out* buffer. The data is written to the buffer
+until the buffer is full. When the buffer is full, no more element can be written into the buffer. When read, the first
+element written into the buffer is returned. The returned element is deleted from the buffer. 
 """
 struct Fifo <: LinearMode end 
 
 
 ##### Buffer
 """
-    Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T}
+    $TYPEDEF
 
-Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to read from and written into the `Buffer`.  There exists for different buffer modes: 
+Constructs a `Buffer` of size `sz` with element type of `T`. `M` is the mode of the `Buffer` that determines how data is to
+read from and written into the `Buffer`.  There exists for different buffer modes: 
 
 * `Normal`: See [`Normal`](@ref)
 
@@ -84,6 +93,10 @@ Constructs a `Buffer` of size `sz` with mode `Cyclic` and element type of `Float
 
 Constructs a `Buffer` with `data`.
 
+# Fields 
+
+    $TYPEDFIELDS
+
 # Example 
 ```jldoctest 
 julia> buf = Buffer(5)
@@ -97,13 +110,20 @@ julia> buf = Buffer{Lifo}(collect(reshape(1:8, 2, 4)))
 ```
 """
 mutable struct Buffer{M<:BufferMode, T, N} <: AbstractArray{T, N}
+    "Internal data containers"
     internals::Vector{Array{T, N}}
+    "Input containter"
     src::Int 
+    "Output container"
     dst::Int
+    "Buffer index"
     index::Int 
+    "Current state of buffer. May be :full, :empty, :nonempty"
     state::Symbol 
+    "Unique identifier"
     id::UUID
-    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = new{M, T, ndims(data)}([copy(data), data], 1, 2, 1, :empty, uuid4())
+    Buffer{M}(data::AbstractVecOrMat{T}) where {M, T<:Real} = 
+        new{M, T, ndims(data)}([copy(data), data], 1, 2, 1, :empty, uuid4())
 end
 Buffer{M}(dtype::Type{T}, sz::Int...) where {M, T} = Buffer{M}(zeros(T, sz...)) 
 Buffer{M}(sz::Int...) where {M, T} = Buffer{M}(zeros(Float64, sz...)) 
@@ -112,8 +132,6 @@ Buffer(sz::Int...) = Buffer(Float64, sz...)
 
 show(io::IO, buf::Buffer)= print(io, 
     "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
-# display(buf::Buffer) = println( 
-#     "Buffer(mode:$(mode(buf)), eltype:$(eltype(buf)), size:$(size(buf)), index:$(buf.index), state:$(buf.state))")
 
 function swapinternals(buf::Buffer) 
     temp = buf.src 
@@ -122,14 +140,14 @@ function swapinternals(buf::Buffer)
 end
 
 """
-    inbuf(buf::Buffer)
+    $SIGNATURES
 
 Returns the element of `internals` of `buf` that is used to input data to `buf`. See also [`outbuf`][@ref)
 """
 inbuf(buf::Buffer) = buf.internals[buf.src]
 
 """
-    outbuf(buf::Buffer)
+    $SIGNATURES
 
 Returns the element of `intervals` of `buf` that is used to take data out of `buf`. See also: [`inbuf`](@ref)
 """
@@ -137,7 +155,7 @@ outbuf(buf::Buffer) = buf.internals[buf.dst]
 
 ##### Buffer info.
 """
-    mode(buf::Buffer)
+    $SIGNATURES
 
 Returns buffer mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 """
@@ -145,7 +163,7 @@ mode(buf::Buffer{M, T, N}) where {M, T, N} = M
 
 ##### AbstractArray interface.
 """
-    datalength(buf::Buffer)
+    $SIGNATURES
 
 Returns the maximum number of data that can be hold in `buf`.
 
@@ -165,14 +183,14 @@ julia> datalength(buf2)
 datalength(buf::Buffer{M, T, N}) where {M, T, N} = N == 1 ? size(buf, 1) : size(buf, 2)
 
 """
-    size(buf::Buffer)
+    $SIGNATURES
 
 Returns the size of `buf`.
 """
 size(buf::Buffer) = size(outbuf(buf))
 
 """
-    getindex(buf::Buffer, idx::Vararg{Int, N})
+    $SIGNATURES
 
 Returns an element from `buf` at index `idx`. Same as `buf[idx]`
 
@@ -200,7 +218,7 @@ julia> buf[:, 2]
 getindex(buf::Buffer, idx::Vararg{Int, N}) where N = getindex(outbuf(buf), idx...)
 
 """
-    setindex!(buf::Buffer, val, idx)
+    $SIGNATURES
 
 Sets `val` to `buf` at index `idx`. Same as `buf[idx] = val`.
 
@@ -229,21 +247,21 @@ setindex!(buf::Buffer, item, idx::Vararg{Int, N}) where N = setindex!(inbuf(buf)
 
 ##### Buffer state control and check.
 """
-    isempty(buf::Buffer)
+    $SIGNATURES
 
 Returns `true` if the index of `buf` is 1.
 """
 isempty(buf::Buffer) = buf.state == :empty
 
 """
-    isfull(buf::Buffer)
+    $SIGNATURES
 
 Returns `true` if the index of `buf` is equal to the length of `buf`.
 """
 isfull(buf::Buffer) = buf.state == :full
 
 """
-    ishit(buf::Buffer)
+    $SIGNATURES
 
 Returns true when `buf` index is an integer multiple of datalength of `buf`. 
 
@@ -265,11 +283,10 @@ ishit(buf) = false
 ```
 """
 ishit(buf::Buffer) = buf.state == :full
-# ishit(buf::Buffer) = buf.index % datalength(buf) == 1
 
 #
-# `setproperty!` function is used to keep track of buffer status. 
-# The tracking is done through the updates of `index` of buffer. 
+# `setproperty!` function is used to keep track of buffer status. The tracking is done through the updates of `index` of
+# buffer. 
 #
 function setproperty!(buf::Buffer, name::Symbol, val::Int)
     if name == :index
@@ -294,24 +311,12 @@ end
 
 ##### Writing into buffers
 """
-    write!(buf::Buffer{M, <:Real, 1}, val::Real) where {M}
-
-Writes `val` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 2}, val::AbstractVector{<:Real}) where {M}
-
-Writes `val` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 1}, vals::AbstractVector{<:Real}) where {M}
-
-Writes each element of `vals` into `buf`.
-
-    write!(buf::Buffer{M, <:Real, 2}, vals::AbstractMatrix{<:Real}) where {M}
+    $SIGNATURES
 
 Writes each column of `vals` into `buf`.
 
-!!! warning
-    Buffer mode determines how data is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+!!! warning Buffer mode determines how data is written into buffers. See also: [`Normal`](@ref), [`Cyclic`](@ref),
+    [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
 ```jldoctest
@@ -366,9 +371,10 @@ checkstate(buf::Buffer) = mode(buf) != Cyclic && isfull(buf) && error("Buffer is
 
 ##### Reading from buffers
 """
-    read(buf::Buffer)
+    $SIGNATURES
 
-Reads an element from `buf`. Reading is performed according to the mode of `buf`. See also: [`Normal`](@ref), [`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
+Reads an element from `buf`. Reading is performed according to the mode of `buf`. See also: [`Normal`](@ref),
+[`Cyclic`](@ref), [`Lifo`](@ref), [`Fifo`](@ref) for buffer modes. 
 
 # Example
 ```jldoctest
@@ -430,7 +436,7 @@ rotate(ibuf::AbstractArray{T, 2}, obuf::AbstractArray{T, 2}, idx::Int) where {T}
 
 ##### Accessing buffer internals
 """
-    content(buf, [flip=true])
+    $SIGNATURES
 
 Returns the current data of `buf`. If `flip` is `true`, the data to be returned is flipped. See also [`snapshot`](@ref)
 
@@ -471,8 +477,8 @@ function content(buf::Buffer; flip::Bool=true)
 end
 
 """
-    snapshot(buf::Buffer)
-
+    $SIGNATURES
+    
 Returns all elements in `buf`. See also: [`content`](@ref)
 """
 snapshot(buf::Buffer) = outbuf(buf)

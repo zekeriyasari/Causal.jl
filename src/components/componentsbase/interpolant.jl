@@ -1,13 +1,20 @@
 # This file includes interpolant for interplation of sampled inputs. 
 
 """
-    Interpolant(tinit, tfinal, coefinit, coeffinal)
+    $TYPEDEF 
 
 Constructs a linnear interpolant that interpolates between the poinsts `(tinit, coefinit)` and `(tfinal, coeffinal)`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 mutable struct Interpolant{TMB, INB, ITP}
+    "Buffer to record time"
     timebuf::TMB
+    "Buffer to record data"
     databuf::INB 
+    "Internal interpolating function"
     itp::ITP
     function Interpolant(nt::Int, nd::Int) 
         timebuf = Buffer(nt) 
@@ -30,7 +37,7 @@ getindex(interp::Interpolant, idx::Vararg{Int, N}) where N = interp.itp[idx...]
 
 # Update of interpolant. That is, reinterpolation. 
 """
-    update!(intepolant) 
+    $SIGNATURES
 
 Updates `interpolant` using the data in `timebuf` and `databuf` of `interpolant`.
 """

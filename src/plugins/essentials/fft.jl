@@ -2,11 +2,17 @@
 using FFTW
 
 """
-    Fft(dims::Int)
+    $TYPEDEF
 
-Constructs an `Fft` plugin. The  [`process(plg::Fft, x)`](@ref) function performes an `fft` operatinon along `dims` of `x`. See also: [`fft`](https://juliamath.github.io/AbstractFFTs.jl/stable/api/#AbstractFFTs.fft)
+Constructs an `Fft` plugin. The  [`process(plg::Fft, x)`](@ref) function performes an `fft` operatinon along `dims` of `x`.
+See also: [`fft`](https://juliamath.github.io/AbstractFFTs.jl/stable/api/#AbstractFFTs.fft)
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct Fft <: AbstractPlugin 
+    "Dimension"
     dims::Int
 end 
 Fft(;dims::Int=1) = Fft(dims)
@@ -14,7 +20,7 @@ Fft(;dims::Int=1) = Fft(dims)
 show(io::IO, plg::Fft) = print(io, "Fft(dims:$(plg.dims))")
 
 """
-    process(plg::Fft, x)
+    $SIGNATURES
 
 Performes an `fft` transformation for the input data `x`.
 

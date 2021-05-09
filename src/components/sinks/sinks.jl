@@ -1,5 +1,7 @@
 # This file constains sink tools for the objects of Causal.
 
+import Base.print
+
 """
     @def_sink ex 
 
@@ -16,11 +18,10 @@ end
 ```
 Here, `MySink` has `N` parameters and `action` function
 
-!!! warning 
-    `action` function must have a method `action(sink::MySink, t, u)` where `t` is the time data and `u` is the data flowing into the sink.
+!!! warning `action` function must have a method `action(sink::MySink, t, u)` where `t` is the time data and `u` is the data
+    flowing into the sink.
 
-!!! warning 
-    New static system must be a subtype of `AbstractSink` to function properly.
+!!! warning New static system must be a subtype of `AbstractSink` to function properly.
 
 # Example 
 ```julia 
@@ -53,50 +54,57 @@ macro def_sink(ex)
         :( databuf::$DATABUF_TYPE_SYMBOL = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen) ), 
         :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = plugin === nothing ? 
             Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))), true, id) ), 
+            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))),true, id) ), 
         ])
     quote 
         Base.@kwdef $ex 
     end |> esc 
 end
 
-# function construct_sink_buffers(input, buflen)
-#     T = datatype(input) 
-#     n = length(input) 
-#     n == 1 ? Buffer(T, buflen) : [Buffer(T, buflen) for i in 1 : n]
-# end
+# function construct_sink_buffers(input, buflen) T = datatype(input) n = length(input) n == 1 ? Buffer(T, buflen) :
+#     [Buffer(T, buflen) for i in 1 : n] end
 
-# construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = 
-#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), reverse(databuf.output)), true, id)
+# construct_sink_callback(databuf::Buffer, timebuf, plugin::Nothing, action, id) = Callback(sink->ishit(timebuf),
+#     sink->action(sink, reverse(timebuf.output), reverse(databuf.output)), true, id)
 
-# construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) = 
-#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), hcat([reverse(buf.output) for buf in databuf]...)), true, id)
+# construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::Nothing, action, id) =
+#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), hcat([reverse(buf.output) for buf in
+#     databuf]...)), true, id)
 
-# construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = 
-#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(reverse(databuf.output))), true, id) 
+# construct_sink_callback(databuf::Buffer, timebuf, plugin::AbstractPlugin, action, id) = Callback(sink->ishit(timebuf),
+#     sink->action(sink, reverse(timebuf.output), plugin.process(reverse(databuf.output))), true, id) 
 
-# construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) = 
-#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(hcat([reverse(buf.output) for buf in databuf]...))), 
-#     true, id) 
+# construct_sink_callback(databuf::AbstractVector{<:Buffer}, timebuf, plugin::AbstractPlugin, action, id) =
+#     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(hcat([reverse(buf.output) for
+#     buf in databuf]...))), true, id) 
 
 
 ##### Define sink library
 
 # ----------------------------- Writer -------------------------------- 
 """
-    Writer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol(uuid4()), 
-        path=joinpath(tempdir(), string(name))) 
-Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing, `plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
+    $TYPEDEF
+
+Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the internal buffer of `Writer`. If not nothing,
+`plugin` is used to processes the incomming data. `path` determines the path of the file of `Writer`.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 !!! note 
     The type of `file` of `Writer` is [`JLD2`](https://github.com/JuliaIO/JLD2.jl).    
 
 !!! warning 
-    When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and [`close(writer::Writer)`](@ref).
+    When initialized, the `file` of `Writer` is closed. See [`open(writer::Writer)`](@ref) and
+    [`close(writer::Writer)`](@ref).
 """
 @def_sink mutable struct Writer{A, FL} <: AbstractSink
+    "Writer action to write data to file"
     action::A = write!
+    "File path of the writer"
     path::String = joinpath(tempdir(), string(uuid4()) * ".jld2") 
+    "File in which data is recorded"
     file::FL = (
         endswith(path,".jld2") || error("Currenly only jld2 file format is used.");
         f = jldopen(path, "w"); 
@@ -106,7 +114,7 @@ Constructs a `Writer` whose input bus is `input`. `buflen` is the length of the 
 end
 
 """
-    write!(writer, td, xd)
+    $SIGNATURES
 
 Writes `xd` corresponding to `xd` to the file of `writer`.
 
@@ -137,14 +145,15 @@ write!(writer::Writer, td, xd) = fwrite!(writer.file, td, xd)
 fwrite!(file, td, xd) = file[string(td)] = xd
 
 """
-    read(writer::Writer, flatten=false)
+    $SIGNATURES
 
-Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is also flattened.
+Read the contents of the file of `writer` and returns the sorted content of the file. If `flatten` is `true`, the content is
+also flattened.
 """
 read(writer::Writer; flatten=true) = fread(writer.file.path, flatten=flatten)
 
 """
-    fread(path::String)
+    $SIGNATURES
 
 Reads the content of `jld2` file and returns the sorted file content. 
 """
@@ -176,7 +185,7 @@ _getelytpe(data::SortedDict{T1, T2, T3}) where {T1, T2, T3} = T2
 flatten(content) = (collect(vcat(keys(content)...)), collect(vcat(values(content)...)))
 
 """
-    mv(writer::Writer, dst; force::Bool=false)
+    $SIGNATURES
 
 Moves the file of `writer` to `dst`. If `force` is `true`, the if `dst` is not a valid path, it is forced to be constructed.
 
@@ -206,9 +215,10 @@ function mv(writer::Writer, dst; force::Bool=false)
 end
 
 """
-    cp(writer::Writer, dst; force=false, follow_symlinks=false)
+    $SIGNATURES
 
-Copies the file of `writer` to `dst`. If `force` is `true`, the if `dst` is not a valid path, it is forced to be constructed. If `follow_symlinks` is `true`, symbolinks are followed.
+Copies the file of `writer` to `dst`. If `force` is `true`, the if `dst` is not a valid path, it is forced to be constructed.
+If `follow_symlinks` is `true`, symbolinks are followed.
 
 # Example 
 ```julia
@@ -234,47 +244,54 @@ function cp(writer::Writer, dst; force=false, follow_symlinks=false)
 end
 
 """ 
-    open(writer::Writer, model::String="a")
+    $SIGNATURES
 
-Opens `writer` by opening the its `file` in  `read/write` mode. When `writer` is not openned, it is not possible to write data in `writer`. See also [`close(writer::Writer)`](@ref)
+Opens `writer` by opening the its `file` in  `read/write` mode. When `writer` is not openned, it is not possible to write
+data in `writer`. See also [`close(writer::Writer)`](@ref)
 """
 open(writer::Writer, mode::String="a") = (writer.file = jldopen(writer.file.path, mode); writer)
 
 """
-    close(writer::Writer)
+    $SIGNATURES
 
-Closes `writer` by closing its `file`. When `writer` is closed, it is not possible to write data in `writer`. See also [`open(writer::Writer)`](@ref)
+Closes `writer` by closing its `file`. When `writer` is closed, it is not possible to write data in `writer`. See also
+[`open(writer::Writer)`](@ref)
 """
 close(writer::Writer) =  (close(writer.file); writer)
 
 
 # ----------------------------- Printer --------------------------------
 """
-  Printer(input=Inport(); buflen=64, plugin=nothing, callbacks=nothing, name=Symbol()) where T
-Constructs a `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing tool.
+    $TYPEDEF
+  
+Constructs a `Printer` with input bus `input`. `buflen` is the length of its internal `buflen`. `plugin` is data proccessing 
+tool.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_sink mutable struct Printer{A} <: AbstractSink 
+    "Action of the sink that prints data"
     action::A = print 
 end
 
-import Base.print
-
 """
-    print(printer::Printer, td, xd)
+    $SIGNATURES
 
 Prints `xd` corresponding to `xd` to the console.
 """
 print(printer::Printer, td, xd) = print("For time", "[", td[1], " ... ", td[end], "]", " => ", xd, "\n")
 
 """
-    open(printer::Printer)
+    $SIGNATURES
 
 Does nothing. Just a common interface function ot `AbstractSink` interface.
 """
 open(printer::Printer) = printer
 
 """
-    close(printer::Printer)
+    $SIGNATURES
 
 Does nothing. Just a common interface function ot `AbstractSink` interface.
 """
@@ -282,21 +299,32 @@ close(printer::Printer) =  printer
 
 # ----------------------------- Scope --------------------------------
 """
-    Scope(input=Inport(), args...; buflen::Int=64, plugin=nothing, callbacks=nothing, name=Symbol(), kwargs...) 
-Constructs a `Scope` with input bus `input`. `buflen` is the length of the internal buffer of `Scope`. `plugin` is the additional data processing tool. `args`,`kwargs` are passed into `plots(args...; kwargs...))`. See (https://github.com/JuliaPlots/Plots.jl) for more information.
+    $TYPEDEF
 
-!!! warning 
-    When initialized, the `plot` of `Scope` is closed. See [`open(sink::Scope)`](@ref) and [`close(sink::Scope)`](@ref).
+Constructs a `Scope` with input bus `input`. `buflen` is the length of the internal buffer of `Scope`. `plugin` is the
+additional data processing tool. `args`,`kwargs` are passed into `plots(args...; kwargs...))`. See
+(https://github.com/JuliaPlots/Plots.jl) for more information.
+
+!!! warning When initialized, the `plot` of `Scope` is closed. See [`open(sink::Scope)`](@ref) and
+    [`close(sink::Scope)`](@ref).
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_sink mutable struct Scope{A, PA, PK, PLT} <: AbstractSink
+    "Action of the component to update data"
     action::A = update!
+    "Plottings arguments"
     pltargs::PA = () 
+    "Plottings keyword arguments"
     pltkwargs::PK = NamedTuple()
+    "Plot object of the component"
     plt::PLT = plot(pltargs...; pltkwargs...)
 end
 
 """
-    update!(s::Scope, x, yi)
+    $SIGNATURES
 
 Updates the series of the plot windows of `s` with `x` and `yi`.
 """
@@ -312,14 +340,14 @@ end
 clear(sp::Plots.Subplot) = popfirst!(sp.series_list)  # Delete the old series 
 
 """ 
-    close(sink::Scope)
+    $SIGNATURES
 
 Closes the plot window of the plot of `sink`.
 """
 close(sink::Scope) = closeall()
 
 """
-    open(sink::Scope)
+    $SIGNATURES
 
 Opens the plot window for the plots of `sink`.
 """
@@ -331,13 +359,3 @@ open(sink::Scope) = Plots.isplotnull() ? (@warn "No current plots") : gui()
 show(io::IO, writer::Writer) = print(io, "Writer(path:$(writer.file.path), nin:$(length(writer.input)))")
 show(io::IO, printer::Printer) = print(io, "Printer(nin:$(length(printer.input)))")
 show(io::IO, scp::Scope) = print(io, "Scope(nin:$(length(scp.input)))")
-
-##### Deprecated
-
-# function unfasten!(sink::AbstractSink)
-#     callbacks = sink.callbacks
-#     sid = sink.id
-#     typeof(callbacks) <: AbstractVector && disable!(callbacks[callback.id == sid for callback in callbacks])
-#     typeof(callbacks) <: Callback && disable!(callbacks)
-#     sink
-# end

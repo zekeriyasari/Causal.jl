@@ -2,7 +2,7 @@
 
 ##### Input-Output reading and writing.
 """
-    readtime!(comp::AbstractComponent)
+    $SIGNATURES
 
 Returns current time of `comp` read from its `trigger` link.
 
@@ -12,14 +12,14 @@ Returns current time of `comp` read from its `trigger` link.
 readtime!(comp::AbstractComponent) = take!(comp.trigger)
 
 """
-    readstate(comp::AbstractComponent)
+    $SIGNATURES
 
 Returns the state of `comp` if `comp` is `AbstractDynamicSystem`. Otherwise, returns `nothing`. 
 """
 readstate(comp::AbstractComponent) = typeof(comp) <: AbstractDynamicSystem ? comp.state : nothing
 
 """
-    readinput!(comp::AbstractComponent)
+    $SIGNATURES
 
 Returns the input value of `comp` if the `input` of `comp` is `Inport`. Otherwise, returns `nothing`.
 
@@ -32,7 +32,7 @@ function readinput!(comp::AbstractComponent)
 end
 
 """
-    writeoutput!(comp::AbstractComponent, out)
+    $SIGNATURES
 
 Writes `out` to the output of `comp` if the `output` of `comp` is `Outport`. Otherwise, does `nothing`.
 """
@@ -42,9 +42,10 @@ function writeoutput!(comp::AbstractComponent, out)
 end
 
 """
-    computeoutput(comp, x, u, t)
+    $SIGNATURES
 
-Computes the output of `comp` according to its `readout` if `readout` is not `nothing`. Otherwise, `nothing` is done. `x` is the state, `u` is the value of input, `t` is the time. 
+Computes the output of `comp` according to its `readout` if `readout` is not `nothing`. Otherwise, `nothing` is done. `x` is
+the state, `u` is the value of input, `t` is the time. 
 """
 function computeoutput end
 computeoutput(comp::AbstractSource, x, u, t) = comp.readout(t)
@@ -68,11 +69,14 @@ Writes `t` to time buffer `timebuf` and `u` to `databuf` of `comp`. `u` is the v
 
     evolve!(comp::AbstractStaticSystem, u, t)
 
-Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `u` is the value of `input` and `t` is time. 
-    
+Writes `u` to `buffer` of `comp` if `comp` is an `AbstractMemory`. Otherwise, `nothing` is done. `u` is the value of `input`
+and `t` is time. 
+
     evolve!(comp::AbstractDynamicSystem, u, t)
-    
-Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x` where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with the computed state and time `t`. 
+
+Solves the differential equation of the system of `comp` for the time interval `(comp.t, t)` for the inital condition `x`
+where `x` is the current state of `comp` . `u` is the input function defined for `(comp.t, t)`. The `comp` is updated with
+the computed state and time `t`. 
 """
 function evolve! end
 evolve!(comp::AbstractSource, u, t) = nothing
@@ -86,8 +90,8 @@ function evolve!(comp::AbstractStaticSystem, u, t)
     end
 end
 function evolve!(comp::AbstractDynamicSystem, u, t)
-    # For DDESystems, the problem for a time span of (t, t) cannot be solved. 
-    # Thus, there will be no evolution in such a case.
+    # For DDESystems, the problem for a time span of (t, t) cannot be solved. Thus, there will be no evolution in such a
+    # case.
     integrator = comp.integrator
     interpolator = integrator.sol.prob.p
     update_interpolator!(interpolator, u, t)
@@ -111,9 +115,10 @@ end
 
 ##### Task management
 """
-    takestep!(comp::AbstractComponent)
+    $SIGNATURES
 
-Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractMemory`, a backward step is taken. Otherwise, a forward step is taken. See also: [`forwardstep`](@ref), [`backwardstep`](@ref).
+Reads the time `t` from the `trigger` link of `comp`. If `comp` is an `AbstractMemory`, a backward step is taken. Otherwise,
+a forward step is taken. See also: [`forwardstep`](@ref), [`backwardstep`](@ref).
 """
 function takestep!(comp::AbstractComponent)
     t = readtime!(comp)
@@ -122,9 +127,10 @@ function takestep!(comp::AbstractComponent)
 end
 
 """
-    forwardstep(comp, t)
+    $SIGNATURES
 
-Makes `comp` takes a forward step.  The input value `u` and state `x` of `comp` are read. Using `x`, `u` and time `t`,  `comp` is evolved. The output `y` of `comp` is computed and written into the output bus of `comp`. 
+Makes `comp` takes a forward step.  The input value `u` and state `x` of `comp` are read. Using `x`, `u` and time `t`,
+`comp` is evolved. The output `y` of `comp` is computed and written into the output bus of `comp`. 
 """
 function forwardstep(comp, t)
     u = readinput!(comp)
@@ -137,9 +143,10 @@ end
 
 
 """
-    backwardstep(comp, t)
+    $SIGNATURES
 
-Reads the state `x`. Using the time `t` and `x`, computes and writes the ouput value `y` of `comp`. Then, the input value `u` is read and `comp` is evolved.  
+Reads the state `x`. Using the time `t` and `x`, computes and writes the ouput value `y` of `comp`. Then, the input value `u`
+is read and `comp` is evolved.  
 """
 function backwardstep(comp, t)
     x = readstate(comp)
@@ -152,9 +159,10 @@ function backwardstep(comp, t)
 end
 
 """
-    launch(comp::AbstractComponent)
+    $SIGNATURES
 
-Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be driven from its `trigger` link. See also: [`drive!(comp::AbstractComponent, t)`](@ref)
+Returns a tuple of tasks so that `trigger` link and `output` bus of `comp` is drivable. When launched, `comp` is ready to be
+driven from its `trigger` link. See also: [`drive!(comp::AbstractComponent, t)`](@ref)
 """
 function launch(comp::AbstractComponent) 
     @async begin 
@@ -167,33 +175,24 @@ function launch(comp::AbstractComponent)
 end
 
 """
-    drive!(comp::AbstractComponent, t)
+    $SIGNATURES
 
-Writes `t` to the `trigger` link of `comp`. When driven, `comp` takes a step. See also: [`takestep!(comp::AbstractComponent)`](@ref)
+Writes `t` to the `trigger` link of `comp`. When driven, `comp` takes a step. See also:
+[`takestep!(comp::AbstractComponent)`](@ref)
 """
 drive!(comp::AbstractComponent, t) = put!(comp.trigger, t)
 
 """
-    approve!(comp::AbstractComponent)
+    $SIGNATURES
 
-Read `handshake` link of `comp`. When not approved or `false` is read from the `handshake` link, the task launched for the `trigger` link of `comp` gets stuck during `comp` is taking step.
+Read `handshake` link of `comp`. When not approved or `false` is read from the `handshake` link, the task launched for the
+`trigger` link of `comp` gets stuck during `comp` is taking step.
 """
 approve!(comp::AbstractComponent) = take!(comp.handshake)
 
-# """
-#     release(comp::AbstractComponent)
-
-# Releases the `input` and `output` bus of `comp`.
-# """ 
-# function release(comp::AbstractComponent)
-#     typeof(comp) <: AbstractSource  || typeof(comp.input) <: Nothing    || release(comp.input)
-#     typeof(comp) <: AbstractSink    || typeof(comp.output) <: Nothing   || release(comp.output)
-#     return 
-# end
-
 
 """
-    terminate!(comp::AbstractComponent)
+    $SIGNATURES
 
 Closes the `trigger` link and `output` bus of `comp`.
 """
@@ -205,7 +204,7 @@ end
 
 ##### SubSystem interface
 """
-    launch(comp::AbstractSubSystem)
+    $SIGNATURES
 
 Launches all subcomponents of `comp`. See also: [`launch(comp::AbstractComponent)`](@ref)
 """
@@ -223,50 +222,37 @@ function launch(comp::AbstractSubSystem)
 end
 
 """
-    takestep!(comp::AbstractSubSystem)
+    $SIGNATURES
 
-Makes `comp` to take a step by making each subcomponent of `comp` take a step. See also: [`takestep!(comp::AbstractComponent)`](@ref)
+Makes `comp` to take a step by making each subcomponent of `comp` take a step. See also:
+[`takestep!(comp::AbstractComponent)`](@ref)
 """
 function takestep!(comp::AbstractSubSystem)
     t = readtime!(comp)
     t === NaN && return t
     put!(comp.triggerport, fill(t, length(comp.components)))
     all(take!(comp.handshakeport)) || @warn "Could not be approved in the subsystem"
-    # foreach(takestep!, comp.components)
-    # approve!(comp) ||  @warn "Could not be approved in the subsystem"
+    # foreach(takestep!, comp.components) approve!(comp) ||  @warn "Could not be approved in the subsystem"
     # put!(comp.handshake, true)
 end
 
 """
-    drive!(comp::AbstractSubSystem, t)
+    $SIGNATURES
 
 Drives `comp` by driving each subcomponent of `comp`. See also: [`drive!(comp::AbstractComponent, t)`](@ref)
 """
 drive!(comp::AbstractSubSystem, t) = foreach(component -> drive!(component, t), comp.components)
 
 """
-    approve!(comp::AbstractSubSystem)
+    $SIGNATURES
 
 Approves `comp` by approving each subcomponent of `comp`. See also: [`approve!(comp::AbstractComponent)`](@ref)
 """
 approve!(comp::AbstractSubSystem) = all(approve!.(comp.components))
 
-
-# """ 
-#     release(comp::AbstractSubSystem)
-
-# Releases `comp` by releasing each subcomponent of `comp`. See also: [`release(comp::AbstractComponent)`](@ref)
-# """
-# function release(comp::AbstractSubSystem)
-#     foreach(release, comp.components)
-#     typeof(comp.input) <: Inport && release(comp.input)
-#     typeof(comp.output) <: Outport && release(comp.output)
-# end
-
 """
-    terminate!(comp::AbstractSubSystem)
+    $SIGNATURES
 
 Terminates `comp` by terminating each subcomponent of `comp`. See also: [`terminate!(comp::AbstractComponent)`](@ref)
 """
 terminate!(comp::AbstractSubSystem) = foreach(terminate!, comp.components)
-

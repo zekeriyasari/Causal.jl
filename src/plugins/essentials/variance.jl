@@ -3,11 +3,17 @@
 using Statistics
 
 """
-    Variance(dims::Int)
+    $TYPEDEF
 
-Constructs a `Variance` plugin. The [`process(plg::Variance, x)`](@ref) function takes the variance of the input data `x` along dimension `dims`.
+Constructs a `Variance` plugin. The [`process(plg::Variance, x)`](@ref) function takes the variance of the input data `x`
+along dimension `dims`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct Variance <: AbstractPlugin
+    "Dimension"
     dims::Int
 end
 Variance(;dims::Int=1) = Variance(dims)
@@ -15,7 +21,7 @@ Variance(;dims::Int=1) = Variance(dims)
 show(io::IO, plg::Variance) = print(io, "Mean(dims:$(plg.dims))")
 
 """
-    process(plg::Std, x)
+    $SIGNATURES
 
 Returns the standard deviation of `x` along the dimension `plg.dims`.
 

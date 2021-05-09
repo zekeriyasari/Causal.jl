@@ -2,13 +2,13 @@
 import Base: put!, take!, close, isready, eltype, isopen, isreadable, iswritable, bind, collect, iterate
 
 """
-    Link{T}(ln::Int=64) where {T}
+    $TYPEDEF
 
-Constructs a `Link` with element type `T` and buffer length `ln`. The buffer element type is `T` and mode is `Cyclic`.
+A `Link` connects an Outpin and Inpin for data flow. See [`Outpin`](@ref), [`Inpin`](@ref), [`connect!`](@ref)
 
-    Link(ln::Int=64)
+# Fields 
 
-Constructs a `Link` with element type `Float64` and buffer length `ln`. The buffer element type is `Float64` and mode is `Cyclic`.
+    $TYPEDFIELDS
 
 # Example
 ```jldoctest
@@ -20,10 +20,15 @@ Link(state:open, eltype:Bool, isreadable:false, iswritable:false)
 ```
 """
 mutable struct Link{T}
+    "Internal buffer to record data flowing throgh link"
     buffer::Buffer{Cyclic, T, 1}
+    "Internal channel for data flow"
     channel::Channel{T}
+    "Unique identifier of the outpin of the source of the link"
     masterid::UUID
+    "Unique identifier fo the inpin of the destination of the link"
     slaveid::UUID
+    "Unique identifier"
     id::UUID
     Link{T}(ln::Int=64) where {T} = new{T}(Buffer(T, ln), Channel{T}(0), uuid4(), uuid4(), uuid4())
 end
@@ -34,7 +39,7 @@ show(io::IO, link::Link) = print(io, "Link(state:$(isopen(link) ? :open : :close
     "isreadable:$(isreadable(link)), iswritable:$(iswritable(link)))")
 
 """
-    eltype(link::Link)
+    $SIGNATURES
 
 Returns element type of `link`.
 """
@@ -42,7 +47,7 @@ eltype(link::Link{T}) where {T} = T
 
 ##### Link reading writing.
 """
-    put!(link::Link, val)
+    $SIGNATURES
 
 Puts `val` to `link`. `val` is handed over to the `channel` of `link`. `val` is also written in to the `buffer` of `link`.
 
@@ -80,7 +85,7 @@ end
 
 
 """
-    take!(link::Link)
+    $SIGNATURES
 
 Take an element from `link`.
 
@@ -110,7 +115,7 @@ function take!(link::Link)
 end
 
 """
-    close(link)
+    $SIGNATURES
 
 
 Closes `link`. All the task bound the `link` is also terminated safely. When closed, it is not possible to take and put element from the `link`. See also: [`take!(link::Link)`](@ref), [`put!(link::Link, val)`](@ref)
@@ -126,35 +131,35 @@ end
 
 ##### State check of link.
 """
-    isopen(link::Link)
+    $SIGNATURES
 
 Returns `true` if `link` is open. A `link` is open if its `channel` is open.
 """
 isopen(link::Link) = isopen(link.channel) 
 
 """
-    isreadable(link::Link)
+    $SIGNATURES
 
 Returns `true` if `link` is readable. When `link` is readable, data can be read from `link` with `take` function.
 """
 isreadable(link::Link) = length(link.channel.cond_put.waitq) > 0
 
 """
-    writable(link::Link)
+    $SIGNATURES
 
 Returns `true` if `link` is writable. When `link` is writable, data can be written into `link` with `put` function.
 """
 iswritable(link::Link) = length(link.channel.cond_take.waitq) > 0
 
 """
-    isfull(link::Link)
+    $SIGNATURES
 
 Returns `true` if the `buffer` of `link` is full.
 """
 isfull(link::Link) = isfull(link.buffer)
 
 """
-    snapshot(link::Link)
+    $SIGNATURES
 
 Returns all the data of the `buffer` of `link`.
 """
@@ -179,14 +184,14 @@ function putter(link::Link, vals)
 end
 
 """
-    bind(link::Link, task::Task)
+    $SIGNATURES
 
 Binds `task` to `link`. When `task` is done `link` is closed.
 """
 bind(link::Link, task::Task) = bind(link.channel, task)
 
 """
-    collect(link::Link)
+    $SIGNATURES
 
 Collects all the available data on the `link`.
 
@@ -219,7 +224,7 @@ julia> collect(l)  # Collect remaining data.
 collect(link::Link) = collect(link.channel)
 
 """
-    launch(link::Link)
+    $SIGNATURES
 
 Constructs a `taker` task and binds it to `link`. The `taker` task reads the data and prints an info message until `missing` is read from the `link`.
 """
@@ -230,7 +235,7 @@ function launch(link::Link)
 end
 
 """
-    launch(link:Link, valrange)
+    $SIGNATURES
 
 Constructs a `putter` task and binds it to `link`. `putter` tasks puts the data in `valrange`.
 """
@@ -247,7 +252,7 @@ function launch(link::Link, taskname::Symbol, valrange)
 end
 
 """
-    refresh!(link::Link) 
+    $SIGNATURES
 
 Reconstructst the channel of `link` is its channel is closed.
 """

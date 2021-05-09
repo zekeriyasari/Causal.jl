@@ -2,7 +2,7 @@
 
 
 """
-    AbstractPort{P}
+    $TYPEDEF
 
 Abstract type of [`Outport`](@ref) and [`Inport`](@ref). See also: [`Outport`](@ref), [`Inport`](@ref).
 """
@@ -10,12 +10,15 @@ abstract type AbstractPort{P} <: AbstractVector{P} end
 
 
 """
-    Outport{T}(numpins=1) 
+    $TYPEDEF
 
 Constructs an `Outport` with `numpins` [`Outpin`](@ref).
 
-!!! warning
-    Element type of an `Outport` must be `Outpin`. See also [`Outpin`](@ref)
+# Fields 
+
+    $TYPEDFIELDS
+
+!!! warning Element type of an `Outport` must be `Outpin`. See also [`Outpin`](@ref)
 
 # Example 
 ```jldoctest
@@ -30,7 +33,9 @@ julia> Outport()
 ```
 """
 struct Outport{P} <: AbstractPort{P}
+    "Pins of the output port"
     pins::Vector{P}
+    "Unique identifier"
     id::UUID
     Outport(pins::AbstractVector{P}) where {T, P<:Outpin{T}} = new{P}(pins, uuid4())
 end
@@ -39,16 +44,18 @@ Outport{T}(numpins::Int=1) where T = Outport([Outpin{T}() for i = 1 : numpins])
 Outport(numpins::Int=1) = Outport{Float64}(numpins)
 
 show(io::IO, outport::Outport) = print(io, "Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
-# display(outport::Outport) = println("Outport(numpins:$(length(outport)), eltype:$(eltype(outport)))")
 
 
 """
-    Inport{T}(numpins=1) 
+    $TYPEDEF
 
 Constructs an `Inport` with `numpins` [`Inpin`](@ref).
 
-!!! warning
-    Element type of an `Inport` must be `Inpin`. See also [`Inpin`](@ref)
+# Fields 
+
+    $TYPEDFIELDS
+
+!!! warning Element type of an `Inport` must be `Inpin`. See also [`Inpin`](@ref)
 
 # Example 
 ```jldoctest
@@ -63,6 +70,7 @@ julia> Inport()
 ```
 """
 struct Inport{P} <: AbstractPort{P}
+    "Pins of the port"
     pins::Vector{P}
     Inport(pins::AbstractVector{P}) where {T, P<:Inpin{T}} = new{P}(pins)
 end
@@ -71,26 +79,25 @@ Inport{T}(numpins::Int=1) where T = Inport([Inpin{T}() for i = 1 : numpins])
 Inport(numpins::Int=1) = Inport{Float64}(numpins)
 
 show(io::IO, inport::Inport) = print(io, "Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
-# display(inport::Inport) = println("Inport(numpins:$(length(inport)), eltype:$(eltype(inport)))")
 
 
 """
-    datatype(port::AbstractPort)
+    $SIGNATURES
 
 Returns the data type of `port`.
 """
-datatype(port::AbstractPort{<:AbstractPin{T}}) where T = T
+datatype(port::AbstractPort{<:AbstractPin{T}}) where {T} = T
 
 ##### AbstractVector interface
 """
-    size(port::AbstractPort)
+    $SIGNATURES
 
 Retruns size of `port`.
 """
 size(port::AbstractPort) = size(port.pins)
 
 """
-    getindex(port::AbstractPort, idx::Vararg{Int, N}) where N 
+    $SIGNATURES
 
 Returns elements from `port` at index `idx`. Same as `port[idx]`.
 
@@ -115,10 +122,10 @@ julia> op[:]
  Outpin(eltype:Float64, isbound:false)
 ```
 """
-getindex(port::AbstractPort, idx::Vararg{Int, N}) where N = port.pins[idx...]
+getindex(port::AbstractPort, idx::Vararg{Int, N}) where {N} = port.pins[idx...]
 
 """
-    setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N 
+    $SIGNATURES
 
 Sets `item` to `port` at index `idx`. Same as `port[idx] = item`.
 
@@ -142,16 +149,17 @@ julia> op[1:2] = [Outpin(), Outpin()]
  Outpin(eltype:Float64, isbound:false)
 ```
 """
-setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where N = port.pins[idx...] = item
+setindex!(port::AbstractPort, item, idx::Vararg{Int, N}) where {N} = port.pins[idx...] = item
 
 ##### Reading from and writing into from buses
 """
-    take!(inport::Inport)
+    $SIGNATURES
 
 Takes an element from `inport`. Each link of the `inport` is a read and a vector containing the results is returned.
 
 !!! warning 
-    The `inport` must be readable to be read. That is, there must be a runnable tasks bound to links of the `inport` that writes data to `inport`.
+    The `inport` must be readable to be read. That is, there must be a runnable tasks bound to links of the `inport`
+    that writes data to `inport`.
 
 # Example 
 ```jldoctest 
@@ -178,12 +186,13 @@ julia> take!(ip)
 take!(inport::Inport) = take!.(inport[:])
 
 """
-    put!(outport::Outport, vals)
+    $SIGNATURES
 
 Puts `vals` to `outport`. Each item in `vals` is putted to the `links` of the `outport`.
 
 !!! warning 
-    The `outport` must be writable to be read. That is, there must be a runnable tasks bound to links of the `outport` that reads data from `outport`.
+    The `outport` must be writable to be read. That is, there must be a runnable tasks bound to links of the
+    `outport` that reads data from `outport`.
 
 # Example
 ```jldoctest
@@ -217,10 +226,10 @@ end
 
 ##### Interconnection of busses.
 """
-    similar(port, numpins::Int=length(outport)) where {P<:Outpin{T}} where {T}
+    $SIGNATURES
 
-Returns a new port that is similar to `port` with the same element type. The number of links in the new port is `nlinks` and data buffer length is `ln`.
+Returns a new port that is similar to `port` with the same element type. The number of links in the new port is `nlinks` and
+data buffer length is `ln`.
 """
 similar(outport::Outport{P}, numpins::Int=length(outport)) where {P<:Outpin{T}} where {T} = Outport{T}(numpins)
 similar(inport::Inport{P}, numpins::Int=length(inport)) where {P<:Inpin{T}} where {T} = Inport{T}(numpins)
-

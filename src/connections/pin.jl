@@ -2,7 +2,7 @@
 
 
 """
-    AbstractPin{T} 
+    $TYPEDEF
 
 Abstract type of `Outpin` and `Inpin`. See also: [`Outpin`](@ref), [`Inpin`](@ref)
 """
@@ -10,16 +10,22 @@ abstract type AbstractPin{T} end
 
 
 """
-    Outpin{T}()
+    $TYPEDEF
 
-Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its links.
+Constructs and `OutPut` pin. The data flow from `Outpin` is outwards from the pin i.e., data is written from `OutPort` to its
+links.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 mutable struct Outpin{T} <: AbstractPin{T}
+    "Links bound to the outpin. The data written to pin is transfered to all the links"
     links::Union{Vector{Link{T}}, Missing}
+    "Unique identifier"
     id::UUID
-    # NOTE: When Outpin is initialized, its links are missing. 
-    # The existance of links of Outpin is used to determine 
-    # whether the Outpin is bound or not.
+    # Note: When Outpin is initialized, its links are missing. The existance of links of Outpin is used to determine whether
+    # the Outpin is bound or not.
     Outpin{T}() where {T} = new{T}(missing, uuid4())
 end
 Outpin() = Outpin{Float64}()
@@ -27,15 +33,21 @@ Outpin() = Outpin{Float64}()
 show(io::IO, outpin::Outpin) = print(io, "Outpin(eltype:$(eltype(outpin)), isbound:$(isbound(outpin)))")
 
 """
-    Inpin{T}()
+    $TYPEDEF
 
 Constructs and `InPut` pin. The data flow from `Inpin` is inwards to the pin i.e., data is read from links of `InPort`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 mutable struct Inpin{T} <: AbstractPin{T}
+    "Links bound to the inpin. The data read from input is read from the links"
     link::Union{Link{T}, Missing}
+    "Unique identifier"
     id::UUID
-    # NOTE: When an Inpin is initialized, its link is missing. 
-    # The state of link of the Inpin is used to decide whether the Inpin is bound or not. 
+    # Note: When an Inpin is initialized, its link is missing. The state of link of the Inpin is used to decide whether the
+    # Inpin is bound or not. 
     Inpin{T}() where {T} = new{T}(missing, uuid4())
 end
 Inpin() = Inpin{Float64}()
@@ -43,15 +55,16 @@ Inpin() = Inpin{Float64}()
 show(io::IO, inpin::Inpin) = print(io, "Inpin(eltype:$(eltype(inpin)), isbound:$(isbound(inpin)))")
 
 """
-    bind(link::Link, pin)
+    $SIGNATURES
 
 Binds `link` to `pin`. When bound, data written into or read from `pin` is written into or read from `link`.
 """
 bind(link::Link, inpin::Inpin) = (inpin.link = link; link.slaveid = inpin.id)
-bind(link::Link, outpin::Outpin) = (outpin.links === missing ? (outpin.links = [link]) : push!(outpin.links, link); link.masterid = outpin.id)
+bind(link::Link, outpin::Outpin) = 
+    (outpin.links === missing ? (outpin.links = [link]) : push!(outpin.links, link); link.masterid = outpin.id)
 
 """
-    isbound(pin::AbstractPin)
+    $SIGNATURES
 
 Returns `true` if `pin` is bound to other pins.
 """
@@ -62,18 +75,18 @@ end
 isbound(inpin::Inpin) = inpin.link !== missing
 
 """
-    eltype(pin::AbstractPin)
+    $SIGNATURES
 
 Returns element typef of pin.
 """
 eltype(pin::AbstractPin{T}) where T = T
 
 """
-    take!(pin::Inpin)
+    $SIGNATURES
 
 Takes data from `pin`. The data is taken from the links of `pin`.
 
-!!! warning
+!!! warning 
     To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
 
 # Example 
@@ -98,12 +111,11 @@ julia> take!(ip)
 take!(pin::Inpin) = take!(pin.link)
 
 """
-    put!(pin::Outpin, val)
+    $SIGNATURES
 
 Puts `val` to `pin`. `val` is put into the links of `pin`.
 
-!!! warning
-    To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
+!!! warning To take data from `pin`, a running task that puts data must be bound to `link` of `pin`.
 
 # Example 
 ```jldoctest
@@ -138,13 +150,9 @@ put!(pin::Outpin, val) = foreach(link -> put!(link, val), pin.links)
 # iterate(l::AbstractPin, i=1) = i > 1 ? nothing : (l, i + 1)
 
 """
-    connect!(outpin::Link, inpin::Link)
+    $SIGNATURES
 
 Connects `outpin` to `inpin`. When connected, any element that is put into `outpin` is also put into `inpin`. 
-
-    connect!(outpin::AbstractVector{<:Link}, inpin::AbstractVector{<:Link})
-
-Connects each link in `outpin` to each link in `inpin` one by one. See also: [`disconnect!`](@ref)
 
 # Example 
 ```jldoctest 
@@ -161,9 +169,9 @@ true
 ```
 """
 function connect!(outpin::Outpin, inpin::Inpin)
-    # NOTE: The connecion of an `Outpin` to multiple `Inpin`s is possible since an `Outpin` may drive multiple 
-    # `Inpin`s. However, the connection of multiple `Outpin`s to the same `Inpin` is NOT possible since an `Inpin` 
-    # can be driven by a single `Outpin`. 
+    # NOTE: The connecion of an `Outpin` to multiple `Inpin`s is possible since an `Outpin` may drive multiple `Inpin`s.
+    # However, the connection of multiple `Outpin`s to the same `Inpin` is NOT possible since an `Inpin` can be driven by a
+    # single `Outpin`. 
     isbound(inpin) && error("$inpin is already bound. No new connections.")
     isconnected(outpin, inpin) && (@warn "$outpin and $inpin are already connected."; return)
 
@@ -175,7 +183,7 @@ end
 connect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) = connect!.(outpins, inpins)
 
 """
-    disconnect!(link1::Link, link2::Link)
+    $SIGNATURES
 
 Disconnects `link1` and `link2`. The order of arguments is not important. See also: [`connect!`](@ref)
 """
@@ -188,10 +196,10 @@ disconnect!(outpins::AbstractVector{<:Outpin}, inpins::AbstractVector{<:Inpin}) 
 
 
 """
-    isconnected(link1, link2)
+    $SIGNATURES
 
-Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important. 
-See also [`connect!`](@ref), [`disconnect!`](@ref)
+Returns `true` if `link1` is connected to `link2`. The order of the arguments are not important. See also [`connect!`](@ref),
+[`disconnect!`](@ref)
 """
 function isconnected(outpin::Outpin, inpin::Inpin)
     if !isbound(outpin) || !isbound(inpin)
@@ -224,7 +232,5 @@ method-
 
 # Exception thrown when the links are not connected to each other.
 # """
-# struct UnconnectedLinkError <: Exception
-#     msg::String
-# end
-# Base.showerror(io::IO, err::UnconnectedLinkError) = print(io, "UnconnectedLinkError:\n $(err.msg)")
+# struct UnconnectedLinkError <: Exception msg::String end Base.showerror(io::IO, err::UnconnectedLinkError) = print(io,
+#     "UnconnectedLinkError:\n $(err.msg)")

@@ -1,26 +1,41 @@
 # This file includes the Model object
 
 """
-    Node(component, idx, label)
+    $TYPEDEF
 
 Constructs a model `Node` with `component`. `idx` is the index and `label` is label of `Node`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct Node{CP, L}
+    "Node component"
     component::CP 
+    "Node index"
     idx::Int    
+    "Node label"
     label::L 
 end
 
 show(io::IO, node::Node) = print(io, "Node(component:$(node.component), idx:$(node.idx), label:$(node.label))")
 
 """ 
-    Branch(nodepair, indexpair, links)
+    $TYPEDEF
 
-Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `indexpair` determines the subindices by which the elements of `nodepair` are connected.
+Constructs a `Branch` connecting the first and second element of `nodepair` with `links`. `indexpair` determines the
+subindices by which the elements of `nodepair` are connected.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct Branch{NP, IP, LN<:AbstractVector{<:Link}}
+    "Node pair connected by the branch"
     nodepair::NP 
+    "Indices of output and input ports"
     indexpair::IP 
+    "Links of the branch"
     links::LN
 end
 
@@ -28,24 +43,34 @@ show(io::IO, branch::Branch) = print(io, "Branch(nodepair:$(branch.nodepair), in
     "links:$(branch.links))")
 
 """
-    Model(components::AbstractVector)
+    $TYPEDEF
 
-Constructs a `Model` whose with components `components` which are of type `AbstractComponent`.
+A `Model` consists of nodes and branches. Nodes are connected to each other through the branches. A `Model` instance is ready
+for simulation.
 
-    Model()
+See also [`Node`](@ref), [`Branch`](@ref)
 
-Constructs a `Model` with empty components. After the construction, components can be added to `Model`.
+# Fields 
 
-!!! warning
-    `Model`s are units that can be simulated. As the data flows through the branches i.e. input output busses of the components, its is important that the components must be connected to each other. See also: [`simulate!`](@ref)
+    $SIGNATURES
+
+!!! warning `Model`s are units that can be simulated. As the data flows through the branches i.e. input output busses of the
+    components, its is important that the components must be connected to each other. See also: [`simulate!`](@ref)
 """
 struct Model{GR, ND, BR, TM, CB}
+    "Model graph coreesponding to the block diagram of the model"
     graph::GR
+    "Model nodes. Components are added to the model in forms of nodes"
     nodes::ND
+    "Model branches. Components are connected throguh branches"
     branches::BR 
+    "Task manager to monitor the tasks of the model"
     taskmanager::TM
+    "Callback set. [`Callback`](@ref)"
     callbacks::CB
+    "Name of the model"
     name::Symbol
+    "Unique identifier"
     id::UUID
     function Model(nodes::AbstractVector=[], branches::AbstractVector=[]; callbacks=nothing, name=Symbol())
         graph = SimpleDiGraph()
@@ -60,7 +85,7 @@ show(io::IO, model::Model) = print(io, "Model(numnodes:$(length(model.nodes)), n
 
 ##### Addinng nodes and branches.
 """
-    addnode!(model, component; label=nothing)
+    $SIGNATURES
 
 Adds a node to `model`. Component is `component` and `label` is `label` the label of node. Returns added node.
 
@@ -130,7 +155,7 @@ function register(taskmanager, component)
 end
 
 """
-    addbranch!(model::Model, branch::Branch)
+    $SIGNATURES
 
 Adds `branch` to branched of `model`.
 """
@@ -152,7 +177,8 @@ getbranch(model::Model, nodepair::Pair{Symbol, Symbol}) =
 """ 
     $(SIGNATURES)
 
-Returns the links of `model` corresponding to the `pair` which can be a pair of integers or symbols to specify the source and destination nodes of the branch.
+Returns the links of `model` corresponding to the `pair` which can be a pair of integers or symbols to specify the source and
+destination nodes of the branch.
 """
 getlinks(model::Model, pair) = getbranch(model, nodepair).links
 
@@ -180,10 +206,10 @@ deletebranch!(model::Model, nodepair::Pair{Symbol, Symbol}) =
 
 ##### Model inspection.
 """
-    inspect!(model::Model)
+    $SIGNATURES
 
-Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and 
-error is thrown.
+Inspects the `model`. If `model` has some inconsistencies such as including algebraic loops or unterminated busses and error
+is thrown.
 """
 function inspect!(model, breakpoints::Vector{Int}=Int[])
     # Check unbound pins in ports of componensts 
@@ -218,7 +244,7 @@ end
 hasmemory(model, loop) = any([getnode(model, idx).component isa Memory for idx in loop])
 
 """
-    getloops(model)
+    $SIGNATURES
 
 Returns idx of nodes that constructs algrebraic loops.
 """
@@ -233,10 +259,10 @@ end
 
 
 """
-    breakloop!(model, loop, breakpoint=length(loop))
+    $SIGNATURES
 
-Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by inserting a `Memory` at the `breakpoint` 
-of loop.
+Breaks the algebraic `loop` of `model`. The `loop` of the `model` is broken by inserting a `Memory` at the `breakpoint` of
+loop.
 """
 function breakloop!(model::Model, loop, breakpoint=length(loop)) 
     nftidx = findfirst(idx -> !isfeedthrough(getnode(model, idx).component), loop)
@@ -387,8 +413,8 @@ function isfeedthrough(component)
     end
 end
 
-# Check if components of nodes of the models has unbound pins. In case there are any unbound pins, 
-# the simulation is got stuck since the data flow through an unbound pin is not possible.
+# Check if components of nodes of the models has unbound pins. In case there are any unbound pins, the simulation is got
+# stuck since the data flow through an unbound pin is not possible.
 checknodeports(model) = foreach(node -> checkports(node.component), model.nodes)
 function checkports(comp::T) where T  
     if hasfield(T, :input)
@@ -403,8 +429,8 @@ end
 unboundpins(port::AbstractPort) = findall(.!isbound.(port)) 
 unboundpins(port::Nothing) = Int[]
 
-# Checks if all the channels the links in the model is open. If a link is not open, than 
-# it is not possible to bind a task that reads and writes data from the channel.
+# Checks if all the channels the links in the model is open. If a link is not open, than it is not possible to bind a task
+# that reads and writes data from the channel.
 function checkchannels(model)
     # Check branch links 
     for branch in model.branches 
@@ -428,14 +454,16 @@ end
 """
     $(SIGNATURES)
 
-Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are openned.
+Initializes `model` by launching component task for each of the component of `model`. The pairs component and component tasks
+are recordedin the task manager of the `model`. The `model` clock is [`set!`](@ref) and the files of [`Writer`](@ref) are
+openned.
 """
 function initialize!(model::Model, clock::Clock)
-    # NOTE: Tasks to make the components be triggerable are launched here.
-    # The important point here is that the simulation should be cancelled if an error is thrown in any of the tasks 
-    # launched here. This is done by binding the task to the chnnel of the trigger link of the component. Hrence the 
-    # lifetime of the channel of the link connecting the component to the taskmanger is determined by the lifetime of 
-    # the task launched for the component. To cancel the simulation and report the stacktrace the task is `fetch`ed. 
+    # NOTE: Tasks to make the components be triggerable are launched here. The important point here is that the simulation
+    # should be cancelled if an error is thrown in any of the tasks launched here. This is done by binding the task to the
+    # chnnel of the trigger link of the component. Hrence the lifetime of the channel of the link connecting the component to
+    # the taskmanger is determined by the lifetime of the task launched for the component. To cancel the simulation and
+    # report the stacktrace the task is `fetch`ed. 
     bind!(model)
 
     # Reset dynamical systems 
@@ -452,8 +480,8 @@ end
 function whichlink(taskmanager, component)
     tpin = component.trigger
     tport = taskmanager.triggerport
-    # NOTE: `component` must be connected to `taskmanager` by a single link which is checked by `only`
-    # `outpin.links` must have just a single link which checked by `only`
+    # NOTE: `component` must be connected to `taskmanager` by a single link which is checked by `only` `outpin.links` must
+    # have just a single link which checked by `only`
     outpin = filter(pin -> isconnected(pin, tpin), tport) |> only 
     outpin.links |> only
 end
@@ -522,14 +550,13 @@ function resetdynamicalsystems!(model::Model, clock::Clock)
 end
 
 ##### Model running
-# Copy-paste loop body. See `run!(model, withbar)`.
-# NOTE: We first trigger the component, Then the tasks fo the `taskmanager` is checked. If an error is thrown in one 
-# of the tasks, the simulation is cancelled and stacktrace is printed reporting the error. In order to ensure the 
-# time synchronization between the components of the model, `handshakeport` of the taskmanger is read. When all the 
-# components take step succesfully, then the simulation goes with the next step after calling the callbacks of the 
-# components.
-# Note we first check the tasks of the taskmanager and then read the `handshakeport` of the taskmanager. Otherwise, 
-# the simulation gets stuck without printing the stacktrace if an error occurs in one of the tasks of the taskmanager.
+# Copy-paste loop body. See `run!(model, withbar)`. NOTE: We first trigger the component, Then the tasks fo the `taskmanager`
+# is checked. If an error is thrown in one of the tasks, the simulation is cancelled and stacktrace is printed reporting the
+# error. In order to ensure the time synchronization between the components of the model, `handshakeport` of the taskmanger
+# is read. When all the components take step succesfully, then the simulation goes with the next step after calling the
+# callbacks of the components. Note we first check the tasks of the taskmanager and then read the `handshakeport` of the
+# taskmanager. Otherwise, the simulation gets stuck without printing the stacktrace if an error occurs in one of the tasks of
+# the taskmanager.
 @def loopbody begin 
     put!(triggerport, fill(t, ncomponents))
     checktaskmanager(taskmanager)          
@@ -538,9 +565,12 @@ end
 end
 
 """
-    run!(model::Model, withbar::Bool=true)
+    $SIGNATURES
 
-Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the model clock `model.clock`. Triggering starts with initial time of model clock, goes on with a step size of the sampling period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar indicating the simulation status is displayed on the console.
+Runs the `model` by triggering the components of the `model`. This triggering is done by generating clock tick using the
+model clock `model.clock`. Triggering starts with initial time of model clock, goes on with a step size of the sampling
+period of the model clock, and finishes at the finishing time of the model clock. If `withbar` is `true`, a progress bar
+indicating the simulation status is displayed on the console.
 
 !!! warning 
     The `model` must first be initialized to be run. See also: [`initialize!`](@ref).
@@ -556,9 +586,10 @@ end
 
 # ##### Model termination
 """
-    terminate!(model::Model)
+    $SIGNATURES
 
-Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the `model` is terminated.
+Terminates `model` by terminating all the components of the `model`, i.e., the components tasks in the task manager of the
+`model` is terminated.
 """
 function terminate!(model::Model)
     taskmanager = model.taskmanager
@@ -597,10 +628,12 @@ function _simulate(sim::Simulation, reportsim::Bool, withbar::Bool, breakpoints:
 end
 
 """
-    simulate!(model::Model; simdir::String=tempdir(), simprefix::String="Simulation-", simname=string(uuid4()),
-        logtofile::Bool=false, loglevel::LogLevel=Logging.Info, reportsim::Bool=false, withbar::Bool=true)
+    $SIGNATURES
 
-Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar indicating the simualation status is displayed on the console.
+Simulates `model`. `simdir` is the path of the directory into which simulation files are saved. `simprefix` is the prefix of
+the simulation name `simname`. If `logtofile` is `true`, a log file for the simulation is constructed. `loglevel` determines
+the logging level. If `reportsim` is `true`, model components are saved into files. If `withbar` is `true`, a progress bar
+indicating the simualation status is displayed on the console.
 """
 function simulate!(model::Model, clock::Clock; 
                    simdir::String=tempdir(), 
@@ -627,19 +660,21 @@ function simulate!(model::Model, clock::Clock;
 end
 
 """ 
-    simulate!(model::Model, t0::Real, dt::Real, tf::Real; kwargs...)
+    $SIGNATURES
 
-Simulates the `model` starting from the initial time `t0` until the final time `tf` with the sampling interval of `tf`. For `kwargs` are 
+Simulates the `model` starting from the initial time `t0` until the final time `tf` with the sampling interval of `tf`. For
+`kwargs` are 
 
 * `logtofile::Bool`: If `true`, a log file is contructed logging each step of the simulation. 
-* `reportsim::Bool`: If `true`, `model` components are written files after the simulation. When this file is read back, the model components can be consructed back with their status at the end of the simulation.
+* `reportsim::Bool`: If `true`, `model` components are written files after the simulation. When this file is read back, the
+  model components can be consructed back with their status at the end of the simulation.
 * `simdir::String`: The path of the directory in which simulation file are recorded. 
 """
 simulate!(model::Model, ti::Real, dt::Real, tf::Real; kwargs...) = simulate!(model, Clock(ti:dt:tf); kwargs...)
 
 #### Troubleshooting 
 """
-    troubleshoot(model) 
+    $SIGNATURES
 
 Prints the exceptions of the tasks that are failed during the simulation of `model`.
 """
@@ -657,9 +692,10 @@ end
 
 ##### Plotting signal flow of the model 
 """
-    signalflow(model, args...; kwargs...)
+    $SIGNATURES
 
-Plots the signal flow of `model`. `args` and `kwargs` are passed into [`gplot`](https://github.com/JuliaGraphs/GraphPlot.jl) function.
+Plots the signal flow of `model`. `args` and `kwargs` are passed into [`gplot`](https://github.com/JuliaGraphs/GraphPlot.jl)
+function.
 """
 signalflow(model::Model, args...; kwargs...) = 
     gplot(model.graph, args...; nodelabel=[node.label for node in model.nodes], kwargs...)
@@ -673,13 +709,8 @@ function check_macro_syntax(name, ex)
 end
 
 function check_block_syntax(node_expr, branch_expr)
-    #-------------------  Node expression check ---------------
-    # Check syntax the following syntax
-    # @nodes begin 
-    #   label1 = Component1() 
-    #   label2 = Component2() 
-    #       ⋮
-    # end 
+    #-------------------  Node expression check --------------- Check syntax the following syntax @nodes begin label1 =
+    # Component1() label2 = Component2() ⋮ end 
     (
         node_expr isa Expr && 
         node_expr.head === :(macrocall) && 
@@ -691,13 +722,8 @@ function check_block_syntax(node_expr, branch_expr)
         all([ex.head === :(=) for ex in filter(arg -> isa(arg, Expr), node_block.args)])
     ) || error("Invalid usage of @nodes")
 
-    #---------------------  Branch expression check --------------
-    # Check syntax the following syntax
-    # @branches begin 
-    #   src1[srcidx1] => dst1[dstidx1]
-    #   src2[srcidx2] => dst2[dstidx2]
-    #       ⋮
-    # end 
+    #---------------------  Branch expression check -------------- Check syntax the following syntax @branches begin
+    # src1[srcidx1] => dst1[dstidx1] src2[srcidx2] => dst2[dstidx2] ⋮ end 
     (
         branch_expr isa Expr && 
         branch_expr.head === :(macrocall) && 
@@ -773,4 +799,3 @@ macro defmodel(name, ex)
         end
     end |> esc
 end
-

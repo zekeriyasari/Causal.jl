@@ -1,17 +1,32 @@
 # This file is for Simulation object.
 
 """
-    Simulation(model; simdir=tempdir(), simname=string(uuid4()), simprefix="Simulation-", logger=SimpleLogger())
+    $TYPEDEF
 
-Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are recorded. `simname` is the name of the `Simulation` and `simprefix` is the prefix of the name of the `Simulation`. `logger` is used to log the simulation steps of the `model`. See also: [`Model`](@ref), [`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
+Constructs a `Simulation` object for the simulation of `model`. The `Simulation` object is used to monitor the state of the
+simulation of the `model`. `simdir` is the path of the directory into which the simulation files(log, data files etc.) are
+recorded. `simname` is the name of the `Simulation` and `simprefix` is the prefix of the name of the `Simulation`. `logger`
+is used to log the simulation steps of the `model`. See also: [`Model`](@ref),
+[`Logging`](https://docs.julialang.org/en/v1/stdlib/Logging/)
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 mutable struct Simulation{MD, CK}
+    "Model to be simulated"
     model::MD
+    "Simulation clock"
     clock::CK 
+    "Path to which simulation files are recorded"
     path::String
+    "Simulation logger"
     logger::Union{SimpleLogger, ConsoleLogger}
+    "Simulation state"
     state::Symbol
+    "Simulation return code"
     retcode::Symbol
+    "Simulation name"
     name::String
     function Simulation(model, clock; 
                         simdir=tempdir(), 
@@ -38,9 +53,10 @@ end
 
 ##### Simulation logging
 """
-    setlogger(path, name; setglobal::Bool=true)
+    $SIGNATURES
 
-Returns a logger. `path` is the path and `name` is the name of the file of the logger. If `setglobal` is `true`, the returned logger is a global logger.
+Returns a logger. `path` is the path and `name` is the name of the file of the logger. If `setglobal` is `true`, the returned
+logger is a global logger.
 
 # Example 
 ```julia 
@@ -58,7 +74,7 @@ function setlogger(path::AbstractString, name::AbstractString; setglobal::Bool=t
 end
 
 """
-    closelogger(logger=global_logger())
+    $SIGNATURES
 
 Closes the `logger` the file of the `loggger`. See also: [`setlogger`](@ref)
 """
@@ -70,9 +86,11 @@ end
 
 ##### Simulation reporting
 """
-    report(simulation::Simulation)
+    $SIGNATURES
 
-Records the state of the `simulation` by writing all its fields into a data file. All the fields of the `simulation` is written into file. When the file is read back, the `simulation` object is constructed back. The data file is written under the path of the `simulation`.
+Records the state of the `simulation` by writing all its fields into a data file. All the fields of the `simulation` is
+written into file. When the file is read back, the `simulation` object is constructed back. The data file is written under
+the path of the `simulation`.
 """
 function report(simulation::Simulation)
     # Write simulation info.
@@ -101,11 +119,16 @@ end
 
 ##### SimulationError type
 """
-    SimulationError(msg::String)
+    $TYPEDEF
 
 Thrown when an error occurs during a simulation.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 struct SimulationError <: Exception
+    "Error message"
     msg::String
 end
 Base.showerror(io::IO, err::SimulationError) = println(io, err.msg)

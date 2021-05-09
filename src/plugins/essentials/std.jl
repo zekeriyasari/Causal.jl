@@ -3,11 +3,17 @@
 using Statistics 
 
 """
-    Std(dims::Int)
+    $TYPEDEF
 
-Constructs a `Std` plugin. The [`process(plg::Std, x)`](@ref) function takes the standard deviation of the input data `x` along dimension `dims`.
+Constructs a `Std` plugin. The [`process(plg::Std, x)`](@ref) function takes the standard deviation of the input data `x`
+along dimension `dims`.
+
+# Fields 
+    
+    $TYPEDFIELDS
 """
 struct Std <: AbstractPlugin
+    "Dimension"
     dims::Int
 end
 Std(;dims::Int=1) = Std(dims)
@@ -15,7 +21,7 @@ Std(;dims::Int=1) = Std(dims)
 show(io::IO, plg::Std) = print(io, "Mean(dims:$(plg.dims))")
 
 """
-    process(plg::Std, x)
+    $SIGNATURES
 
 Returns the standard deviation of `x` along the dimension `plg.dims`.
 

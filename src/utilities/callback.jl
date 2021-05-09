@@ -1,9 +1,13 @@
 # This file constains the callbacks for event monitoring.
 
 """
-    Callback(condition, action)
+    $TYPEDEF
 
 Constructs a `Callback` from `condition` and `action`. The `condition` and `action` must be a single-argument function. The `condition` returns `true` if the condition it checks occurs, otherwise, it returns `false`. `action` performs the specific action for which the `Callback` is constructed. A `Callback` can be called by passing its single argument which is mostly bound to the `Callback`.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```julia 
@@ -24,9 +28,13 @@ obj.x = 1
 ```
 """
 Base.@kwdef mutable struct Callback{CN, AC}
+    "Condition function of callback. Expected to be a single-argument function"
     condition::CN = obj -> false 
+    "Action of the callback. Expected to be a single-argument fucntion"
     action::AC = obj -> nothing
-    enabled::Bool = true 
+    "If true, callback is activated"
+    enabled::Bool = true
+    "Unique identifier" 
     id::UUID = uuid4()
 end
 
@@ -34,21 +42,21 @@ show(io::IO, clb::Callback) = print(io, "Callback(condition:$(clb.condition), ac
 
 ##### Callback controls
 """
-    enable!(clb::Callback)
+    $SIGNATURES
 
 Enables `clb`.
 """
 enable!(clb::Callback) = clb.enabled = true
 
 """
-    disable!(clb::Callback)
+    $SIGNATURES
 
 Disables `clb`.
 """
 disable!(clb::Callback) = clb.enabled = false
 
 """
-    isenabled(clb::Callback)
+    $SIGNATURES
 
 Returns `true` if `clb` is enabled. Otherwise, returns `false`.
 """
@@ -61,7 +69,7 @@ isenabled(clb::Callback) = clb.enabled
 (clbs::AbstractVector{CB})(obj) where CB<:Callback = foreach(clb -> clb(obj), clbs)
 
 """
-    applycallbacks(obj)
+    $SIGNATURES
 
 Calls the callbacks of `obj` if the callbacks are not nothing.
 

@@ -111,7 +111,14 @@ Construct a generic DDE system
 
     $TYPEDFIELDS
 """
-@def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
+@def_dde_system mutable struct DDESystem{CL, 
+                                         DL, 
+                                         RH, 
+                                         HST, 
+                                         RO, 
+                                         ST <: AbstractVector{<:Real}, 
+                                         IP <: Union{<:Inport, <:Nothing}, 
+                                         OP <: Union{<:Outport,<:Nothing}} <: AbstractDDESystem
     "Constant lags"
     constlags::CL 
     "Dependent lags"
@@ -139,9 +146,15 @@ Constructs DelayFeedbackSystem
 
     $TYPEDFIELDS
 """
-@def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+@def_dde_system mutable struct DelayFeedbackSystem{CL <: AbstractVector{<:Real},
+                                                   RH, 
+                                                   HST, 
+                                                   RO, 
+                                                   ST <: AbstractVector{<:Real},
+                                                   IP <: Union{<:Inport, <:Nothing},  
+                                                   OP <: Union{<:Outport,<:Nothing}} <: AbstractDDESystem
     "Constant lags"
-    constlags::Vector{Float64} = Causal._delay_feedback_system_constlags
+    constlags::CL = Causal._delay_feedback_system_constlags
     "Dependent lags"
     depslags::Nothing = nothing
     "Right-hand-side function"
@@ -151,7 +164,7 @@ Constructs DelayFeedbackSystem
     "Readout function"
     readout::RO = (x, u, t) -> x 
     "State"
-    state::Vector{Float64} = rand(1)
+    state::ST = rand(1)
     "Input, Expected to be an `Inport` of `Nothing`"
     input::IP = nothing 
     "Output port"

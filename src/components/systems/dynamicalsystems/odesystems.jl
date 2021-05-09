@@ -100,7 +100,11 @@ julia> ds.state
  1.0
 ```
 """
-@def_ode_system mutable struct ODESystem{RH, RO, ST, IP, OP} <: AbstractODESystem 
+@def_ode_system mutable struct ODESystem{RH, 
+                                         RO, 
+                                         ST <: AbstractVector{<:Real}, 
+                                         IP <: Union{<:Inport, <:Nothing},
+                                         OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem 
     "Right-hand-side function"
     righthandside::RH 
     "Readout function"
@@ -133,21 +137,29 @@ where ``x`` is `state`. `solver` is used to solve the above differential equatio
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ContinuousLinearSystem{IP, OP, RH, RO} <: AbstractODESystem
+@def_ode_system mutable struct ContinuousLinearSystem{T1 <: AbstractMatrix{<:Real},  
+                                                      T2 <: AbstractMatrix{<:Real}, 
+                                                      T3 <: AbstractMatrix{<:Real}, 
+                                                      T4 <: AbstractMatrix{<:Real}, 
+                                                      IP <: Union{<:Inport, <:Nothing}, 
+                                                      OP <: Union{<:Outport,<:Nothing}, 
+                                                      ST <: AbstractVector{<:Real},
+                                                      RH, 
+                                                      RO} <: AbstractODESystem
     "A"
-    A::Matrix{Float64} = fill(-1., 1, 1)
+    A::T1 = fill(-1., 1, 1)
     "B"
-    B::Matrix{Float64} = fill(1., 1, 1)
+    B::T2 = fill(1., 1, 1)
     "C"
-    C::Matrix{Float64} = fill(1., 1, 1)
+    C::T3 = fill(1., 1, 1)
     "D"
-    D::Matrix{Float64} = fill(0., 1, 1)
+    D::T4 = fill(0., 1, 1)
     "Input. Expected to be an `Inport` of `Nothing`"
     input::IP = Inport(1)
     "Output port"
     output::OP = Outport(1)
     "State"
-    state::Vector{Float64} = rand(size(A, 1))
+    state::ST = rand(size(A, 1))
     "Right-hand-side function"
     righthandside::RH = input === nothing ? (dx, x, u, t) -> (dx .= A * x) : 
         (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u.itp))
@@ -191,15 +203,23 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct LorenzSystem{RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct LorenzSystem{T1 <: Real,  
+                                            T2 <: Real, 
+                                            T3 <: Real, 
+                                            T4 <: Real,
+                                            RH, 
+                                            RO, 
+                                            ST <: AbstractVector{<:Real},
+                                            IP <: Union{<:Inport, <:Nothing}, 
+                                            OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "α"
-    σ::Float64 = 10.
+    σ::T1 = 10.
     "β"
-    β::Float64 = 8 / 3
+    β::T2 = 8 / 3
     "ρ"
-    ρ::Float64 = 28.
+    ρ::T3 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Right-hand-side function"
     righthandside::RH = function lorenzrhs(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
         dx[1] = σ * (x[2] - x[1])
@@ -210,7 +230,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -227,15 +247,24 @@ Constructs a LorenzSystem that is driven by its inputs.
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ForcedLorenzSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ForcedLorenzSystem{T1 <: Real,  
+                                                  T2 <: Real, 
+                                                  T3 <: Real, 
+                                                  T4 <: Real,
+                                                  CM <: AbstractMatrix{<:Real}, 
+                                                  RH,
+                                                  RO, 
+                                                  ST <: AbstractVector{<:Real}, 
+                                                  IP <: Union{<:Inport, <:Nothing}, 
+                                                  OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "σ"
-    σ::Float64 = 10. 
+    σ::T1 = 10. 
     "β"
-    β::Float64 = 8 / 3 
+    β::T2 = 8 / 3 
     "ρ"
-    ρ::Float64 = 28.
+    ρ::T3 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Input coupling matrix. Expected a diagonal matrix"
     cplmat::CM = I(3)
     "Right-hand-side function"
@@ -249,7 +278,7 @@ Constructs a LorenzSystem that is driven by its inputs.
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(3)
     "Output port"
@@ -292,15 +321,23 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
 
     $TYPEDFIELDS
 """ 
-@def_ode_system mutable struct ChenSystem{RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ChenSystem{T1 <: Real,  
+                                          T2 <: Real, 
+                                          T3 <: Real, 
+                                          T4 <: Real,
+                                          RH, 
+                                          RO, 
+                                          ST <: AbstractVector{<:Real}, 
+                                          IP <: Union{<:Inport, <:Nothing}, 
+                                          OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "a"
-    a::Float64 = 35.
+    a::T1 = 35.
     "b"
-    b::Float64 = 3.
+    b::T2 = 3.
     "c"
-    c::Float64 = 28.
+    c::T3 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Right-hand-side function"
     righthandside::RH = function chenrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
         dx[1] = a * (x[2] - x[1])
@@ -311,7 +348,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be and `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -328,15 +365,24 @@ Constructs Chen system driven by its inputs.
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ForcedChenSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ForcedChenSystem{T1 <: Real,  
+                                                T2 <: Real, 
+                                                T3 <: Real, 
+                                                T4 <: Real,
+                                                CM <: AbstractMatrix{<:Real}, 
+                                                RH, 
+                                                RO, 
+                                                ST <: AbstractVector{<:Real}, 
+                                                IP <: Union{<:Inport, <:Nothing}, 
+                                                OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "a"
-    a::Float64 = 35.
+    a::T1 = 35.
     "b"
-    b::Float64 = 3.
+    b::T2 = 3.
     "c"
-    c::Float64 = 28.
+    c::T3 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Input coupling matrix. Expected to be a diaognal matrix"
     cplmat::CM = I(3)
     righthandside::RH = function chenrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
@@ -349,7 +395,7 @@ Constructs Chen system driven by its inputs.
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(3)
     "Output pprt"
@@ -357,12 +403,16 @@ Constructs Chen system driven by its inputs.
 end
 
 
-Base.@kwdef struct PiecewiseLinearDiode
-    m0::Float64 = -1.143
-    m1::Float64 = -0.714
-    m2::Float64 = 5.
-    bp1::Float64 = 1.
-    bp2::Float64 = 5.
+Base.@kwdef struct PiecewiseLinearDiode{T1 <: Real, 
+                                        T2 <: Real,
+                                        T3 <: Real,
+                                        T4 <: Real,
+                                        T5 <: Real}
+    m0::T1 = -1.143
+    m1::T2 = -0.714
+    m2::T3 = 5.
+    bp1::T4 = 1.
+    bp2::T5 = 5.
 end
 @inline function (d::PiecewiseLinearDiode)(x)
     m0, m1, m2, bp1, bp2 = d.m0, d.m1, d.m2, d.bp1, d.bp2
@@ -380,9 +430,9 @@ end
 end
 
 
-Base.@kwdef struct PolynomialDiode
-    a::Float64 = 1 / 16 
-    b::Float64 = - 1 / 6
+Base.@kwdef struct PolynomialDiode{T1 <: Real, T2 <: Real}
+    a::T1 = 1 / 16 
+    b::T2 = - 1 / 6
 end
 (d::PolynomialDiode)(x) = d.a * x^3 + d.b * x
 
@@ -422,15 +472,23 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ChuaSystem{DT,RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ChuaSystem{DT,
+                                          T1 <: Real, 
+                                          T2 <: Real, 
+                                          T3 <: Real, 
+                                          RH, 
+                                          RO, 
+                                          ST <: AbstractVector{<:Real}, 
+                                          IP <: Union{<:Inport, <:Nothing}, 
+                                          OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "Chua diode. See [`PiecewiseLinearDiode`](@ref)"
     diode::DT = PiecewiseLinearDiode()
     "α"
-    α::Float64 = 15.6
+    α::T1 = 15.6
     "β"
-    β::Float64 = 28.
+    β::T2 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T3 = 1.
     "Right-hand-side function"
     righthandside::RH = function chuarhs(dx, x, u, t, diode=diode, α=α, β=β, γ=γ)
         dx[1] = α * (x[2] - x[1] - diode(x[1]))
@@ -441,7 +499,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     "Reaout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -457,15 +515,24 @@ Constructs a Chua system with inputs.
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ForcedChuaSystem{DT, CM, RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ForcedChuaSystem{DT,
+                                                T1 <: Real, 
+                                                T2 <: Real, 
+                                                T3 <: Real,  
+                                                CM <: AbstractMatrix{<:Real},  
+                                                RH, 
+                                                RO, 
+                                                ST <: AbstractVector{<:Real}, 
+                                                IP <: Union{<:Inport, <:Nothing}, 
+                                                OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "Chua diode. See [`PiecewiseLinearDiode`](@ref)"
     diode::DT = PiecewiseLinearDiode()
     "α"
-    α::Float64 = 15.6
+    α::T1 = 15.6
     "β"
-    β::Float64 = 28.
+    β::T2 = 28.
     "γ"
-    γ::Float64 = 1.
+    γ::T3 = 1.
     "Input coupling matrix. Expected to be a digonal matrix."
     cplmat::CM = I(3)
     "Right-hand-side matrix"
@@ -479,7 +546,7 @@ Constructs a Chua system with inputs.
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(3)
     "Output port"
@@ -522,15 +589,23 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct RosslerSystem{RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct RosslerSystem{T1 <: Real, 
+                                             T2 <: Real, 
+                                             T3 <: Real, 
+                                             T4 <: Real, 
+                                             RH, 
+                                             RO, 
+                                             ST <: AbstractVector{<:Real}, 
+                                             IP <: Union{<:Inport, <:Nothing}, 
+                                             OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "a"
-    a::Float64 = 0.38
+    a::T1 = 0.38
     "b"
-    b::Float64 = 0.3
+    b::T2 = 0.3
     "c"
-    c::Float64 = 4.82
+    c::T3 = 4.82
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Right-hand-side function"
     righthandside::RH = function rosslerrhs(dx, x, u, t, a=a, b=b, c=c, γ=γ)
         dx[1] = -x[2] - x[3]
@@ -541,7 +616,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing
     "Output port"
@@ -557,15 +632,24 @@ Constructs a Rossler system driven by its input.
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ForcedRosslerSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ForcedRosslerSystem{T1 <: Real, 
+                                                   T2 <: Real, 
+                                                   T3 <: Real, 
+                                                   T4 <: Real, 
+                                                   CM <: AbstractMatrix{<:Real}, 
+                                                   RH, 
+                                                   RO, 
+                                                   ST <: AbstractVector{<:Real}, 
+                                                   IP <: Union{<:Inport, <:Nothing}, 
+                                                   OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "a"
-    a::Float64 = 0.38
+    a::T1 = 0.38
     "b"
-    b::Float64 = 0.3
+    b::T2 = 0.3
     "c"
-    c::Float64 = 4.82
+    c::T3 = 4.82
     "γ"
-    γ::Float64 = 1.
+    γ::T4 = 1.
     "Input coupling matrix. Expected a diagonal matrix"
     cplmat::CM = I(3)
     "Right-hand-side function"
@@ -579,7 +663,7 @@ Constructs a Rossler system driven by its input.
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be and `Inport` or `Nothing`"
     input::IP = Inport(3)
     "Output port"
@@ -620,11 +704,17 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct VanderpolSystem{RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct VanderpolSystem{T1 <: Real, 
+                                               T2 <: Real, 
+                                               RH, 
+                                               RO, 
+                                               ST <: AbstractVector{<:Real}, 
+                                               IP <: Union{<:Inport, <:Nothing}, 
+                                               OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "μ"
-    μ::Float64 = 5.
+    μ::T1 = 5.
     "γ"
-    γ::Float64 = 1.
+    γ::T2 = 1.
     "Right-hand-side function"
     righthandside::RH = function vanderpolrhs(dx, x, u, t, μ=μ, γ=γ)
         dx[1] = x[2]
@@ -634,7 +724,7 @@ where ``t`` is time `t`, ``y`` is the value of the `output` and ``g`` is `output
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(2) 
+    state::ST = rand(2) 
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -650,11 +740,18 @@ Constructs a Vanderpol system driven by its input.
 
     $TYPEDFIELDS
 """
-@def_ode_system mutable struct ForcedVanderpolSystem{CM, RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct ForcedVanderpolSystem{T1 <: Real, 
+                                                     T2 <: Real, 
+                                                     CM <: AbstractMatrix{<:Real}, 
+                                                     RH, 
+                                                     RO, 
+                                                     ST <: AbstractVector{<:Real}, 
+                                                     IP <: Union{<:Inport, <:Nothing}, 
+                                                     OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "μ"
-    μ::Float64 = 5.
+    μ::T1 = 5.
     "γ"
-    γ::Float64 = 1.
+    γ::T2 = 1.
     "Input coupling matrix. Expected to be a dioagonal matrix"
     cplmat::CM = I(2)
     "Right-hand-side function"
@@ -667,7 +764,7 @@ Constructs a Vanderpol system driven by its input.
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(2) 
+    state::ST = rand(2) 
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(2)
     "Output port"
@@ -684,15 +781,20 @@ u(t) = ki * \\int_{0}^{t} u(\\tau) d\\tau
 ```
 where ``u(t)`` is the input, ``y(t)`` is the output and ``ki`` is the integration constant.
 """
-@def_ode_system mutable struct Integrator{RH, RO, IP, OP} <: AbstractODESystem
+@def_ode_system mutable struct Integrator{T1 <: Real, 
+                                          RH, 
+                                          RO, 
+                                          ST <: AbstractVector{<:Real}, 
+                                          IP <: Union{<:Inport, <:Nothing}, 
+                                          OP <: Union{<:Outport,<:Nothing}} <: AbstractODESystem
     "Integration constant"
-    ki::Float64 = 1.
+    ki::T1 = 1.
     "Right-hand-side function"
     righthandside::RH = (dx, x, u, t) -> (dx[1] = ki * u[1](t))
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(1)
+    state::ST = rand(1)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport() 
     "Output port"

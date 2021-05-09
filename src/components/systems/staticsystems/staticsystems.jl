@@ -321,13 +321,18 @@ where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differe
 
     $TYPEDFIELDS
 """
-@def_static_system struct Differentiator{IP, OP, RO} <: AbstractStaticSystem 
+@def_static_system struct Differentiator{T1 <: Real, 
+                                         T2 <: Real,   
+                                         T3 <: Real,   
+                                         IP, 
+                                         OP, 
+                                         RO} <: AbstractStaticSystem 
     "Differentiation gain"
-    kd::Float64 = 1. 
+    kd::T1 = 1. 
     "Time"
-    t::Float64 = zeros(0.)
+    t::T2 = zeros(0.)
     "Input value"
-    u::Float64 = zeros(0.)
+    u::T3 = zeros(0.)
     "Input port"
     input::IP = Inport()
     "Output port"

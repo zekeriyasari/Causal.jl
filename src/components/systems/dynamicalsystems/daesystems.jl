@@ -25,7 +25,9 @@ where `ex` is the expression to define to define a new AbstractDAESystem compone
     output::OP = output_default                 # mandatory field
 end
 ```
-Here, `MyDAESystem` has `N` parameters. `MyDAESystem` is represented by the `righthandside` and `readout` function. `state`, 'stateder`, `diffvars`, `input` and `output` is the initial state, initial value of differential variables, vector signifing differetial variables, input port and output port of `MyDAESystem`.
+Here, `MyDAESystem` has `N` parameters. `MyDAESystem` is represented by the `righthandside` and `readout` function. `state`,
+'stateder`, `diffvars`, `input` and `output` is the initial state, initial value of differential variables, vector signifing
+differetial variables, input port and output port of `MyDAESystem`.
 
 !!! warning 
     `righthandside` must have the signature 
@@ -104,7 +106,13 @@ julia> DAESystem(righthandside=sfuncdae, readout=ofuncdae, state=x0, input=nothi
 DAESystem(righthandside:sfuncdae, readout:ofuncdae, state:[1.0, -1.0], t:0.0, input:nothing, output:Outport(numpins:1, eltype:Outpin{Float64}))
 ```
 """
-@def_dae_system mutable struct DAESystem{RH, RO, ST, IP, OP} <: AbstractDAESystem
+@def_dae_system mutable struct DAESystem{RH, 
+                                         RO, 
+                                         ST <: AbstractVector{<:Real}, 
+                                         SD <: AbstractVector{<:Real}, 
+                                         DV <: AbstractVector{<:Bool}, 
+                                         IP <: Union{<:Inport, <:Nothing}, 
+                                         OP <: Union{<:Outport,<:Nothing}} <: AbstractDAESystem
     "Right-hand-side function."
     righthandside::RH 
     "Readout function"
@@ -112,9 +120,9 @@ DAESystem(righthandside:sfuncdae, readout:ofuncdae, state:[1.0, -1.0], t:0.0, in
     "Initial state"
     state::ST 
     "Initial state derivative"
-    stateder::ST 
+    stateder::SD 
     "The `true` elements of `diffvars` correspond to differential variables"
-    diffvars::Vector{Bool}
+    diffvars::DV
     "Input. Expected to be an `Inport` of `Nothing`"
     input::IP 
     "Output port"
@@ -134,13 +142,22 @@ Constructs a Robertson systme with the dynamcis
 \end{array}
 ```
 """
-@def_dae_system mutable struct RobertsonSystem{RH, RO, IP, OP} <: AbstractDAESystem 
+@def_dae_system mutable struct RobertsonSystem{T1 <: Real,
+                                               T2 <: Real, 
+                                               T3 <: Real, 
+                                               RH, 
+                                               RO, 
+                                               IP <: Union{<:Inport, <:Nothing}, 
+                                               OP <: Union{<:Outport,<:Nothing},
+                                               T4 <: AbstractVector{<:Real},
+                                               T5 <: AbstractVector{<:Real},
+                                               T6 <: AbstractVector{<:Bool}} <: AbstractDAESystem 
     "k1"
-    k1::Float64 = 0.04   
+    k1::T1 = 0.04   
     "k2"
-    k2::Float64 = 3e7 
+    k2::T2 = 3e7 
     "k3"
-    k3::Float64 = 1e4 
+    k3::T3 = 1e4 
     "Right-hand-side function"
     righthandside::RH = function robertsonrhs(out, dx, x, u, t)
         out[1] = -k1 * x[1] + k3 * x[2] * x[3] - dx[1] 
@@ -150,11 +167,11 @@ Constructs a Robertson systme with the dynamcis
     "Readout function"
     rightout::RO = (x, u, t) -> x[1:2]
     "Initial state"
-    state::Vector{Float64} = [1., 0., 0.]
+    state::T4 = [1., 0., 0.]
     "Initial state derivative"
-    stateder::Vector{Float64} = [-k1, k1, 0.]
+    stateder::T5 = [-k1, k1, 0.]
     "The `true` elements of `diffvars` correspond to differential variables"
-    diffvars::Vector{Bool} = [true, true, false]
+    diffvars::T6 = [true, true, false]
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -176,15 +193,25 @@ Constructs a Pendulum systme with the dynamics
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """
-@def_dae_system mutable struct PendulumSystem{RH, RO, IP, OP} <: AbstractDAESystem
+@def_dae_system mutable struct PendulumSystem{T1 <: Real,
+                                              T2 <: Real, 
+                                              T3 <: Real, 
+                                              T4 <: Real, 
+                                              RH, 
+                                              RO, 
+                                              IP <: Union{<:Inport, <:Nothing}, 
+                                              OP <: Union{<:Outport,<:Nothing},
+                                              T5 <: AbstractVector{<:Real},
+                                              T6 <: AbstractVector{<:Real},
+                                              T7 <: AbstractVector{<:Bool}} <: AbstractDAESystem
     "Force"
-    F::Float64 = 1.
+    F::T1 = 1.
     "Length" 
-    l::Float64 = 1.
+    l::T2 = 1.
     "Gravitational acceleration" 
-    g::Float64 = 9.8 
+    g::T3 = 9.8 
     "Mass" 
-    m::Float64 = 1.
+    m::T4 = 1.
     "Right-hand-side function"
     righthandside::RH = function pendulumrhs(out, dx, x, u, t)
         out[1] = x[3] - dx[1]  
@@ -196,11 +223,11 @@ where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``
     "Readout function"
     readout::RO = (x, u, t) -> x[1:4]
     "Initial state"
-    state::Vector{Float64} = [1., 0., 0., 0., 0.]
+    state::T5 = [1., 0., 0., 0., 0.]
     "Initial state derivative"
-    stateder::Vector{Float64} = [0., 0., -1., 0., 0.]
+    stateder::T6 = [0., 0., -1., 0., 0.]
     "`true` elements of `diffvars` correspond to diferential variables"
-    diffvars::Vector{Bool} = [true, true, true, true, false]
+    diffvars::T7 = [true, true, true, true, false]
     "Input. Expected to be an `Inport` of `Nothing`"
     input::IP = nothing
     "Output port"
@@ -223,13 +250,22 @@ Construsts a RLC system with the dynamics
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """
-@def_dae_system mutable struct RLCSystem{RH, RO, IP, OP} <: AbstractDAESystem
+@def_dae_system mutable struct RLCSystem{T1 <: Real,
+                                         T2 <: Real, 
+                                         T3 <: Real, 
+                                         RH, 
+                                         RO, 
+                                         IP <: Union{<:Inport, <:Nothing}, 
+                                         OP <: Union{<:Outport,<:Nothing},
+                                         T4 <: AbstractVector{<:Real}, 
+                                         T5 <: AbstractVector{<:Real}, 
+                                         T6 <: AbstractVector{<:Bool}} <: AbstractDAESystem
     "Resistance"
-    R::Float64 = 1.
+    R::T1 = 1.
     "Inductance" 
-    L::Float64 = 1.
+    L::T2 = 1.
     "Capacitance"
-    C::Float64 = 1.
+    C::T3 = 1.
     "Right-hand-side function."
     righthandside::RH = function pendulumrhs(out, dx, x, u, t)
         out[1] = 1 / C * x[4] - dx[1]  
@@ -241,11 +277,11 @@ where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``
     "Readout function"
     readout::RO = (x, u, t) -> x[1:2]
     "Initial state"
-    state::Vector{Float64} = [0., 0., 0., 0., 0.]
+    state::T4 = [0., 0., 0., 0., 0.]
     "Initial state derivative"
-    stateder::Vector{Float64} = [0., 0., 0., 0., 0.]
+    stateder::T5 = [0., 0., 0., 0., 0.]
     "`true` elements fo `diffvars` correspond to differential variables"
-    diffvars::Vector{Bool} = [true, true, false, false, false]
+    diffvars::T6 = [true, true, false, false, false]
     "Input. Expected to an `Inport` or `Nothing`"
     input::IP = Inport(1)
     "Output port"

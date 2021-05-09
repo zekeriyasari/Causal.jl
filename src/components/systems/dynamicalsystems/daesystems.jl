@@ -83,7 +83,7 @@ end
 ##### Defien DAE system library 
 
 """
-    DAESystem(; righthandside, readout, state, stateder, diffvars, input, output)
+    $TYPEDEF
 
 Constructs a generic DAE system.
 
@@ -105,65 +105,87 @@ DAESystem(righthandside:sfuncdae, readout:ofuncdae, state:[1.0, -1.0], t:0.0, in
 ```
 """
 @def_dae_system mutable struct DAESystem{RH, RO, ST, IP, OP} <: AbstractDAESystem
+    "Right-hand-side function."
     righthandside::RH 
+    "Readout function"
     readout::RO 
+    "Initial state"
     state::ST 
+    "Initial state derivative"
     stateder::ST 
+    "The `true` elements of `diffvars` correspond to differential variables"
     diffvars::Vector{Bool}
+    "Input. Expected to be an `Inport` of `Nothing`"
     input::IP 
+    "Output port"
     output::OP 
 end
 
 
-@doc raw"""
-    RobertsonSystem() 
+"""
+    $TYPEDEF
 
 Constructs a Robertson systme with the dynamcis 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\[0.25cm]
-    \dot{x}_2 = k_1 x_1 - k_2 x_2^2 - k_3 x_2 x_3 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = -k_1 x_1 + k_3 x_2 x_3 \\\\[0.25cm]
+    \\dot{x}_2 = k_1 x_1 - k_2 x_2^2 - k_3 x_2 x_3 \\\\[0.25cm]
     1 = x_1 + x_2 + x_3 
 \end{array}
 ```
 """
 @def_dae_system mutable struct RobertsonSystem{RH, RO, IP, OP} <: AbstractDAESystem 
+    "k1"
     k1::Float64 = 0.04   
+    "k2"
     k2::Float64 = 3e7 
+    "k3"
     k3::Float64 = 1e4 
+    "Right-hand-side function"
     righthandside::RH = function robertsonrhs(out, dx, x, u, t)
         out[1] = -k1 * x[1] + k3 * x[2] * x[3] - dx[1] 
         out[2] = k1 * x[1] - k2 * x[2]^2 - k3 * x[2] * x[3] - dx[2] 
         out[3] = x[1] + x[2] + x[3] - 1
     end
+    "Readout function"
     rightout::RO = (x, u, t) -> x[1:2]
+    "Initial state"
     state::Vector{Float64} = [1., 0., 0.]
+    "Initial state derivative"
     stateder::Vector{Float64} = [-k1, k1, 0.]
+    "The `true` elements of `diffvars` correspond to differential variables"
     diffvars::Vector{Bool} = [true, true, false]
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(2)
 end
 
-@doc raw"""
-    PendulumSystem() 
+"""
+    $TYPEDEF
 
 Constructs a Pendulum systme with the dynamics
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_3 \\[0.25cm]
-    \dot{x}_2 = x_4 \\[0.25cm]
-    \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = x_3 \\\\[0.25cm]
+    \\dot{x}_2 = x_4 \\\\[0.25cm]
+    \\dot{x}_3 = -\\dfrac{F}{m l} x_1 \\\\[0.25cm]
+    \\dot{x}_4 = g \\dfrac{F}{l} x_2 \\\\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
-\end{array}
+\\end{array}
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """
 @def_dae_system mutable struct PendulumSystem{RH, RO, IP, OP} <: AbstractDAESystem
-    F::Float64 = 1. 
+    "Force"
+    F::Float64 = 1.
+    "Length" 
     l::Float64 = 1.
+    "Gravitational acceleration" 
     g::Float64 = 9.8 
+    "Mass" 
     m::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function pendulumrhs(out, dx, x, u, t)
         out[1] = x[3] - dx[1]  
         out[2] = x[4] - dx[2] 
@@ -171,34 +193,44 @@ where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``
         out[4] = g * F / l  * x[2] - dx[4]
         out[5] = x[1]^2 + x[2]^2 - l^2
     end
+    "Readout function"
     readout::RO = (x, u, t) -> x[1:4]
+    "Initial state"
     state::Vector{Float64} = [1., 0., 0., 0., 0.]
+    "Initial state derivative"
     stateder::Vector{Float64} = [0., 0., -1., 0., 0.]
+    "`true` elements of `diffvars` correspond to diferential variables"
     diffvars::Vector{Bool} = [true, true, true, true, false]
+    "Input. Expected to be an `Inport` of `Nothing`"
     input::IP = nothing
+    "Output port"
     output::OP = Outport(4)
 end
 
 
-@doc raw"""
-    RLCSystem() 
+"""
+    $TYPEDEF 
 
 Construsts a RLC system with the dynamics
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_3 \\[0.25cm]
-    \dot{x}_2 = x_4 \\[0.25cm]
-    \dot{x}_3 = -\dfrac{F}{m l} x_1 \\[0.25cm]
-    \dot{x}_4 = g \dfrac{F}{l} x_2 \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x}_1 = x_3 \\\\[0.25cm]
+    \\dot{x}_2 = x_4 \\\\[0.25cm]
+    \\dot{x}_3 = -\\dfrac{F}{m l} x_1 \\\\[0.25cm]
+    \\dot{x}_4 = g \\dfrac{F}{l} x_2 \\\\[0.25cm]
     0 = x_1^2 + x_2^2 - l^2 
-\end{array}
+\\end{array}
 ```
 where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``g`` is the accelaration of gravity.
 """
 @def_dae_system mutable struct RLCSystem{RH, RO, IP, OP} <: AbstractDAESystem
-    R::Float64 = 1. 
+    "Resistance"
+    R::Float64 = 1.
+    "Inductance" 
     L::Float64 = 1.
+    "Capacitance"
     C::Float64 = 1.
+    "Right-hand-side function."
     righthandside::RH = function pendulumrhs(out, dx, x, u, t)
         out[1] = 1 / C * x[4] - dx[1]  
         out[2] = 1 / L * x[4] - dx[2]  
@@ -206,11 +238,17 @@ where ``F`` is the external force, ``l`` is the length, ``m`` is the mass and ``
         out[4] = x[1] + x[2] + x[3] + u[1](t)
         out[5] = x[4] - x[5]  
     end
+    "Readout function"
     readout::RO = (x, u, t) -> x[1:2]
+    "Initial state"
     state::Vector{Float64} = [0., 0., 0., 0., 0.]
+    "Initial state derivative"
     stateder::Vector{Float64} = [0., 0., 0., 0., 0.]
+    "`true` elements fo `diffvars` correspond to differential variables"
     diffvars::Vector{Bool} = [true, true, false, false, false]
+    "Input. Expected to an `Inport` or `Nothing`"
     input::IP = Inport(1)
+    "Output port"
     output::OP = Outport(2)
 end
 

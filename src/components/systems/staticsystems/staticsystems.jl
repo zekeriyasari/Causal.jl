@@ -67,9 +67,13 @@ end
 ##### Define prototipical static systems.
 
 """
-    StaticSystem(; readout, input, output)
+    $TYPEDEF
 
 Consructs a generic static system with `readout` function, `input` port and `output` port.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```jldoctest 
@@ -80,20 +84,27 @@ julia> ss.readout(0., ones(2))
 ```
 """
 @def_static_system struct StaticSystem{RO, IP, OP} <: AbstractStaticSystem
+    "Readout function"
     readout::RO 
+    "Input port"
     input::IP 
+    "Output. May be an `Outport` of `Nothing`"
     output::OP
 end
 
 
-@doc raw"""
-    Adder(signs=(+,+))
+"""
+    $TYPEDEF
 
 Construts an `Adder` with input bus `input` and signs `signs`. `signs` is a tuplle of `+` and/or `-`. The output function `g` of `Adder` is of the form,
 ```math 
-    y = g(u, t) =  \sum_{j = 1}^n s_k u_k
+    y = g(u, t) =  \\sum_{j = 1}^n s_k u_k
 ```
 where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`, ``u_k`` is the `k`th value of `input` and ``y`` is the value of `output`. The default value of `signs` is all `+`.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```jldoctest
@@ -104,21 +115,29 @@ true
 ```
 """
 @def_static_system struct Adder{S, IP, OP, RO} <: AbstractStaticSystem 
+    "Addition signs"
     signs::S = (+, +)
+    "Input port"
     input::IP = Inport(length(signs))
+    "Output port"
     output::OP = Outport()
+    "Readout function"
     readout::RO = (u, t, signs=signs) -> sum([sign(val) for (sign, val) in zip(signs, u)])
 end
 
 
-@doc raw"""
-    Multiplier(ops=(*,*))
+"""
+    $TYPEDEF
 
 Construts an `Multiplier` with input bus `input` and signs `signs`. `signs` is a tuplle of `*` and/or `/`. The output function `g` of `Multiplier` is of the form,
 ```math 
-    y = g(u, t) =  \prod_{j = 1}^n s_k u_k
+    y = g(u, t) =  \\prod_{j = 1}^n s_k u_k
 ```
 where `n` is the length of the `input`, ``s_k`` is the `k`th element of `signs`, ``u_k`` is the `k`th value of `input` and ``y`` is the value of the `output`. The default value of `signs` is all `*`.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```jldoctest
@@ -129,9 +148,13 @@ true
 ```
 """
 @def_static_system struct Multiplier{S, IP, OP, RO} <: AbstractStaticSystem
+    "Operators"
     ops::S = (*,*)
+    "Input port"
     input::IP = Inport(length(ops))
+    "Output port"
     output::OP = Outport()
+    "Readout function"
     readout::RO = (u, t, ops=ops) -> begin 
         ops = ops
         val = 1
@@ -143,14 +166,18 @@ true
 end
 
 
-@doc raw"""
-    Gain(input; gain=1.)
+"""
+    $TYPEDEF
 
 Constructs a `Gain` whose output function `g` is of the form 
 ```math 
     y = g(u, t) =  K u
 ```
 where ``K`` is `gain`, ``u`` is the value of `input` and `y` is the value of `output`.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```jldoctest
@@ -163,32 +190,47 @@ true
 ```
 """
 @def_static_system struct Gain{G, IP, OP, RO} <: AbstractStaticSystem
+    "Gain"
     gain::G = 1.
+    "Input port"
     input::IP = Inport() 
+    "Output port"
     output::OP = Outport(length(gain * zeros(length(input)))) 
+    "Readout function"
     readout::RO = (u, t, gain=gain) -> gain * u
 end
 
 
-@doc raw"""
-    Terminator(input::Inport)
+"""
+    $TYPEDEF
 
-Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just to sink the incomming data flowing from its `input`.
+Constructs a `Terminator` with input bus `input`. The output function `g` is eqaul to `nothing`. A `Terminator` is used just 
+to sink the incomming data flowing from its `input`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_static_system struct Terminator{IP, OP, RO} <: AbstractStaticSystem
+    "Input port"
     input::IP = Inport() 
+    "Output. Must be nothing"
     output::OP = nothing
+    "Readout functionk. Must be nothing"
     readout::RO = nothing
 end 
 
 
 """
-    Memory(delay=1.; initial::AbstractVector{T}=zeros(1), numtaps::Int=5, t0=0., dt=0.01, callbacks=nothing, 
-        name=Symbol()) where T 
+    $TYPEDEF
 
 Constructs a 'Memory` with input bus `input`. A 'Memory` delays the values of `input` by an amount of `numdelay`. 
 `initial` determines the transient output from the `Memory`, that is, until the internal buffer of `Memory` is full, 
 the values from `initial` is returned.
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example
 ```jldoctest
@@ -200,13 +242,21 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
 ```
 """
 @def_static_system struct Memory{D, IN, TB, DB, IP, OP, RO} <: AbstractMemory
+    "Delay in seconds"
     delay::D = 1.
+    "Inital value of memory"
     initial::IN = zeros(1)
+    "Number of taps memory. The number of taps is length of internal(timebuf, databuf) buffers of memory"
     numtaps::Int = 5
+    "Time buffer of memory to record time instants"
     timebuf::TB = Buffer(numtaps)
+    "Data buffer of memory to record input data values"
     databuf::DB = length(initial) == 1 ? Buffer(numtaps) : Buffer(length(initial), numtaps)
+    "Input port"
     input::IP = Inport(length(initial))
+    "Output port"
     output::OP = Outport(length(initial))
+    "Readout function"
     readout::RO = (u, t, delay=delay, initial=initial, numtaps=numtaps, timebuf=timebuf, databuf=databuf) -> begin 
         if t <= delay
             return initial
@@ -228,40 +278,61 @@ Memory(delay:0.1, numtaps:5, input:Inport(numpins:1, eltype:Inpin{Float64}), out
 end 
 
 
-@doc raw"""
-    Coupler(conmat::AbstractMatrix, cplmat::AbstractMatrix)
+"""
+    $TYPEDEF
 
-Constructs a coupler from connection matrix `conmat` of size ``n \times n`` and coupling matrix `cplmat` of size ``d \times d``. The output function `g` of `Coupler` is of the form 
+Constructs a coupler from connection matrix `conmat` of size ``n \\times n`` and coupling matrix `cplmat` of size ``d \\times
+d``. The output function `g` of `Coupler` is of the form 
 ```math 
-    y = g(u, t) = (E \otimes P) u
+    y = g(u, t) = (E \\otimes P) u
 ```
-where ``\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y` is the value of `output`.
+where ``\\otimes`` is the Kronecker product, ``E`` is `conmat` and ``P`` is `cplmat`, ``u`` is the value of `input` and `y`
+is the value of `output`.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_static_system struct Coupler{C1, C2, IP, OP, RO} <: AbstractStaticSystem
+    "Outer coupling matrix"
     conmat::C1 = [-1. 1; 1. 1.]
+    "Inner coupling matrix"
     cplmat::C2 = [1 0 0; 0 0 0; 0 0 0]
+    "Input port"
     input::IP = Inport(size(conmat, 1) * size(cplmat, 1))
+    "Output port"
     output::OP = Outport(size(conmat, 1) * size(cplmat, 1))
+    "Readout function"
     readout::RO = typeof(conmat) <: AbstractMatrix{<:Real} ? 
-        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u ) : 
-        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )
+        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(conmat, cplmat) * u ) : # Time-invariant coupling 
+        ( (u, t, conmat=conmat, cplmat=cplmat) ->  kron(map(f -> f(t), conmat), cplmat) * u )   # Time-variant coupling
 end
 
-@doc raw"""
-    Differentiator(kd=1; callbacks=nothing, name=Symbol())
+"""
+    $TYPEDEF
 
 Consructs a `Differentiator` whose input output relation is of the form 
 ```math 
-    y(t) = k_d \dot{u}(t)
+    y(t) = k_d \\dot{u}(t)
 ```
 where ``u(t)`` is the input and ``y(t)`` is the output and ``kd`` is the differentiation constant.
+
+# Fields
+
+    $TYPEDFIELDS
 """
 @def_static_system struct Differentiator{IP, OP, RO} <: AbstractStaticSystem 
+    "Differentiation gain"
     kd::Float64 = 1. 
+    "Time"
     t::Float64 = zeros(0.)
+    "Input value"
     u::Float64 = zeros(0.)
+    "Input port"
     input::IP = Inport()
+    "Output port"
     output::OP = Outport()
+    "Readout function"
     readout::RO = (uu, tt, t=t, u=u, kd=kd) -> begin
         val = only(uu)
         sst = t[1]

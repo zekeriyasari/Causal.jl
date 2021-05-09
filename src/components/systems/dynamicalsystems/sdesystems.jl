@@ -80,55 +80,91 @@ end
 ##### Define SDE system library
 
 """
-    SDESystem(; drift, diffusion, readout, state, input, output) 
+    $TYPEDEF
 
 Constructs a SDE system. 
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
+    "Drift function"
     drift::DR 
+    "diffusion function"
     diffusion::DF 
+    "Readout function"
     readout::RO 
+    "State"
     state::ST 
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP 
+    "Output port"
     output::OP 
 end
 
-@doc raw"""
-    NoisyLorenzSystem() 
+"""
+    $TYPEDEF
 
 Constructs a noisy Lorenz system 
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
+    "σ"
     σ::Float64 = 10.
+    "β"
     β::Float64 = 8 / 3
+    "ρ"
     ρ::Float64 = 28.
+    "η"
     η::ET = 1.
+    "γ"
     γ::Float64 = 1.
+    "Drift function"
     drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
         dx[1] = σ * (x[2] - x[1])
         dx[2] = x[1] * (ρ - x[3]) - x[2]
         dx[3] = x[1] * x[2] - β * x[3]
         dx .*= γ
     end
+    "Diffusion function"
     diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+    "Readout function"
     readout::RO = (x, u, t) -> x
+    "State"
     state::Vector{Float64} = rand(3)
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(3) 
 end  
 
-@doc raw"""
-    NoisyLorenzSystem() 
+"""
+    $TYPEDEF
 
 Constructs a noisy Lorenz system 
+
+# Fields
+
+    $TYPEDFIELDS
 """
 @def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
+    "σ"
     σ::Float64 = 10.
+    "β"
     β::Float64 = 8 / 3
+    "ρ"
     ρ::Float64 = 28.
+    "η"
     η::ET = 1.
+    "Input coupling matrix. Expected to be a diagonal matrix."
     cplmat::CM = I(3)
+    "γ"
     γ::Float64 = 1.
+    "Drift function"
     drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
         dx[1] = σ * (x[2] - x[1])
         dx[2] = x[1] * (ρ - x[3]) - x[2]
@@ -136,10 +172,15 @@ Constructs a noisy Lorenz system
         dx .*= γ
         dx .+= cplmat * map(ui -> ui(t), u.itp)   # Couple inputs
     end
+    "Diffusion function"
     diffusion::DF = (dx, x, u, t, η=η) -> (dx .= η)
+    "Readout function"
     readout::RO = (x, u, t) -> x
+    "State"
     state::Vector{Float64} = rand(3)
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(3) 
+    "Output port"
     output::OP = Outport(3) 
 end  
 

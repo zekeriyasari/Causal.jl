@@ -75,41 +75,59 @@ end
 ##### Define RODE sytem library 
 
 """
-    RODESystem(; righthandside, readout, state, input, output)
+    $TYPEDEF
 
 Constructs a generic RODE system 
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
+    "Right-hand-side function"
     righthandside::RH 
+    "Readout function"
     readout::RO 
+    "State"
     state::ST 
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP 
+    "Output port"
     output::OP
 end
 
-@doc raw"""
-    MultiplicativeNoiseLinearSystem() 
+"""
+    $TYPEDEF
 
 Constructs a `MultiplicativeNoiseLinearSystem` with the dynamics 
 ```math 
-\begin{array}{l}
-    \dot{x} = A x W
-\end{array}
+\\begin{array}{l}
+    \\dot{x} = A x W
+\\end{array}
 where `W` is the noise process.
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_rode_system mutable struct MultiplicativeNoiseLinearSystem{RH, RO, IP, OP} <: AbstractRODESystem
+    "A"
     A::Matrix{Float64} = [2. 0.; 0 -2]
+    "Right-hand-side function"
     righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(2) 
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(2)
 end
 
 ##### Pretty printing 
-show(io::IO, ds::RODESystem) = print(io, 
-    "RODESystem(righthandside:$(ds.righthandside), readout:$(ds.readout), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
+show(io::IO, ds::RODESystem) = print(io, "RODESystem(righthandside:$(ds.righthandside), ",
+    "readout:$(ds.readout), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
 show(io::IO, ds::MultiplicativeNoiseLinearSystem) = print(io, 
     "MultiplicativeNoiseLinearSystem(A:$(ds.A), state:$(ds.state), t:$(ds.t), input:$(ds.input), output:$(ds.output))")
-

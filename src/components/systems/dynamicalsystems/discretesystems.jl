@@ -21,7 +21,8 @@ where `ex` is the expression to define to define a new AbstractDiscreteSystem co
     output::OP = output_default                 # mandatory field 
 end
 ```
-Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented by the `righthandside` and `readout` function. `state`, `input` and `output` is the state, input port and output port of `MyDiscreteSystem`.
+Here, `MyDiscreteSystem` has `N` parameters. `MyDiscreteSystem` is represented by the `righthandside` and `readout` function.
+`state`, `input` and `output` is the state, input port and output port of `MyDiscreteSystem`.
 
 !!! warning 
     `righthandside` must have the signature 
@@ -77,9 +78,13 @@ end
 ##### Define Discrete system library
 
 """
-    DiscreteSystem(; righthandside, readout, state, input, output)
+    $TYPEDEF
 
-Constructs a generic discrete system 
+A generic discrete system 
+
+# Fields 
+
+    $TYPEDFIELDS
 
 # Example 
 ```jldoctest
@@ -93,171 +98,247 @@ DiscreteSystem(righthandside:sfuncdiscrete, readout:ofuncdiscrete, state:[1.0], 
 ```
 """
 @def_discrete_system mutable struct DiscreteSystem{RH, RO, ST, IP, OP} <: AbstractDiscreteSystem
+    "Right-hand-side function"
     righthandside::RH
+    "Readout function"
     readout::RO 
+    "State"
     state::ST 
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP 
+    "Output port"
     output::OP
 end
 
 
-@doc raw"""
-    DiscreteLinearSystem(input, output, modelargs=(), solverargs=(); 
-        A=fill(-1, 1, 1), B=fill(0, 1, 1), C=fill(1, 1, 1), D=fill(0, 1, 1), state=rand(size(A,1)), t=0., 
-        alg=ODEAlg, modelkwargs=NamedTuple(), solverkwargs=NamedTuple())
+"""
+    $TYPEDEF
 
-Constructs a `DiscreteLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs` and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of `DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
+Constructs a `DiscreteLinearSystem` with `input` and `output`. `state` is the initial state and `t` is the time. `modelargs`
+and `modelkwargs` are passed into `ODEProblem` and `solverargs` and `solverkwargs` are passed into `solve` method of
+`DifferentialEquations`. `alg` is the algorithm to solve the differential equation of the system.
 
 The `DiscreteLinearSystem` is represented by the following state and output equations.
 ```math
-\begin{array}{l}
-    \dot{x} = A x + B u \\[0.25cm]
+\\begin{array}{l}
+    \\dot{x} = A x + B u \\\\[0.25cm]
     y = C x + D u 
-\end{array}
+\\end{array}
 ```
 where ``x`` is `state`. `solver` is used to solve the above differential equation.
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct DiscreteLinearSystem{IP, OP, RH, RO} <: AbstractDiscreteSystem
+    "A"
     A::Matrix{Float64} = fill(-1., 1, 1)
+    "B"
     B::Matrix{Float64} = fill(0., 1, 1)
+    "C"
     C::Matrix{Float64} = fill(1., 1, 1)
+    "D"
     D::Matrix{Float64} = fill(-1., 1, 1)
+    "Input. Expected to an `Inport` or `Nothing`"
     input::IP = Inport(1)
+    "Output port"
     output::OP = nothing
+    "State"
     state::Vector{Float64} = rand(size(A, 1))
+    "Right-hand-side function"
     righthandside::RH = input === nothing ? (dx, x, u, t) -> (dx .= A * x) : 
         (dx, x, u, t) -> (dx .= A * x + B * map(ui -> ui(t), u.itp))
+    "Readout function"
     readout::RO = input === nothing ? (x, u, t) -> (C * x) : 
            ( (C === nothing || D === nothing) ? nothing : (x, u, t) -> (C * x + D * map(ui -> ui(t), u)) )
 end
 
 
-@doc raw"""
-    Henon()
+"""
+    $TYPEDEF
 
 Constructs a `Henon` system evolving with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - \alpha (x_1^2) + x_2 \\[0.25cm]
-    \dot{x}_2 = \beta x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - \\alpha (x_1^2) + x_2 \\\\[0.25cm]
+    \\dot{x}_2 = \\beta x_1
+\\end{array}
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct HenonSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    "α"
     α::Float64 = 1.4 
+    "β"
     β::Float64 = 0.3 
+    "γ"
     γ::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function henonrhs(dx, x, u, t, α=α, β=β, γ=γ)
         dx[1] = 1 - α * x[1]^2 + x[2] 
         dx[2] = β * x[1]
         dx .*= γ
     end 
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(2)
+    "Input. Expected to be an `Inport` of `Nothing`"
     input::IP = nothing
+    "Output port"
     output::OP = Outport(2)
 end
 
-@doc raw"""
-    LoziSystem()
+"""
+    $TYPEDEF
 
 Constructs a `Lozi` system evolving with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - \alpha |x_1| + x_2 \\[0.25cm]
-    \dot{x}_2 = \beta x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - \\alpha |x_1| + x_2 \\\\[0.25cm]
+    \\dot{x}_2 = \\beta x_1
+\\end{array}
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct LoziSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    "α"
     α::Float64 = 1.4 
+    "β"
     β::Float64 = 0.3 
+    "γ"
     γ::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function lozirhs(dx, x, u, t, α=α, β=β, γ=γ)
         dx[1] = 1 - α * abs(x[1]) + x[2] 
         dx[2] = β * x[1]
         dx .*= γ
     end 
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(2)
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing
+    "Output port"
     output::OP = Outport(2)
 end
 
 
-@doc raw"""
-    BogdanovSystem() 
+"""
+    $TYPEDEF
 
 Constructs a Bogdanov system with equations
 ```math
-\begin{array}{l}
-    \dot{x}_1 = x_1 + \dot{x}_2 \\[0.25cm]
-    \dot{x}_2 = x_2 + \epsilon + x_2 + k x_1 (x_1 - 1) + \mu  x_1 x_2
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = x_1 + \\dot{x}_2 \\\\[0.25cm]
+    \\dot{x}_2 = x_2 + \\epsilon + x_2 + k x_1 (x_1 - 1) + \\mu  x_1 x_2
+\\end{array}
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct BogdanovSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    "ε"
     ε::Float64 = 0. 
+    "μ"
     μ::Float64 = 0. 
+    "k"
     k::Float64 = 1.2 
+    "γ"
     γ::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function bogdanovrhs(dx, x, u, t, ε=ε, μ=μ, k=k, γ=γ)
         dx[2]= x[2] + ε * x[2] + k * x[1] * (x[1] - 1) + μ * x[1] * x[2]
         dx[1] = x[1] + dx[2]
         dx .*= γ
     end 
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(2)
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing
+    "Output port"
     output::OP = Outport(2)
 end
 
 
-@doc raw"""
-    GingerbreadmanSystem() 
+"""
+    $TYPEDEF
 
 Constructs a GingerbreadmanSystem with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x}_1 = 1 - x_2 + |x_1|\\[0.25cm]
-    \dot{x}_2 = x_1
-\end{array}
+\\begin{array}{l}
+    \\dot{x}_1 = 1 - x_2 + |x_1|\\\\[0.25cm]
+    \\dot{x}_2 = x_1
+\\end{array}
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct GingerbreadmanSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    "γ"
     γ::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function gingerbreadmanrhs(dx, x, u, t, γ=γ)
         dx[1] = 1 - x[2] + abs(x[1])
         dx[2] = x[1]
         dx .*= γ
     end
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(2)
+    "Input. Expected to be `Inport` or `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(2)
 end
 
 
-@doc raw"""
-    LogisticSystem() 
+"""
+    $TYPEDEF
 
 Constructs a LogisticSystem with the dynamics 
 ```math
-\begin{array}{l}
-    \dot{x} = r x (1 - x)
-\end{array}
+\\begin{array}{l}
+    \\dot{x} = r x (1 - x)
+\\end{array}
 ```
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_discrete_system mutable struct LogisticSystem{RH, RO, IP, OP} <: AbstractDiscreteSystem
+    "r"
     r::Float64 = 1.
+    "γ"
     γ::Float64 = 1.
+    "Right-hand-side function"
     righthandside::RH = function logisticrhs(dx, x, u, t, r = r, γ=γ)
         dx[1] = r * x[1] * (1 - x[1])
         dx[1] *= γ
     end
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(1)
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(1)
 end
 

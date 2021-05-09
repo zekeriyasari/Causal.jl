@@ -103,34 +103,58 @@ end
 ##### Define DDE system library.
 
 """
-    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output) 
+    $TYPEDEF
 
 Construct a generic DDE system 
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_dde_system mutable struct DDESystem{CL, DL, RH, HST, RO, ST, IP, OP} <: AbstractDDESystem
+    "Constant lags"
     constlags::CL 
+    "Dependent lags"
     depslags::DL 
+    "Right-hand-side function"
     righthandside::RH 
+    "History function"
     history::HST 
+    "Readout function"
     readout::RO 
+    "State"
     state::ST 
+    "Input. Expected to be an `Inport` or `Nothing`"
     input::IP 
+    "Output port"
     output::OP
 end
 
 """
-    DDESystem(; constantlags, depslags, righthandside, history, readout, state, input, output)
+    $TYPEDEF
 
 Constructs DelayFeedbackSystem
+
+# Fields 
+
+    $TYPEDFIELDS
 """
 @def_dde_system mutable struct DelayFeedbackSystem{RH, HST, RO, IP, OP} <: AbstractDDESystem
+    "Constant lags"
     constlags::Vector{Float64} = Causal._delay_feedback_system_constlags
+    "Dependent lags"
     depslags::Nothing = nothing
+    "Right-hand-side function"
     righthandside::RH = Causal._delay_feedback_system_rhs
+    "History function"
     history::HST = Causal._delay_feedback_system_history
+    "Readout function"
     readout::RO = (x, u, t) -> x 
+    "State"
     state::Vector{Float64} = rand(1)
+    "Input, Expected to be an `Inport` of `Nothing`"
     input::IP = nothing 
+    "Output port"
     output::OP = Outport(1)
 end
 

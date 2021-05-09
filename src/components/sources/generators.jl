@@ -103,24 +103,29 @@ where ``A`` is `amplitude`, ``f`` is `frequency`, ``\\tau`` is `delay` and ``\\p
 
     $TYPEDFIELDS
 """
-@def_source struct SinewaveGenerator{RO, OP} <: AbstractSource
+@def_source struct SinewaveGenerator{T1 <: Real, 
+                                     T2 <: Real, 
+                                     T3 <: Real, 
+                                     T4 <: Real, 
+                                     T5 <: Real, 
+                                     RO, 
+                                     OP} <: AbstractSource
    "Amplitude"
-    amplitude::Float64 = 1.
+    amplitude::T1 = 1.
     "Frequency"
-    frequency::Float64 = 1. 
+    frequency::T2 = 1. 
     "Phase"
-    phase::Float64 = 0. 
+    phase::T3 = 0. 
     "Delay in seconds"
-    delay::Float64 = 0. 
+    delay::T4 = 0. 
     "Offset"
-    offset::Float64 = 0.
+    offset::T5 = 0.
     "Output port"
     output::OP = Outport()
     "Readout function"
     readout::RO = (t, amplitude=amplitude, frequency=frequency, delay=delay, offset=offset) ->
         amplitude * sin(2 * pi * frequency * (t - delay) + phase) + offset 
 end
-
 
 """
     $TYPEDEF
@@ -136,19 +141,26 @@ and ``B`` is `offset`.
 
     $TYPEDFIELDS
 """
-@def_source struct DampedSinewaveGenerator{RO, OP} <: AbstractSource
+@def_source struct DampedSinewaveGenerator{T1 <: Real,
+                                           T2 <: Real, 
+                                           T3 <: Real, 
+                                           T4 <: Real, 
+                                           T5 <: Real, 
+                                           T6 <: Real, 
+                                           RO, 
+                                           OP} <: AbstractSource
     "Amplitude"
-    amplitude::Float64 = 1. 
+    amplitude::T1 = 1. 
     "Attenuation rate"
-    decay::Float64 = 0.5 
+    decay::T2 = 0.5 
     "Frequency"
-    frequency::Float64 = 1. 
+    frequency::T3 = 1. 
     "Phase"
-    phase::Float64 = 0. 
+    phase::T4 = 0. 
     "Delay in seconds"
-    delay::Float64 = 0. 
+    delay::T5 = 0. 
     "Offset"
-    offset::Float64 = 0.
+    offset::T6 = 0.
     "Output port"
     output::OP = Outport()
     "Readout funtion"
@@ -173,17 +185,23 @@ where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\\tau`` is
 
     $TYPEDFIELDS
 """
-@def_source struct SquarewaveGenerator{OP, RO} <: AbstractSource
+@def_source struct SquarewaveGenerator{T1 <: Real, 
+                                       T2 <: Real, 
+                                       T3 <: Real, 
+                                       T4 <: Real, 
+                                       T5 <: Real, 
+                                       OP, 
+                                       RO} <: AbstractSource
     "High level"
-    high::Float64 = 1. 
+    high::T1 = 1. 
     "Low level"
-    low::Float64 = 0. 
+    low::T2 = 0. 
     "Period"
-    period::Float64 = 1. 
+    period::T3 = 1. 
     "Duty cycle given in range (0, 1)"
-    duty::Float64 = 0.5
+    duty::T4 = 0.5
     "Delay in seconds"
-    delay::Float64 = 0. 
+    delay::T5 = 0. 
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -208,17 +226,23 @@ where ``A`` is `amplitude`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` 
 
     $TYPEDFIELDS
 """
-@def_source struct TriangularwaveGenerator{OP, RO} <: AbstractSource
+@def_source struct TriangularwaveGenerator{T1 <: Real, 
+                                           T2 <: Real, 
+                                           T3 <: Real, 
+                                           T4 <: Real, 
+                                           T5 <: Real, 
+                                           OP, 
+                                           RO} <: AbstractSource
     "Amplitude"
-    amplitude::Float64 =  1. 
+    amplitude::T1 =  1. 
     "Period"
-    period::Float64 = 1. 
+    period::T2 = 1. 
     "Duty cycle"
-    duty::Float64 = 0.5 
+    duty::T3 = 0.5 
     "Delay in seconds"
-    delay::Float64 = 0. 
+    delay::T4 = 0. 
     "Offset"
-    offset::Float64 = 0.
+    offset::T5 = 0.
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -250,9 +274,9 @@ where ``A`` is `amplitude.
 
     $TYPEDFIELDS
 """
-@def_source struct ConstantGenerator{OP, RO} <: AbstractSource
+@def_source struct ConstantGenerator{T1 <: Real, OP, RO} <: AbstractSource
     "Amplitude"
-    amplitude::Float64 = 1. 
+    amplitude::T1 = 1. 
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -273,13 +297,17 @@ where ``\\alpha`` is the `scale` and ``\\tau`` is `delay`.
 
     $TYPEDFIELDS
 """
-@def_source struct RampGenerator{OP, RO} <: AbstractSource
+@def_source struct RampGenerator{T1 <: Real, 
+                                 T2 <: Real, 
+                                 T3 <: Real, 
+                                 OP, 
+                                 RO} <: AbstractSource
     "Scale"
-    scale::Float64 = 1.
+    scale::T1 = 1.
     "Delay in seconds"
-    delay::Float64 = 0.
+    delay::T2 = 0.
     "Offset"
-    offset::Float64 = 0.
+    offset::T3 = 0.
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -303,13 +331,17 @@ where ``A`` is `amplitude`, ``B`` is the `offset` and ``\\tau`` is the `delay`.
 
     $TYPEDFIELDS
 """
-@def_source struct StepGenerator{OP, RO} <: AbstractSource
+@def_source struct StepGenerator{T1 <: Real, 
+                                 T2 <: Real, 
+                                 T3 <: Real,
+                                 OP, 
+                                 RO} <: AbstractSource
     "Amplitude"
-    amplitude::Float64 = 1. 
+    amplitude::T1 = 1. 
     "Delay in seconds"
-    delay::Float64 = 0. 
+    delay::T2 = 0. 
     "Offset"
-    offset::Float64 = 0.
+    offset::T3 = 0.
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -331,15 +363,20 @@ where ``A`` is `scale`, ``\\alpha`` is `decay` and ``\\tau`` is `delay`.
 
     $TYPEDFIELDS
 """
-@def_source struct ExponentialGenerator{OP, RO} <: AbstractSource
+@def_source struct ExponentialGenerator{T1 <: Real, 
+                                        T2 <: Real, 
+                                        T3 <: Real,
+                                        T4 <: Real,
+                                        OP, 
+                                        RO} <: AbstractSource
     "Scale"
-    scale::Float64 = 1. 
+    scale::T1 = 1. 
     "Attenuation decay"
-    decay::Float64 = -1. 
+    decay::T2 = -1. 
     "Delay in seconds"
-    delay::Float64 = 0.
+    delay::T3 = 0.
     "Offset"
-    offset::Float64 = 0.
+    offset::T4 = 0.
     "Output port"
     output::OP = Outport()
     "Readout function"
@@ -360,15 +397,20 @@ where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
 
     $TYPEDFIELDS
 """
-@def_source struct DampedExponentialGenerator{OP, RO} <: AbstractSource
+@def_source struct DampedExponentialGenerator{T1 <: Real, 
+                                              T2 <: Real, 
+                                              T3 <: Real,
+                                              T4 <: Real,
+                                              OP, 
+                                              RO} <: AbstractSource
     "Scale"
-    scale::Float64 = 1.
+    scale::T1 = 1.
     "Attenuation rate"
-    decay::Float64 = -1. 
+    decay::T2 = -1. 
     "Delay in seconds"
-    delay::Float64 = 0.
+    delay::T3 = 0.
     "Offet"
-    offset::Float64 = 0.
+    offset::T4 = 0.
     "Output port"
     output::OP = Outport()
     "Reaodout function"

@@ -712,6 +712,7 @@ function resize_sink_buffers!(model::Model, ln::Int)
     for comp in filter(comp -> comp isa AbstractSink, getfield.(model.nodes, :component))
         resizebufs!(comp, ln)
     end 
+    model 
 end 
 
 ##### @model macro

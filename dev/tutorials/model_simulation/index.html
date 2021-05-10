@@ -17,49 +17,49 @@ logtofile = true
 reportsim = true</code></pre><p>At this point, the model is ready for simulation. </p><pre><code class="language-julia">t0 = 0.     # Start time
 dt = 0.01   # Sampling interval
 tf = 10.    # Final time
-sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre class="documenter-example-output">Simulation(state:done, retcode:success, path:/tmp/Simulation-4f64313f-aca6-4b2e-91da-a86487680167)</pre><h2 id="Investigation-of-Simulation"><a class="docs-heading-anchor" href="#Investigation-of-Simulation">Investigation of Simulation</a><a id="Investigation-of-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre class="documenter-example-output">total 52
-drwxr-xr-x  2 runner docker  4096 May 10 16:08 .
-drwxrwxrwt 18 root   root    4096 May 10 16:09 ..
--rw-r--r--  1 runner docker 15332 May 10 16:08 ab133c45-197e-4d41-87dd-f5c0fa2201ff.jld2
--rw-r--r--  1 runner docker 22048 May 10 16:09 report.jld2
--rw-r--r--  1 runner docker  1142 May 10 16:09 simlog.log</pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
+sim = simulate!(model, t0, dt, tf, simdir=simdir, logtofile=logtofile, reportsim=reportsim)</code></pre><pre class="documenter-example-output">Simulation(state:done, retcode:success, path:/tmp/Simulation-e80cdecc-7672-437c-8b34-315c132c0368)</pre><h2 id="Investigation-of-Simulation"><a class="docs-heading-anchor" href="#Investigation-of-Simulation">Investigation of Simulation</a><a id="Investigation-of-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Investigation-of-Simulation" title="Permalink"></a></h2><p>First, let us observe <code>Simulation</code> instance <code>sim</code>. We start with the directory in which all simulation files are saved.  </p><pre><code class="language-julia">foreach(println, readlines(`ls -al $(sim.path)`))</code></pre><pre class="documenter-example-output">total 52
+drwxr-xr-x  2 runner docker  4096 May 10 16:11 .
+drwxrwxrwt 18 root   root    4096 May 10 16:11 ..
+-rw-r--r--  1 runner docker 15332 May 10 16:11 c18b6a46-1d8f-42bb-87ac-23003d50b262.jld2
+-rw-r--r--  1 runner docker 21491 May 10 16:11 report.jld2
+-rw-r--r--  1 runner docker  1139 May 10 16:11 simlog.log</pre><p>The simulation directory includes a log file <code>simlog.log</code> which helps the user monitor simulation steps. </p><pre><code class="language-julia"># Print the contents of log file
 open(joinpath(sim.path, &quot;simlog.log&quot;), &quot;r&quot;) do file
     for line in readlines(file)
         println(line)
     end
-end</code></pre><pre class="documenter-example-output">┌ Info: 2021-05-10T16:08:57.388 Started simulation...
+end</code></pre><pre class="documenter-example-output">┌ Info: 2021-05-10T16:11:43.098 Started simulation...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.411 Inspecting model...
+┌ Info: 2021-05-10T16:11:43.12 Inspecting model...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.435 Done.
+┌ Info: 2021-05-10T16:11:43.141 Done.
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.435 Initializing the model...
+┌ Info: 2021-05-10T16:11:43.141 Initializing the model...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.625 Done...
+┌ Info: 2021-05-10T16:11:43.33 Done...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.625 Running the simulation...
+┌ Info: 2021-05-10T16:11:43.33 Running the simulation...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.945 Done...
+┌ Info: 2021-05-10T16:11:43.381 Done...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.945 Terminating the simulation...
+┌ Info: 2021-05-10T16:11:43.381 Terminating the simulation...
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5
-┌ Info: 2021-05-10T16:08:57.964 Done.
+┌ Info: 2021-05-10T16:11:43.401 Done.
 └ @ Causal /home/runner/work/Causal.jl/Causal.jl/src/utilities/utils.jl:5</pre><p><code>report.jld2</code> file, which includes the information about the simulation and model components, can be read back after the simulation. </p><pre><code class="language-julia-repl">julia&gt; using FileIO, JLD2
 
 julia&gt; filecontent = load(joinpath(sim.path, &quot;report.jld2&quot;))
 Dict{String,Any} with 9 entries:
   &quot;retcode&quot;         =&gt; :success
-  &quot;name&quot;            =&gt; &quot;Simulation-4f64313f-aca6-4b2e-91da-a86487680167&quot;
+  &quot;name&quot;            =&gt; &quot;Simulation-e80cdecc-7672-437c-8b34-315c132c0368&quot;
   &quot;model/callbacks&quot; =&gt; nothing
   &quot;model/name&quot;      =&gt; &quot;&quot;
-  &quot;model/clock&quot;     =&gt; Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:…
-  &quot;model/id&quot;        =&gt; &quot;91954885-6ac6-4065-a6a4-5a5d022266a4&quot;
+  &quot;clock&quot;           =&gt; Clock(gen:0.0:0.01:10.0, paused:false)
+  &quot;model/id&quot;        =&gt; &quot;3034448f-ee79-429d-8296-36425df916c6&quot;
   &quot;components/&quot;     =&gt; SinewaveGenerator(amp:1.0, freq:1.0, phase:0.0, offset:0…
-  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-4f64313f-aca6-4b2e-91da-a86487680167&quot;
+  &quot;path&quot;            =&gt; &quot;/tmp/Simulation-e80cdecc-7672-437c-8b34-315c132c0368&quot;
   &quot;state&quot;           =&gt; :done
 
 julia&gt; clock = filecontent[&quot;model/clock&quot;]
-Clock(t:10.0, dt:0.01, tf:10.0, paused:false, isrunning:false)</code></pre><h2 id="Analysis-of-Simulation-Data"><a class="docs-heading-anchor" href="#Analysis-of-Simulation-Data">Analysis of Simulation Data</a><a id="Analysis-of-Simulation-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Analysis-of-Simulation-Data" title="Permalink"></a></h2><p>After the simulation, the data saved in simulation data files, i.e. in the files of writers, can be read back any offline data analysis can be performed. </p><pre><code class="language-julia"># Read the simulation data
+ERROR: KeyError: key &quot;model/clock&quot; not found</code></pre><h2 id="Analysis-of-Simulation-Data"><a class="docs-heading-anchor" href="#Analysis-of-Simulation-Data">Analysis of Simulation Data</a><a id="Analysis-of-Simulation-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Analysis-of-Simulation-Data" title="Permalink"></a></h2><p>After the simulation, the data saved in simulation data files, i.e. in the files of writers, can be read back any offline data analysis can be performed. </p><pre><code class="language-julia"># Read the simulation data
 t, x = read(getnode(model, :writer).component)
 
 # Plot the data
@@ -77,23 +77,23 @@ GKS: can&#39;t connect to GKS socket application
 GKS: Open failed in routine OPEN_WS
 GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</pre><p><img src="../simple_model_plot.svg" alt/></p><h2 id="A-Larger-Model-Simulation"><a class="docs-heading-anchor" href="#A-Larger-Model-Simulation">A Larger Model Simulation</a><a id="A-Larger-Model-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#A-Larger-Model-Simulation" title="Permalink"></a></h2><p>Consider a larger model whose block diagram is given below</p><center>
     <img src="../../assets/ModelGraph/modelgraph.svg" alt="model" width="90%"/>
-</center><p>The script below illustrates the construction and simulation of this model </p><pre><code class="language-julia">using Causal
+</center><p>The script below illustrates the construction and simulation of this model </p><pre><code class="language-">using Causal 
 using Plots
 
-# Construct the model
-@defmodel model begin
-    @nodes begin
+# Construct the model 
+@defmodel model begin 
+    @nodes begin 
         gen1 = SinewaveGenerator(frequency=2.)
         gain1 = Gain()
         adder1 = Adder(signs=(+,+))
         gen2 = SinewaveGenerator(frequency=3.)
         adder2 = Adder(signs=(+,+,-))
         gain2 = Gain()
-        writer = Writer()
+        writer = Writer() 
         gain3 = Gain()
-    end
-    @branches begin
-        gen1[1]     =&gt;      gain1[1]
+    end 
+    @branches begin 
+        gen1[1]     =&gt;      gain1[1] 
         gain1[1]    =&gt;      adder1[1]
         adder1[1]   =&gt;      adder2[1]
         gen2[1]     =&gt;      adder1[2]
@@ -105,32 +105,10 @@ using Plots
     end
 end
 
-# Simulation of the model
+# Simulation of the model 
 simulate!(model, withbar=false)
 
 # Reading and plotting the simulation data
 t, x = read(getnode(model, :writer).component)
-plot(t, x)</code></pre><pre class="documenter-example-output">[ Info: 2021-05-10T16:09:17.47 Started simulation...
-[ Info: 2021-05-10T16:09:17.47 Inspecting model...
-┌ Info: 	The model has algrebraic loops:[[5, 6, 8]]
-└ 		Trying to break these loops...
-[ Info: 	Loop [5, 6, 8] is broken
-[ Info: 2021-05-10T16:09:17.725 Done.
-[ Info: 2021-05-10T16:09:17.725 Initializing the model...
-[ Info: 2021-05-10T16:09:18.305 Done...
-[ Info: 2021-05-10T16:09:18.306 Running the simulation...
-[ Info: 2021-05-10T16:09:18.813 Done...
-[ Info: 2021-05-10T16:09:18.813 Terminating the simulation...
-[ Info: 2021-05-10T16:09:18.814 Done.
-qt.qpa.xcb: could not connect to display
-qt.qpa.plugin: Could not load the Qt platform plugin &quot;xcb&quot; in &quot;&quot; even though it was found.
-This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-
-Available platform plugins are: linuxfb, minimal, offscreen, vnc, xcb.
-
-Aborted (core dumped)
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</pre><p><img src="../larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 10 May 2021 16:09">Monday 10 May 2021</span>. Using Julia version 1.5.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(t, x)
+savefig(&quot;larger_model_plot.svg&quot;); nothing # hide</code></pre><p><img src="larger_model_plot.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../model_construction/">« Model Construction</a><a class="docs-footer-nextpage" href="../algebraic_loops/">Algebraic Loops »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 10 May 2021 16:12">Monday 10 May 2021</span>. Using Julia version 1.5.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

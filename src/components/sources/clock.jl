@@ -1,6 +1,6 @@
 # This file constains the Clock tools for time synchronization of DsSimulator.
 
-import Base: iterate, take!, length
+import Base: iterate, length
 
 """
     $TYPEDEF 

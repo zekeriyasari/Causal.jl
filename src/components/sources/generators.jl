@@ -83,7 +83,7 @@ julia> gen.readout(1.)
  2.0
 ```
 """
-@def_source struct FunctionGenerator{RO, OP} <: AbstractSource 
+@def_source struct FunctionGenerator{RO, OP<:Outport} <: AbstractSource 
     "Readout function"
     readout::RO 
     "Output port"
@@ -108,8 +108,8 @@ where ``A`` is `amplitude`, ``f`` is `frequency`, ``\\tau`` is `delay` and ``\\p
                                      T3 <: Real, 
                                      T4 <: Real, 
                                      T5 <: Real, 
-                                     RO, 
-                                     OP} <: AbstractSource
+                                     OP <: Outport,
+                                     RO} <: AbstractSource
    "Amplitude"
     amplitude::T1 = 1.
     "Frequency"
@@ -147,8 +147,8 @@ and ``B`` is `offset`.
                                            T4 <: Real, 
                                            T5 <: Real, 
                                            T6 <: Real, 
-                                           RO, 
-                                           OP} <: AbstractSource
+                                           OP <: Outport, 
+                                           RO} <: AbstractSource
     "Amplitude"
     amplitude::T1 = 1. 
     "Attenuation rate"
@@ -190,7 +190,7 @@ where ``A_1``, ``A_2`` is `level1` and `level2`, ``T`` is `period`, ``\\tau`` is
                                        T3 <: Real, 
                                        T4 <: Real, 
                                        T5 <: Real, 
-                                       OP, 
+                                       OP <: Outport, 
                                        RO} <: AbstractSource
     "High level"
     high::T1 = 1. 
@@ -231,7 +231,7 @@ where ``A`` is `amplitude`, ``T`` is `period`, ``\\tau`` is `delay` ``\\alpha`` 
                                            T3 <: Real, 
                                            T4 <: Real, 
                                            T5 <: Real, 
-                                           OP, 
+                                           OP <: Outport, 
                                            RO} <: AbstractSource
     "Amplitude"
     amplitude::T1 =  1. 
@@ -274,7 +274,7 @@ where ``A`` is `amplitude.
 
     $TYPEDFIELDS
 """
-@def_source struct ConstantGenerator{T1 <: Real, OP, RO} <: AbstractSource
+@def_source struct ConstantGenerator{T1 <: Real, OP <: Outport, RO} <: AbstractSource
     "Amplitude"
     amplitude::T1 = 1. 
     "Output port"
@@ -300,7 +300,7 @@ where ``\\alpha`` is the `scale` and ``\\tau`` is `delay`.
 @def_source struct RampGenerator{T1 <: Real, 
                                  T2 <: Real, 
                                  T3 <: Real, 
-                                 OP, 
+                                 OP <: Outport, 
                                  RO} <: AbstractSource
     "Scale"
     scale::T1 = 1.
@@ -334,7 +334,7 @@ where ``A`` is `amplitude`, ``B`` is the `offset` and ``\\tau`` is the `delay`.
 @def_source struct StepGenerator{T1 <: Real, 
                                  T2 <: Real, 
                                  T3 <: Real,
-                                 OP, 
+                                 OP <: Outport, 
                                  RO} <: AbstractSource
     "Amplitude"
     amplitude::T1 = 1. 
@@ -367,7 +367,7 @@ where ``A`` is `scale`, ``\\alpha`` is `decay` and ``\\tau`` is `delay`.
                                         T2 <: Real, 
                                         T3 <: Real,
                                         T4 <: Real,
-                                        OP, 
+                                        OP <: Outport, 
                                         RO} <: AbstractSource
     "Scale"
     scale::T1 = 1. 
@@ -401,7 +401,7 @@ where ``A`` is `scale`, ``\\alpha`` is `decay`, ``\\tau`` is `delay`.
                                               T2 <: Real, 
                                               T3 <: Real,
                                               T4 <: Real,
-                                              OP, 
+                                              OP <: Outport, 
                                               RO} <: AbstractSource
     "Scale"
     scale::T1 = 1.

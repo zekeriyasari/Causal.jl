@@ -83,7 +83,11 @@ Constructs a generic RODE system
 
     $TYPEDFIELDS
 """
-@def_rode_system mutable struct RODESystem{RH, RO, ST, IP, OP} <: AbstractRODESystem 
+@def_rode_system mutable struct RODESystem{RH, 
+                                           RO, 
+                                           ST <: AbstractVector{<:Real}, 
+                                           IP <: Union{<:Inport, <:Nothing}, 
+                                           OP <: Union{<:Outport,<:Nothing}} <: AbstractRODESystem 
     "Right-hand-side function"
     righthandside::RH 
     "Readout function"
@@ -111,15 +115,20 @@ where `W` is the noise process.
 
     $TYPEDFIELDS
 """
-@def_rode_system mutable struct MultiplicativeNoiseLinearSystem{RH, RO, IP, OP} <: AbstractRODESystem
+@def_rode_system mutable struct MultiplicativeNoiseLinearSystem{T1 <: AbstractMatrix{<:Real},
+                                                                RH, 
+                                                                RO, 
+                                                                ST <: AbstractVector{<:Real}, 
+                                                                IP <: Union{<:Inport, <:Nothing}, 
+                                                                OP <: Union{<:Outport,<:Nothing}} <: AbstractRODESystem
     "A"
-    A::Matrix{Float64} = [2. 0.; 0 -2]
+    A::T1 = [2. 0.; 0 -2]
     "Right-hand-side function"
     righthandside::RH = (dx, x, u, t, W) -> (dx .= A * x * W)
     "Readout function"
     readout::RO = (x, u, t) -> x 
     "State"
-    state::Vector{Float64} = rand(2) 
+    state::ST = rand(2) 
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"

@@ -88,7 +88,12 @@ Constructs a SDE system.
 
     $TYPEDFIELDS
 """
-@def_sde_system mutable struct SDESystem{DR, DF, RO, ST, IP, OP} <: AbstractSDESystem 
+@def_sde_system mutable struct SDESystem{DR, 
+                                         DF, 
+                                         RO, 
+                                         ST <: AbstractVector{<:Real}, 
+                                         IP <: Union{<:Inport, <:Nothing}, 
+                                         OP <: Union{<:Outport,<:Nothing}} <: AbstractSDESystem 
     "Drift function"
     drift::DR 
     "diffusion function"
@@ -112,17 +117,27 @@ Constructs a noisy Lorenz system
 
     $TYPEDFIELDS
 """
-@def_sde_system mutable struct NoisyLorenzSystem{ET, DR, DF, RO, IP, OP} <: AbstractSDESystem
+@def_sde_system mutable struct NoisyLorenzSystem{T1 <: Real,
+                                                 T2 <: Real, 
+                                                 T3 <: Real, 
+                                                 T4 <: Real, 
+                                                 T5 <: Real, 
+                                                 DR, 
+                                                 DF, 
+                                                 RO, 
+                                                 ST <: AbstractVector{<:Real}, 
+                                                 IP <: Union{<:Inport, <:Nothing},
+                                                 OP <: Union{<:Outport,<:Nothing}} <: AbstractSDESystem
     "σ"
-    σ::Float64 = 10.
+    σ::T1 = 10.
     "β"
-    β::Float64 = 8 / 3
+    β::T2 = 8 / 3
     "ρ"
-    ρ::Float64 = 28.
+    ρ::T3 = 28.
     "η"
-    η::ET = 1.
+    η::T4 = 1.
     "γ"
-    γ::Float64 = 1.
+    γ::T5 = 1.
     "Drift function"
     drift::DR = function lorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ)
         dx[1] = σ * (x[2] - x[1])
@@ -135,7 +150,7 @@ Constructs a noisy Lorenz system
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = nothing 
     "Output port"
@@ -151,19 +166,30 @@ Constructs a noisy Lorenz system
 
     $TYPEDFIELDS
 """
-@def_sde_system mutable struct ForcedNoisyLorenzSystem{ET, CM, DR, DF, RO, IP, OP} <: AbstractSDESystem
+@def_sde_system mutable struct ForcedNoisyLorenzSystem{T1 <: Real, 
+                                                       T2 <: Real,
+                                                       T3 <: Real,
+                                                       T4 <: Real,
+                                                       CM <: AbstractMatrix{<:Real}, 
+                                                       T5 <: Real,
+                                                       DR, 
+                                                       DF, 
+                                                       RO, 
+                                                       ST <: AbstractVector{<:Real}, 
+                                                       IP <: Union{<:Inport, <:Nothing}, 
+                                                       OP <: Union{<:Outport,<:Nothing}} <: AbstractSDESystem
     "σ"
-    σ::Float64 = 10.
+    σ::T1 = 10.
     "β"
-    β::Float64 = 8 / 3
+    β::T2 = 8 / 3
     "ρ"
-    ρ::Float64 = 28.
+    ρ::T3 = 28.
     "η"
-    η::ET = 1.
+    η::T4 = 1.
     "Input coupling matrix. Expected to be a diagonal matrix."
     cplmat::CM = I(3)
     "γ"
-    γ::Float64 = 1.
+    γ::T5 = 1.
     "Drift function"
     drift::DR = function forcedlorenzdrift(dx, x, u, t, σ=σ, β=β, ρ=ρ, γ=γ, cplmat=cplmat)
         dx[1] = σ * (x[2] - x[1])
@@ -177,7 +203,7 @@ Constructs a noisy Lorenz system
     "Readout function"
     readout::RO = (x, u, t) -> x
     "State"
-    state::Vector{Float64} = rand(3)
+    state::ST = rand(3)
     "Input. Expected to be an `Inport` or `Nothing`"
     input::IP = Inport(3) 
     "Output port"

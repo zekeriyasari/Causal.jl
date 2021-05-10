@@ -53,8 +53,16 @@ macro def_sink(ex)
         :( timebuf::$TIMEBUF_TYPE_SYMBOL = Buffer(buflen)  ), 
         :( databuf::$DATABUF_TYPE_SYMBOL = length(input) == 1 ? Buffer(buflen) :  Buffer(length(input), buflen) ), 
         :( sinkcallback::$SINK_CALLBACK_TYPE_SYMBOL = plugin === nothing ? 
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), outbuf(databuf)), true, id) :
-            Callback(sink->ishit(databuf), sink->action(sink, outbuf(timebuf), plugin.process(outbuf(databuf))),true, id) ), 
+            Callback(
+                sink -> ishit(sink.databuf), 
+                sink -> action(sink, outbuf(sink.timebuf), outbuf(sink.databuf)), 
+                true, 
+                id) :
+            Callback(
+                sink -> ishit(sink.databuf), 
+                sink -> action(sink, outbuf(sink.timebuf), plugin.process(outbuf(sink.databuf))), 
+                true, 
+                id) ), 
         ])
     quote 
         Base.@kwdef $ex 
@@ -78,6 +86,17 @@ end
 #     Callback(sink->ishit(timebuf), sink->action(sink, reverse(timebuf.output), plugin.process(hcat([reverse(buf.output) for
 #     buf in databuf]...))), true, id) 
 
+"""
+    $SIGNATURES
+
+Resizes the buffers of `sink`. `ln` is the new length of the buffers.
+"""
+function resizebufs!(sink::AbstractSink , ln::Int) 
+    nin = length(sink.input)
+    sink.timebuf = Buffer(ln)
+    sink.databuf = nin == 1 ? Buffer(ln) :  Buffer(nin, ln)
+    sink
+end 
 
 ##### Define sink library
 

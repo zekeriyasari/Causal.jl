@@ -701,6 +701,19 @@ signalflow(model::Model, args...; kwargs...) =
     gplot(model.graph, args...; nodelabel=[node.label for node in model.nodes], kwargs...)
 
 
+##### Methoods on Model 
+
+"""
+    $SIGNATURES
+
+Resize buffers of the model components that are of type AbstractSink.
+"""
+function resize_sink_buffers!(model::Model, ln::Int) 
+    for comp in filter(comp -> comp isa AbstractSink, getfield.(model.nodes, :component))
+        resizebufs!(comp, ln)
+    end 
+end 
+
 ##### @model macro
 
 function check_macro_syntax(name, ex)

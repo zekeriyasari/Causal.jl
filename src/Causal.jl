@@ -216,7 +216,8 @@ export @def_sink,
     write!, 
     fwrite!,
     fread,
-    update!
+    update!,
+    resizebufs!
 
 include("models/taskmanager.jl")
 export TaskManager, 
@@ -248,6 +249,7 @@ export @defmodel,
     getlinks,
     deletebranch!, 
     signalflow,
-    troubleshoot
+    troubleshoot,
+    resize_sink_buffers!
 
 end  # module

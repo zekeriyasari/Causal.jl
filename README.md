@@ -69,7 +69,6 @@ sim = simulate!(model, tinit, tsample, tfinal)
 
 # Read and plot data 
 t, x = read(getnode(model, :writer).component)
-t, x = read(getnode(model, :writer).component)
 using Plots
 plot(t, x[:, 1], label="r(t)", xlabel="t")
 plot!(t, x[:, 2], label="y(t)", xlabel="t")

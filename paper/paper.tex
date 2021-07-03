@@ -120,6 +120,8 @@ If the model passes the \textit{inspection}, the writer and reader tasks are lau
 
 The \textit{initialization} is followed by the \textit{run} stage. The tasks that are launched corresponding to the components during the \textit{initialization} expect the components to be triggered through their trigger pins. These triggers are generated in the sampling instants by the model clock during the \textit{run} stage. It is possible to sample the signals flowing through the connections at equal or independent time intervals. The generated triggers are put into the trigger pins of the components.
 
+It is possible for the users to determine the time instants at which the components are sampled. The user-specified sampling time instants can be regularly or irregularly spaced. However, although the sampling time instants are determined by the user, the solvers of the systems take adaptive steps while the systems evolve from one sampling instant to the next. Therefore, the sampling time instants determined by the user do not force the systems to evolve with the specified time intervals but to sample the outputs of the systems at those specified instants.
+
 When the \textit{run} stage is completed, the tasks launched at the \textit{initialization} stage are closed in the \textit{termination} stage and the simulation ends.
 
 The sampled values are interpolated for a duration of one sampling period so that the components can evolve independently. The sampling period is an essential factor that affects the accuracy of the simulation results directly.

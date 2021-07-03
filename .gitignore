@@ -4,3 +4,5 @@
 src/plugins/additionals/
 example/workspace.jl
 docs/build/
+paper/answers/
+paper/notebook/

@@ -6,6 +6,8 @@
 [![Coveralls](https://coveralls.io/repos/github/zekeriyasari/Causal.jl/badge.svg)](https://coveralls.io/github/zekeriyasari/Causal.jl)
 [![version](https://juliahub.com/docs/Causal/version.svg)](https://juliahub.com/ui/Packages/Causal/aS0XM)
 [![DOI](https://zenodo.org/badge/239842368.svg)](https://zenodo.org/badge/latestdoi/239842368)
+[![DOI](https://proceedings.juliacon.org/papers/10.21105/jcon.00071/status.svg)](https://doi.org/10.21105/jcon.00071)
+
 
 
 **NOTE:** This package was formerly called as Jusdl.jl. v0.2.1 is the last version of Jusdl. No further updates will be available for Jusdl. For further updates, please add Causal.jl.

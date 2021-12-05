@@ -76,10 +76,10 @@ Pysimulator--a simulation and analysis environment in python with plugin
   infrastructure.
 2012.
 
-\bibitem{proakis2004digital}
-John~G Proakis and Dimitris~G Manolakis.
-Digital signal processing.
-{\em PHI Publication: New Delhi, India}, 2004.
+\bibitem{proakis2001digital}
+John~G Proakis.
+{\em Digital signal processing: principles algorithms and applications}.
+Pearson Education India, 2001.
 
 \bibitem{rackauckas2017differentialequations}
 Christopher Rackauckas and Qing Nie.

@@ -83,7 +83,7 @@ The data transferred to a port are transferred to its connections. The data tran
 
 In the modeling approach adopted, the components reading data from a connection are driven by other components writing data to the connection. Therefore, all of the model's connections must be readable and writable so that data can flow through the connections. This necessitates that all the connections of the model must be connected to a component from both ends. Otherwise, the simulation gets stuck and does not terminate.
 
-There exist other tools developed in Julia for parallel execution of computations. Dagger.jl is such an example of those tools \cite{dagger}. Dagger.jl distributes the computations that can be represented by a directed acyclic graph (DAG) to available worker processes to execute them in parallel. A DAG is a directed graph with no directed cycles (loops). The DAG modeling approach brings restrictions to the simulation of the models that include loops, which is a case commonly encountered e.g. in feedback control systems. However, Causal.jl is capable of simulating the systems that include loops in their models. 
+There exist other tools developed in Julia for parallel execution of computations. Dagger.jl is such an example of those tools \cite{dagger}. Dagger.jl distributes the computations that can be represented by a directed acyclic graph (DAG) to available worker processes to execute them in parallel. A DAG is a directed graph with no directed cycles (loops). The DAG modeling approach brings restrictions to the simulation of the models that include loops, which is a case commonly encountered e.g. in feedback control systems. However, Causal.jl is capable of simulating the systems that include loops in their models.
 
 
 \subsection{Simulation}
@@ -150,21 +150,21 @@ In Causal.jl, it is possible to simulate models that include components represen
     \begin{split}
         dx_2 &= (a (y_1 - x_1) + u_1) dt + \eta dW_t \\
         dy_2 &= ((c - 1) x_1 + c y_1 - x_1 z_1)dt + \eta dW_t \\
-        dz_2 &= (x_1 y_1 - b z_1 + u_3) dt + \eta dW_t 
+        dz_2 &= (x_1 y_1 - b z_1 + u_3) dt + \eta dW_t
     \end{split}
     \label{eq: coupled sde}
 \end{equation}
-\texttt{gain} is a static system whose input output relation is given in (\ref{eq: gain}) where $u, y, \epsilon$ are the input, output and gain coefficient of the system. 
+\texttt{gain} is a static system whose input output relation is given in (\ref{eq: gain}) where $u, y, \epsilon$ are the input, output and gain coefficient of the system.
 \begin{equation}
     y = \epsilon u
     \label{eq: gain}
 \end{equation}
-\texttt{writer1} and \texttt{writer2} are used to record the outputs of \texttt{odeds} and \texttt{sdeds}, respectively, while \texttt{writer3} is used to record the fast Fourier transform (FFT) of the data flowing out of \texttt{odeds}\cite{proakis2004digital}. 
+\texttt{writer1} and \texttt{writer2} are used to record the outputs of \texttt{odeds} and \texttt{sdeds}, respectively, while \texttt{writer3} is used to record the fast Fourier transform (FFT) of the data flowing out of \texttt{odeds}\cite{proakis2001digital}.
 
 Being a domain-specific-language, Causal.jl provides a syntax for handy model construction. The program written using Causal.jl to construct and simulate the model in Figure \ref{fig: coupled model} is given in Listing \ref{lst: coupled codes}. The program first starts with the type definitions of the components \texttt{odeds}, \texttt{sdeds}, and \texttt{gain}, together with their fields' default values. Note that the types of components are defined as subtypes of the corresponding abstract component types, which shows how the user-defined component types can enrich the standard library of Causal.jl. \texttt{writer1} and \texttt{writer2} are used directly to record the data without further processing, so they do not need additional data processing plugins.
-On the other hand, rather than directly recording the data, \texttt{writer3} is used to process the data online, so it needs an additional plugin. \texttt{FFTPlug} is defined for this purpose, and \texttt{writer3} is equipped with an instance. For the sake of this example, we used the \texttt{fft} function \cite{fftw}. The model is constructed and simulated for $15$ seconds with a step size of $0.001$ seconds. After the simulation, the data in \texttt{write1} and \texttt{writer2} are read back and plotted in Figure \ref{fig: coupled simulation results}. From Figure \ref{subfig: coupled simulation sde}, the presence of the noise is apparent in the trajectory of {\texttt{sdeds}. 
+On the other hand, rather than directly recording the data, \texttt{writer3} is used to process the data online, so it needs an additional plugin. \texttt{FFTPlug} is defined for this purpose, and \texttt{writer3} is equipped with an instance. For the sake of this example, we used the \texttt{fft} function \cite{fftw}. The model is constructed and simulated for $15$ seconds with a step size of $0.001$ seconds. After the simulation, the data in \texttt{write1} and \texttt{writer2} are read back and plotted in Figure \ref{fig: coupled simulation results}. From Figure \ref{subfig: coupled simulation sde}, the presence of the noise is apparent in the trajectory of {\texttt{sdeds}.
 
-The individual evolution of components makes it possible to simulate such models that include components represented by different equations. 
+The individual evolution of components makes it possible to simulate such models that include components represented by different equations.
 
 Causal.jl adopts a causal modeling approach in which the data flow through the connections is unidirectional. Components that write data to a connection drives other components that read data from the same connection. Thus, the dependency structure of a model can be extracted by following the components that read data from the connections bound to the output ports of model components.
 
@@ -179,13 +179,13 @@ The order in which the connections are specified is arbitrary. One does not need
             \node[] at (plt.west) {$y_1$};
         \end{tikzpicture}
         \label{subfig: coupled simulation ode}
-        }\\
+    }\\
     \subfloat[]{
         \begin{tikzpicture}
             \node[](plt){\includegraphics[scale=0.25]{figures/ChenSystemSimulations/sdeds.pdf}};
             \node[] at (plt.south) {$x_2$};
             \node[] at (plt.west) {$y_2$};
-            \end{tikzpicture}
+        \end{tikzpicture}
         \label{subfig: coupled simulation sde}
     }
     \caption{\protect\subref{subfig: coupled simulation ode} $x_1 - y_1$ trajectory of \texttt{odeds}. \protect\subref{subfig: coupled simulation sde} $x_2 - y_2$ trajectory of \texttt{sdeds}.}
@@ -193,12 +193,12 @@ The order in which the connections are specified is arbitrary. One does not need
 \end{figure}
 
 \subsection{Simulation of Models Consisting of a Large Number of Nodes}
-In Causal.jl, its is possible to simulate large scale complex models consisting of a large number of dynamical system nodes. As an example, a network of continuous time identical dynamical systems is given Figure \ref{fig: network graph}. The nodes of the network evolve by 
+In Causal.jl, its is possible to simulate large scale complex models consisting of a large number of dynamical system nodes. As an example, a network of continuous time identical dynamical systems is given Figure \ref{fig: network graph}. The nodes of the network evolve by
 \begin{equation}
     \dot{\bm{x}}_i = f(\bm{x}_i) + \bm{u}_i, \quad i = 1, \ldots, n
     \label{eq: network equation}
 \end{equation}
-where 
+where
 \begin{equation}
     \bm{u}_i = \sum_{i = 1}^n \epsilon_{ij} \bm{\Gamma} \bm{x}_j, \quad i = 1, \ldots, n,
     \label{eq: network node inputs}
@@ -217,12 +217,12 @@ where $\sigma=10, \beta=8/3, \rho=28$ are system parameters, $\bm{\Gamma} = diag
 
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{figures/Networks/wattz_strogatz.pdf}    
+    \includegraphics[width=\linewidth]{figures/Networks/wattz_strogatz.pdf}
     \caption{A network consisting of identical dynamical system nodes. The spheres and the line segments represent the dynamical system nodes and the connection between them, respectively.}
     \label{fig: network graph}
 \end{figure}
 
-The model in Figure \ref{fig: network graph} is given in Figure \ref{fig: network model}. \texttt{node $k$} for $k =1, \ldots, n$ correspond to the dynamical system nodes of the network.  From (\ref{eq: network equation}) and (\ref{eq: network node inputs}), we see that the states of the nodes are taken as their outputs, weighted by the coupling strengths and fed back to their inputs. Hence, \texttt{coupler} is used to construct the weighted outputs. \texttt{writer} records the nodes' outputs. The model has algebraic loops $L_k$ for $k = 1, \ldots, n$, where the algebraic loop $L_k$ consists of \texttt{node $k$} and \texttt{coupler}. 
+The model in Figure \ref{fig: network graph} is given in Figure \ref{fig: network model}. \texttt{node $k$} for $k =1, \ldots, n$ correspond to the dynamical system nodes of the network.  From (\ref{eq: network equation}) and (\ref{eq: network node inputs}), we see that the states of the nodes are taken as their outputs, weighted by the coupling strengths and fed back to their inputs. Hence, \texttt{coupler} is used to construct the weighted outputs. \texttt{writer} records the nodes' outputs. The model has algebraic loops $L_k$ for $k = 1, \ldots, n$, where the algebraic loop $L_k$ consists of \texttt{node $k$} and \texttt{coupler}.
 
 \begin{figure}
     \centering
@@ -231,13 +231,13 @@ The model in Figure \ref{fig: network graph} is given in Figure \ref{fig: networ
     \label{fig: network model}
 \end{figure}
 
-The program written using Causal.jl to construct and simulate the model in Figure \ref{fig: network model} is given in Listing \ref{lst: network codes}. Having defined the types of dynamical system nodes and the coupler, the model is constructed and simulated for $100$ seconds with a sampling period of $0.005$ seconds. After the simulation, the simulation data is read back from the writer and the mean square error (MSE) 
+The program written using Causal.jl to construct and simulate the model in Figure \ref{fig: network model} is given in Listing \ref{lst: network codes}. Having defined the types of dynamical system nodes and the coupler, the model is constructed and simulated for $100$ seconds with a sampling period of $0.005$ seconds. After the simulation, the simulation data is read back from the writer and the mean square error (MSE)
 \begin{equation}
     MSE(t) = \dfrac{1}{n} \sum_{i = 2}^n \Vert \bm{x}_{1,1}(t) - \bm{x}_{i,1}(t) \Vert
 \end{equation}
-is computed and plotted. It is seen from Figure \ref{subfig: network error} that the all the nodes in the network synchronize with each other as the MSE goes to zero as time evolves. 
+is computed and plotted. It is seen from Figure \ref{subfig: network error} that the all the nodes in the network synchronize with each other as the MSE goes to zero as time evolves.
 
-Note from the program in Listing \ref{lst: network codes} that memory components are not used to break algebraic loops of the model. Causal.jl is capable of detecting and breaking these algebraic loops automatically without requiring any user intervention. 
+Note from the program in Listing \ref{lst: network codes} that memory components are not used to break algebraic loops of the model. Causal.jl is capable of detecting and breaking these algebraic loops automatically without requiring any user intervention.
 
 \begin{figure}
     \centering
@@ -248,13 +248,13 @@ Note from the program in Listing \ref{lst: network codes} that memory components
             \node[] at (plt.west) {$x_{1,1}$};
         \end{tikzpicture}
         \label{subfig: network timewaveform}
-        }\\[-0.1cm]
+    }\\[-0.1cm]
     \subfloat[]{
         \begin{tikzpicture}
             \node[](plt){\includegraphics[scale=0.25]{figures/NetworkSimulation-WattzStrogatz/trajectory.pdf}};
             \node[] at (plt.south) {$x_{1,1}$};
             \node[] at (plt.west) {$x_{1, 2}$};
-            \end{tikzpicture}
+        \end{tikzpicture}
         \label{subfig: network trajectory}
     } \\[-0.1cm]
     \subfloat[]{
@@ -262,7 +262,7 @@ Note from the program in Listing \ref{lst: network codes} that memory components
             \node[](plt){\includegraphics[scale=0.25]{figures/NetworkSimulation-WattzStrogatz/error.pdf}};
             \node[] at (plt.south) {$t$ [seconds]};
             \node[xshift=-0.25cm] at (plt.west) {MSE};
-            \end{tikzpicture}
+        \end{tikzpicture}
         \label{subfig: network error}
     }
     \caption{Simulation results the model given in Figure \ref{fig: network model}. \protect\subref{subfig: network timewaveform} Time waveform of $x_{1,1}$. \protect\subref{subfig: network trajectory} $x_{1,1} - x_{1,2}$ trajectory. \protect\subref{subfig: network trajectory} MSE.}
@@ -272,7 +272,7 @@ Note from the program in Listing \ref{lst: network codes} that memory components
 \section{Conclusion}
 In this paper, we introduced Causal.jl. In Causal.jl, the simulation is performed by evolving the components according to their mathematical equations between the sampling intervals in parallel and independently. The components can be static or dynamical or represented by mathematical equations having continuous or discrete-time variables. The simulation of the models consisting of components defined by ordinary, random ordinary, stochastic, delay differential, differential-algebraic, or difference equations is possible. It is not an obligation to describe all the model components with the same type of mathematical equation.
 
-The data flowing through the connections can be directly recorded or visualized during the simulation. In addition to the offline analyzes, with user-defined plugins, it is also possible to carry out online data analysis such as extracting statistical or spectral properties, applying different signal processing techniques, etc. 
+The data flowing through the connections can be directly recorded or visualized during the simulation. In addition to the offline analyzes, with user-defined plugins, it is also possible to carry out online data analysis such as extracting statistical or spectral properties, applying different signal processing techniques, etc.
 
 The model components evolve in parallel and simultaneously. The tasks of the Julia programming language is used for this parallel evolution. The tasks allow switching between the evolution of the components during the simulation. Using the Julia programming language's distributed computing tools, it is possible to distribute computation workload on multiple processors.
 
@@ -284,7 +284,7 @@ This work was supported by Scientific Research Projects Funding Program of Dokuz
 \input{bib.tex}
 
 \onecolumn
-\appendix 
+\appendix
 
 \begin{lstlisting}[caption={Program using Causal.jl for the simulation of the system in Figure \ref{fig: coupled model}. Plots.jl is used to plot the simulation data while FFTW.jl is used to compute the FFT of the simulation data \cite{plots, fftw}.}, label={lst: coupled codes}, language=Julia]
 using Causal, Plots, FFTW

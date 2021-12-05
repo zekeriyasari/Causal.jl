@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2020/Debian)
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: paper.aux
 The style file: juliacon.bst
@@ -13,41 +13,41 @@ Warning--there's a number but no series in giorgidze2009higher
 Warning--empty journal in pfeiffer2012pysimulator
 You've used 20 entries,
             2118 wiz_defined-function locations,
-            603 strings with 7576 characters,
-and the built_in function-call counts, 5632 in all, are:
-= -- 553
-> -- 233
+            602 strings with 7576 characters,
+and the built_in function-call counts, 5607 in all, are:
+= -- 549
+> -- 227
 < -- 4
-+ -- 98
-- -- 76
-* -- 341
-:= -- 890
++ -- 96
+- -- 74
+* -- 337
+:= -- 883
 add.period$ -- 57
 call.type$ -- 20
-change.case$ -- 96
+change.case$ -- 94
 chr.to.int$ -- 0
 cite$ -- 28
-duplicate$ -- 224
-empty$ -- 499
-format.name$ -- 76
-if$ -- 1221
+duplicate$ -- 226
+empty$ -- 504
+format.name$ -- 74
+if$ -- 1219
 int.to.chr$ -- 0
 int.to.str$ -- 20
-missing$ -- 14
+missing$ -- 15
 newline$ -- 97
 num.names$ -- 28
-pop$ -- 138
+pop$ -- 141
 preamble$ -- 1
-purify$ -- 77
+purify$ -- 76
 quote$ -- 0
-skip$ -- 172
+skip$ -- 170
 stack$ -- 0
 substring$ -- 264
 swap$ -- 47
 text.length$ -- 4
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 78
+type$ -- 76
 warning$ -- 8
 while$ -- 45
 width$ -- 22

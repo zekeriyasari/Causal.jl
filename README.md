@@ -34,6 +34,15 @@ Enter the Pkg REPL by pressing ] from the Julia REPL and then add Causal:
 ] add Causal
 ```
 
+This development branch requires Julia 1.10 or newer and uses the maintained
+Graphs.jl and SciML dependency families. On recent Julia versions, `Memory`
+and `isfull` are also exported by Base. Select Causal's bindings explicitly
+when using these names:
+
+```julia
+import Causal: Memory, isfull
+```
+
 ## A First Look
 
 Consider following simple model.

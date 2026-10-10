@@ -131,9 +131,9 @@ loops = getloops(model)
 ```
 We have one loop consisting the nodes with indexes 2 and 3. 
 
-For further analysis on model graph, we use [`LightGraphs`](https://juliagraphs.org/LightGraphs.jl/stable/) package.
+For further analysis on model graph, we use [`Graphs`](https://juliagraphs.org/Graphs.jl/stable/) package.
 ```@repl model_graph_example
-using LightGraphs 
+using Graphs
 graph = model.graph 
 ```
 For example, the adjacency matrix of model graph can be obtained. 

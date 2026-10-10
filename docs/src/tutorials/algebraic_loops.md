@@ -85,7 +85,7 @@ ti, dt, tf = 0., 1. / 64., 1.
         gain = Gain()
         writerout = Writer() 
         writerin = Writer() 
-        mem = Memory(delay=dt, initial=zeros(1))
+        mem = Causal.Memory(delay=dt, initial=zeros(1))
     end
     @branches begin 
         gen[1] => adder[1]
@@ -131,7 +131,7 @@ ti, dt, tf = 0., 1. / 64., 1.
         gain = Gain()
         writerout = Writer() 
         writerin = Writer() 
-        mem = Memory(delay=dt, initial=rand(1))
+        mem = Causal.Memory(delay=dt, initial=rand(1))
     end
     @branches begin 
         gen[1] => adder[1]

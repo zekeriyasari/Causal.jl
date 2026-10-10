@@ -3,13 +3,14 @@
 
 using Test
 using Causal
+import Causal: Memory, isfull  # Names also exported by modern Julia Base.
 
 using Logging
 using Random
 using JLD2, FileIO
 using UUIDs
 using Statistics
-using LightGraphs
+using Graphs
 import Causal.process
 
 # --------------------------- Deprecated -------------------------- 

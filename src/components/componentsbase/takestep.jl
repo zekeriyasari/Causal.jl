@@ -95,6 +95,9 @@ function evolve!(comp::AbstractDynamicSystem, u, t)
     integrator = comp.integrator
     interpolator = integrator.sol.prob.p
     update_interpolator!(interpolator, u, t)
+    # Interpolation coefficients are mutable ODE parameters. Notify SciML
+    # so FSAL/derivative caches are refreshed before advancing this step.
+    interpolator === nothing || u_modified!(integrator, true)
     comp.t == t && return comp.state  
 
     # Advance the system and update the system.

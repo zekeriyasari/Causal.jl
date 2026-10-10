@@ -6,7 +6,7 @@ module Causal
 using UUIDs
 using DifferentialEquations
 using Sundials
-using LightGraphs
+using Graphs
 using DataStructures
 using JLD2
 using Plots

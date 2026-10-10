@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.5'
+          - '1.10'
           - '1' # Leave this line unchanged. '1' will automatically expand to the latest stable 1.x release of Julia.
           - 'nightly'
         os:
@@ -26,15 +26,15 @@ jobs:
           # - windows-latest
         arch:
           - x64
-    # env:
-    #   PYTHON: ""
+    env:
+      GKSwstype: "100"
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         env:
           cache-name: cache-artifacts
         with:
@@ -53,13 +53,13 @@ jobs:
   docs:
     name: Documentation
     runs-on: ubuntu-latest
-    # env:
-    #   PYTHON: ""
+    env:
+      GKSwstype: "100"
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v3
         with:
-          version: '1.5'
+          version: '1'
       - name: Install dependencies
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy

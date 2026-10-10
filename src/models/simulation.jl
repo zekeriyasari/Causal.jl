@@ -111,7 +111,11 @@ function report(simulation::Simulation)
         model_group["callbacks"] = simulation.model.callbacks
         model_blocks_group = JLD2.Group(simreport, "components")
         for component in filter(component->!isa(component, Writer), components)
-            model_blocks_group[string(component.name)] = component
+            # The default name is empty. Writing at "" refers to the group
+            # itself in JLD2 and creates a recursive/self-referential report.
+            component_name = string(component.name)
+            key = isempty(component_name) ? string(component.id) : component_name
+            model_blocks_group[key] = component
         end
     end
     # close(simreport)

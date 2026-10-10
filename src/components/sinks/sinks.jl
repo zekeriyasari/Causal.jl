@@ -181,17 +181,19 @@ function fread(path::String; flatten=false)
     data = SortedDict([(eval(Meta.parse(key)), val) for (key, val) in zip(keys(content), values(content))])
     if flatten
         t = vcat(reverse.(keys(data), dims=1)...)
-        T = _getelytpe(data)
-        if T <: AbstractVector
+        # FileIO/JLD2 loads heterogeneous dictionaries with value type Any.
+        # Inspect the stored chunks, not the dictionary's inferred element type.
+        chunks = collect(values(data))
+        if !isempty(chunks) && all(chunk -> chunk isa AbstractVector, chunks)
             x = vcat(reverse.(values(data), dims=1)...)
             return t, x 
-        elseif T <: AbstractMatrix
+        elseif !isempty(chunks) && all(chunk -> chunk isa AbstractMatrix, chunks)
             x = collect(hcat(reverse.(values(data), dims=2)...)')
             return t, x
         else 
             msg = "Data cannot be read from the file."
             msg *= "Expected element type AbstractVector or AbstractMatrix, "
-            msg *= "got $T instead." 
+            msg *= "got $(typeof.(chunks)) instead."
             error(msg)
         end
     else

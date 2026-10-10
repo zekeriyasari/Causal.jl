@@ -1,7 +1,7 @@
 using Documenter, Causal
 # using DocumenterLaTeX
 
-DocMeta.setdocmeta!(Causal, :DocTestSetup, :(using Causal); recursive=true)
+DocMeta.setdocmeta!(Causal, :DocTestSetup, :(using Causal; import Causal: Memory, isfull); recursive=true)
 
 makedocs(
     modules=[Causal], 

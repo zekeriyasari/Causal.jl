@@ -33,4 +33,19 @@
     interp=Interpolant(3,2)
     Causal.update_interpolator!(interp,[2.0,-3.0],0.0)
     @test interp(0.5) ≈ [2.0,-3.0]
+
+    # Reinitialize a populated dynamic component. Historical zero-filled taps
+    # must not survive the model reset as if they were valid time samples.
+    model=Model()
+    addnode!(model,ds,label=:reusable_dynamic)
+    Causal.resetdynamicalsystems!(model,Clock(0.0:0.001:1.0))
+    @test ds.interpolant.nvalid == 0
+    @test isempty(ds.interpolant.timebuf)
+    @test isempty(ds.interpolant.databuf)
+    repeat_errors=Float64[]
+    for t in 0.0:0.001:1.0
+        Causal.evolve!(ds,[1.0],t)
+        push!(repeat_errors,abs(ds.state[1]-10*expm1(0.1*t)))
+    end
+    @test maximum(repeat_errors) < 1e-8
 end

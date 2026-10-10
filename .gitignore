@@ -15,3 +15,7 @@ docs/build/
 /Manifest.toml
 /dev/
 /docs/site/
+
+# Resolve package-local test/docs environments for each supported Julia version.
+/docs/Manifest.toml
+/test/Manifest.toml

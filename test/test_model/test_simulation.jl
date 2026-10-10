@@ -39,6 +39,9 @@
     @test data["path"] == sim.path
     @test data["state"] == sim.state
     @test data["retcode"] == sim.retcode
+    component_key = "components/" * string(getnode(model,:gen).component.id)
+    @test haskey(data, component_key)
+    @test data[component_key] isa SinewaveGenerator
     
     @info "Done SimulationTestSet."
 end # testset
